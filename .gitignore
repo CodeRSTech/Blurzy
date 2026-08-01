@@ -23,8 +23,10 @@ tests/**/*.jpeg
 tests/**/*.bmp
 tests/**/*.tiff
 tests/**/*.gif
-tests/assets/frames/
-tests/integration/pipeline/by_me/test_frames/
+tests/assets/frames/outputs/
+tests/integration/pipeline/by_me/test_frames/outputs/
+# Never suppress .gitkeep — keeps empty skeleton folders tracked
+!**/.gitkeep
 
 # Build / packaging
 dist/

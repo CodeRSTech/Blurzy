@@ -11,7 +11,7 @@ from app.domain import VideoDataLayer, DetectionResult, ProcessingSettings
 
 def _make_session(*, has_existing_boxes: bool = False, settings: ProcessingSettings | None = None):
     session = MagicMock()
-    session.state.session_settings = settings or ProcessingSettings(
+    session.state.settings = settings or ProcessingSettings(
         detection_model_name="YOLOv8n",
         min_detection_confidence=0.5,
         chosen_labels=["person"],
