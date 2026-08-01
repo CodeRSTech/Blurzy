@@ -1,0 +1,91 @@
+[project]
+name = "Blurzy"
+version = "0.1.0"
+requires-python = ">=3.14"
+dependencies = [
+    "loguru",
+    "scipy",
+    "numpy",
+    "opencv-python",
+    "Pillow",
+    "ultralytics",
+    "torch",
+    "torchvision",
+    "mtcnn",
+    "pyyaml",
+    "torch-utils",
+    "pandas",
+    "configparser",
+    "PySide6",
+    "av",
+]
+
+#[pytest]
+#addopts = --color=yes[tool.ruff]
+
+# The minimum Python version to target during linting and formatting.
+target-version = "py314"
+
+# The standard maximum line length (matching Black's default).
+line-length = 120
+
+# Source directories to look for if your project layout is non-standard.
+src = ["."]
+
+# Files and directories that Ruff will entirely ignore.
+exclude = [
+    ".git",
+    ".git-rewrite",
+    ".hg",
+    ".ipynb_checkpoints",
+    ".mypy_cache",
+    ".nox",
+    ".pants.d",
+    ".pyenv",
+    ".pytest_cache",
+    ".pytype",
+    ".ruff_cache",
+    ".selene",
+    ".tox",
+    ".venv",
+    ".vscode",
+    "__pypackages__",
+    "_build",
+    "buck-out",
+    "build",
+    "dist",
+    "node_modules",
+    "site-packages",
+    "venv",
+]
+
+[tool.ruff.lint]
+# Default enabled rule categories: Pyflakes (F) and a subset of pycodestyle (E).
+select = ["E4", "E7", "E9", "F"]
+
+# List of specific rule codes to ignore within the selected categories.
+ignore = []
+
+# Allow fixable rules to be corrected automatically.
+# Use "none" if you want Ruff to only report issues without editing code.
+fixable = ["ALL"]
+unfixable = []
+
+# Allow unused variables when underscore-prefixed.
+dummy-variable-rgx = "^(_+|(_[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
+
+[tool.ruff.format]
+# Enforce double quotes everywhere (Black style). Options: "single", "double", "preserve"
+quote-style = "double"
+
+# Indent using 4 spaces. Options: "space", "tab"
+indent-style = "space"
+
+# Respect magic trailing commas to decide line breaks (Black style).
+skip-magic-trailing-comma = false
+
+# Set standard line endings. Options: "lf", "crlf", "cr", "native"
+line-ending = "auto"
+
+# Disable formatting code blocks inside docstrings by default.
+docstring-code-format = false
