@@ -1,0 +1,49 @@
+﻿# Python caches
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# ML model weights - never commit
+*.pt
+*.pth
+*.onnx
+*.weights
+*.bin
+tests/assets/models/
+
+# Test frame images and generated detection outputs
+tests/**/*.png
+tests/**/*.jpg
+tests/**/*.jpeg
+tests/**/*.bmp
+tests/**/*.tiff
+tests/**/*.gif
+tests/assets/frames/
+tests/integration/pipeline/by_me/test_frames/
+
+# Build / packaging
+dist/
+build/
+*.egg-info/
+
+# Logs
+logs/
+*.log
+
+# Test artefacts
+.pytest_cache/
+.coverage
+htmlcov/
+
+# IDE / editor
+.idea/
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db
