@@ -5,6 +5,7 @@ from __future__ import annotations
 import importlib
 import sys
 from pathlib import Path
+from unittest.mock import MagicMock, patch
 
 import pytest
 
@@ -34,9 +35,15 @@ from app.domain.session import SessionId
 from app.infrastructure.session.session import Session
 
 
+def _make_session(path: str = "/videos/demo.mp4") -> Session:
+    """Create Session with SessionDataStore patched for QObject-free unit testing."""
+    with patch("app.infrastructure.session.session.SessionDataStore", return_value=MagicMock(name="data_store")):
+        return Session(SessionId(path))
+
+
 def test_constructor_creates_a_bare_session_shell():
     """Session construction should not open files or start workers anymore."""
-    session = Session(SessionId("/videos/demo.mp4"))
+    session = _make_session()
 
     assert session.video_reader is None
     assert session.state is None
@@ -48,7 +55,7 @@ def test_constructor_creates_a_bare_session_shell():
 
 def test_frame_access_before_initialization_raises_helpful_error():
     """Frame access should fail fast until SessionInitializer attaches runtime state."""
-    session = Session(SessionId("/videos/demo.mp4"))
+    session = _make_session()
 
     with pytest.raises(RuntimeError, match="Session state has not been initialized yet"):
         session.get_current_frame()
@@ -56,7 +63,28 @@ def test_frame_access_before_initialization_raises_helpful_error():
 
 def test_close_without_initialization_is_safe():
     """Closing a bare session should be a no-op for optional collaborators."""
-    session = Session(SessionId("/videos/demo.mp4"))
+    session = _make_session()
 
     session.close()
+
+
+def test_get_frame_by_index_delegates_to_frame_accessor():
+    """Session should delegate frame orchestration to its dedicated accessor."""
+    session = _make_session()
+    fake_state = MagicMock(name="state")
+    fake_worker = MagicMock(name="worker")
+    session.state = fake_state
+    session.video_decode_worker = fake_worker
+    session._frame_accessor = MagicMock(name="frame_accessor")
+    session._frame_accessor.get_frame_by_index.return_value = "delegated-frame"
+
+    result = session.get_frame_by_index(12)
+
+    assert result == "delegated-frame"
+    session._frame_accessor.get_frame_by_index.assert_called_once_with(
+        session_state=fake_state,
+        decode_worker=fake_worker,
+        frame_index=12,
+    )
+
 

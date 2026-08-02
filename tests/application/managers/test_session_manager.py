@@ -5,7 +5,7 @@ from __future__ import annotations
 import importlib
 import sys
 from pathlib import Path
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 
 import pytest
 
@@ -46,7 +46,8 @@ def test_create_session_from_video_path_initializes_and_stores_session():
     manager = SessionManager(app, session_initializer=initializer)
 
     path = "/videos/demo.mp4"
-    manager.create_session_from_video_path(path)
+    with patch("app.infrastructure.session.session.SessionDataStore", return_value=MagicMock(name="data_store")):
+        manager.create_session_from_video_path(path)
 
     created_session = manager.get_session_by_id(SessionId(path))
     assert created_session.s_id == SessionId(path)
@@ -75,8 +76,9 @@ def test_create_session_from_video_path_does_not_store_partial_session_on_failur
     initializer.initialize.side_effect = RuntimeError("bootstrap failed")
     manager = SessionManager(app, session_initializer=initializer)
 
-    with pytest.raises(RuntimeError, match="bootstrap failed"):
-        manager.create_session_from_video_path("/videos/demo.mp4")
+    with patch("app.infrastructure.session.session.SessionDataStore", return_value=MagicMock(name="data_store")):
+        with pytest.raises(RuntimeError, match="bootstrap failed"):
+            manager.create_session_from_video_path("/videos/demo.mp4")
 
     assert list(manager.all_session_ids) == []
 

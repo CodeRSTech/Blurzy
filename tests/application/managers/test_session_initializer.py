@@ -36,7 +36,8 @@ from app.infrastructure.session.session import Session
 
 def test_initialize_attaches_reader_state_and_worker():
     """SessionInitializer should attach all runtime collaborators in one step."""
-    session = Session(SessionId("/videos/demo.mp4"))
+    with patch("app.infrastructure.session.session.SessionDataStore", return_value=MagicMock(name="data_store")):
+        session = Session(SessionId("/videos/demo.mp4"))
     fake_reader = MagicMock(name="video_reader")
     fake_reader.metadata = MagicMock(name="metadata")
     fake_state = MagicMock(name="state")
