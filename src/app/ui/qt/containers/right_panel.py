@@ -394,14 +394,16 @@ class RightControlPanel(QScrollArea):
 
     def set_detection_progress(self, current: int, total: int, label: str = "Detection", eta_msecs: float | None = None) -> None:
         maximum = max(total, 1)
-        percent = int((current / maximum) * 100)
+        percent = (current / maximum) * 100
+        percent_formatted = f"{percent:.2f} %"
         self.detection_progress_bar.setRange(0, 100)
         self.detection_progress_bar.setValue(max(0, min(percent, 100)))
         if eta_msecs is not None:
             eta_seconds = int(eta_msecs // 1000)
-            self.detection_progress_bar.setFormat(f"{label}: {current}/{total} [ {eta_seconds + 1}s ]")
+            eta_formatted = f"{eta_seconds // 3600:02d}:{eta_seconds % 3600 // 60:02d}:{eta_seconds % 60:02d}"
+            self.detection_progress_bar.setFormat(f"{label}: {percent_formatted} [ {eta_formatted} ]")
         else:
-            self.detection_progress_bar.setFormat(f"{label}: {current}/{total}")
+            self.detection_progress_bar.setFormat(f"{label}: {percent_formatted}")
 
     def set_tracking_progress_busy(self, is_busy: bool, indeterminate: bool = False) -> None:
         self.tracking_progress_bar.setVisible(is_busy)
