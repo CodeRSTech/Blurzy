@@ -13,6 +13,7 @@ from PySide6.QtCore import QObject
 from app.domain import VideoDataLayer, SessionState
 from app.shared.logging_cfg import get_logger
 from app.infrastructure.session.session_data_store import SessionDataStore
+from app.infrastructure.session.frame_access import SessionFrameAccessor
 
 if TYPE_CHECKING:
     from app.domain.session import SessionId
@@ -31,9 +32,10 @@ class Session(QObject):
     Container holding the runtime state and layer storage for a single video
     processing session.
 
-    ``Session`` stays a ``QObject`` for now, but it no longer creates its own
-    video reader or decode worker. Those collaborators are attached later by
-    ``SessionInitializer`` so the constructor remains side-effect free.
+    ``Session`` stays a ``QObject`` for now and keeps a narrow runtime role:
+    it owns IDs, layer storage, collaborator references, and thin convenience
+    methods. Expensive initialization and frame-orchestration logic are
+    delegated to dedicated collaborators.
     """
 
     def __init__(self, s_id: SessionId) -> None:
@@ -49,6 +51,7 @@ class Session(QObject):
         self.video_reader: VideoReader | None = None
         self.state: SessionState | None = None
         self.video_decode_worker: VideoDecodeWorker | None = None
+        self._frame_accessor = SessionFrameAccessor()
         self.detection_engine: DetectionEngineInterface | None = None
         self.detection_worker: DetectionWorkerInterface | None = None
         self.tracking_worker: TrackingWorkerInterface | None = None
@@ -169,66 +172,11 @@ class Session(QObject):
         Returns:
             RGBFrame | None: The requested frame, or ``None`` if it is unavailable.
         """
-        import time
-
-        session_state = self._require_state()
-        max_idx = max(session_state.metadata.frame_count - 1, 0)
-        safe_idx = max(0, min(frame_index, max_idx))
-
-        decode_worker = self._require_video_decode_worker()
-
-        # ====================================
-        # 1. Check if frame at index is cached
-        # ====================================
-        # cached_frame = decode_worker.ring_buffer.get(safe_idx)
-        # [NEW] Bypass directly accessing the ring buffer
-        cached_frame = decode_worker.get_cached_frame_at_index(safe_idx)
-
-        if cached_frame is not None:
-            # Update session state and return cached frame
-            session_state.playback.current_frame_index = safe_idx
-            session_state.current_frame_data = cached_frame
-            return cached_frame
-
-        # ====================================
-        # 2. Cache Miss
-        # ====================================
-        # Check if this is a normal sequential playback (worker just fell a few ms behind)
-        is_sequential_underrun = abs(safe_idx - session_state.playback.current_frame_index) <= 1
-
-        if not is_sequential_underrun:
-            # The user actually scrubbed the timeline. Force an expensive Hard Seek.
-            decode_worker.request_seek(safe_idx)
-        # else:
-        #   It IS underrun, do nothing.
-        #   Let the worker finish its sequential decoding.
-
-        # ====================================
-        # 3. Wait for worker to catch up
-        # ====================================
-
-        # TODO:
-        #       Extract the timeout-loop out of `Session` and
-        #       move it into the `VideoDecodeWorker` (or a new `FrameSynchronizer` class).
-        #       The worker should be responsible for managing its own thread delays.
-        #  OR,
-        #     Use a signal-slot mechanism to notify the session when the frame is ready instead of polling.
-        #  OR,
-        #   Use a condition variable or event to block until the frame is available, instead of busy-waiting.
-        #  OR,
-        #   Pass a timeout argument `cached_frame = decode_worker.get_cached_frame_at_index(safe_idx), timeout=2.0)`
-        #   and let the worker handle the waiting internally.
-        attempts = 0
-        while attempts < 200:  # 2.0 second timeout
-            cached_frame = decode_worker.get_cached_frame_at_index(safe_idx)
-            if cached_frame is not None:
-                self.state.update_current_frame_data_and_index(idx=safe_idx, frame_data=cached_frame)
-                return cached_frame
-            time.sleep(0.01)
-            attempts += 1
-
-        logger.error("Timeout waiting for worker to supply frame {}", safe_idx)
-        return None
+        return self._frame_accessor.get_frame_by_index(
+            session_state=self._require_state(),
+            decode_worker=self._require_video_decode_worker(),
+            frame_index=frame_index,
+        )
 
     def get_current_frame(self) -> RGBFrame | None:
         """Get frame at current playback position (caches result in state)."""
