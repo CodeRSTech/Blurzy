@@ -3,6 +3,7 @@ from __future__ import annotations
 from collections.abc import Iterable
 from typing import override, TYPE_CHECKING
 
+from app.application.managers.session_initializer import SessionInitializer
 from app.domain.session import SessionId
 from app.infrastructure.session.session import Session
 from app.shared.exceptions import SessionAlreadyExistsException
@@ -18,15 +19,21 @@ logger = get_logger("Application->SessionManager")
 
 class SessionManager:
     """
-    Owns the `dict` of open ``Session`` objects, Manages sessions.
+    Owns the ``dict`` of open ``Session`` objects and coordinates their
+    application-layer lifecycle.
+
+    The manager keeps session creation and initialization in one place, while
+    the expensive runtime bootstrap (video reader, runtime state, decode
+    worker) is delegated to ``SessionInitializer``.
     """
 
-    def __init__(self, app: Application) -> None:
+    def __init__(self, app: Application, session_initializer: SessionInitializer | None = None) -> None:
         logger.debug("Initializing SessionManager...")
         self._app = app
         self._session_svc = None
         self._sessions: dict[SessionId, Session] = {}
         self._active_s_id: SessionId = SessionId("")
+        self._session_initializer = session_initializer or SessionInitializer()
 
         logger.debug("SessionManager initialized.")
 
@@ -81,21 +88,18 @@ class SessionManager:
     def create_session_from_video_path(self, path: str):
         logger.info("Creating new session for video: {}", path)
 
-        if path in self._sessions:
+        new_s_id = SessionId(path)
+        if new_s_id in self._sessions:
             raise SessionAlreadyExistsException("Error while opening video from path.", path)
 
-        # Unique ID for this session
-        # All the references to the video's Workers etc.
-        # will be stored under this ID as a key
-        new_s_id = SessionId(path)
-
-        # Try to create a new Session object and store the references in the Session Manager.
         try:
-            self._sessions[new_s_id] = Session(new_s_id)
+            session = Session(new_s_id)
+            self._session_initializer.initialize(session)
+            self._sessions[new_s_id] = session
             logger.debug("Created session: id={}", path)
-        except Exception as e:
+        except Exception:
             logger.warning("Failed to create session for video: {}; skipped creating session", path)
-            raise e
+            raise
 
     def get_session_by_id(self, s_id: SessionId) -> Session:
         session = self._sessions.get(s_id)
