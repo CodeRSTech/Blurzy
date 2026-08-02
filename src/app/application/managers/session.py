@@ -6,6 +6,7 @@ from typing import override, TYPE_CHECKING
 from app.application.managers.session_initializer import SessionInitializer
 from app.domain.session import SessionId
 from app.infrastructure.session.session import Session
+from app.infrastructure.video.vid_reader import ZeroStreamsInVideoException
 from app.shared.exceptions import SessionAlreadyExistsException
 from app.shared.logging_cfg import get_logger
 
@@ -97,9 +98,13 @@ class SessionManager:
             self._session_initializer.initialize(session)
             self._sessions[new_s_id] = session
             logger.debug("Created session: id={}", path)
+        except ZeroStreamsInVideoException:
+            # [NOTE] Whilst catching the exception here will work,
+            # re-raising it might not allow other videos to load properly
+            # likely caused by whatever that's calling THIS method.
+            logger.error("Zero streams were found while opening video from path: '{}'. Skipping...", path)
         except Exception:
             logger.warning("Failed to create session for video: {}; skipped creating session", path)
-            raise
 
     def get_session_by_id(self, s_id: SessionId) -> Session:
         session = self._sessions.get(s_id)
