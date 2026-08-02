@@ -14,7 +14,7 @@ class CollapsibleBox(QWidget):
         self._title: str = title
         self.is_expanded: bool = True
 
-        # Toggle button acts as the header
+        # Toggle button acts as the section header.
         self.toggle_button = QPushButton(f"▼ {self._title}")
         self.toggle_button.setStyleSheet(
             "text-align: left; font-weight: bold; padding: 6px;"
