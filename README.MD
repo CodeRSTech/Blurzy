@@ -33,8 +33,8 @@ We treat documentation as a first-class feature. Below is our active backlog for
 |   🟢   | **Import/Export detection results**                                     |   High   | Bypass Detection worker overhead          | Unassigned |
 |   ⚪   | **Define constants at one place**                                       |  Medium  | Improve maintainability and reduce errors | Unassigned |
 |   ⚪   | **Delegate creation of view models to a separate service**              |  Medium  | Make code independent of view models      | Unassigned |
-|   ⚪   | **Audit/Split `app.ui.qt.widgets.layer_bbox`**                          |  Medium  | Improve maintainability and reduce errors | Unassigned |
-|   ⚪   | **Audit/Split `app.ui.infastructure.session.session` responsibilities** |   Low    | Improve code organization and clarity     | Unassigned |
+|   ⚪   | **Audit/Split `app.ui.qt.widgets.layer_bbox`**                          |  Medium  | Improve maintainability and reduce error | Unassigned |
+|   🟡   | **Audit/Split `app.ui.infastructure.session.session` responsibilities** |   Low    | Improve code organization and clarity     | Unassigned |
 |   ⚪   | **Create PRs for aforementioned items**                                 |   Low    | Helps track progress and contributions    | Unassigned |## 📋 Feature Ideas & Wishlist
 
 * [x] Phase out using references to `Application` in app services with `ApplicationAdapter`
