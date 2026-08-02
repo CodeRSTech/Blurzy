@@ -34,13 +34,17 @@ We treat documentation as a first-class feature. Below is our active backlog for
 |   ⚪   | **Define constants at one place**                                       |  Medium  | Improve maintainability and reduce errors | Unassigned |
 |   ⚪   | **Delegate creation of view models to a separate service**              |  Medium  | Make code independent of view models      | Unassigned |
 |   ⚪   | **Audit/Split `app.ui.qt.widgets.layer_bbox`**                          |  Medium  | Improve maintainability and reduce errors | Unassigned |
-|   ⚪   | **Audit/Split `app.ui.infastructure.session.session` responsibilities** |   Low    | Improve code organization and clarity     | Unassigned |
-|   ⚪   | **Create PRs for aforementioned items**                                 |   Low    | Helps track progress and contributions    | Unassigned |## 📋 Feature Ideas & Wishlist
+|   🟡   | **Audit/Split `app.ui.infastructure.session.session` responsibilities** |   Low    | Improve code organization and clarity     | Unassigned |
+|   ⚪   | **SETTINGS window (default model, use gpu, etc.)**                      |   Low    | Helps track progress and contributions    | Unassigned |
+
+## 📋 Feature Ideas & Wishlist
 
 * [x] Phase out using references to `Application` in app services with `ApplicationAdapter`
 * [x] Optimize `src.app.infrastructure` imports via `__init__.py` to reduce circular dependencies
 * [ ] Refine the UI and potentially UX
+* [ ] Use icons and menu bar in UI
 * [ ] Add another dropdown just above "Model", called "Provider", which has "Torch models", "YOLO models" and "MTCNN Models".
+* [ ] Launch app in full screen mode by default, with a toggle to switch to windowed mode.
 ---
 
 ## ⚡ Quickstart
