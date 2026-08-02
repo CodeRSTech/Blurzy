@@ -1,6 +1,7 @@
 from typing import final, cast, TYPE_CHECKING
 
 from PySide6.QtCore import Signal, QSignalBlocker, Slot
+from PySide6.QtGui import QAction
 from PySide6.QtWidgets import (
     QCheckBox,
     QComboBox,
@@ -228,6 +229,8 @@ class RightControlPanel(QScrollArea):
         #   [                    Export Video                    ]
         #   [====================================================]
         self.export_btn = QPushButton("Export Video")
+        self.export_all_btn = QPushButton("Export All")
+        self.export_all_action = QAction("Export All...", self)
 
     def _build_ui(self) -> None:
         self.detection_box.add_layout(self.model_selection)
@@ -262,6 +265,7 @@ class RightControlPanel(QScrollArea):
         self.render_box.add_widget(self.blur_checkbox)
         self.render_box.add_layout(self.blur_strength_selection)
         self.render_box.add_widget(self.export_btn)
+        self.render_box.add_widget(self.export_all_btn)
 
         # --- Final Assembly ---
         self._layout.addWidget(self.detection_box)
@@ -445,6 +449,8 @@ class RightControlPanel(QScrollArea):
 
     def connect_signals_to_export_handler(self, export_handler: ExportHandler) -> None:
         self.export_btn.clicked.connect(export_handler.on_export)
+        self.export_all_btn.clicked.connect(export_handler.on_export_all)
+        self.export_all_action.triggered.connect(export_handler.on_export_all)
         self.draw_boxes_checkbox.toggled.connect(export_handler.on_draw_boxes_changed)
         self.blur_checkbox.toggled.connect(export_handler.on_blur_toggled)
         self.blur_strength_spinbox.valueChanged.connect(export_handler.on_blur_strength_changed)

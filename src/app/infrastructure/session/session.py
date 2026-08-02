@@ -150,8 +150,10 @@ class Session(QObject):
 
     def get_buffered_frame(self) -> RGBFrame | None:
         """Get the next frame (current_idx + 1) from the ring buffer (for lookahead during playback)."""
-        next_idx = self._require_state().playback.current_frame_index + 1
-        return self.get_frame_by_index(next_idx)
+        return self._frame_accessor.get_buffered_frame(
+            session_state=self._require_state(),
+            decode_worker=self._require_video_decode_worker(),
+        )
 
     def get_frame_by_index(self, frame_index: int) -> RGBFrame | None:
         """
@@ -180,22 +182,24 @@ class Session(QObject):
 
     def get_current_frame(self) -> RGBFrame | None:
         """Get frame at current playback position (caches result in state)."""
-        session_state = self._require_state()
-        current_index = session_state.playback.current_frame_index
-
-        # FIX: Ensure we actually update and return the fallback data if empty!
-        if session_state.current_frame_data is None:
-            session_state.current_frame_data = self.get_frame_by_index(current_index)
-
-        return session_state.current_frame_data
+        return self._frame_accessor.get_current_frame(
+            session_state=self._require_state(),
+            decode_worker=self._require_video_decode_worker(),
+        )
 
     def get_next_frame(self) -> RGBFrame | None:
         """Get next frame (current_idx + 1)."""
-        return self.get_frame_by_index(self._require_state().playback.current_frame_index + 1)
+        return self._frame_accessor.get_next_frame(
+            session_state=self._require_state(),
+            decode_worker=self._require_video_decode_worker(),
+        )
 
     def get_previous_frame(self) -> RGBFrame | None:
         """Get previous frame (current_idx - 1)."""
-        return self.get_frame_by_index(self._require_state().playback.current_frame_index - 1)
+        return self._frame_accessor.get_previous_frame(
+            session_state=self._require_state(),
+            decode_worker=self._require_video_decode_worker(),
+        )
 
     def reset_model(self, model_name: str, keep_manual: bool = False) -> None:
         """

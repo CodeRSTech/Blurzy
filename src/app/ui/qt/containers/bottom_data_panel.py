@@ -45,29 +45,19 @@ class BottomDataPanelContainer(QWidget):
         bottom_splitter.setStretchFactor(0, 6)
         bottom_splitter.setStretchFactor(1, 5)
 
-        # Action row 1
-        action_row_1 = create_qhbox_with_widgets([
+        # Unified action row (non-reset actions only; reset controls are now exposed via Edit menu)
+        action_row = create_qhbox_with_widgets([
             self.edit_item_btn,
             self.delete_item_btn,
+            self.delete_next_occurrences_btn,
+            self.delete_prev_occurrences_btn,
             self.copy_to_prev_btn,
             self.copy_to_next_btn,
         ])
-        action_row_1.addStretch()
-
-        # Action row 2
-        action_row_2 = create_qhbox_with_widgets([
-            self.reset_frame_btn,
-            self.reset_all_btn,
-            self.reset_tracker_frame_btn,
-            self.reset_all_trackers_btn,
-            self.delete_next_occurrences_btn,
-            self.delete_prev_occurrences_btn,
-        ])
-        action_row_2.addStretch()
+        action_row.addStretch()
 
         bottom_layout.addWidget(bottom_splitter)
-        bottom_layout.addLayout(action_row_1)
-        bottom_layout.addLayout(action_row_2)
+        bottom_layout.addLayout(action_row)
 
     def _init_widgets(self) -> None:
         # --- UI Elements: Data tab (Detected objects, Tracking results) ---
@@ -78,16 +68,16 @@ class BottomDataPanelContainer(QWidget):
         # --- UI Elements: Action Row 1 ---
         self.edit_item_btn = QPushButton("Edit Selected")
         self.delete_item_btn = QPushButton("Delete Selected")
-        self.copy_to_next_btn = QPushButton("Dup To Next")
-        self.copy_to_prev_btn = QPushButton("Dup To Prev")
+        self.copy_to_next_btn = QPushButton("Dup to next")
+        self.copy_to_prev_btn = QPushButton("Dup to prev")
 
         # --- UI Elements: Action Row 2 ---
         self.reset_frame_btn = QPushButton("Reset Review (Frame)")
         self.reset_all_btn = QPushButton("Reset Review (All)")
         self.reset_tracker_frame_btn = QPushButton("Reset Trackers (Frame)")
         self.reset_all_trackers_btn = QPushButton("Reset Trackers (All)")
-        self.delete_next_occurrences_btn = QPushButton("Delete Next Occurrences")
-        self.delete_prev_occurrences_btn = QPushButton("Delete Prev Occurrences")
+        self.delete_next_occurrences_btn = QPushButton("Delete Next Occurences")
+        self.delete_prev_occurrences_btn = QPushButton("Delete Prev Occurences")
 
         # --- UI Elements: Opened files (session) ---
         self.session_file_list = QListWidget()

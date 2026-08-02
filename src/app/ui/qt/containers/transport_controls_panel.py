@@ -29,6 +29,8 @@ class TransportControlsPanel(QVBoxLayout):
         self.pause_btn = QPushButton("Pause")
         self.previous_btn = QPushButton("Previous Frame")
         self.next_btn = QPushButton("Next Frame")
+        self.rotate_ccw_btn = QPushButton("Rotate CCW")
+        self.rotate_cw_btn = QPushButton("Rotate CW")
         self.seek_slider = QSlider(Qt.Orientation.Horizontal)
 
         self.frame_label = QLabel("Waiting for user to load video(s).")
@@ -46,6 +48,8 @@ class TransportControlsPanel(QVBoxLayout):
         btn_row.addWidget(self.pause_btn)
         btn_row.addWidget(self.previous_btn)
         btn_row.addWidget(self.next_btn)
+        btn_row.addWidget(self.rotate_ccw_btn)
+        btn_row.addWidget(self.rotate_cw_btn)
         btn_row.addStretch()
         btn_row.addWidget(self.frame_label)
 
@@ -53,6 +57,8 @@ class TransportControlsPanel(QVBoxLayout):
 
     def _connect_signals(self) -> None:
         self.seek_slider.sliderReleased.connect(self._emit_seek_pos)
+        self.rotate_ccw_btn.clicked.connect(self._on_rotate_ccw_clicked)
+        self.rotate_cw_btn.clicked.connect(self._on_rotate_cw_clicked)
 
     @Slot()
     def _emit_seek_pos(self):
@@ -60,12 +66,24 @@ class TransportControlsPanel(QVBoxLayout):
         logger.trace(f"Seek requested: {idx}")
         self.seek_pos_changed.emit(idx)
 
+    @Slot()
+    def _on_rotate_ccw_clicked(self) -> None:
+        """Temporary placeholder until rotation flow is reconnected to session/video state."""
+        logger.warning("Rotate CCW clicked, but rotation handling is not wired yet.")
+
+    @Slot()
+    def _on_rotate_cw_clicked(self) -> None:
+        """Temporary placeholder until rotation flow is reconnected to session/video state."""
+        logger.warning("Rotate CW clicked, but rotation handling is not wired yet.")
+
     @Slot(bool)
     def update_video_related_widgets_state(self, is_enabled: bool = False) -> None:
         for widget in (self.play_btn,
                     self.pause_btn,
                     self.previous_btn,
                     self.next_btn,
+                    self.rotate_ccw_btn,
+                    self.rotate_cw_btn,
                     self.seek_slider):
             widget.setEnabled(is_enabled)
 

@@ -68,8 +68,6 @@ class ExportHandler(QObject):
     
     def _connect_signals(self) -> None:
         self._window.right_panel.connect_signals_to_export_handler(self)
-        self._window.top_row.export_all_btn.clicked.connect(self.on_export_all)
-        self._window.top_row.export_all_action.triggered.connect(self.on_export_all)
 
     @property
     def _export_worker(self) -> ExportWorkerInterface:
@@ -194,8 +192,8 @@ class ExportHandler(QObject):
         Export current session video with annotations to file.
     
         Note:
-            Triggered by right panel or top row ``export`` button click.
-    
+            Triggered by right panel ``export_btn.clicked``.
+
             Flow:
                 on_export() [this slot]
                   ├── Validate session is selected
@@ -285,8 +283,8 @@ class ExportHandler(QObject):
         Batch export all open sessions with configurable output paths.
     
         Note:
-            Triggered by top row ``export_all_btn.clicked`` or menu action.
-    
+            Triggered by right panel ``export_all_btn.clicked`` or File menu action.
+
             Flow:
                 on_export_all() [this slot]
                   ├── Validate videos are open

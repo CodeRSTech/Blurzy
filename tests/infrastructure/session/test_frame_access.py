@@ -109,3 +109,45 @@ def test_sequential_miss_times_out_without_seek():
     assert state.current_frame_data is None
 
 
+def test_get_current_frame_returns_cached_state_without_decode_lookup():
+    """Current frame helper should reuse current_frame_data when already available."""
+    accessor = SessionFrameAccessor(timeout_seconds=0.05, poll_interval_seconds=0.01)
+    state = _StateStub(frame_count=5, current_index=2)
+    state.current_frame_data = "cached-current"
+    worker = MagicMock(name="decode_worker")
+
+    result = accessor.get_current_frame(session_state=cast(Any, state), decode_worker=worker)
+
+    assert result == "cached-current"
+    worker.get_cached_frame_at_index.assert_not_called()
+
+
+def test_get_current_frame_resolves_when_state_cache_empty():
+    """Current frame helper should resolve missing cache through indexed lookup."""
+    accessor = SessionFrameAccessor(timeout_seconds=0.05, poll_interval_seconds=0.01)
+    state = _StateStub(frame_count=6, current_index=3)
+    worker = MagicMock(name="decode_worker")
+    worker.get_cached_frame_at_index.return_value = "frame-3"
+
+    result = accessor.get_current_frame(session_state=cast(Any, state), decode_worker=worker)
+
+    assert result == "frame-3"
+    assert state.current_frame_data == "frame-3"
+
+
+def test_next_previous_and_buffered_helpers_use_relative_indices():
+    """Navigation helpers should map to current-index +/- 1 consistently."""
+    accessor = SessionFrameAccessor(timeout_seconds=0.05, poll_interval_seconds=0.01)
+    state = _StateStub(frame_count=10, current_index=4)
+    worker = MagicMock(name="decode_worker")
+    worker.get_cached_frame_at_index.side_effect = lambda idx: f"frame-{idx}"
+
+    next_result = accessor.get_next_frame(session_state=cast(Any, state), decode_worker=worker)
+    prev_result = accessor.get_previous_frame(session_state=cast(Any, state), decode_worker=worker)
+    buffered_result = accessor.get_buffered_frame(session_state=cast(Any, state), decode_worker=worker)
+
+    assert next_result == "frame-5"
+    assert prev_result == "frame-4"
+    assert buffered_result == "frame-5"
+
+

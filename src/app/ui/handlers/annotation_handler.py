@@ -116,18 +116,18 @@ class AnnotationHandler(QObject):
             (preview_container.bbox_edited, self.on_preview_bbox_edited),
             (preview_container.bbox_deleted, self.on_preview_bbox_deleted),
             (preview_container.context_action_triggered, self.on_preview_context_action),
-            # Action Row 1 Buttons
+            # Bottom panel action row buttons
             (bottom_panel.edit_item_btn.clicked, self.on_edit_selected),
             (bottom_panel.delete_item_btn.clicked, self.on_delete_selected),
-            (bottom_panel.copy_to_next_btn.clicked, self.on_copy_to_next),
-            # Action Row 2 Buttons
+            (bottom_panel.delete_next_occurrences_btn.clicked, self.on_delete_next_occurrences),
+            (bottom_panel.delete_prev_occurrences_btn.clicked, self.on_delete_prev_occurrences),
             (bottom_panel.copy_to_prev_btn.clicked, self.on_copy_to_prev),
+            (bottom_panel.copy_to_next_btn.clicked, self.on_copy_to_next),
+            # Reset actions are exposed in the Edit menu but routed to these same buttons.
             (bottom_panel.reset_frame_btn.clicked, self.on_reset_frame),
             (bottom_panel.reset_all_btn.clicked, self.on_reset_all),
             (bottom_panel.reset_tracker_frame_btn.clicked, self.on_reset_tracker_frame),
             (bottom_panel.reset_all_trackers_btn.clicked, self.on_reset_all_trackers),
-            (bottom_panel.delete_next_occurrences_btn.clicked, self.on_delete_next_occurrences),
-            (bottom_panel.delete_prev_occurrences_btn.clicked, self.on_delete_prev_occurrences),
         ]:
             signal.connect(slot)
 

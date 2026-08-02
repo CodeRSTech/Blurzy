@@ -5,15 +5,18 @@ from dataclasses import dataclass
 from typing import final, override
 
 from PySide6.QtCore import Qt, Signal, Slot
-from PySide6.QtGui import QCloseEvent
+from PySide6.QtGui import QAction, QActionGroup, QCloseEvent, QColor, QPalette
 from PySide6.QtWidgets import (
+    QApplication,
     QButtonGroup,
+    QFileDialog,
     QLabel,
     QMainWindow,
     QMessageBox,
     QRadioButton,
     QSplitter,
     QStatusBar,
+    QStyleFactory,
     QToolBar,
     QVBoxLayout,
     QWidget,
@@ -27,7 +30,6 @@ from app.ui.qt.containers import (
     BottomDataPanelContainer,
     PreviewContainer,
     RightControlPanel,
-    TopRow,
     TransportControlsPanel,
 )
 from app.ui.qt.utilities.helpers import create_progress_bar
@@ -50,7 +52,7 @@ class _WindowSplitterDefaults:
 class MainWindow(QMainWindow):
     """Alternative window shell that preserves the current UI API while using a cleaner layout assembly."""
 
-    open_file_requested = Signal()
+    open_videos_requested = Signal(list)
     tool_mode_changed = Signal(ToolMode)
     session_selected = Signal(object)
 
@@ -66,6 +68,8 @@ class MainWindow(QMainWindow):
 
         self._init_mode_controls()
         self._init_sections()
+        self._init_menu_actions()
+        self._build_menu_bar()
         self._build_toolbar()
         self._build_ui()
         self._build_status_bar()
@@ -94,7 +98,6 @@ class MainWindow(QMainWindow):
 
     def _init_sections(self) -> None:
         self.preview_container = PreviewContainer()
-        self.top_row = TopRow(self)
         self.right_panel = RightControlPanel(self)
         self.bottom_panel = BottomDataPanelContainer(self)
         self.transport_panel = TransportControlsPanel(self)
@@ -116,6 +119,51 @@ class MainWindow(QMainWindow):
             text_visible=True,
             visible=False,
         )
+
+    def _init_menu_actions(self) -> None:
+        """Initialize top-level menu actions once so handlers can reuse stable action objects."""
+        self.open_videos_action = QAction("Open Videos...", self)
+        self.open_videos_action.setShortcut("Ctrl+O")
+        self.open_videos_action.setStatusTip("Open one or more video files")
+
+        self.reset_trackers_current_frame_action = QAction("Reset at current frame", self)
+        self.reset_trackers_all_frames_action = QAction("Reset for all frames", self)
+        self.reset_detections_current_frame_action = QAction("Reset at current frame", self)
+        self.reset_detections_all_frames_action = QAction("Reset for all frames", self)
+
+        # Theme actions: keep them checkable so the active style/theme is always visible.
+        self._theme_style_action_group = QActionGroup(self)
+        self._theme_style_action_group.setExclusive(True)
+        self._qt_style_actions: dict[str, QAction] = {}
+
+        for style_name in sorted(QStyleFactory.keys(), key=str.casefold):
+            style_action = QAction(style_name, self)
+            style_action.setCheckable(True)
+            self._theme_style_action_group.addAction(style_action)
+            self._qt_style_actions[style_name] = style_action
+
+        self._theme_palette_action_group = QActionGroup(self)
+        self._theme_palette_action_group.setExclusive(True)
+
+        self.theme_system_action = QAction("System", self)
+        self.theme_light_action = QAction("Light", self)
+        self.theme_dark_action = QAction("Dark", self)
+
+        for palette_action in (self.theme_system_action, self.theme_light_action, self.theme_dark_action):
+            palette_action.setCheckable(True)
+            self._theme_palette_action_group.addAction(palette_action)
+
+        app = QApplication.instance()
+        self._system_palette = QPalette(app.palette()) if app is not None else QPalette()
+        self._active_palette_theme = "System"
+        self.theme_system_action.setChecked(True)
+
+        if app is not None:
+            active_style_name = app.style().objectName().casefold()
+            for style_name, style_action in self._qt_style_actions.items():
+                if style_name.casefold() == active_style_name:
+                    style_action.setChecked(True)
+                    break
 
     @property
     def active_tab_index(self) -> VideoDataLayerGroup:
@@ -151,8 +199,8 @@ class MainWindow(QMainWindow):
 
     def set_export_busy(self, is_busy: bool, status_text: str | None = None) -> None:
         self.right_panel.export_btn.setEnabled(not is_busy)
-        self.top_row.export_all_btn.setEnabled(not is_busy)
-        self.top_row.export_all_action.setEnabled(not is_busy)
+        self.right_panel.export_all_btn.setEnabled(not is_busy)
+        self.right_panel.export_all_action.setEnabled(not is_busy)
         self.export_progress_bar.setVisible(is_busy)
         self._reset_export_progress_bar()
         if not is_busy:
@@ -160,6 +208,18 @@ class MainWindow(QMainWindow):
             self._reset_export_overall_progress_bar()
         if status_text is not None:
             self.set_status_text(status_text)
+
+    @Slot()
+    def _choose_video_files(self) -> None:
+        """Open a file chooser and emit selected paths for SessionHandler."""
+        paths, _ = QFileDialog.getOpenFileNames(
+            self,
+            "Open Video Files",
+            "",
+            "Video Files (*.mp4 *.avi *.mov *.mkv *.wmv *.m4v);;All Files (*)",
+        )
+        if paths:
+            self.open_videos_requested.emit(paths)
 
     def set_export_progress(self, current: int, total: int, label: str = "Exporting") -> None:
         maximum = max(total, 1)
@@ -248,28 +308,46 @@ class MainWindow(QMainWindow):
 
     def _build_toolbar(self) -> None:
         toolbar = QToolBar("Main")
-        toolbar.addAction(self.top_row.open_action)
-        toolbar.addSeparator()
         toolbar.addWidget(self.add_mode_btn)
         toolbar.addWidget(self.edit_mode_btn)
         toolbar.addWidget(self.delete_mode_btn)
-        toolbar.addSeparator()
-        toolbar.addAction(self.top_row.export_all_action)
         self.addToolBar(toolbar)
+
+    def _build_menu_bar(self) -> None:
+        """Build a traditional menu bar for file/session level actions."""
+        file_menu = self.menuBar().addMenu("&File")
+        file_menu.addAction(self.open_videos_action)
+        file_menu.addSeparator()
+        file_menu.addAction(self.right_panel.export_all_action)
+
+        edit_menu = self.menuBar().addMenu("&Edit")
+        reset_trackers_menu = edit_menu.addMenu("Reset Trackers")
+        reset_trackers_menu.addAction(self.reset_trackers_current_frame_action)
+        reset_trackers_menu.addAction(self.reset_trackers_all_frames_action)
+
+        reset_detections_menu = edit_menu.addMenu("Reset Detections")
+        reset_detections_menu.addAction(self.reset_detections_current_frame_action)
+        reset_detections_menu.addAction(self.reset_detections_all_frames_action)
+
+        window_menu = self.menuBar().addMenu("&Window")
+        themes_menu = window_menu.addMenu("Themes")
+
+        qt_styles_menu = themes_menu.addMenu("Qt Styles")
+        for style_name in sorted(self._qt_style_actions.keys(), key=str.casefold):
+            qt_styles_menu.addAction(self._qt_style_actions[style_name])
+
+        themes_menu.addSeparator()
+        themes_menu.addAction(self.theme_system_action)
+        themes_menu.addAction(self.theme_light_action)
+        themes_menu.addAction(self.theme_dark_action)
 
     def _build_ui(self) -> None:
         central = QWidget()
         root_layout = QVBoxLayout(central)
         root_layout.setContentsMargins(6, 6, 6, 6)
         root_layout.setSpacing(6)
-        root_layout.addWidget(self._build_top_row_host())
         root_layout.addWidget(self._build_main_splitter(), 1)
         self.setCentralWidget(central)
-
-    def _build_top_row_host(self) -> QWidget:
-        host = QWidget(self)
-        host.setLayout(self.top_row.as_layout())
-        return host
 
     def _build_main_splitter(self) -> QSplitter:
         splitter = QSplitter(Qt.Orientation.Horizontal)
@@ -311,9 +389,88 @@ class MainWindow(QMainWindow):
         self.tool_group.idClicked.connect(self._emit_tool_mode_changed)
         self.bottom_panel.tab_changed.connect(self._on_tab_changed)
         self.bottom_panel.session_selected.connect(self.session_selected.emit)
-        self.top_row.open_btn.clicked.connect(self.open_file_requested.emit)
-        self.top_row.open_action.triggered.connect(self.open_file_requested.emit)
+        self.open_videos_action.triggered.connect(self._choose_video_files)
+        # Route menu reset actions through the existing reset buttons to preserve handler connections.
+        self.reset_trackers_current_frame_action.triggered.connect(self.bottom_panel.reset_tracker_frame_btn.click)
+        self.reset_trackers_all_frames_action.triggered.connect(self.bottom_panel.reset_all_trackers_btn.click)
+        self.reset_detections_current_frame_action.triggered.connect(self.bottom_panel.reset_frame_btn.click)
+        self.reset_detections_all_frames_action.triggered.connect(self.bottom_panel.reset_all_btn.click)
+
+        for style_name, style_action in self._qt_style_actions.items():
+            style_action.triggered.connect(lambda checked, style=style_name: self._apply_qt_style(style))
+
+        self.theme_system_action.triggered.connect(lambda checked: self._apply_palette_theme("System"))
+        self.theme_light_action.triggered.connect(lambda checked: self._apply_palette_theme("Light"))
+        self.theme_dark_action.triggered.connect(lambda checked: self._apply_palette_theme("Dark"))
         logger.debug("Modular UI signals connected.")
+
+    def _apply_qt_style(self, style_name: str) -> None:
+        """Apply one of Qt's built-in styles globally and keep the selected color theme in sync."""
+        app = QApplication.instance()
+        if app is None:
+            logger.warning("Cannot apply Qt style '{}': QApplication instance is unavailable.", style_name)
+            return
+
+        app.setStyle(style_name)
+
+        # Re-derive the light palette from the active style so color themes remain consistent.
+        self._apply_palette_theme(self._active_palette_theme)
+        logger.info("Applied Qt style: {}", style_name)
+
+    def _apply_palette_theme(self, theme_name: str) -> None:
+        """Apply an app-wide color palette theme (System/Light/Dark)."""
+        app = QApplication.instance()
+        if app is None:
+            logger.warning("Cannot apply palette theme '{}': QApplication instance is unavailable.", theme_name)
+            return
+
+        if theme_name == "System":
+            app.setPalette(self._system_palette)
+            self._active_palette_theme = "System"
+            self.theme_system_action.setChecked(True)
+            logger.info("Applied palette theme: System")
+            return
+
+        if theme_name == "Light":
+            app.setPalette(app.style().standardPalette())
+            self._active_palette_theme = "Light"
+            self.theme_light_action.setChecked(True)
+            logger.info("Applied palette theme: Light")
+            return
+
+        if theme_name == "Dark":
+            app.setPalette(self._build_dark_palette())
+            self._active_palette_theme = "Dark"
+            self.theme_dark_action.setChecked(True)
+            logger.info("Applied palette theme: Dark")
+            return
+
+        logger.warning("Unknown palette theme requested: {}", theme_name)
+
+    @staticmethod
+    def _build_dark_palette() -> QPalette:
+        """Return a conservative dark palette compatible with Qt widgets and menus."""
+        palette = QPalette()
+
+        palette.setColor(QPalette.ColorRole.Window, QColor(35, 35, 35))
+        palette.setColor(QPalette.ColorRole.WindowText, QColor(220, 220, 220))
+        palette.setColor(QPalette.ColorRole.Base, QColor(25, 25, 25))
+        palette.setColor(QPalette.ColorRole.AlternateBase, QColor(45, 45, 45))
+        palette.setColor(QPalette.ColorRole.ToolTipBase, QColor(45, 45, 45))
+        palette.setColor(QPalette.ColorRole.ToolTipText, QColor(220, 220, 220))
+        palette.setColor(QPalette.ColorRole.Text, QColor(220, 220, 220))
+        palette.setColor(QPalette.ColorRole.Button, QColor(45, 45, 45))
+        palette.setColor(QPalette.ColorRole.ButtonText, QColor(220, 220, 220))
+        palette.setColor(QPalette.ColorRole.BrightText, QColor(255, 0, 0))
+        palette.setColor(QPalette.ColorRole.Link, QColor(42, 130, 218))
+        palette.setColor(QPalette.ColorRole.Highlight, QColor(42, 130, 218))
+        palette.setColor(QPalette.ColorRole.HighlightedText, QColor(240, 240, 240))
+
+        palette.setColor(QPalette.ColorGroup.Disabled, QPalette.ColorRole.Text, QColor(130, 130, 130))
+        palette.setColor(QPalette.ColorGroup.Disabled, QPalette.ColorRole.ButtonText, QColor(130, 130, 130))
+        palette.setColor(QPalette.ColorGroup.Disabled, QPalette.ColorRole.WindowText, QColor(130, 130, 130))
+
+        return palette
 
     def _reset_export_progress_bar(self) -> None:
         self.export_progress_bar.setValue(0)

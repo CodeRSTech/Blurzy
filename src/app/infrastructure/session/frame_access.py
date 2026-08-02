@@ -78,3 +78,58 @@ class SessionFrameAccessor:
         logger.error("Timeout waiting for worker to supply frame {}", safe_idx)
         return None
 
+    def get_current_frame(
+        self,
+        *,
+        session_state: SessionState,
+        decode_worker: VideoDecodeWorker,
+    ) -> RGBFrame | None:
+        """Return frame at current playback position.
+
+        If ``current_frame_data`` is empty, this method resolves it from the
+        decode cache and stores it back into the session state.
+        """
+        if session_state.current_frame_data is None:
+            current_index = session_state.playback.current_frame_index
+            session_state.current_frame_data = self.get_frame_by_index(
+                session_state=session_state,
+                decode_worker=decode_worker,
+                frame_index=current_index,
+            )
+        return session_state.current_frame_data
+
+    def get_next_frame(
+        self,
+        *,
+        session_state: SessionState,
+        decode_worker: VideoDecodeWorker,
+    ) -> RGBFrame | None:
+        """Return next frame relative to current playback index."""
+        return self.get_frame_by_index(
+            session_state=session_state,
+            decode_worker=decode_worker,
+            frame_index=session_state.playback.current_frame_index + 1,
+        )
+
+    def get_previous_frame(
+        self,
+        *,
+        session_state: SessionState,
+        decode_worker: VideoDecodeWorker,
+    ) -> RGBFrame | None:
+        """Return previous frame relative to current playback index."""
+        return self.get_frame_by_index(
+            session_state=session_state,
+            decode_worker=decode_worker,
+            frame_index=session_state.playback.current_frame_index - 1,
+        )
+
+    def get_buffered_frame(
+        self,
+        *,
+        session_state: SessionState,
+        decode_worker: VideoDecodeWorker,
+    ) -> RGBFrame | None:
+        """Return lookahead frame (current index + 1) from decode cache flow."""
+        return self.get_next_frame(session_state=session_state, decode_worker=decode_worker)
+

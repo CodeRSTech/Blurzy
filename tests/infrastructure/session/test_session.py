@@ -88,3 +88,41 @@ def test_get_frame_by_index_delegates_to_frame_accessor():
     )
 
 
+def test_frame_navigation_helpers_delegate_to_frame_accessor():
+    """Session frame helpers should stay as thin wrappers over frame accessor."""
+    session = _make_session()
+    fake_state = MagicMock(name="state")
+    fake_state.playback.current_frame_index = 5
+    fake_worker = MagicMock(name="worker")
+    session.state = fake_state
+    session.video_decode_worker = fake_worker
+    session._frame_accessor = MagicMock(name="frame_accessor")
+
+    session._frame_accessor.get_current_frame.return_value = "current"
+    session._frame_accessor.get_next_frame.return_value = "next"
+    session._frame_accessor.get_previous_frame.return_value = "prev"
+    session._frame_accessor.get_buffered_frame.return_value = "buffered"
+
+    assert session.get_current_frame() == "current"
+    assert session.get_next_frame() == "next"
+    assert session.get_previous_frame() == "prev"
+    assert session.get_buffered_frame() == "buffered"
+
+    session._frame_accessor.get_current_frame.assert_called_once_with(
+        session_state=fake_state,
+        decode_worker=fake_worker,
+    )
+    session._frame_accessor.get_next_frame.assert_called_once_with(
+        session_state=fake_state,
+        decode_worker=fake_worker,
+    )
+    session._frame_accessor.get_previous_frame.assert_called_once_with(
+        session_state=fake_state,
+        decode_worker=fake_worker,
+    )
+    session._frame_accessor.get_buffered_frame.assert_called_once_with(
+        session_state=fake_state,
+        decode_worker=fake_worker,
+    )
+
+

@@ -29,7 +29,7 @@ class SessionHandler(QObject):
 
     Notes:
         Signal flow:
-            - Receives signals from ``TopRow`` (file selection) and
+            - Receives signals from ``MainWindow`` (file selection/menu) and
               ``BottomPanel`` (session selection).
             - Delegates to ``Application`` and ``UIController`` to perform actions.
             - Triggers UI updates to reflect session state changes.
@@ -54,9 +54,9 @@ class SessionHandler(QObject):
     def _connect_signals(self) -> None:
         """Wire all upstream signals to their corresponding slots."""
         # ====================================================================
-        # 1. CONNECT TOP ROW SIGNALS
+        # 1. CONNECT MAIN WINDOW SIGNALS
         # ====================================================================
-        self._controller.window.top_row.open_videos_requested.connect(
+        self._controller.window.open_videos_requested.connect(
             self.on_open_videos
         )
 
@@ -82,8 +82,8 @@ class SessionHandler(QObject):
 
         Notes:
             Signal cascade (complete flow):
-                1. ``TopRow.choose_button.clicked`` triggers file selection UI.
-                2. ``TopRow.choose_video_files()`` emits ``open_videos_requested(paths)``.
+                1. ``MainWindow`` File menu ``Open Videos`` action triggers file selection UI.
+                2. ``MainWindow._choose_video_files()`` emits ``open_videos_requested(paths)``.
                 3. ``SessionHandler.on_open_videos(paths)`` receives the signal.
                 4. Existing playback is stopped.
                 5. ``App.open_videos(paths)`` creates sessions via session manager.
@@ -93,7 +93,7 @@ class SessionHandler(QObject):
                 9. Active session is selected and seek-complete hookup is attached.
 
             Triggered by:
-                ``TopRow.open_videos_requested`` carrying ``list[str]``.
+                ``MainWindow.open_videos_requested`` carrying ``list[str]``.
 
             Effects:
                 - Prevents playback conflicts.

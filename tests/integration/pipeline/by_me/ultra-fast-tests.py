@@ -51,8 +51,8 @@ def test_open_video_and_play(qtbot, qapp):
     # 2. ACT: Mock the File Dialog and trigger the Open Action
     # This intercepts Qt's file explorer and forces it to return our test_path instantly.
     with patch("PySide6.QtWidgets.QFileDialog.getOpenFileNames", return_value=([test_path], "")):
-        # Trigger the action exactly as if the user clicked "File -> Open"
-        window.top_row.open_action.trigger()
+        # Trigger the action exactly as if the user clicked "File -> Open Videos"
+        window.open_videos_action.trigger()
 
     session = app_core.get_session_by_id(s_id)
     worker = session.video_decode_worker
