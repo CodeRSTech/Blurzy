@@ -26,7 +26,7 @@ or share detections between different sessions or projects.
 
 This will be the FEW known instances where we will allow users to directly manipulate the data in Layer A and Layer B.
 
-Two new buttons are already added in the UI (in `src/app/ui/qt/containers/right_panel.py`):
+Two new buttons are already added in the UI (in `../src/app/ui/qt/sections/right_panel.py`):
 
 line 95-116:
 ```python

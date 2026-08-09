@@ -158,7 +158,7 @@ class ExportAllWorker(QThread):
         session = app.sm.get_session_by_id(s_id)
 
         # Detection
-        # if not session.state.raw_boxes_by_frame:
+        # if not session.view_state.raw_boxes_by_frame:
         if not session.has_boxes_for_layer(VideoDataLayer.A):
 
             if self._stop_requested:
@@ -174,7 +174,7 @@ class ExportAllWorker(QThread):
                 return False
 
         # Tracking
-        # if not session.state.tracked_boxes_by_frame:
+        # if not session.view_state.tracked_boxes_by_frame:
         if not session.has_boxes_for_layer(VideoDataLayer.C):
             if self._stop_requested:
                 return False

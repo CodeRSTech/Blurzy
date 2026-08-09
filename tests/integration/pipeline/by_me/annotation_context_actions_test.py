@@ -19,7 +19,7 @@
 #     test_path = "D:/minmal_people_detection.mp4"
 #     test_model = "YOLOv8n"
 #     model_change_dialog_path = (
-#         "app.ui.qt.dialogue_boxes.model_change_dlg.ModelChangeWarningDialog.exec"
+#         "app.ui.qt.dialogs.model_change_dlg.ModelChangeWarningDialog.exec"
 #     )
 #
 #     controller.session_handler.on_open_videos([test_path])

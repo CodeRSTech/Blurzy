@@ -1,4 +1,4 @@
-"""Frame rendering and UI state management handler."""
+"""Frame rendering and UI view_state management handler."""
 
 from __future__ import annotations
 
@@ -27,7 +27,7 @@ class UIHandler:
     #   class UIHandler(QObject): ...
     # Verify this doesn't prevent signal connections elsewhere in the codebase.
     """
-    Manages frame rendering and UI state updates.
+    Manages frame rendering and UI view_state updates.
 
     Responsibilities:
         - Fetch and render video frames from session cache.
@@ -75,14 +75,14 @@ class UIHandler:
 
     def update_status_bar(self) -> None:
         """
-        Update status bar with session metadata and playback state.
+        Update status bar with session metadata and playback view_state.
     
         Note:
             Flow:
                 update_status_bar()
                   ├── Fetch active session
                   ├── Extract metadata (filename, resolution, FPS, frame count)
-                  ├── Extract playback state (current frame, playing status)
+                  ├── Extract playback view_state (current frame, playing status)
                   └──> Format and set status text
     
             Status Format: ``filename | 1920x1080 | 30.00 fps | 1/1500 frames | Playing | Model: yolov8n``.
@@ -140,7 +140,7 @@ class UIHandler:
             Handles:
                 Frame acquisition from session cache.
                 Bounding detection drawing (detection + tracking overlays).
-                UI state sync (frame label, seek position, status text).
+                UI view_state sync (frame label, seek position, status text).
         """
         # ====================================================================
         # 1. GET SESSION AND CURRENT FRAME
@@ -219,7 +219,7 @@ class UIHandler:
         self, frame_label_text: str, idx: int, max_frame_idx: int, status_text: str | None = None
     ) -> None:
         """
-        Synchronize UI controls with frame playback state.
+        Synchronize UI controls with frame playback view_state.
     
         Args:
             frame_label_text (str): Text to display in frame counter (e.g., "Frame 123/1500").
@@ -298,5 +298,5 @@ class UIHandler:
             self.set_boxes_for_tab(boxes_to_draw, tab_index)
         except Exception:
             logger.opt(exception=True).error(
-                "Error updating UI state with boxes",
+                "Error updating UI view_state with boxes",
             )

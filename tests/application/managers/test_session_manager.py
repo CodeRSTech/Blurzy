@@ -76,7 +76,8 @@ def test_create_session_from_video_path_does_not_store_partial_session_on_failur
     initializer.initialize.side_effect = RuntimeError("bootstrap failed")
     manager = SessionManager(app, session_initializer=initializer)
 
-    with patch("app.infrastructure.session.session.SessionDataStore", return_value=MagicMock(name="data_store")):
+    # Path : app/infrastructure/session/session_data_store.py
+    with patch("app.infrastructure.session.session_data_store.SessionDataStore", return_value=MagicMock(name="data_store")):
         with pytest.raises(RuntimeError, match="bootstrap failed"):
             manager.create_session_from_video_path("/videos/demo.mp4")
 

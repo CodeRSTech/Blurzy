@@ -11,7 +11,7 @@ from typing import TYPE_CHECKING, final
 
 from app.domain.session import SessionState
 from app.infrastructure.video.decode_worker import VideoDecodeWorker
-from app.infrastructure.video.vid_reader import VideoReader
+from app.infrastructure.video.reader import VideoReader
 from app.shared.logging_cfg import get_logger
 
 if TYPE_CHECKING:
@@ -38,7 +38,7 @@ class SessionInitializer:
         return f"<{self.__class__.__name__}>"
 
     def initialize(self, session: Session) -> Session:
-        """Attach the video reader, runtime state, and decode worker.
+        """Attach the video reader, runtime view_state, and decode worker.
 
         Args:
             session: The bare ``Session`` shell created by ``SessionManager``.

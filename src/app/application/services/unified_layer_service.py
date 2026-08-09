@@ -9,6 +9,13 @@ from app.domain import VideoDataLayer, BoxSource, BBoxXYXYTuple, str_iterable_as
     VideoDataLayerGroup, Direction, FrameBoxesViewModel, BBoxViewModel
 from app.domain.helpers.functions import new_passes_filter
 from app.shared import get_logger
+from app.shared.exceptions import (
+    ImmutableLayerOperationException,
+    UnknownFrameItemException,
+    UnsupportedDirectionException,
+    UnsupportedLayerOperationException,
+    UnsupportedTabException,
+)
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -89,7 +96,7 @@ class UnifiedLayerService:
     #     changed_frames = session.data.apply_filters_to_layers(
     #         source_layer_name=source_layer_name,
     #         target_layer_name=target_layer_name,
-    #         session_settings=session.state.settings
+    #         session_settings=session.view_state.settings
     #     )
     #
     #     return changed_frames
@@ -113,7 +120,7 @@ class UnifiedLayerService:
         elif layer_name == VideoDataLayer.D:
             source_layer_name = VideoDataLayer.C
         else:
-            raise ValueError(f"Unsupported layer : {layer_name}", layer_name)
+            raise UnsupportedLayerOperationException("apply_filters_to_layer_by_layer", layer_name)
         session = self._app_adapter.get_session_by_id(s_id)
 
         changed_frames = session.data.apply_filters_to_layers(
@@ -143,7 +150,7 @@ class UnifiedLayerService:
         # Preprocessing and safety checks
         # ============================================================
         if layer_name not in (VideoDataLayer.B, VideoDataLayer.D):
-            raise ValueError(f"Unsupported layer name: {layer_name}")
+            raise UnsupportedLayerOperationException("copy_boxes_to_adjacent_frame_by_direction", layer_name)
 
         keys = str_iterable_as_set_without_null_values(item_keys)
         session = self._app_adapter.get_session_by_id(s_id)
@@ -154,7 +161,7 @@ class UnifiedLayerService:
         elif direction == Direction.PREV:
             target_idx = max(current_idx - 1, 0)
         else:
-            raise ValueError(f"Unsupported direction: {direction}")
+            raise UnsupportedDirectionException(direction)
 
         if target_idx == current_idx:
             return
@@ -242,7 +249,7 @@ class UnifiedLayerService:
             )
             boxes = session.data.get_boxes_for_layer_at_frame_index_as_list(VideoDataLayer.D, frame_index)
         else:
-            raise ValueError(f"Unsupported tab name: {tab}")
+            raise UnsupportedTabException(tab)
 
         return FrameBoxesViewModel(frame_data_boxes=boxes)
 
@@ -260,11 +267,11 @@ class UnifiedLayerService:
 
             return next((i for i in boxes if i.key == key), None)
         else:
-            raise ValueError(f"Unsupported layer name: {layer_name}")
+            raise UnsupportedLayerOperationException("get_layer_box_by_key", layer_name)
 
     def reset_all_for_layer(self, s_id: SessionId, layer_name: VideoDataLayer) -> None:
         if layer_name == VideoDataLayer.A or layer_name == VideoDataLayer.C:
-            raise PermissionError(f"Attempted to reset protected layer: {layer_name}")
+            raise ImmutableLayerOperationException("reset_all_for_layer", layer_name)
         elif layer_name == VideoDataLayer.B or layer_name == VideoDataLayer.D:
             if layer_name == VideoDataLayer.B:
                 source_layer_name = VideoDataLayer.A
@@ -288,11 +295,11 @@ class UnifiedLayerService:
             logger.info("Reset all frames for layer {} for session '{}'", layer_name, s_id)
 
         else:
-            raise ValueError(f"Unsupported layer name: {layer_name}")
+            raise UnsupportedLayerOperationException("reset_all_for_layer", layer_name)
 
     def reset_frame_for_layer(self, s_id: SessionId, layer_name: VideoDataLayer, frame_index: int) -> None:
         if layer_name == VideoDataLayer.A or layer_name == VideoDataLayer.C:
-            raise PermissionError(f"Attempted to reset protected layer: {layer_name}")
+            raise ImmutableLayerOperationException("reset_frame_for_layer", layer_name)
         elif layer_name == VideoDataLayer.B or layer_name == VideoDataLayer.D:
             # ============================================================
             # Get session
@@ -317,7 +324,7 @@ class UnifiedLayerService:
                     VideoDataLayer.D, session.state.settings.min_tracker_confidence, frame_index
                 )
         else:
-            raise ValueError(f"Unsupported layer name: {layer_name}")
+            raise UnsupportedLayerOperationException("reset_frame_for_layer", layer_name)
 
     def change_xyxy_for_boxes_at_current_idx_by_keys_and_dxdy(self, s_id, layer_name, item_keys, dx, dy) -> int:
         # ============================================================
@@ -352,7 +359,7 @@ class UnifiedLayerService:
 
         item = next((i for i in boxes if i.key == item_key), None)
         if item is None:
-            raise ValueError(f"Unknown frame item: {item_key}")
+            raise UnknownFrameItemException(item_key)
 
         item.label = label
         item.bbox_xyxy = bbox_xyxy

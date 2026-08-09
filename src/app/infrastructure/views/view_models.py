@@ -12,7 +12,7 @@ def list_of_session_list_view_models(sessions: list[Session]) -> list[SessionFil
     Convert Session objects to ``SessionFileListViewModel`` for UI list display.
 
     Note:
-        Maps ``session.state.metadata`` to the subtitle format
+        Maps ``session.view_state.metadata`` to the subtitle format
         ``"WxH | FPS fps | N frames"``.
     """
     session_files: list[SessionFileListViewModel] = []

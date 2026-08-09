@@ -1,4 +1,4 @@
-"""Background tracking worker with strategy pattern (Dummy/Hungarian algorithms)."""
+"""Background tracking worker with strategy pattern (Dummy/Hungarian/ByteTrack/DeepSORT)."""
 
 from __future__ import annotations
 
@@ -7,6 +7,8 @@ from typing import Protocol, TYPE_CHECKING
 
 from PySide6.QtCore import QMutex, QMutexLocker, QObject, QThread, Signal
 
+from app.infrastructure.tracking.bytetrack_strategy import ByteTrackStrategy
+from app.infrastructure.tracking.deepsort_strategy import DeepSortStrategy
 from app.infrastructure.tracking.tracking_strategy import HungarianStrategy, DummyTracker
 from app.shared.logging_cfg import get_logger
 
@@ -28,6 +30,8 @@ class TrackerStrategy(Protocol):
 _STRATEGY_MAP: dict[str, type] = {
     "dummy": DummyTracker,
     "hungarian": HungarianStrategy,
+    "bytetrack": ByteTrackStrategy,
+    "deepsort": DeepSortStrategy,
 }
 
 
@@ -35,13 +39,19 @@ class TrackingWorker(QThread):
     """
     Background QThread that runs multi-object tracking on frame detections.
 
+    Strategy behavior in simple words:
+        - ``dummy``: copy detections without real tracking.
+        - ``hungarian``: match by box overlap (IoU) and coast tracks with decay.
+        - ``bytetrack``: prioritize strong matches and use weaker detections to keep IDs stable.
+        - ``deepsort``: match using movement + overlap + appearance features.
+
     Attributes:
         _strategy_name (str): Tracking strategy name, such as ``"dummy"`` or
             ``"hungarian"``.
         _source_data (BoxesByFrameIndex): Deep copy of the input detections.
         _tracked_data (BoxesByFrameIndex): Output tracking results protected by
             ``_mutex``.
-        _mutex (QMutex): Guards tracked output state.
+        _mutex (QMutex): Guards tracked output view_state.
         _stop_requested (bool): True when early stop is requested.
         _is_complete (bool): True after tracking finishes successfully.
         _tracker (TrackerStrategy): Tracking strategy instance.
@@ -91,6 +101,17 @@ class TrackingWorker(QThread):
                 iou_threshold=session_state.settings.min_iou,
                 confidence_decay=session_state.settings.confidence_decay,
                 min_confidence=session_state.settings.min_tracker_confidence
+            )
+        elif strategy_cls is ByteTrackStrategy:
+            self._tracker = ByteTrackStrategy(
+                min_iou=session_state.settings.min_iou,
+                min_confidence=session_state.settings.min_tracker_confidence,
+            )
+        elif strategy_cls is DeepSortStrategy:
+            self._tracker = DeepSortStrategy(
+                min_iou=session_state.settings.min_iou,
+                min_confidence=session_state.settings.min_tracker_confidence,
+                confidence_decay=session_state.settings.confidence_decay,
             )
         else:
             self._tracker = strategy_cls()

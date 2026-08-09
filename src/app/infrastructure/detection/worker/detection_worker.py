@@ -10,7 +10,8 @@ from PySide6.QtCore import QObject, QThread, QMutex, QMutexLocker, Signal
 from app.application.interfaces import DetectionEngineInterface
 from app.domain.detection.result import DetectionResult
 from app.domain.session.session_id import SessionId
-from app.infrastructure.video.vid_reader import VideoReader
+from app.infrastructure.video.reader import VideoReader
+from app.shared.exceptions import EndOfVideoStreamException
 from app.shared.logging_cfg import get_logger
 
 logger = get_logger("Infrastructure->Detection->DetectionWorker")
@@ -27,7 +28,7 @@ class DetectionWorker(QThread):
         _detection_engine (DetectionEngine): YOLO model wrapper used for inference.
         _detections_by_frame_index (dict[int, list[DetectionResult]]): Thread-safe cache
             protected by ``_mutex``.
-        _mutex (QMutex): Guards base detection state.
+        _mutex (QMutex): Guards base detection view_state.
         _stop_requested (bool): True when shutdown is requested.
         _is_complete (bool): True after the full stream is processed.
 
@@ -97,7 +98,7 @@ class DetectionWorker(QThread):
         """Start the detection thread (calls ``run()`` in background)."""
         logger.info("Starting detection worker for {}", self._video_path)
 
-        # Check both our custom flag and the native QThread state
+        # Check both our custom flag and the native QThread view_state
         if super().isRunning():
             logger.info("Detection worker is already running for {}", self._video_path)
             return
@@ -175,7 +176,7 @@ class DetectionWorker(QThread):
             while not self._stop_requested:
                 try:
                     actual_index, frame = reader.read_next_frame()
-                except ValueError:
+                except EndOfVideoStreamException:
                     logger.info("Reached end of video stream for {}, stopping", self._video_path)
                     self._is_complete = True
                     self.stop()
@@ -193,7 +194,6 @@ class DetectionWorker(QThread):
 
                 # 3. If the batch hits 30 frames, push it across the thread boundary!
                 if len(current_batch) >= batch_size:
-                    # TODO: CHECK IT
                     batch_processing_time = time.time() - batch_processing_start_time
                     self.batch_ready.emit(self._s_id, current_batch, batch_processing_time)
                     current_batch = {}  # Reset the batch

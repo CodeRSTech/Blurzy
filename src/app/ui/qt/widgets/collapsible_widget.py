@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from PySide6.QtWidgets import QWidget, QPushButton, QVBoxLayout, QHBoxLayout
 
+from app.ui.qt.shared.layout_shortcuts import create_vbox_layout
+
 
 class CollapsibleBox(QWidget):
     """
@@ -23,12 +25,9 @@ class CollapsibleBox(QWidget):
 
         # Content area holds the actual widgets
         self.content_area: QWidget = QWidget()
-        self.content_layout: QVBoxLayout = QVBoxLayout(self.content_area)
-        self.content_layout.setContentsMargins(15, 5, 5, 10)  # Indent slightly
+        self.content_layout: QVBoxLayout = create_vbox_layout(self.content_area, margins=(15, 5, 5, 10))
 
-        main_layout = QVBoxLayout(self)
-        main_layout.setContentsMargins(0, 0, 0, 0)
-        main_layout.setSpacing(2)
+        main_layout = create_vbox_layout(self, margins=(0, 0, 0, 0), spacing=2)
         main_layout.addWidget(self.toggle_button)
         main_layout.addWidget(self.content_area)
 

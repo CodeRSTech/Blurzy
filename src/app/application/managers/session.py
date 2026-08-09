@@ -6,8 +6,8 @@ from typing import override, TYPE_CHECKING
 from app.application.managers.session_initializer import SessionInitializer
 from app.domain.session import SessionId
 from app.infrastructure.session.session import Session
-from app.infrastructure.video.vid_reader import ZeroStreamsInVideoException
-from app.shared.exceptions import SessionAlreadyExistsException
+from app.infrastructure.video.reader import ZeroStreamsInVideoException
+from app.shared.exceptions import SessionAlreadyExistsException, VideoFileOpenException, VideoStreamStateException
 from app.shared.logging_cfg import get_logger
 
 if TYPE_CHECKING:
@@ -24,7 +24,7 @@ class SessionManager:
     application-layer lifecycle.
 
     The manager keeps session creation and initialization in one place, while
-    the expensive runtime bootstrap (video reader, runtime state, decode
+    the expensive runtime bootstrap (video reader, runtime view_state, decode
     worker) is delegated to ``SessionInitializer``.
     """
 
@@ -103,13 +103,13 @@ class SessionManager:
             # re-raising it might not allow other videos to load properly
             # likely caused by whatever that's calling THIS method.
             logger.error("Zero streams were found while opening video from path: '{}'. Skipping...", path)
-        except Exception:
-            logger.warning("Failed to create session for video: {}; skipped creating session", path)
+        except (VideoFileOpenException, VideoStreamStateException) as exc:
+            logger.warning("Failed to create session for video: {}; skipped creating session. {}", path, exc)
 
     def get_session_by_id(self, s_id: SessionId) -> Session:
         session = self._sessions.get(s_id)
         if session is None:
-            logger.error("Attempted to get state for unknown Session ID: {}", s_id)
+            logger.error("Attempted to get view_state for unknown Session ID: {}", s_id)
             raise KeyError(f"Unknown session id: {s_id}, available: {list(self._sessions.keys())}")
         return session
 
@@ -129,7 +129,7 @@ class SessionManager:
         Flow:
             1. Iterate through all sessions and call their ``close()`` method.
             2. Clear the internal session dictionary.
-            3. Reset the active session ID to an empty state using ``SessionId("")``.
+            3. Reset the active session ID to an empty view_state using ``SessionId("")``.
 
         """
         logger.info("SessionManager closing all sessions")

@@ -6,10 +6,11 @@ from typing import TYPE_CHECKING, final, override
 
 from PySide6.QtCore import QObject, Slot
 
-from app.application.services._layer_coercion import ensure_layer_enum
+from app.application.services.helpers.layer_coercion import ensure_layer_enum
 from app.domain.video.layer import VideoDataLayer
+from app.shared.exceptions import UnsupportedImportExportFormatException, UnsupportedLayerOperationException
 from app.shared.logging_cfg import get_logger
-from app.ui.qt.dialogue_boxes.import_export_dlg import ImportExportDialog
+from app.ui.qt.dialogs.import_export import ImportExportDialog
 
 if TYPE_CHECKING:
     from app.ui.uicontroller import UIController
@@ -24,7 +25,7 @@ class ImportExportHandler(QObject):
     tracking layers (C/D).
 
     Responsibilities:
-        - Open :class:`~app.ui.qt.dialogue_boxes.import_export_dlg.ImportExportDialog`
+        - Open :class:`~app.ui.qt.dialogs.import_export_dlg.ImportExportDialog`
           scoped to the appropriate layers when either "Import / Export" button is clicked.
         - Dispatch the user's choice to
           :meth:`Application.import_layer` or :meth:`Application.export_layer`.
@@ -151,6 +152,12 @@ class ImportExportHandler(QObject):
                 self._do_import(s_id, cfg)
             else:
                 self._do_export(s_id, cfg)
+        except UnsupportedImportExportFormatException as exc:
+            self._window.show_error("Import / Export Failed", str(exc))
+            logger.warning("Import/Export operation failed with unsupported format: {}", exc)
+        except UnsupportedLayerOperationException as exc:
+            self._window.show_error("Import / Export Failed", str(exc))
+            logger.warning("Import/Export operation failed with unsupported layer: {}", exc)
         except Exception as exc:
             self._window.show_error("Import / Export Failed", str(exc))
             logger.opt(exception=exc).error(
@@ -208,4 +215,3 @@ class ImportExportHandler(QObject):
             f"Export complete — {total} box(es) from layer {layer.name} "
             f"saved to '{cfg.file_path}'."
         )
-

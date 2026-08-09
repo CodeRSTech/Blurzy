@@ -9,7 +9,7 @@ from PySide6.QtWidgets import QDialog
 
 from app.domain.video.layer_group import VideoDataLayerGroup
 from app.shared.logging_cfg import get_logger
-from app.ui.qt.utilities.model_loader import ModelLoadWorker
+from app.ui.qt.workers import ModelLoadWorker
 
 if TYPE_CHECKING:
     from app.ui.uicontroller import UIController
@@ -26,7 +26,7 @@ class ModelHandler(QObject):
     Responsibilities:
         - Handle model selection changes via UI dropdown.
         - Manage model load worker thread lifecycle.
-        - Show model loading state in UI.
+        - Show model loading view_state in UI.
         - Handle model load success and failure cases.
         - Orchestrate proper thread cleanup to prevent memory leaks.
 
@@ -52,7 +52,7 @@ class ModelHandler(QObject):
 
         self._dont_ask_again = False
 
-        # Async model loader state.
+        # Async model loader view_state.
         self._model_load_thread: QThread | None = None
         self._model_load_worker: ModelLoadWorker | None = None
 

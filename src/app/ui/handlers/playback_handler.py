@@ -17,12 +17,12 @@ logger = get_logger("UI->PlaybackHandler")
 # [AUDIT] UNRESOLVED BUG: Seeking interrupts playback
 # Issue: If user is playing video and performs seek, playback pauses instead of resuming.
 # Expected: Playback should resume automatically after seek completes.
-# Current behavior: Playback state is not preserved during seek operation.
+# Current behavior: Playback view_state is not preserved during seek operation.
 # Recommendation: Create GitHub issue to track this bug with details:
 #   - Steps to reproduce: Play → Seek → observe playback stops
 #   - Expected: Should resume playback after seek
 #   - Root cause: Likely seek operation doesn't preserve playback_is_playing flag
-# Estimated fix: Save playback state before seek, restore after seek completes.
+# Estimated fix: Save playback view_state before seek, restore after seek completes.
 # FIXME: If a session was playing while seeking, it should keep playing after seeking
 
 
@@ -113,7 +113,7 @@ class PlaybackHandler(QObject):
         Note:
             Triggered by transport panel ``pause_btn.clicked`` signal.
     
-            Action: Calls ``stop_playback()`` to halt the playback timer and app playback state.
+            Action: Calls ``stop_playback()`` to halt the playback timer and app playback view_state.
         """
         self.stop_playback()
 
@@ -256,7 +256,7 @@ class PlaybackHandler(QObject):
         Note:
             Flow:
                 _start_session_playback(s_id)
-                  ├── Tell App to start playback state for session
+                  ├── Tell App to start playback view_state for session
                   ├── Fetch frame interval (milliseconds) from App metadata
                   ├── Start QTimer with calculated interval
                   └──> Update UI status bar with playback info
@@ -265,7 +265,7 @@ class PlaybackHandler(QObject):
                 Notify App that session is starting playback (marks ``is_playing=True``).
                 Calculate ``interval`` from FPS metadata (e.g., 30 fps → 33.33 ms).
                 Start ``_playback_timer`` which triggers ``on_playback_tick()`` every interval.
-                Update status bar to reflect playback state.
+                Update status bar to reflect playback view_state.
         """
         # ====================================================================
         # 1. NOTIFY APP TO START PLAYBACK STATE

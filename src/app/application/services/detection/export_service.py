@@ -8,12 +8,13 @@ from typing import TYPE_CHECKING, final, override
 from PySide6.QtCore import QObject
 
 from app.application.adapters import ApplicationAdapter
-from app.application.services._layer_coercion import ensure_layer_enum
-from app.application.services._layer_io import (
+from app.application.services.helpers.layer_coercion import ensure_layer_enum
+from app.application.services.helpers.layer_io import (
     serialize_layer_to_csv,
     serialize_layer_to_json,
 )
 from app.domain.video.layer import VideoDataLayer
+from app.shared.exceptions import UnsupportedImportExportFormatException, UnsupportedLayerOperationException
 from app.shared.logging_cfg import get_logger
 
 if TYPE_CHECKING:
@@ -85,11 +86,7 @@ class DetectionExportService(QObject):
         layer = ensure_layer_enum(layer)
 
         if layer not in _ALLOWED_LAYERS:
-            logger.warning(
-                "DetectionExportService asked to read from layer '{}' — "
-                "expected A or B.  Proceeding anyway.",
-                layer,
-            )
+            raise UnsupportedLayerOperationException("detection_export", layer)
 
         # ====================================================================
         # 1. FETCH DATA
@@ -120,7 +117,4 @@ def _write_file(layer_name_str: str, data: dict, file_path: str) -> int:
         return serialize_layer_to_json(layer_name_str, data, file_path)
     if ext == ".csv":
         return serialize_layer_to_csv(layer_name_str, data, file_path)
-    raise ValueError(
-        f"Unsupported file extension '{ext}' for detection export. "
-        "Expected '.json' or '.csv'."
-    )
+    raise UnsupportedImportExportFormatException(extension=ext, operation="detection export")

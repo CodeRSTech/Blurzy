@@ -1,4 +1,4 @@
-"""Unit tests for Session runtime worker-state properties."""
+"""Unit tests for Session runtime worker-view_state properties."""
 
 from __future__ import annotations
 

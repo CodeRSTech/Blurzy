@@ -8,12 +8,13 @@ from typing import TYPE_CHECKING, final, override
 from PySide6.QtCore import QObject
 
 from app.application.adapters import ApplicationAdapter
-from app.application.services._layer_coercion import ensure_layer_enum
-from app.application.services._layer_io import (
+from app.application.services.helpers.layer_coercion import ensure_layer_enum
+from app.application.services.helpers.layer_io import (
     serialize_layer_to_csv,
     serialize_layer_to_json,
 )
 from app.domain.video.layer import VideoDataLayer
+from app.shared.exceptions import UnsupportedImportExportFormatException, UnsupportedLayerOperationException
 from app.shared.logging_cfg import get_logger
 
 if TYPE_CHECKING:
@@ -84,11 +85,7 @@ class TrackingExportService(QObject):
         layer = ensure_layer_enum(layer)
 
         if layer not in _ALLOWED_LAYERS:
-            logger.warning(
-                "TrackingExportService asked to read from layer '{}' — "
-                "expected C or D.  Proceeding anyway.",
-                layer,
-            )
+            raise UnsupportedLayerOperationException("tracking_export", layer)
 
         session = self._app_adapter.get_session_by_id(s_id)
         data = session.data.get_all_boxes_for_layer_as_dict_of_lists(layer)
@@ -109,8 +106,4 @@ def _write_file(layer_name_str: str, data: dict, file_path: str) -> int:
         return serialize_layer_to_json(layer_name_str, data, file_path)
     if ext == ".csv":
         return serialize_layer_to_csv(layer_name_str, data, file_path)
-    raise ValueError(
-        f"Unsupported file extension '{ext}' for tracking export. "
-        "Expected '.json' or '.csv'."
-    )
-
+    raise UnsupportedImportExportFormatException(extension=ext, operation="tracking export")

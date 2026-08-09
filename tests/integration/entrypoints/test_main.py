@@ -36,6 +36,7 @@ class TestMainStartup:
         window_cls = MagicMock(return_value=window_instance)
         ui_controller_cls = MagicMock()
         apply_custom_qt_reprs = MagicMock()
+        apply_qt_ui_shortcuts = MagicMock()
 
         def _package(name: str) -> types.ModuleType:
             module = types.ModuleType(name)
@@ -46,10 +47,12 @@ class TestMainStartup:
         qtwidgets_module.QApplication = q_application
         application_module = types.ModuleType("app.application.application")
         application_module.Application = app_cls
-        window_module = types.ModuleType("app.ui.qt.main_window")
-        window_module.MainWindow = window_cls
+        window_module = types.ModuleType("app.ui.qt.window")
+        window_module.Window = window_cls
         qt_debug_module = types.ModuleType("app.ui.qt.shared.qt_debug_repr")
         qt_debug_module.apply_custom_qt_reprs = apply_custom_qt_reprs
+        qt_ui_shortcuts_module = types.ModuleType("app.ui.qt.shared.qt_ui_shortcuts")
+        qt_ui_shortcuts_module.apply_qt_ui_shortcuts = apply_qt_ui_shortcuts
         ui_controller_module = types.ModuleType("app.ui.uicontroller")
         ui_controller_module.UIController = ui_controller_cls
 
@@ -60,8 +63,9 @@ class TestMainStartup:
         monkeypatch.setitem(sys.modules, "app.ui", _package("app.ui"))
         monkeypatch.setitem(sys.modules, "app.ui.qt", _package("app.ui.qt"))
         monkeypatch.setitem(sys.modules, "app.ui.qt.shared", _package("app.ui.qt.shared"))
-        monkeypatch.setitem(sys.modules, "app.ui.qt.main_window", window_module)
+        monkeypatch.setitem(sys.modules, "app.ui.qt.window", window_module)
         monkeypatch.setitem(sys.modules, "app.ui.qt.shared.qt_debug_repr", qt_debug_module)
+        monkeypatch.setitem(sys.modules, "app.ui.qt.shared.qt_ui_shortcuts", qt_ui_shortcuts_module)
         monkeypatch.setitem(sys.modules, "app.ui.uicontroller", ui_controller_module)
 
         with pytest.raises(SystemExit) as exc_info:
@@ -75,6 +79,7 @@ class TestMainStartup:
             enabled_areas=None,
         )
         apply_custom_qt_reprs.assert_called_once_with()
+        apply_qt_ui_shortcuts.assert_called_once_with()
         q_application.assert_called_once_with(sys.argv)
         app_cls.assert_called_once_with()
         window_cls.assert_called_once_with()

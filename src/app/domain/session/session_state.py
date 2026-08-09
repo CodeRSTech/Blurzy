@@ -1,4 +1,4 @@
-"""Session state management — playback, settings, and frame data."""
+"""Session view_state management — playback, settings, and frame data."""
 
 from __future__ import annotations
 
@@ -21,12 +21,12 @@ logger = get_logger("Domain->Session")
 @dataclass(slots=True)
 class SessionState:
     """
-    Manages runtime state for a single video processing session.
+    Manages runtime view_state for a single video processing session.
 
     Attributes:
         s_id (SessionId): Session identifier for the open video.
         metadata (VideoMetadata): Video file metadata such as size, FPS, and frame count.
-        playback (PlaybackState): Current playback state for the session.
+        playback (PlaybackState): Current playback view_state for the session.
         settings (ProcessingSettings): User-configurable processing settings.
         current_frame_data (RGBFrame | None): Currently displayed RGB frame cache.
         next_annotation_id (int): Counter used for manual detection IDs.
@@ -47,9 +47,9 @@ class SessionState:
     current_frame_data: RGBFrame | None = field(default=None, repr=False)
 
     # [AUDIT] SRP VIOLATION: Annotation ID counter belongs elsewhere
-    # SessionState mixing runtime state (playback, settings, frame data) with
+    # SessionState mixing runtime view_state (playback, settings, frame data) with
     # domain-level counters (next_annotation_id). This conflates two concerns:
-    # 1. Runtime playback/UI state (SessionState's job)
+    # 1. Runtime playback/UI view_state (SessionState's job)
     # 2. Entity lifecycle management (AnnotationIdGenerator or SessionDataStore's job)
     # Recommendation: Move next_annotation_id to SessionDataStore or create separate
     # AnnotationIdSequence value object. SessionState should focus purely on playback/settings.
@@ -71,8 +71,8 @@ class SessionState:
 
     def update_current_frame_data_and_index(self, idx: int, frame_data: RGBFrame) -> None:
         # [AUDIT] COMMAND QUERY SEPARATION & NAMING: Method name combines two concerns
-        # 1. Update playback index (state change)
-        # 2. Cache current frame data (presentation state)
+        # 1. Update playback index (view_state change)
+        # 2. Cache current frame data (presentation view_state)
         # Recommendation: Consider splitting into separate methods for clarity:
         # - set_playback_frame_index(idx) — updates position
         # - cache_frame_data(frame) — caches display data

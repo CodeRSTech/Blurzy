@@ -87,11 +87,33 @@ Code is organized into four layers:
 
 Main runtime flow:
 
-1. UI action in `MainWindow` / right panel
+1. UI action in `Window` / right panel
 2. Handler in `src/app/ui/handlers/*`
 3. `Application` delegation call
 4. Service + worker execution
 5. Signals back to UI for progress/state updates
+
+---
+
+## Exception Handling Policy
+
+Use a **hybrid** exception model.
+
+- Keep exceptions in `src/app/shared/exceptions.py` when they are cross-layer contracts (raised in one layer, handled in another).
+- Keep exceptions local to a module when they are implementation details not meant to cross module boundaries.
+- Use custom exceptions for domain/business failures; keep built-ins (`ValueError`, `TypeError`, `FileNotFoundError`) for input-contract and direct system errors.
+
+Rules of thumb:
+
+1. If UI/Application code needs to distinguish a failure type, define a custom exception.
+2. If callers only need “invalid argument/type”, built-ins are sufficient.
+3. Catch specific custom exceptions at boundaries first, then fallback generic handling.
+
+Example pattern:
+
+- Infrastructure raises `ZeroStreamsInVideoException` / `EndOfVideoStreamException`
+- Application/UI catches those explicitly and applies predictable behavior
+- No broad silent swallowing in lower layers
 
 ---
 

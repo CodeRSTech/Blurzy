@@ -1,3 +1,3 @@
-from app.ui.qt.main_window import MainWindow
+from app.ui.qt.window import Window
 
-__all__ = ["MainWindow"]
+__all__ = ["Window"]

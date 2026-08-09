@@ -181,7 +181,7 @@ class ExportService(QObject):
 
     # def export_annotations_json(self, s_id: SessionId, output_path: str) -> None:
     #     session = self._app_adapter.get_session_by_id(s_id)
-    #     session_state = session.state
+    #     session_state = session.view_state
     #     frames: dict[str, list[dict[str, object]]] = {}
     #     data: dict[str, object] = {
     #         "s_id": session_state.s_id,

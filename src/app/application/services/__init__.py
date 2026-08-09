@@ -7,7 +7,7 @@ from app.application.services.detection import (
     DetectionExportService,
 )
 from app.application.services.export_service import ExportService
-from app.application.services.import_mode import ImportMode
+from app.application.services.helpers.import_mode import ImportMode
 from app.application.services.session_service import SessionService
 from app.application.services.tracking import (
     TrackingLayerService,

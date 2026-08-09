@@ -18,6 +18,7 @@ dependencies = [
     "configparser",
     "PySide6",
     "av",
+    "deep-sort-realtime",
 ]
 
 #[pytest]

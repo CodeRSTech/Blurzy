@@ -13,7 +13,7 @@ class AnnotationContextActions(str, Enum):
         Includes single-detection actions such as add, edit, and delete; multi-detection
         actions such as copy, directional delete, and delete-all; selection
         actions such as select all, none, and inverse; and reset actions for
-        reverting Layer B or Layer D state. Clipboard operations are also
+        reverting Layer B or Layer D view_state. Clipboard operations are also
         included. ``AnnotationHandler`` routes each action to the appropriate
         service method.
     """
@@ -27,6 +27,7 @@ class AnnotationContextActions(str, Enum):
     DELETE_NEXT = "delete_next"
     DELETE_PREV = "delete_prev"
     EDIT = "edit"
+    NO_OP = "noop"
     PASTE = "paste"
     RESET_FRAME = "reset_current_frame"
     RESET_ALL = "reset_all_frames"

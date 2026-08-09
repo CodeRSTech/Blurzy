@@ -39,17 +39,19 @@ def main() -> None:
     from PySide6.QtWidgets import QApplication
 
     from app.application.application import Application
-    from app.ui.qt.main_window import MainWindow
+    from app.ui.qt.window import Window
     from app.ui.qt.shared.qt_debug_repr import apply_custom_qt_reprs
+    from app.ui.qt.shared.qt_ui_shortcuts import apply_qt_ui_shortcuts
     from app.ui.uicontroller import UIController
 
     apply_custom_qt_reprs()
+    apply_qt_ui_shortcuts()
 
     logger.info("Starting the application...")
     q_app = QApplication(sys.argv)
 
     app = Application()
-    window = MainWindow()
+    window = Window()
     UIController(q_app, window, app)
 
     window.show()

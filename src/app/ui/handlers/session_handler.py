@@ -8,7 +8,12 @@ from PySide6.QtCore import Slot, Qt, QObject
 
 from app.domain.session import SessionId
 from app.infrastructure.views.view_models import list_of_session_list_view_models
-from app.shared.exceptions import NoNewOpenedSessionsException
+from app.shared.exceptions import (
+    NoNewOpenedSessionsException,
+    SessionAlreadyExistsException,
+    VideoFileOpenException,
+    VideoStreamStateException,
+)
 from app.shared.logging_cfg import get_logger
 
 if TYPE_CHECKING:
@@ -24,7 +29,7 @@ class SessionHandler(QObject):
     Responsibilities:
         - Handle video file loading and session creation.
         - Manage active-session switching.
-        - Synchronize session state with UI widgets.
+        - Synchronize session view_state with UI widgets.
         - Coordinate playback initialization on session load.
 
     Notes:
@@ -32,7 +37,7 @@ class SessionHandler(QObject):
             - Receives signals from ``MainWindow`` (file selection/menu) and
               ``BottomPanel`` (session selection).
             - Delegates to ``Application`` and ``UIController`` to perform actions.
-            - Triggers UI updates to reflect session state changes.
+            - Triggers UI updates to reflect session view_state changes.
     """
 
     def __init__(self, controller: UIController) -> None:
@@ -98,11 +103,11 @@ class SessionHandler(QObject):
             Effects:
                 - Prevents playback conflicts.
                 - Delegates session creation to application layer.
-                - Synchronizes newly created sessions into UI state.
+                - Synchronizes newly created sessions into UI view_state.
 
             Downstream:
                 May indirectly trigger ``on_session_selected()`` when active
-                session state updates.
+                session view_state updates.
         """
         try:
             logger.debug("Opening {} video(s)", len(paths))
@@ -160,6 +165,9 @@ class SessionHandler(QObject):
         except NoNewOpenedSessionsException as exc:
             self._controller.window.show_info(title="Error!", msg=str(exc))
             logger.info("Error while opening video(s)")
+        except (SessionAlreadyExistsException, VideoFileOpenException, VideoStreamStateException) as exc:
+            self._controller.window.show_error("Open Video(s) Failed!", str(exc))
+            logger.warning("Failed to open selected video(s): {}", exc)
         except Exception as exc:
             self._controller.window.show_error("Open Video(s) Failed!", str(exc))
             logger.opt(exception=exc).error("Failed to open videos")
@@ -170,7 +178,7 @@ class SessionHandler(QObject):
 
     @Slot(object)
     def on_session_selected(self, s_id: SessionId) -> None:
-        """Switch active session and restore UI state for the selected session.
+        """Switch active session and restore UI view_state for the selected session.
 
         Args:
             s_id (SessionId): Identifier for the session to activate.
@@ -213,6 +221,11 @@ class SessionHandler(QObject):
             # ====================================================================
             self._controller.render_frame_for_session_id(s_id)
 
+        except (VideoFileOpenException, VideoStreamStateException) as exc:
+            self._controller.window.show_error(
+                title="Session Load Failed", msg=str(exc)
+            )
+            logger.warning("Failed to load session due to video view_state error: {}", exc)
         except Exception as exc:
             self._controller.window.show_error(
                 title="Session Load Failed", msg=str(exc)
@@ -270,7 +283,7 @@ class SessionHandler(QObject):
 
         Notes:
             Called during startup (disabled) and after video load (enabled).
-            Propagates state to bottom, right, and transport panels.
+            Propagates view_state to bottom, right, and transport panels.
         """
         # ====================================================================
         # 1. UPDATE BOTTOM PANEL WIDGETS

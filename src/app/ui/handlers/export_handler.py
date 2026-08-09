@@ -10,7 +10,7 @@ from PySide6.QtWidgets import QFileDialog
 from app.application.adapters import ExportAllWorkerFactoryAdapter, ExportWorkerFactoryAdapter
 from app.domain.session import SessionId
 from app.shared.logging_cfg import get_logger
-from app.ui.qt.dialogue_boxes.export_all_dlg import ExportAllDialog
+from app.ui.qt.dialogs.export_all import ExportAllDialog
 
 if TYPE_CHECKING:
     from app.application.interfaces import ExportAllWorkerInterface, ExportWorkerInterface
@@ -300,7 +300,7 @@ class ExportHandler(QObject):
     
             Tracks:
                 Failed session count (displayed in final message).
-                Cancellation state (user stops batch).
+                Cancellation view_state (user stops batch).
         """
         # ====================================================================
         # 1. VALIDATE VIDEOS ARE OPEN
@@ -443,7 +443,7 @@ class ExportHandler(QObject):
         Note:
             Triggered by ``ExportWorker.finished_processing`` signal.
     
-            Action: Schedule worker deletion and clear busy state.
+            Action: Schedule worker deletion and clear busy view_state.
         """
         self._window.set_export_busy(False)
         if self.__export_worker is not None:
@@ -513,7 +513,7 @@ class ExportHandler(QObject):
     
             Flow:
                 _on_export_all_finished() [this slot]
-                  ├── Clear busy state in UI
+                  ├── Clear busy view_state in UI
                   ├── Set final status message based on result:
                   │   ├── "cancelled" if user stopped
                   │   ├── "completed with N failures" if some failed

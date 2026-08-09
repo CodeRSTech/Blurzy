@@ -5,22 +5,9 @@ from typing import Unpack, final, override, TYPE_CHECKING
 
 from PySide6.QtCore import QObject
 
-from app.application.managers.session import SessionManager
-from app.application.services import (
-    DetectionExportService,
-    DetectionImportService,
-    DetectionLayerService,
-    DetectionService,
-    ExportService,
-    ImportMode,
-    SessionService,
-    TrackingExportService,
-    TrackingImportService,
-    TrackingService,
-    TrackingLayerService,
-    UnifiedLayerService,
-)
-from app.application.services._layer_coercion import ensure_import_mode, ensure_layer_enum
+from app.application.managers import SessionManager
+from app.application import services
+from app.application.services.helpers.layer_coercion import ensure_import_mode, ensure_layer_enum
 
 if TYPE_CHECKING:
     from app.domain import BBoxXYXYTuple, VideoDataLayer, VideoDataLayerGroup, SessionId, Direction, BBoxViewModel, \
@@ -38,7 +25,7 @@ class Application(QObject):
         - Owns all service instances (Detection, Tracking, Export, Session, Layer management).
         - Delegates all calls to the appropriate service without adding business logic.
         - Provides a single entry point for the UI Controller to interact with the application.
-        - Manages the ``SessionManager`` for session lifecycle and state tracking.
+        - Manages the ``SessionManager`` for session lifecycle and view_state tracking.
 
     Note:
         Design pattern:
@@ -64,13 +51,13 @@ class Application(QObject):
         # ====================================================================
         # 2. INITIALIZE ALL SERVICES
         # ====================================================================
-        self.detection_svc = DetectionService(self)
-        self.detection_layer_svc = DetectionLayerService(self)
-        self.tracking_svc = TrackingService(self)
-        self.tracking_layer_svc = TrackingLayerService(self)
-        self.export_svc = ExportService(self)
-        self.session_svc = SessionService(self)
-        self.unified_layer_svc = UnifiedLayerService(self)
+        self.detection_svc = services.DetectionService(self)
+        self.detection_layer_svc = services.DetectionLayerService(self)
+        self.tracking_svc = services.TrackingService(self)
+        self.tracking_layer_svc = services.TrackingLayerService(self)
+        self.export_svc = services.ExportService(self)
+        self.session_svc = services.SessionService(self)
+        self.unified_layer_svc = services.UnifiedLayerService(self)
 
         # ====================================================================
         # 3. INITIALIZE IMPORT / EXPORT SERVICES
@@ -79,17 +66,17 @@ class Application(QObject):
         # Tracking  import/export operates on layers C and D.
         # Both pairs share the same wire format (_layer_io) so cross-layer
         # import (e.g. A → C) is also possible via the dialog.
-        self.detection_import_svc = DetectionImportService(self)
-        self.detection_export_svc = DetectionExportService(self)
-        self.tracking_import_svc = TrackingImportService(self)
-        self.tracking_export_svc = TrackingExportService(self)
+        self.detection_import_svc = services.DetectionImportService(self)
+        self.detection_export_svc = services.DetectionExportService(self)
+        self.tracking_import_svc = services.TrackingImportService(self)
+        self.tracking_export_svc = services.TrackingExportService(self)
 
         logger.debug("App initialized.")
 
     @override
     def __repr__(self) -> str:
         """Return a concise representation of the App instance."""
-        return "App()"
+        return "Application()"
 
     # ══════════════════════════════════════════════════════════════════════════════════════════════════════════════════
     #                            PROPERTIES
@@ -184,7 +171,7 @@ class Application(QObject):
         self.sm.get_previous_frame_for_session_id(s_id)
 
     def set_session_state_is_playing(self, s_id: SessionId, is_playing: bool) -> None:
-        """Set the playback state (playing/paused) for the session ``s_id``."""
+        """Set the playback view_state (playing/paused) for the session ``s_id``."""
         self.sm.get_session_state_by_id(s_id).playback.is_playing = is_playing
 
     # Used by PlaybackHandler and SessionHandler
@@ -261,8 +248,8 @@ class Application(QObject):
     # ══════════════════════════════════════════════════════════════════════════════════════════════════════════════════
 
     # Used by AnnotationHandler
-    def change_xyxy_for_boxes_at_current_idx_by_keys_and_dxdy(self, s_id: SessionId, layer_name: VideoDataLayer,
-                                                              item_keys: Iterable[str], dx: int, dy: int) -> int:
+    def change_current_layer_boxes_by_keys_and_dxdy(self, s_id: SessionId, layer_name: VideoDataLayer,
+                                                    item_keys: Iterable[str], dx: int, dy: int) -> int:
         """Translate bounding boxes in the specified ``layer_name`` by ``dx`` and ``dy`` pixels; return count moved."""
         return self.unified_layer_svc.change_xyxy_for_boxes_at_current_idx_by_keys_and_dxdy(
             s_id, layer_name, item_keys, dx, dy
@@ -366,7 +353,7 @@ class Application(QObject):
 
     # Used by TrackingHandler
     def sync_tracking_cache(self, s_id: SessionId) -> None:
-        """Synchronize the tracking cache with the current state for ``s_id``."""
+        """Synchronize the tracking cache with the current view_state for ``s_id``."""
         self.tracking_svc.sync_tracking_cache(s_id)
 
     # ══════════════════════════════════════════════════════════════════════════════════════════════════════════════════
@@ -439,7 +426,7 @@ class Application(QObject):
         s_id: SessionId,
         layer: VideoDataLayer | str,
         file_path: str,
-        mode: ImportMode | str,
+        mode: services.ImportMode | str,
     ) -> int:
         """
         Import bounding-box data from ``file_path`` into ``layer`` for ``s_id``.

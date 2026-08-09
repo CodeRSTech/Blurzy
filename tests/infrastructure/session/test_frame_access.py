@@ -47,7 +47,7 @@ def test_constructor_validates_timeout_and_poll_interval():
 
 
 def test_cached_hit_updates_state_without_seeking():
-    """A cache hit should update playback state and skip seek/polling."""
+    """A cache hit should update playback view_state and skip seek/polling."""
     accessor = SessionFrameAccessor(timeout_seconds=0.05, poll_interval_seconds=0.01)
     state = _StateStub(frame_count=10, current_index=2)
     worker = MagicMock(name="decode_worker")
@@ -66,7 +66,7 @@ def test_cached_hit_updates_state_without_seeking():
 
 
 def test_non_sequential_miss_seeks_and_recovers_frame():
-    """Large jumps should request seek and then update state once frame appears."""
+    """Large jumps should request seek and then update view_state once frame appears."""
     accessor = SessionFrameAccessor(timeout_seconds=0.05, poll_interval_seconds=0.01)
     state = _StateStub(frame_count=20, current_index=1)
     worker = MagicMock(name="decode_worker")

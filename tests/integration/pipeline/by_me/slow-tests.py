@@ -6,7 +6,7 @@ from PySide6.QtWidgets import QDialog
 
 from app.application.application import Application
 from app.domain import VideoDataLayer, SessionId
-from app.ui.qt.main_window import MainWindow
+from app.ui.qt.window import Window
 from app.ui.state.preview_state import ToolMode
 from app.ui.uicontroller import UIController
 
@@ -14,7 +14,7 @@ from app.ui.uicontroller import UIController
 def test_change_detection_model(qtbot, qapp):
     # 1. SETUP
     app = Application()
-    window = MainWindow()
+    window = Window()
     controller = UIController(q_app=qapp, window=window, app=app)
     qtbot.addWidget(window)
 
@@ -25,7 +25,7 @@ def test_change_detection_model(qtbot, qapp):
 
     # 2. ACT: Change the model
     dialog_path = (
-        "app.ui.qt.dialogue_boxes.model_change_dlg.ModelChangeWarningDialog.exec"
+        "app.ui.qt.dialogs.model_change_dlg.ModelChangeWarningDialog.exec"
     )
 
     with patch(dialog_path, return_value=QDialog.DialogCode.Accepted):
@@ -51,14 +51,14 @@ def test_change_detection_model(qtbot, qapp):
 def test_detection_and_tracking_on_small_video(qtbot, qapp):
     # 1. SETUP
     app = Application()
-    window = MainWindow()
+    window = Window()
     controller = UIController(q_app=qapp, window=window, app=app)
     qtbot.addWidget(window)
 
     test_path = "D:/minmal_people_detection.mp4"
     test_model = "YOLOv8n"
     model_change_dialog_path = (
-        "app.ui.qt.dialogue_boxes.model_change_dlg.ModelChangeWarningDialog.exec"
+        "app.ui.qt.dialogs.model_change_dlg.ModelChangeWarningDialog.exec"
     )
     num_expected_layer_a_items = 18
 
@@ -117,14 +117,14 @@ def test_detection_and_tracking_on_small_video(qtbot, qapp):
 def test_user_can_draw_bounding_box(qtbot, qapp):
     # 1. SETUP
     app = Application()
-    window = MainWindow()
+    window = Window()
     controller = UIController(q_app=qapp, window=window, app=app)
     qtbot.addWidget(window)
 
     test_path = "D:/minmal_people_detection.mp4"
     # We must intercept the LabelDialog so it doesn't freeze the test runner
-    exec_patch = "app.ui.qt.dialogue_boxes.label_dlg.LabelDialog.exec"
-    label_patch = "app.ui.qt.dialogue_boxes.label_dlg.LabelDialog.get_label"
+    exec_patch = "app.ui.qt.dialogs.label_dlg.LabelDialog.exec"
+    label_patch = "app.ui.qt.dialogs.label_dlg.LabelDialog.get_label"
 
     controller.session_handler.on_open_videos([test_path])
     s_id = SessionId(test_path)

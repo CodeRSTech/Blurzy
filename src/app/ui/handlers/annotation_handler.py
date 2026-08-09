@@ -14,7 +14,7 @@ from app.domain.video.direction import Direction
 from app.domain.video.layer import VideoDataLayer
 from app.domain.video.layer_group import VideoDataLayerGroup
 from app.shared.logging_cfg import get_logger
-from app.ui.qt.dialogue_boxes import LabelDialog
+from app.ui.qt.dialogs import LabelDialog
 
 if TYPE_CHECKING:
     from app.domain.session.session_id import SessionId
@@ -53,8 +53,8 @@ class AnnotationHandler(QObject):
         self._window = controller.window
         self._app = controller.app
 
-        # [AUDIT] ENCAPSULATION: Keyboard acceleration state scattered across 3 attributes
-        # Three separate state variables manage a single concern (keyboard acceleration):
+        # [AUDIT] ENCAPSULATION: Keyboard acceleration view_state scattered across 3 attributes
+        # Three separate view_state variables manage a single concern (keyboard acceleration):
         #   - _last_move_key: which key was pressed
         #   - _last_move_ts: when it was pressed
         #   - _move_repeat_count: how many repeats
@@ -71,7 +71,7 @@ class AnnotationHandler(QObject):
         #
         # Usage: self._accelerator = KeyboardAccelerator()
         # Benefits: Encapsulates logic, improves cohesion, easier to test
-        # Keyboard nudge acceleration state.
+        # Keyboard nudge acceleration view_state.
         self._last_move_key: int | None = None
         self._last_move_ts: float = 0.0
         self._move_repeat_count: int = 0
@@ -157,7 +157,7 @@ class AnnotationHandler(QObject):
             except Exception as exc:
                 self._window.show_error("Add Failed", str(exc))
 
-        # Stay in Add mode so repeated detection creation keeps the toolbar state
+        # Stay in Add mode so repeated detection creation keeps the toolbar view_state
         # and overlay behavior in sync.
 
     def handle_existing_box_edit(
@@ -228,15 +228,15 @@ class AnnotationHandler(QObject):
 
         try:
             if self._window.active_tab_index == VideoDataLayerGroup.DETECTION:
-                moved = self._app.change_xyxy_for_boxes_at_current_idx_by_keys_and_dxdy(s_id=s_id,
-                                                                                        layer_name=VideoDataLayer.B,
-                                                                                        item_keys=item_keys, dx=dx,
-                                                                                        dy=dy)
+                moved = self._app.change_current_layer_boxes_by_keys_and_dxdy(s_id=s_id,
+                                                                              layer_name=VideoDataLayer.B,
+                                                                              item_keys=item_keys, dx=dx,
+                                                                              dy=dy)
             else:  # self._window.active_tab_index == DataTab.TRACKING
-                moved = self._app.change_xyxy_for_boxes_at_current_idx_by_keys_and_dxdy(s_id=s_id,
-                                                                                        layer_name=VideoDataLayer.D,
-                                                                                        item_keys=item_keys, dx=dx,
-                                                                                        dy=dy)
+                moved = self._app.change_current_layer_boxes_by_keys_and_dxdy(s_id=s_id,
+                                                                              layer_name=VideoDataLayer.D,
+                                                                              item_keys=item_keys, dx=dx,
+                                                                              dy=dy)
             if moved > 0:
                 self._controller.render_frame_for_session_id(s_id)
         except Exception as exc:
@@ -247,21 +247,12 @@ class AnnotationHandler(QObject):
     @Slot()
     def on_edit_selected(self) -> None:
         """
-        Open edit dialog for the selected detection detection.
-    
-        Note:
-            Triggered by bottom panel ``edit_item_btn.clicked`` signal.
-    
-            Action: Show edit dialog if exactly one detection is selected, allow user to modify label and coordinates.
-    
-            Downstream: Calls ``handle_existing_box_edit()`` which may render frame.
+        Open edit dialog for the selected detection if exactly one detection is selected,
+        allow user to modify label and coordinates.
         """
         s_id = self._window.selected_s_id
-        if not s_id:
-            return
-
         keys = self._window.selected_frame_box_keys
-        if len(keys) != 1:
+        if not s_id or len(keys) != 1:
             return
 
         # ====================================================================
@@ -272,11 +263,8 @@ class AnnotationHandler(QObject):
     @Slot()
     def on_delete_selected(self) -> None:
         """
-        Delete the currently selected detection detection(es).
-    
-        Note:
-            Triggered by bottom panel ``delete_item_btn.clicked`` signal.
-    
+        Delete the currently selected boxes.
+
         Flow:
 
         ``on_delete_selected()`` `[this slot]`:
@@ -309,11 +297,6 @@ class AnnotationHandler(QObject):
     def on_copy_to_next(self) -> None:
         """
         Copy selected annotations to the next frame.
-    
-        Note:
-            Triggered by bottom panel ``copy_to_next_btn.clicked`` signal.
-    
-            Downstream: Calls ``copy_to_direction(Direction.NEXT)`` to perform copy.
         """
         self.copy_to_direction(direction=Direction.NEXT)
 
@@ -321,11 +304,6 @@ class AnnotationHandler(QObject):
     def on_copy_to_prev(self) -> None:
         """
         Copy selected annotations to the previous frame.
-    
-        Note:
-            Triggered by bottom panel ``copy_to_prev_btn.clicked`` signal.
-    
-            Downstream: Calls ``copy_to_direction(Direction.PREV)`` to perform copy.
         """
         self.copy_to_direction(direction=Direction.PREV)
 
@@ -439,29 +417,44 @@ class AnnotationHandler(QObject):
             return
 
         active_layer = VideoDataLayer.B if self._window.active_tab_index == VideoDataLayerGroup.DETECTION else VideoDataLayer.D
+        should_render = False
+
+        if action == AnnotationContextActions.NO_OP.value:
+            logger.info("Preview context action is not implemented yet.")
+            self._window.set_status_text("Action not implemented yet.")
+            return
 
         # Route the context menu actions directly to the existing backend logic!
         if action == AnnotationContextActions.COPY_NEXT:
             self._app.copy_boxes_to_adjacent_frame_by_direction(
                 s_id, active_layer, [item_key], Direction.NEXT
             )
+            should_render = True
         elif action == AnnotationContextActions.COPY_PREV:
             self._app.copy_boxes_to_adjacent_frame_by_direction(
                 s_id, active_layer, [item_key], Direction.PREV
             )
+            should_render = True
         elif action == AnnotationContextActions.DELETE_NEXT:
             # Extract underlying item_id from item_key (e.g. "track:123" -> "123")
             item = self._app.get_layer_box_by_key(s_id, VideoDataLayer.D, item_key)
             if item is None:
                 return
             self._app.delete_tracks_by_id_and_direction(s_id, item.id, Direction.NEXT)
+            should_render = True
         elif action == AnnotationContextActions.DELETE_PREV:
             item = self._app.get_layer_box_by_key(s_id, VideoDataLayer.D, item_key)
             if item is None:
                 return
             self._app.delete_tracks_by_id_and_direction(s_id, item.id, Direction.PREV)
+            should_render = True
+        else:
+            logger.info("Preview context action '{}' is not implemented yet.", action)
+            self._window.set_status_text("Action not implemented yet.")
+            return
 
-        self._controller.render_frame_for_session_id(s_id)
+        if should_render:
+            self._controller.render_frame_for_session_id(s_id)
 
     def _delete_occurrences(self, direction: Direction) -> None:
         s_id = self._window.selected_s_id

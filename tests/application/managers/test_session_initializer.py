@@ -40,7 +40,7 @@ def test_initialize_attaches_reader_state_and_worker():
         session = Session(SessionId("/videos/demo.mp4"))
     fake_reader = MagicMock(name="video_reader")
     fake_reader.metadata = MagicMock(name="metadata")
-    fake_state = MagicMock(name="state")
+    fake_state = MagicMock(name="view_state")
     fake_state.playback = MagicMock(name="playback")
     fake_worker = MagicMock(name="decode_worker")
 

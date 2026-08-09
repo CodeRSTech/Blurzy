@@ -1,4 +1,4 @@
-"""QObject-backed session shell for per-video runtime state and layer storage.
+"""QObject-backed session shell for per-video runtime view_state and layer storage.
 
 The expensive runtime collaborators (``VideoReader``, ``SessionState`` and the
 decode worker) are attached by ``SessionInitializer`` in the application layer.
@@ -21,7 +21,7 @@ if TYPE_CHECKING:
     from app.infrastructure.dtypes import RGBFrame
     from app.application.interfaces import DetectionEngineInterface, DetectionWorkerInterface, TrackingWorkerInterface
     from app.infrastructure.video.decode_worker import VideoDecodeWorker
-    from app.infrastructure.video.vid_reader import VideoReader
+    from app.infrastructure.video.reader import VideoReader
 
 logger = get_logger("Domain->Session")
 
@@ -29,7 +29,7 @@ logger = get_logger("Domain->Session")
 @final
 class Session(QObject):
     """
-    Container holding the runtime state and layer storage for a single video
+    Container holding the runtime view_state and layer storage for a single video
     processing session.
 
     ``Session`` stays a ``QObject`` for now and keeps a narrow runtime role:
@@ -60,10 +60,10 @@ class Session(QObject):
         return f"<Session id={self.s_id.basename}>"
 
     def _require_state(self) -> SessionState:
-        """Return the initialized session state or raise a clear error."""
+        """Return the initialized session view_state or raise a clear error."""
         if self.state is None:
             raise RuntimeError(
-                "Session state has not been initialized yet. "
+                "Session view_state has not been initialized yet. "
                 "Use SessionInitializer.initialize(session) before accessing playback or frame data."
             )
         return self.state
@@ -181,7 +181,7 @@ class Session(QObject):
         )
 
     def get_current_frame(self) -> RGBFrame | None:
-        """Get frame at current playback position (caches result in state)."""
+        """Get frame at current playback position (caches result in view_state)."""
         return self._frame_accessor.get_current_frame(
             session_state=self._require_state(),
             decode_worker=self._require_video_decode_worker(),

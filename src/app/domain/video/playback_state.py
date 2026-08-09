@@ -1,4 +1,4 @@
-"""Playback state management — frame position and playback status."""
+"""Playback view_state management — frame position and playback status."""
 
 from dataclasses import dataclass
 from typing import override
@@ -7,7 +7,7 @@ from typing import override
 @dataclass(slots=True)
 class PlaybackState:
     """
-    Tracks the current playback state of a video session.
+    Tracks the current playback view_state of a video session.
 
     Attributes:
         _current_frame_index (int): Currently displayed frame as a 0-based index.

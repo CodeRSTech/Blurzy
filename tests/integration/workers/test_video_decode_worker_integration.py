@@ -140,7 +140,7 @@ def test_play_and_pause_buffer_management(qtbot, worker_setup):
             assert worker.get_cached_frame_at_index(i) is not None
 
         qtbot.waitUntil(wait_for_frame, timeout=2000)
-        # Update the playback state so the worker's throttle check (ui_idx + 45) stays happy
+        # Update the playback view_state so the worker's throttle check (ui_idx + 45) stays happy
         playback.current_frame_index = i
 
         # ACT: Simulate "Pause"

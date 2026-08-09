@@ -11,12 +11,12 @@ from app.infrastructure.detection.model.helpers import get_available_detection_m
 from app.shared import get_logger
 from app.ui.adapters import UIApplicationAdapter, UIControllerAdapter
 from app.ui import handlers
-from app.ui.qt.data.table_key_filter import FrameTableKeyFilter
-from app.ui.qt.dialogue_boxes import EditAnnotationDialog, ModelChangeWarningDialog
+from app.ui.view_state.table_key_filter import FrameTableKeyFilter
+from app.ui.qt.dialogs import EditAnnotationDialog, ModelChangeWarningDialog
 
 if TYPE_CHECKING:
     from app.application.application import Application
-    from app.ui.qt.main_window import MainWindow
+    from app.ui.qt.window import Window
     from app.infrastructure.session.session import Session
 logger = get_logger("UI->Controller")
 
@@ -52,7 +52,7 @@ class UIController(QObject):
     def __init__(
         self,
         q_app: QApplication,
-        window: MainWindow,
+        window: Window,
         app: Application,
     ) -> None:
         logger.info("Initializing UI Controller...")

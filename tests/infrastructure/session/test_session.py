@@ -54,10 +54,10 @@ def test_constructor_creates_a_bare_session_shell():
 
 
 def test_frame_access_before_initialization_raises_helpful_error():
-    """Frame access should fail fast until SessionInitializer attaches runtime state."""
+    """Frame access should fail fast until SessionInitializer attaches runtime view_state."""
     session = _make_session()
 
-    with pytest.raises(RuntimeError, match="Session state has not been initialized yet"):
+    with pytest.raises(RuntimeError, match="Session view_state has not been initialized yet"):
         session.get_current_frame()
 
 
@@ -71,7 +71,7 @@ def test_close_without_initialization_is_safe():
 def test_get_frame_by_index_delegates_to_frame_accessor():
     """Session should delegate frame orchestration to its dedicated accessor."""
     session = _make_session()
-    fake_state = MagicMock(name="state")
+    fake_state = MagicMock(name="view_state")
     fake_worker = MagicMock(name="worker")
     session.state = fake_state
     session.video_decode_worker = fake_worker
@@ -91,7 +91,7 @@ def test_get_frame_by_index_delegates_to_frame_accessor():
 def test_frame_navigation_helpers_delegate_to_frame_accessor():
     """Session frame helpers should stay as thin wrappers over frame accessor."""
     session = _make_session()
-    fake_state = MagicMock(name="state")
+    fake_state = MagicMock(name="view_state")
     fake_state.playback.current_frame_index = 5
     fake_worker = MagicMock(name="worker")
     session.state = fake_state

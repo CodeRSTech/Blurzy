@@ -1,7 +1,7 @@
 """Frame retrieval orchestration for session decode workers.
 
 This module isolates cache lookup + seek + timeout polling from ``Session`` so
-the QObject container remains focused on state ownership.
+the QObject container remains focused on view_state ownership.
 """
 
 from __future__ import annotations
@@ -28,7 +28,7 @@ class SessionFrameAccessor:
       2. Return cache hits immediately.
       3. Trigger ``request_seek`` for non-sequential jumps.
       4. Poll for worker output until timeout.
-      5. Synchronize session state on successful retrieval.
+      5. Synchronize session view_state on successful retrieval.
     """
 
     def __init__(self, timeout_seconds: float = 2.0, poll_interval_seconds: float = 0.01) -> None:
@@ -50,7 +50,7 @@ class SessionFrameAccessor:
         """Return the requested frame from cache or ``None`` on timeout.
 
         Args:
-            session_state: Runtime state for playback index and metadata bounds.
+            session_state: Runtime view_state for playback index and metadata bounds.
             decode_worker: Decode worker that owns the ring buffer cache.
             frame_index: Raw target index requested by the caller.
         """
@@ -87,7 +87,7 @@ class SessionFrameAccessor:
         """Return frame at current playback position.
 
         If ``current_frame_data`` is empty, this method resolves it from the
-        decode cache and stores it back into the session state.
+        decode cache and stores it back into the session view_state.
         """
         if session_state.current_frame_data is None:
             current_index = session_state.playback.current_frame_index
