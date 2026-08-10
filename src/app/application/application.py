@@ -236,12 +236,12 @@ class Application(QObject):
             self,
             s_id: SessionId,
             layer_name: VideoDataLayer,
-            item_key: str,
+            box_key: str,
             label: str,
             bbox_xyxy: BBoxXYXYTuple,
     ) -> None:
         """Update a bounding detection's label and coordinates in the specified ``layer_name``."""
-        self.unified_layer_svc.update_current_frame_box_xyxy(s_id, layer_name, item_key, label, bbox_xyxy)
+        self.unified_layer_svc.update_current_frame_box_xyxy(s_id, layer_name, box_key, label, bbox_xyxy)
 
     # ══════════════════════════════════════════════════════════════════════════════════════════════════════════════════
     #               UNIFIED LAYER SERVICE DELEGATION METHODS
@@ -249,10 +249,10 @@ class Application(QObject):
 
     # Used by AnnotationHandler
     def change_current_layer_boxes_by_keys_and_dxdy(self, s_id: SessionId, layer_name: VideoDataLayer,
-                                                    item_keys: Iterable[str], dx: int, dy: int) -> int:
+                                                    box_keys: Iterable[str], dx: int, dy: int) -> int:
         """Translate bounding boxes in the specified ``layer_name`` by ``dx`` and ``dy`` pixels; return count moved."""
         return self.unified_layer_svc.change_xyxy_for_boxes_at_current_idx_by_keys_and_dxdy(
-            s_id, layer_name, item_keys, dx, dy
+            s_id, layer_name, box_keys, dx, dy
         )
 
     # Used by AnnotationHandler
@@ -270,11 +270,11 @@ class Application(QObject):
 
     # Used by AnnotationHandler
     def delete_boxes_by_keys_and_tab_id_for_current_frame_by_session_id(
-            self, s_id: SessionId, keys: list[str], tab: VideoDataLayerGroup
+            self, s_id: SessionId, box_keys: list[str], tab: VideoDataLayerGroup
     ):
         """Delete bounding boxes identified by ``keys`` from the current frame in the ``tab`` layer."""
         self.unified_layer_svc.delete_boxes_by_keys_and_tab_id_for_current_frame_by_session_id(
-            s_id, keys, tab
+            s_id, box_keys, tab
         )
 
     # Used by UIHandler

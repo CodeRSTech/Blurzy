@@ -47,8 +47,8 @@ class BottomDataPanelContainer(QWidget):
 
         # Unified action row (non-reset actions only; reset controls are now exposed via Edit menu)
         action_row = create_qhbox_with_widgets([
-            self.edit_item_btn,
-            self.delete_item_btn,
+            self.edit_box_btn,
+            self.delete_box_btn,
             self.delete_next_occurrences_btn,
             self.delete_prev_occurrences_btn,
             self.copy_to_prev_btn,
@@ -65,13 +65,11 @@ class BottomDataPanelContainer(QWidget):
         self.tracker_tab_frame_data_table = QTableWidget(0, 6)
         self.data_tab = QTabWidget()
 
-        # --- UI Elements: Action Row 1 ---
-        self.edit_item_btn = QPushButton("Edit Selected")
-        self.delete_item_btn = QPushButton("Delete Selected")
+        self.edit_box_btn = QPushButton("Edit Selected")
+        self.delete_box_btn = QPushButton("Delete Selected")
         self.copy_to_next_btn = QPushButton("Dup to next")
         self.copy_to_prev_btn = QPushButton("Dup to prev")
 
-        # --- UI Elements: Action Row 2 ---
         self.reset_frame_btn = QPushButton("Reset Review (Frame)")
         self.reset_all_btn = QPushButton("Reset Review (All)")
         self.reset_tracker_frame_btn = QPushButton("Reset Trackers (Frame)")
@@ -115,7 +113,7 @@ class BottomDataPanelContainer(QWidget):
         return cast(VideoDataLayerGroup, self.data_tab.currentIndex())
 
     @property
-    def active_frame_data_table(self) -> QTableWidget:
+    def active_data_table_for_current_frame(self) -> QTableWidget:
         idx = self.active_tab_index
         if idx == VideoDataLayerGroup.TRACKING:
             return self.tracker_tab_frame_data_table
@@ -151,7 +149,7 @@ class BottomDataPanelContainer(QWidget):
 
     @property
     def get_selected_box_keys_from_active_tab(self) -> list[str]:
-        table = self.active_frame_data_table    # <- Fetch active data table (Detection/Tracking)
+        table = self.active_data_table_for_current_frame    # <- Fetch active data table (Detection/Tracking)
         selection_model = table.selectionModel()
         if selection_model is None:
             return []
@@ -193,9 +191,9 @@ class BottomDataPanelContainer(QWidget):
         only_one_selected = num_selected_boxes == 1
         one_or_more_selected = num_selected_boxes >= 1
 
-        self.edit_item_btn.setEnabled(only_one_selected)
+        self.edit_box_btn.setEnabled(only_one_selected)
 
-        for btn in (self.delete_item_btn,
+        for btn in (self.delete_box_btn,
                     self.copy_to_next_btn,
                     self.copy_to_prev_btn,
                     self.delete_next_occurrences_btn,
@@ -250,8 +248,6 @@ class BottomDataPanelContainer(QWidget):
         else:
             raise NotImplementedError(f"Unsupported tab: {tab}")
 
-        # FIXME:
-        #  This seems fishy.. why only select detection keys from active tab?
         selected_box_keys = set(self.get_selected_box_keys_from_active_tab)
         had_focus = data_table.hasFocus()
 
@@ -297,34 +293,3 @@ class BottomDataPanelContainer(QWidget):
 
     def update_video_related_widgets_state(self, is_enabled: bool = False) -> None:
         pass
-        #for widget in (self.reset_frame_btn,
-        #            self.reset_all_btn,
-        #            self.reset_tracker_frame_btn,
-        #            self.reset_all_trackers_btn,
-        #            self.data_tab):
-        #    widget.setEnabled(is_enabled)
-
-        # [INFO] [NOTE]
-        # IMPLEMENT THIS
-        # WHEN `DetectionWorker` has completed and the cache has been synced
-        #
-        #  - In MainWindow:
-        #      def set_detection_worker_complete_state(self, complete: bool) -> None:
-        #         self.bottom_panel.set_detection_worker_complete_state(complete)
-        #
-        #  - In Controller:
-        #      def _connect_and_deploy_detection_thread_and_worker(self,
-        #                                                     detection_thread: QThread, detection_worker: ModelLoadWorker
-        #                                                     ) -> None:
-        #         _ = detection_thread.started.connect(model_load_worker.run)
-        #         _ = detection_thread.finished.connect(self.cleanup_detection_synced)
-        #
-        #  Ensure that `app.sync_detection_cache()` has been run after DetectionWorker.is_complete()
-        #
-        #  Once DetectionWorker is complete and cache is synced, enable:
-        #               self.reset_frame_btn,
-        #               self.reset_all_btn,
-        #
-        #  And, similarly, when tracking is complete, enable:
-        #            self.reset_tracker_frame_btn,
-        #            self.reset_all_trackers_btn

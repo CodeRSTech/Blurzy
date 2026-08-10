@@ -1,5 +1,18 @@
 """Annotation creation and editing handler for bounding detection management."""
 
+# [10-08-26 05:00 PM] `AnnotationHandler` has a lot of responsibilities, we must create a module
+# `annotation_handler` or just `annotation` under `src/app/ui/handlers` and move all the related logic there.
+# Almost every single one of the responsibilities must be within a separate file (or module) of its own.
+# [NOTE] Not very urgent.
+#
+# [10-08-26 05:08 PM] The Term "Annotation" is rather confusing. We deal specifically with "boxes" here.
+# We must check if any other synonyms are there OR, whether `BoxHandler` is just fine.
+#
+# [10-08-26 05:11 PM] Originally, box/boxes were referred to as `item`/`items` and variables like its key/keys were referred to
+# as `item_key`/`item_keys` which IS still present throughtout the codebase and slowly being replaced with the right
+# terms. [IMPORTANT] [NOTE] The IDE has powerful tools to do this. Therefore, an AI agent mustn't worry about it.
+# [10-08-26 05:18 PM] [UPDATE] All references to `item` in this file have been swapped with `box`.
+#
 from __future__ import annotations
 
 import time
@@ -9,10 +22,7 @@ from PySide6.QtCore import Qt, Slot, QObject
 from PySide6.QtGui import QKeyEvent
 from PySide6.QtWidgets import QDialog
 
-from app.domain.detection import AnnotationContextActions
-from app.domain.video.direction import Direction
-from app.domain.video.layer import VideoDataLayer
-from app.domain.video.layer_group import VideoDataLayerGroup
+from app.domain import AnnotationContextActions, Direction, VideoDataLayer, VideoDataLayerGroup
 from app.shared.logging_cfg import get_logger
 from app.ui.qt.dialogs import LabelDialog
 
@@ -117,8 +127,8 @@ class AnnotationHandler(QObject):
             (preview_container.bbox_deleted, self.on_preview_bbox_deleted),
             (preview_container.context_action_triggered, self.on_preview_context_action),
             # Bottom panel action row buttons
-            (bottom_panel.edit_item_btn.clicked, self.on_edit_selected),
-            (bottom_panel.delete_item_btn.clicked, self.on_delete_selected),
+            (bottom_panel.edit_box_btn.clicked, self.on_edit_selected),
+            (bottom_panel.delete_box_btn.clicked, self.on_delete_selected),
             (bottom_panel.delete_next_occurrences_btn.clicked, self.on_delete_next_occurrences),
             (bottom_panel.delete_prev_occurrences_btn.clicked, self.on_delete_prev_occurrences),
             (bottom_panel.copy_to_prev_btn.clicked, self.on_copy_to_prev),
@@ -133,51 +143,51 @@ class AnnotationHandler(QObject):
 
     def handle_new_drawn_box(self, s_id: SessionId, x1: int, y1: int, x2: int, y2: int) -> None:
         """
-        Handles the addition of a new drawn detection detection.
+        Handles the addition of a new drawn box.
     
-        This function is triggered when a new detection detection is drawn on the interface. It prompts the user
-        to provide a label for the detection via a dialog. If a valid label is provided and accepted, the function
-        attempts to add the detection detection, updates the user interface, and triggers the provided rendering
-        function to refresh the detection visually.
+        This function is triggered when a new box is drawn on the interface. It prompts the user
+        to provide a label for the box via a dialog. If a valid label is provided and accepted, the function
+        attempts to add the box, updates the user interface, and triggers the provided rendering
+        function to refresh the box visually.
     
         Args:
             s_id (SessionId): A unique identifier for the current session.
-            x1 (int): The x-coordinate of the top-left corner of the detection.
-            y1 (int): The y-coordinate of the top-left corner of the detection.
-            x2 (int): The x-coordinate of the bottom-right corner of the detection.
-            y2 (int): The y-coordinate of the bottom-right corner of the detection.
+            x1 (int): The x-coordinate of the top-left corner of the box.
+            y1 (int): The y-coordinate of the top-left corner of the box.
+            x2 (int): The x-coordinate of the bottom-right corner of the box.
+            y2 (int): The y-coordinate of the bottom-right corner of the box.
         """
         dialog = LabelDialog(self._window)
         if dialog.exec() == LabelDialog.DialogCode.Accepted and dialog.get_label():
             label = dialog.get_label()
             try:
                 self._app.add_manual_detection_box_at_current_frame_index(s_id, label, (x1, y1, x2, y2))
-                self._window.set_status_text("Annotation added.")
+                self._window.set_status_text("Box added.")
                 self._controller.render_frame_for_session_id(s_id)
             except Exception as exc:
                 self._window.show_error("Add Failed", str(exc))
 
-        # Stay in Add mode so repeated detection creation keeps the toolbar view_state
+        # Stay in Add mode so repeated box creation keeps the toolbar view_state
         # and overlay behavior in sync.
 
     def handle_existing_box_edit(
             self,
             s_id: SessionId,
-            item_key: str,
+            box_key: str,
             new_coords: BBoxXYXYTuple | None = None,
     ) -> None:
         """Handles both visual drags (new_coords) and table 'Edit' clicks (dialog)."""
         tab = self._window.active_tab_index
 
-        item = (
-            self._app.get_layer_box_by_key(s_id, VideoDataLayer.D, item_key)
+        box = (
+            self._app.get_layer_box_by_key(s_id, VideoDataLayer.D, box_key)
             if tab == VideoDataLayerGroup.TRACKING
-            else self._app.get_layer_box_by_key(s_id, VideoDataLayer.B, item_key)
+            else self._app.get_layer_box_by_key(s_id, VideoDataLayer.B, box_key)
         )
-        if item is None:
+        if box is None:
             return
 
-        label, bbox_xyxy = item.label, item.bbox_xyxy
+        label, bbox_xyxy = box.label, box.bbox_xyxy
 
         if new_coords:
             bbox_xyxy = new_coords  # It was visually dragged
@@ -194,7 +204,7 @@ class AnnotationHandler(QObject):
             self._app.update_box_in_layer_at_current_frame(
                 s_id=s_id,
                 layer_name=VideoDataLayer.B if tab == VideoDataLayerGroup.DETECTION else VideoDataLayer.D,
-                item_key=item.key,
+                box_key=box.key,
                 label=label,
                 bbox_xyxy=bbox_xyxy,
             )
@@ -211,8 +221,8 @@ class AnnotationHandler(QObject):
             return False
 
         s_id = self._window.selected_s_id
-        item_keys = self._window.selected_frame_box_keys
-        if not s_id or not item_keys:
+        box_keys = self._window.selected_frame_box_keys
+        if not s_id or not box_keys:
             return True
 
         delta = self._get_nudge_delta(key)
@@ -230,12 +240,12 @@ class AnnotationHandler(QObject):
             if self._window.active_tab_index == VideoDataLayerGroup.DETECTION:
                 moved = self._app.change_current_layer_boxes_by_keys_and_dxdy(s_id=s_id,
                                                                               layer_name=VideoDataLayer.B,
-                                                                              item_keys=item_keys, dx=dx,
+                                                                              box_keys=box_keys, dx=dx,
                                                                               dy=dy)
             else:  # self._window.active_tab_index == DataTab.TRACKING
                 moved = self._app.change_current_layer_boxes_by_keys_and_dxdy(s_id=s_id,
                                                                               layer_name=VideoDataLayer.D,
-                                                                              item_keys=item_keys, dx=dx,
+                                                                              box_keys=box_keys, dx=dx,
                                                                               dy=dy)
             if moved > 0:
                 self._controller.render_frame_for_session_id(s_id)
@@ -283,7 +293,7 @@ class AnnotationHandler(QObject):
             # 1. DELETE BOXES FROM ACTIVE TAB
             # ================================================================
             self._app.delete_boxes_by_keys_and_tab_id_for_current_frame_by_session_id(
-                s_id=s_id, keys=keys, tab=self._window.active_tab_index
+                s_id=s_id, box_keys=keys, tab=self._window.active_tab_index
             )
 
             # ================================================================
@@ -390,28 +400,28 @@ class AnnotationHandler(QObject):
 
     # NEW: Moved few slots from the controller to here.
     @Slot(str, int, int, int, int)
-    def on_preview_bbox_edited(self, item_key: str, x1: int, y1: int, x2: int, y2: int) -> None:
-        logger.debug("Preview bbox edited ({}, {}, {}, {}) key: {}", x1, y1, x2, y2, item_key)
+    def on_preview_bbox_edited(self, box_key: str, x1: int, y1: int, x2: int, y2: int) -> None:
+        logger.debug("Preview bbox edited ({}, {}, {}, {}) key: {}", x1, y1, x2, y2, box_key)
         s_id = self._window.selected_s_id
         if s_id:
             logger.debug("Session {}: Calling Annotation Handler to handle edited bbox...", s_id)
-            self.handle_existing_box_edit(s_id=s_id, item_key=item_key, new_coords=(x1, y1, x2, y2))
+            self.handle_existing_box_edit(s_id=s_id, box_key=box_key, new_coords=(x1, y1, x2, y2))
 
     @Slot(str)
-    def on_preview_bbox_deleted(self, item_key: str) -> None:
-        logger.debug("Preview detection deleted: {})", item_key)
+    def on_preview_bbox_deleted(self, box_key: str) -> None:
+        logger.debug("Preview detection deleted: {})", box_key)
         s_id = self._window.selected_s_id
         if s_id:
             tab = self._window.active_tab_index
             logger.debug("Deleting the detection from the active tab {}", tab)
 
-            self._app.delete_boxes_by_keys_and_tab_id_for_current_frame_by_session_id(s_id=s_id, keys=[item_key],
+            self._app.delete_boxes_by_keys_and_tab_id_for_current_frame_by_session_id(s_id=s_id, box_keys=[box_key],
                                                                                       tab=tab)
             self._controller.render_frame_for_session_id(s_id)
 
     @Slot(str, str)
-    def on_preview_context_action(self, action: str, item_key: str) -> None:
-        logger.debug("Preview detection context action: {}, {}", action, item_key)
+    def on_preview_context_action(self, action: str, box_key: str) -> None:
+        logger.debug("Preview detection context action: {}, {}", action, box_key)
         s_id: SessionId = self._window.selected_s_id
         if not s_id:
             return
@@ -427,26 +437,26 @@ class AnnotationHandler(QObject):
         # Route the context menu actions directly to the existing backend logic!
         if action == AnnotationContextActions.COPY_NEXT:
             self._app.copy_boxes_to_adjacent_frame_by_direction(
-                s_id, active_layer, [item_key], Direction.NEXT
+                s_id, active_layer, [box_key], Direction.NEXT
             )
             should_render = True
         elif action == AnnotationContextActions.COPY_PREV:
             self._app.copy_boxes_to_adjacent_frame_by_direction(
-                s_id, active_layer, [item_key], Direction.PREV
+                s_id, active_layer, [box_key], Direction.PREV
             )
             should_render = True
         elif action == AnnotationContextActions.DELETE_NEXT:
-            # Extract underlying item_id from item_key (e.g. "track:123" -> "123")
-            item = self._app.get_layer_box_by_key(s_id, VideoDataLayer.D, item_key)
-            if item is None:
+            # Extract underlying box_id from box_key (e.g. "track:123" -> "123")
+            box = self._app.get_layer_box_by_key(s_id, VideoDataLayer.D, box_key)
+            if box is None:
                 return
-            self._app.delete_tracks_by_id_and_direction(s_id, item.id, Direction.NEXT)
+            self._app.delete_tracks_by_id_and_direction(s_id, box.id, Direction.NEXT)
             should_render = True
         elif action == AnnotationContextActions.DELETE_PREV:
-            item = self._app.get_layer_box_by_key(s_id, VideoDataLayer.D, item_key)
-            if item is None:
+            box = self._app.get_layer_box_by_key(s_id, VideoDataLayer.D, box_key)
+            if box is None:
                 return
-            self._app.delete_tracks_by_id_and_direction(s_id, item.id, Direction.PREV)
+            self._app.delete_tracks_by_id_and_direction(s_id, box.id, Direction.PREV)
             should_render = True
         else:
             logger.info("Preview context action '{}' is not implemented yet.", action)
@@ -471,11 +481,11 @@ class AnnotationHandler(QObject):
             return
 
         try:
-            # item_key format is "track:track-uid" or "manual:manual-id", we need the raw item_id
+            # box_key format is "track:track-uid" or "manual:manual-id", we need the raw box_id
             for key in keys:
-                item = self._app.get_layer_box_by_key(s_id, VideoDataLayer.D, key)
-                if item:
-                    self._app.delete_tracks_by_id_and_direction(s_id, item.id, direction)
+                box = self._app.get_layer_box_by_key(s_id, VideoDataLayer.D, key)
+                if box:
+                    self._app.delete_tracks_by_id_and_direction(s_id, box.id, direction)
             self._controller.render_frame_for_session_id(s_id)
         except Exception as exc:
             self._window.show_error("Delete Occurrences Failed", str(exc))

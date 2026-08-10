@@ -218,36 +218,12 @@ class AnnotationOverlayWidget(QWidget):
     @override
     def mousePressEvent(self, event: QMouseEvent) -> None:
         """Handle mouse press to start drawing, panning, or selecting bounding boxes."""
-        # 1. Catch Ctrl + Left Click to START panning
-        # TODO: Swap Ctrl with Alt (Ctrl will be used for selecting boxes)
-        #  Selection process will work in sync across THIS widget and,
-        #  Tables within data tab of the BottomDataPanel,
-        #  i.e. Detection/Tracking tables.
-        #  Somewhere, a data structure (say list) will hold the selected detection keys.
-        #  This is how it will be done:
-        #  ----
-        #  Case 1. : User clicks on a detection over the canvas (while NO boxes were selected)
-        #   - the detection will be selected and
-        #     the data tab will be updated accordingly
-        #     (detection will become active on the data tab)
-        #  Case 2. : User clicks on a detection over the canvas
-        #            (while one or more boxes were selected AND Ctrl is held down)
-        #   - the detection will be selected
-        #   - the data tab will be updated accordingly
-        #     (detection will become active on the data tab)
-        #  ----
-        #  IMPORTANT NOTE:
-        #  While operations like Drag, Copy, Paste, Delete, etc. can be performed on two or more selected boxes,
-        #  Operations like resize etc can NOT be used and are restricted to a single detection only.
-        #  ----
-        #  ANOTHER NOTE: Selection via canvas reflects in the data tab.
-        #  SIMILARLY, Selection via data tab reflects in the canvas.
-        #
+        # 1. Catch Alt + Left Click to START panning
         pos = event.position().toPoint()
         panning_started, pan_origin = try_start_panning(
             is_panning=self._is_panning,
             button_is_left=event.button() == Qt.MouseButton.LeftButton,
-            is_ctrl_pressed=event.modifiers() == Qt.KeyboardModifier.ControlModifier,
+            is_ctrl_pressed=event.modifiers() == Qt.KeyboardModifier.AltModifier,
             pos=pos,
         )
         if panning_started and pan_origin is not None:
