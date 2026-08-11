@@ -284,6 +284,9 @@ class UIHandler:
             if boxes_to_draw is not None:
                 active_bboxes = {box.key: box.bbox_xyxy for box in boxes_to_draw}
                 self._window.preview_container.set_active_bboxes(active_bboxes)
+                selected_keys = self._window.selected_frame_box_keys
+                logger.trace("Rendering {} selected overlay boxes: {}", len(selected_keys), selected_keys)
+                self._window.preview_container.set_selected_bbox_keys(selected_keys)
 
             # ================================================================
             # 2. DRAW BOXES ON FRAME

@@ -25,6 +25,7 @@ from PySide6.QtWidgets import QDialog
 from app.domain import AnnotationContextActions, Direction, VideoDataLayer, VideoDataLayerGroup
 from app.shared.logging_cfg import get_logger
 from app.ui.qt.dialogs import LabelDialog
+from app.ui.view_state.selection_history_state import CopiedBBoxSnapshot
 if TYPE_CHECKING:
     from PySide6.QtGui import QKeyEvent
 
@@ -129,6 +130,10 @@ class AnnotationHandler(QObject):
             (preview_container.bbox_edited, self.on_preview_bbox_edited),
             (preview_container.bbox_deleted, self.on_preview_bbox_deleted),
             (preview_container.bbox_selected, self.on_preview_bbox_selected),  # New: canvas selection
+            (preview_container.bbox_selection_requested, self.on_preview_bbox_selection_requested),
+            (preview_container.bbox_selection_cleared, self.on_preview_bbox_selection_cleared),
+            (preview_container.bbox_marquee_selected, self.on_preview_bbox_marquee_selected),
+            (preview_container.bboxes_moved, self.on_preview_bboxes_moved),
             (preview_container.context_action_triggered, self.on_preview_context_action),
             # Bottom panel action row buttons
             (bottom_panel.relabel_box_btn.clicked, self.on_relabel_selected),
@@ -165,7 +170,11 @@ class AnnotationHandler(QObject):
         if dialog.exec() == LabelDialog.DialogCode.Accepted and dialog.get_label():
             label = dialog.get_label()
             try:
+                before_boxes = self._get_current_frame_boxes_snapshot() if self._can_record_mutation() else []
+                before_selection = list(self._window.selected_frame_box_keys)
                 self._app.add_manual_detection_box_at_current_frame_index(s_id, label, (x1, y1, x2, y2))
+                if self._can_record_mutation():
+                    self._record_current_frame_mutation(before_boxes, before_selection)
                 self._window.set_status_text("Box added.")
                 self._controller.render_frame_for_session_id(s_id)
             except Exception as exc:
@@ -205,6 +214,8 @@ class AnnotationHandler(QObject):
             label, bbox_xyxy = dialog.get_annotation_data()
 
         try:
+            before_boxes = self._get_current_frame_boxes_snapshot() if self._can_record_mutation() else []
+            before_selection = list(self._window.selected_frame_box_keys)
             self._app.update_box_in_layer_at_current_frame(
                 s_id=s_id,
                 layer_name=VideoDataLayer.B if tab == VideoDataLayerGroup.DETECTION else VideoDataLayer.D,
@@ -212,6 +223,8 @@ class AnnotationHandler(QObject):
                 label=label,
                 bbox_xyxy=bbox_xyxy,
             )
+            if self._can_record_mutation():
+                self._record_current_frame_mutation(before_boxes, before_selection)
             self._controller.render_frame_for_session_id(s_id)
         except Exception as exc:
             self._window.show_error("Edit Failed", str(exc))
@@ -224,6 +237,208 @@ class AnnotationHandler(QObject):
         if fallback_box_key:
             return [fallback_box_key]
         return []
+
+    def _apply_selection_keys(self, keys: list[str], *, record_history: bool) -> None:
+        before_keys = self._window.selected_frame_box_keys
+        self._window.bbox_selection_state.set_selection(keys)
+        logger.debug("Selection changed from {} to {}.", before_keys, keys)
+        logger.trace("Synchronizing {} selected box keys to table and overlay.", len(keys))
+        self._window.bottom_panel._update_frame_box_buttons_state(prefer_shared_selection=True)
+        self._window.preview_container.set_selected_bbox_keys(keys)
+
+        if not record_history:
+            return
+
+        s_id = self._window.selected_s_id
+        if not s_id:
+            return
+
+        self._window.selection_history_state.record_selection_change(
+            session_id=str(s_id),
+            tab_index=int(self._window.active_tab_index),
+            before_keys=before_keys,
+            after_keys=keys,
+        )
+
+    def _get_current_frame_boxes_snapshot(self, frame_index: int | None = None) -> list:
+        """Clone active-tab boxes so a mutation can be restored exactly."""
+        s_id = self._window.selected_s_id
+        if not s_id:
+            return []
+        if frame_index is None:
+            frame_boxes = self._app.get_tab_frame_boxes_for_session_id(s_id, self._window.active_tab_index)
+            return [box.clone() for box in frame_boxes.frame_data_boxes]
+        return self._app.get_tab_frame_boxes_at_frame_index(s_id, self._window.active_tab_index, frame_index)
+
+    def _can_record_mutation(self) -> bool:
+        return all(
+            hasattr(self._app, attribute)
+            for attribute in (
+                "get_tab_frame_boxes_for_session_id",
+                "get_tab_frame_boxes_at_frame_index",
+                "get_session_by_id",
+            )
+        )
+
+    def _record_current_frame_mutation(
+            self,
+            before_boxes: list,
+            before_selection: list[str],
+            frame_index: int | None = None,
+    ) -> None:
+        s_id = self._window.selected_s_id
+        if not s_id:
+            return
+        if frame_index is None:
+            frame_index = self._app.get_session_by_id(s_id).state.playback.current_frame_index
+        after_boxes = self._get_current_frame_boxes_snapshot(frame_index)
+        after_selection = self._window.selected_frame_box_keys
+        self._window.selection_history_state.record_box_mutation(
+            session_id=str(s_id),
+            tab_index=int(self._window.active_tab_index),
+            frame_index=frame_index,
+            before_boxes=before_boxes,
+            after_boxes=after_boxes,
+            before_selection=before_selection,
+            after_selection=after_selection,
+        )
+        logger.trace(
+            "Recorded frame mutation at frame {}: {} boxes -> {} boxes.",
+            frame_index,
+            len(before_boxes),
+            len(after_boxes),
+        )
+
+    def _restore_box_mutation(self, entry, use_after_state: bool) -> None:
+        s_id = self._window.selected_s_id
+        if not s_id:
+            return
+        boxes = list(entry.after_boxes if use_after_state else entry.before_boxes)
+        selection = list(entry.after_selection if use_after_state else entry.before_selection)
+        self._app.replace_tab_frame_boxes(
+            s_id=s_id,
+            tab=self._window.active_tab_index,
+            frame_index=entry.frame_index,
+            boxes=boxes,
+        )
+        self._apply_selection_keys(selection, record_history=False)
+        self._controller.render_frame_for_session_id(s_id)
+
+    def _undo_selection_shortcut(self) -> bool:
+        s_id = self._window.selected_s_id
+        if not s_id:
+            return True
+
+        mutation = self._window.selection_history_state.undo_box_mutation(
+            session_id=str(s_id),
+            tab_index=int(self._window.active_tab_index),
+        )
+        if mutation is not None:
+            logger.debug("Undoing box mutation for frame {}.", mutation.frame_index)
+            self._restore_box_mutation(mutation, use_after_state=False)
+            return True
+
+        restored_keys = self._window.selection_history_state.undo_selection(
+            session_id=str(s_id),
+            tab_index=int(self._window.active_tab_index),
+        )
+        if restored_keys is None:
+            self._window.set_status_text("Nothing to undo.")
+            return True
+
+        self._apply_selection_keys(restored_keys, record_history=False)
+        return True
+
+    def _redo_selection_shortcut(self) -> bool:
+        s_id = self._window.selected_s_id
+        if not s_id:
+            return True
+
+        mutation = self._window.selection_history_state.redo_box_mutation(
+            session_id=str(s_id),
+            tab_index=int(self._window.active_tab_index),
+        )
+        if mutation is not None:
+            logger.debug("Redoing box mutation for frame {}.", mutation.frame_index)
+            self._restore_box_mutation(mutation, use_after_state=True)
+            return True
+
+        restored_keys = self._window.selection_history_state.redo_selection(
+            session_id=str(s_id),
+            tab_index=int(self._window.active_tab_index),
+        )
+        if restored_keys is None:
+            self._window.set_status_text("Nothing to redo.")
+            return True
+
+        self._apply_selection_keys(restored_keys, record_history=False)
+        return True
+
+    def _copy_selected_boxes_to_clipboard(self) -> bool:
+        s_id = self._window.selected_s_id
+        selected_keys = self._window.selected_frame_box_keys
+        if not s_id or not selected_keys:
+            self._window.set_status_text("No selected boxes to copy.")
+            return True
+
+        frame_boxes_vm = self._app.get_tab_frame_boxes_for_session_id(s_id, self._window.active_tab_index)
+        by_key = {box.key: box for box in frame_boxes_vm.frame_data_boxes}
+
+        copied_boxes: list[CopiedBBoxSnapshot] = []
+        for key in selected_keys:
+            box = by_key.get(key)
+            if box is None:
+                continue
+            copied_boxes.append(
+                CopiedBBoxSnapshot(
+                    label=box.label,
+                    bbox_xyxy=box.bbox_xyxy,
+                    color_hex=box.color_hex,
+                )
+            )
+
+        if not copied_boxes:
+            self._window.set_status_text("No selected boxes to copy.")
+            return True
+
+        self._window.selection_history_state.set_clipboard_boxes(
+            boxes=copied_boxes,
+            tab_index=int(self._window.active_tab_index),
+        )
+        self._window.set_status_text(f"Copied {len(copied_boxes)} box(es).")
+        return True
+
+    def _paste_clipboard_to_current_frame(self) -> bool:
+        s_id = self._window.selected_s_id
+        if not s_id:
+            return True
+
+        if not self._window.selection_history_state.has_clipboard_boxes:
+            self._window.set_status_text("Clipboard is empty.")
+            return True
+
+        copied_boxes = self._window.selection_history_state.get_clipboard_boxes()
+        if not copied_boxes:
+            self._window.set_status_text("Clipboard is empty.")
+            return True
+
+        try:
+            before_boxes = self._get_current_frame_boxes_snapshot() if self._can_record_mutation() else []
+            before_selection = self._window.selected_frame_box_keys
+            pasted_keys = self._app.add_manual_boxes_to_current_frame(
+                s_id=s_id,
+                tab=self._window.active_tab_index,
+                boxes=[(box.label, box.bbox_xyxy, box.color_hex) for box in copied_boxes],
+            )
+            self._apply_selection_keys(pasted_keys, record_history=False)
+            if self._can_record_mutation():
+                self._record_current_frame_mutation(before_boxes, before_selection)
+            self._controller.render_frame_for_session_id(s_id)
+            self._window.set_status_text(f"Pasted {len(copied_boxes)} box(es).")
+        except Exception as exc:
+            self._window.show_error("Paste Failed", str(exc))
+
+        return True
 
     def handle_delete_key(self, event: QKeyEvent) -> bool:
         if event.modifiers() != Qt.KeyboardModifier.NoModifier:
@@ -246,17 +461,28 @@ class AnnotationHandler(QObject):
         key = event.key()
         if key == Qt.Key.Key_A:
             all_keys = self._window.bottom_panel.get_all_box_keys_from_active_tab()
-            self._window.bbox_selection_state.set_selection(all_keys)
-            self._window.bottom_panel._update_frame_box_buttons_state(prefer_shared_selection=True)
+            self._apply_selection_keys(all_keys, record_history=True)
             return True
         if key == Qt.Key.Key_D:
-            self._window.bbox_selection_state.clear()
-            self._window.bottom_panel._update_frame_box_buttons_state(prefer_shared_selection=True)
+            self._apply_selection_keys([], record_history=True)
             return True
         if key == Qt.Key.Key_I:
             all_keys = self._window.bottom_panel.get_all_box_keys_from_active_tab()
-            self._window.bbox_selection_state.invert(all_keys)
-            self._window.bottom_panel._update_frame_box_buttons_state(prefer_shared_selection=True)
+            current_keys = set(self._window.selected_frame_box_keys)
+            inverted = [key for key in all_keys if key not in current_keys]
+            self._apply_selection_keys(inverted, record_history=True)
+            return True
+        if key == Qt.Key.Key_Z:
+            return self._undo_selection_shortcut()
+        if key == Qt.Key.Key_Y:
+            return self._redo_selection_shortcut()
+        if key == Qt.Key.Key_C:
+            return self._copy_selected_boxes_to_clipboard()
+        if key == Qt.Key.Key_V:
+            return self._paste_clipboard_to_current_frame()
+        if key == Qt.Key.Key_X:
+            if self._copy_selected_boxes_to_clipboard():
+                self.on_delete_selected()
             return True
 
         return False
@@ -286,6 +512,8 @@ class AnnotationHandler(QObject):
             dy = delta
 
         try:
+            before_boxes = self._get_current_frame_boxes_snapshot() if self._can_record_mutation() else []
+            before_selection = list(box_keys)
             if self._window.active_tab_index == VideoDataLayerGroup.DETECTION:
                 moved = self._app.change_current_layer_boxes_by_keys_and_dxdy(s_id=s_id,
                                                                               layer_name=VideoDataLayer.B,
@@ -297,6 +525,8 @@ class AnnotationHandler(QObject):
                                                                               box_keys=box_keys, dx=dx,
                                                                               dy=dy)
             if moved > 0:
+                if self._can_record_mutation():
+                    self._record_current_frame_mutation(before_boxes, before_selection)
                 self._controller.render_frame_for_session_id(s_id)
         except Exception as exc:
             self._window.show_error("Move Failed", str(exc))
@@ -338,12 +568,18 @@ class AnnotationHandler(QObject):
             return
 
         try:
+            before_boxes = self._get_current_frame_boxes_snapshot()
+            before_selection = list(keys)
             # ================================================================
             # 1. DELETE BOXES FROM ACTIVE TAB
             # ================================================================
             self._app.delete_boxes_by_keys_and_tab_id_for_current_frame_by_session_id(
                 s_id=s_id, box_keys=keys, tab=self._window.active_tab_index
             )
+            logger.debug("Deleted {} selected boxes; clearing their shared selection.", len(keys))
+            logger.trace("Deleted box keys: {}", keys)
+            self._apply_selection_keys([], record_history=True)
+            self._record_current_frame_mutation(before_boxes, before_selection)
 
             # ================================================================
             # 2. RENDER FRAME WITH UPDATED BOXES
@@ -376,6 +612,8 @@ class AnnotationHandler(QObject):
            return
 
         try:
+           before_boxes = self._get_current_frame_boxes_snapshot()
+           before_selection = list(keys)
            layer_name = VideoDataLayer.B if self._window.active_tab_index == VideoDataLayerGroup.DETECTION else VideoDataLayer.D
            for key in keys:
                box = self._app.get_layer_box_by_key(s_id, layer_name, key)
@@ -388,6 +626,7 @@ class AnnotationHandler(QObject):
                    label=new_label,
                    bbox_xyxy=box.bbox_xyxy,
                )
+           self._record_current_frame_mutation(before_boxes, before_selection)
            self._controller.render_frame_for_session_id(s_id)
         except Exception as exc:
            self._window.show_error("Relabel Failed", str(exc))
@@ -473,7 +712,11 @@ class AnnotationHandler(QObject):
 
         bbox_xyxy = (x1, y1, x2, y2)
         try:
+            before_boxes = self._get_current_frame_boxes_snapshot() if self._can_record_mutation() else []
+            before_selection = list(self._window.selected_frame_box_keys)
             self._app.add_manual_detection_box_at_current_frame_index(s_id, label, bbox_xyxy)
+            if self._can_record_mutation():
+                self._record_current_frame_mutation(before_boxes, before_selection)
             self._controller.render_frame_for_session_id(s_id)
             self._window.set_status_text("Annotation added.")
         except Exception as exc:
@@ -503,17 +746,81 @@ class AnnotationHandler(QObject):
         if s_id:
             tab = self._window.active_tab_index
             logger.debug("Deleting the detection from the active tab {}", tab)
+            before_boxes = self._get_current_frame_boxes_snapshot() if self._can_record_mutation() else []
+            before_selection = list(self._window.selected_frame_box_keys)
 
             self._app.delete_boxes_by_keys_and_tab_id_for_current_frame_by_session_id(s_id=s_id, box_keys=[box_key],
                                                                                       tab=tab)
+            remaining_selection = [key for key in before_selection if key != box_key]
+            self._apply_selection_keys(remaining_selection, record_history=True)
+            if self._can_record_mutation():
+                self._record_current_frame_mutation(before_boxes, before_selection)
             self._controller.render_frame_for_session_id(s_id)
 
     @Slot(str)
     def on_preview_bbox_selected(self, box_key: str) -> None:
         """Handle canvas-originated selection and sync to table and shared state."""
         logger.debug("Canvas bbox selected: {}", box_key)
-        self._window.bbox_selection_state.set_selection([box_key])
-        self._window.bottom_panel._update_frame_box_buttons_state(prefer_shared_selection=True)
+        self._apply_selection_keys([box_key], record_history=True)
+
+    @Slot(str, bool)
+    def on_preview_bbox_selection_requested(self, box_key: str, additive: bool) -> None:
+        """Apply a canvas click to the shared selection, toggling when Ctrl is held."""
+        if not additive:
+            self._apply_selection_keys([box_key], record_history=True)
+            return
+
+        selected_keys = self._window.selected_frame_box_keys
+        if box_key in selected_keys:
+            selected_keys = [key for key in selected_keys if key != box_key]
+        else:
+            selected_keys.append(box_key)
+        self._apply_selection_keys(selected_keys, record_history=True)
+
+    @Slot()
+    def on_preview_bbox_selection_cleared(self) -> None:
+        """Clear shared selection after a click on empty canvas space."""
+        self._apply_selection_keys([], record_history=True)
+
+    @Slot(list)
+    def on_preview_bbox_marquee_selected(self, box_keys: list[str]) -> None:
+        """Add marquee-contained boxes to the current shared selection."""
+        selected_keys = list(self._window.selected_frame_box_keys)
+        selected_key_set = set(selected_keys)
+        selected_keys.extend(key for key in box_keys if key not in selected_key_set)
+        self._apply_selection_keys(selected_keys, record_history=True)
+
+    @Slot(list, int, int)
+    def on_preview_bboxes_moved(self, box_keys: list[str], dx: int, dy: int) -> None:
+        """Apply an overlay group-drag delta to every selected editable box."""
+        s_id = self._window.selected_s_id
+        if not s_id or not box_keys:
+            return
+
+        layer_name = (
+            VideoDataLayer.B
+            if self._window.active_tab_index == VideoDataLayerGroup.DETECTION
+            else VideoDataLayer.D
+        )
+        logger.debug("Moving {} selected boxes by ({}, {}).", len(box_keys), dx, dy)
+        logger.trace("Group move layer={} keys={}", layer_name, box_keys)
+        try:
+            before_boxes = self._get_current_frame_boxes_snapshot() if self._can_record_mutation() else []
+            before_selection = list(self._window.selected_frame_box_keys)
+            moved = self._app.change_current_layer_boxes_by_keys_and_dxdy(
+                s_id=s_id,
+                layer_name=layer_name,
+                box_keys=box_keys,
+                dx=dx,
+                dy=dy,
+            )
+            logger.trace("Group move updated {} boxes.", moved)
+            if moved:
+                if self._can_record_mutation():
+                    self._record_current_frame_mutation(before_boxes, before_selection)
+                self._controller.render_frame_for_session_id(s_id)
+        except Exception as exc:
+            self._window.show_error("Move Failed", str(exc))
 
     @Slot(str, str)
     def on_preview_context_action(self, action: str, box_key: str) -> None:
@@ -522,7 +829,6 @@ class AnnotationHandler(QObject):
         if not s_id:
             return
 
-        active_layer = VideoDataLayer.B if self._window.active_tab_index == VideoDataLayerGroup.DETECTION else VideoDataLayer.D
         should_render = False
 
         if action == AnnotationContextActions.NO_OP.value:
@@ -532,36 +838,42 @@ class AnnotationHandler(QObject):
 
         selected_keys = self._get_effective_selection_keys(box_key or None)
         if selected_keys:
-            self._window.bbox_selection_state.set_selection(selected_keys)
+            self._apply_selection_keys(selected_keys, record_history=False)
         elif box_key:
             selected_keys = [box_key]
-            self._window.bbox_selection_state.set_selection(selected_keys)
+            self._apply_selection_keys(selected_keys, record_history=False)
 
         if action == AnnotationContextActions.SELECT_ALL.value:
-            self._window.bbox_selection_state.set_selection(self._window.bottom_panel.get_all_box_keys_from_active_tab())
-            self._window.bottom_panel._update_frame_box_buttons_state(prefer_shared_selection=True)
+            self._apply_selection_keys(
+                self._window.bottom_panel.get_all_box_keys_from_active_tab(),
+                record_history=True,
+            )
             return
         if action == AnnotationContextActions.SELECT_NONE.value:
-            self._window.bbox_selection_state.clear()
-            self._window.bottom_panel._update_frame_box_buttons_state(prefer_shared_selection=True)
+            self._apply_selection_keys([], record_history=True)
             return
         if action == AnnotationContextActions.SELECT_INVERSE.value:
             all_keys = self._window.bottom_panel.get_all_box_keys_from_active_tab()
-            self._window.bbox_selection_state.invert(all_keys)
-            self._window.bottom_panel._update_frame_box_buttons_state(prefer_shared_selection=True)
+            current_keys = set(self._window.selected_frame_box_keys)
+            inverted = [key for key in all_keys if key not in current_keys]
+            self._apply_selection_keys(inverted, record_history=True)
             return
 
         # Route the context menu actions directly to the existing backend logic!
+        if action == AnnotationContextActions.COPY.value:
+            logger.trace("Copying selected boxes from context menu: {}", selected_keys)
+            self._copy_selected_boxes_to_clipboard()
+            return
+        if action == AnnotationContextActions.PASTE.value:
+            logger.trace("Pasting clipboard boxes from context menu.")
+            self._paste_clipboard_to_current_frame()
+            return
         if action == AnnotationContextActions.COPY_NEXT.value:
-            self._app.copy_boxes_to_adjacent_frame_by_direction(
-                s_id, active_layer, selected_keys, Direction.NEXT
-            )
-            should_render = True
+            self.copy_to_direction(Direction.NEXT, selected_keys)
+            return
         elif action == AnnotationContextActions.COPY_PREV.value:
-            self._app.copy_boxes_to_adjacent_frame_by_direction(
-                s_id, active_layer, selected_keys, Direction.PREV
-            )
-            should_render = True
+            self.copy_to_direction(Direction.PREV, selected_keys)
+            return
         elif action == AnnotationContextActions.DELETE.value:
             self._window.bbox_selection_state.set_selection(selected_keys)
             self.on_delete_selected()
@@ -628,6 +940,12 @@ class AnnotationHandler(QObject):
 
         tab = self._window.active_tab_index
         try:
+            current_frame_index = self._app.get_session_by_id(s_id).state.playback.current_frame_index
+            target_frame_index = current_frame_index + (1 if direction == Direction.NEXT else -1)
+            if target_frame_index < 0:
+                return
+            before_boxes = self._get_current_frame_boxes_snapshot(target_frame_index)
+            before_selection = list(keys)
             if tab == VideoDataLayerGroup.DETECTION:
                 self._app.copy_boxes_to_adjacent_frame_by_direction(s_id, VideoDataLayer.B, keys, direction)
             elif tab == VideoDataLayerGroup.TRACKING:
@@ -635,6 +953,7 @@ class AnnotationHandler(QObject):
             else:
                 raise ValueError(f"Unsupported tab: {tab}")
 
+            self._record_current_frame_mutation(before_boxes, before_selection, target_frame_index)
             self._controller.render_frame_for_session_id(s_id)
         except Exception as exc:
             self._window.show_error("Duplicate Failed", str(exc))

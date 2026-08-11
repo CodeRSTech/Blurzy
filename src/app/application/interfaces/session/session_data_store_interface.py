@@ -34,6 +34,9 @@ class SessionDataStoreInterface(Protocol):
     def has_boxes_for_layer_at_frame_index(self, layer: VideoDataLayer, frame_index: int) -> bool:
         ...
 
+    def has_frame_for_layer_at_frame_index(self, layer: VideoDataLayer, frame_index: int) -> bool:
+        ...
+
     # ============================== CREATE / UPDATE ==============================
 
     def add_box_to_layer_at_frame_index(

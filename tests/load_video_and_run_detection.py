@@ -17,7 +17,7 @@ def test_detection_on_small_video(qtbot, qapp):
     controller = UIController(q_app=qapp, window=window, app=app)
     qtbot.addWidget(window)
 
-    test_path = "D:/minmal_people_detection.mp4"
+    test_path = "D:/face-demographics-walking-and-pause.mp4"
     test_model = "YOLOv8n"
     model_change_dialog_path = (
         "app.ui.qt.dialogs.model_change.ModelChangeWarningDialog.exec"

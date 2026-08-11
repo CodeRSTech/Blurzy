@@ -41,3 +41,10 @@ def draw_active_bbox(painter: QPainter, rect: QRect) -> None:
         painter.setPen(QPen(_HANDLE_BORDER, 1))
         painter.setBrush(QBrush(_HANDLE_COLOR))
         painter.drawEllipse(pt, _HANDLE_DRAW_R, _HANDLE_DRAW_R)
+
+
+def draw_selected_bbox(painter: QPainter, rect: QRect) -> None:
+    """Draw a selection outline without edit handles."""
+    painter.setPen(QPen(_BOX_COLOR, 3, Qt.PenStyle.SolidLine))
+    painter.setBrush(Qt.BrushStyle.NoBrush)
+    painter.drawRect(rect)

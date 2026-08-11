@@ -45,6 +45,10 @@ class PreviewContainer(QWidget):
     bbox_deleted = Signal(str)
     context_action_triggered = Signal(str, str)  # action_name, item_key
     bbox_selected = Signal(str)  # item_key (new: canvas-driven selection)
+    bbox_selection_requested = Signal(str, bool)
+    bbox_selection_cleared = Signal()
+    bbox_marquee_selected = Signal(list)
+    bboxes_moved = Signal(list, int, int)
 
     def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
@@ -72,6 +76,10 @@ class PreviewContainer(QWidget):
         self.bbox_layer.bbox_edited.connect(self.bbox_edited.emit)
         self.bbox_layer.bbox_deleted.connect(self.bbox_deleted.emit)
         self.bbox_layer.bbox_selected.connect(self.bbox_selected.emit)  # New: canvas selection
+        self.bbox_layer.bbox_selection_requested.connect(self.bbox_selection_requested.emit)
+        self.bbox_layer.bbox_selection_cleared.connect(self.bbox_selection_cleared.emit)
+        self.bbox_layer.bbox_marquee_selected.connect(self.bbox_marquee_selected.emit)
+        self.bbox_layer.bboxes_moved.connect(self.bboxes_moved.emit)
         self.bbox_layer.context_action_triggered.connect(self.context_action_triggered.emit)
 
         # --- Viewport State ---
@@ -105,6 +113,10 @@ class PreviewContainer(QWidget):
     def set_active_bboxes(self, bboxes: dict[str, BBoxXYXYTuple]) -> None:
         """Injects the live bounding boxes from the current data tab into the overlay."""
         self.bbox_layer.set_active_bboxes(bboxes)
+
+    def set_selected_bbox_keys(self, box_keys: list[str]) -> None:
+        """Mirror the shared selection state into the overlay renderer."""
+        self.bbox_layer.set_selected_bbox_keys(box_keys)
 
     def set_tracker_actions_enabled(self, enabled: bool) -> None:
         """

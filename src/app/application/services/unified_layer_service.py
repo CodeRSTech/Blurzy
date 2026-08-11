@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING, final
 
 from app.application.adapters import ApplicationAdapter
 from app.domain import VideoDataLayer, BoxSource, str_iterable_as_set_without_null_values, VideoDataLayerGroup, Direction, FrameBoxesViewModel
+from app.domain.views.bounding_box_view_model import BBoxViewModel
 from app.domain.helpers.functions import new_passes_filter
 from app.shared import get_logger
 from app.shared.exceptions import (
@@ -16,7 +17,7 @@ from app.shared.exceptions import (
     UnsupportedTabException,
 )
 if TYPE_CHECKING:
-    from app.domain import BBoxXYXYTuple, BBoxViewModel
+    from app.domain import BBoxXYXYTuple
 
 
 if TYPE_CHECKING:
@@ -234,6 +235,62 @@ class UnifiedLayerService:
         session.data.delete_boxes_from_layer_by_id_at_frame_index(
             layer_name, keys, session.state.playback.current_frame_index)
 
+    def add_manual_boxes_to_current_frame(
+            self,
+            s_id: SessionId,
+            tab: VideoDataLayerGroup,
+            boxes: Iterable[tuple[str, BBoxXYXYTuple, str]],
+    ) -> list[str]:
+        """Create clipboard boxes as manual boxes in Detection or Tracking editable layers."""
+        layer_name = VideoDataLayer.B if tab == VideoDataLayerGroup.DETECTION else VideoDataLayer.D
+        session = self._app_adapter.get_session_by_id(s_id)
+        frame_index = session.state.playback.current_frame_index
+        created: list[BBoxViewModel] = []
+        for label, bbox_xyxy, color_hex in boxes:
+            annotation_id = session.state.next_annotation_id
+            created.append(
+                BBoxViewModel(
+                    id=f"manual-{annotation_id}",
+                    source=BoxSource.MANUAL,
+                    label=label,
+                    bbox_xyxy=bbox_xyxy,
+                    color_hex=color_hex,
+                    confidence=1.0,
+                    key=f"manual:manual-{annotation_id}",
+                )
+            )
+            session.state.next_annotation_id += 1
+
+        if created:
+            session.data.add_boxes_to_layer_at_frame_index(layer_name, frame_index, created)
+        logger.debug("Pasted {} manual boxes into layer {} frame {}.", len(created), layer_name, frame_index)
+        logger.trace("Pasted box keys: {}", [box.key for box in created])
+        return [box.key for box in created]
+
+    def replace_tab_frame_boxes(
+            self,
+            s_id: SessionId,
+            tab: VideoDataLayerGroup,
+            frame_index: int,
+            boxes: list[BBoxViewModel],
+    ) -> None:
+        """Replace one editable frame with cloned history snapshot boxes."""
+        layer_name = VideoDataLayer.B if tab == VideoDataLayerGroup.DETECTION else VideoDataLayer.D
+        session = self._app_adapter.get_session_by_id(s_id)
+        session.data.overwrite_layer_at_index_with_boxes(layer_name, frame_index, [box.clone() for box in boxes])
+        logger.debug("Restored {} boxes into layer {} frame {}.", len(boxes), layer_name, frame_index)
+
+    def get_tab_frame_boxes_at_frame_index(
+            self, s_id: SessionId, tab: VideoDataLayerGroup, frame_index: int
+    ) -> list[BBoxViewModel]:
+        """Return cloned editable-layer boxes without changing playback state."""
+        layer_name = VideoDataLayer.B if tab == VideoDataLayerGroup.DETECTION else VideoDataLayer.D
+        session = self._app_adapter.get_session_by_id(s_id)
+        return [
+            box.clone()
+            for box in session.data.get_boxes_for_layer_at_frame_index_as_list(layer_name, frame_index)
+        ]
+
     def get_tab_frame_boxes_for_session_id(self, s_id: SessionId, tab: VideoDataLayerGroup) -> FrameBoxesViewModel:
         session = self._app_adapter.get_session_by_id(s_id)
         frame_index = session.state.playback.current_frame_index
@@ -341,7 +398,7 @@ class UnifiedLayerService:
         # It should be responsible for all updating the boxes at an index.
         # (or even the entire layer if need be)
 
-        moved = session.data.move_manual_boxes_in_layer_at_frame_index_by_delta(
+        moved = session.data.move_boxes_in_layer_at_frame_index_by_delta(
             layer_name, session.state.playback.current_frame_index, keys, dx, dy
         )
         return moved
@@ -375,9 +432,10 @@ def _seed_layer_frame_from_layer(
     """Just-In-Time (JIT) Seeder: Lazily populates Layer B only when the user looks at it."""
     logger.trace("Seeding Layer {} from Layer {} for frame {}", target, source, frame_index)
 
-    # FAST CHECK: If Layer B already has data for this frame, skip.
-    if session.data.has_boxes_for_layer_at_frame_index(target, frame_index):
-        logger.trace("Layer {} already has data for frame {}", target, frame_index)
+    # A frame remains initialized after its final box is deleted. This must not
+    # be treated as an uninitialized frame and repopulated from the source layer.
+    if session.data.has_frame_for_layer_at_frame_index(target, frame_index):
+        logger.trace("Layer {} frame {} is already initialized.", target, frame_index)
         return
 
     # FAST CHECK: If Layer A is empty for this frame, skip.

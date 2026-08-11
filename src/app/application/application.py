@@ -1,9 +1,5 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
-
-
 from typing import final, override, TYPE_CHECKING
 
 from PySide6.QtCore import QObject
@@ -284,6 +280,31 @@ class Application(QObject):
             s_id, box_keys, tab
         )
 
+    def add_manual_boxes_to_current_frame(
+            self,
+            s_id: SessionId,
+            tab: VideoDataLayerGroup,
+            boxes: Iterable[tuple[str, BBoxXYXYTuple, str]],
+    ) -> list[str]:
+        """Add clipboard boxes as new manual boxes to the active editable layer."""
+        return self.unified_layer_svc.add_manual_boxes_to_current_frame(s_id, tab, boxes)
+
+    def replace_tab_frame_boxes(
+            self,
+            s_id: SessionId,
+            tab: VideoDataLayerGroup,
+            frame_index: int,
+            boxes: list[BBoxViewModel],
+    ) -> None:
+        """Restore an editable tab frame from a mutation-history snapshot."""
+        self.unified_layer_svc.replace_tab_frame_boxes(s_id, tab, frame_index, boxes)
+
+    def get_tab_frame_boxes_at_frame_index(
+            self, s_id: SessionId, tab: VideoDataLayerGroup, frame_index: int
+    ) -> list[BBoxViewModel]:
+        """Return cloned editable-tab boxes for an explicit frame."""
+        return self.unified_layer_svc.get_tab_frame_boxes_at_frame_index(s_id, tab, frame_index)
+
     # Used by UIHandler
     def get_tab_frame_boxes_for_session_id(
             self, s_id: SessionId, tab: VideoDataLayerGroup
@@ -489,4 +510,3 @@ class Application(QObject):
         if layer in (_L.A, _L.B):
             return self.detection_export_svc.export_layer(s_id, layer, file_path)
         return self.tracking_export_svc.export_layer(s_id, layer, file_path)
-

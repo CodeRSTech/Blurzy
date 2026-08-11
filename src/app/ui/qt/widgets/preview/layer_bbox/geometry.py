@@ -146,3 +146,16 @@ def find_bbox_at_pos_with_transforms(
 
     return None, None
 
+
+def find_bbox_keys_intersecting_rect(
+    active_bboxes: dict[str, BBoxXYXYTuple],
+    selection_rect: QRect,
+    pixmap_rect: QRect,
+    image_size: QSize | None,
+) -> list[str]:
+    """Return box keys whose widget-space bounds intersect a marquee rectangle."""
+    return [
+        bbox_id
+        for bbox_id, (x1, y1, x2, y2) in active_bboxes.items()
+        if image_rect_to_widget_space(x1, y1, x2, y2, pixmap_rect, image_size).intersects(selection_rect)
+    ]

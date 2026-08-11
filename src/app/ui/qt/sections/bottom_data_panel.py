@@ -191,7 +191,7 @@ class BottomDataPanelContainer(QWidget):
                 return shared_selection_keys
 
         table_selection_keys = self.get_selected_box_keys_from_active_tab
-        if table_selection_keys:
+        if not prefer_shared_selection:
             return table_selection_keys
 
         if isinstance(window, Window):
@@ -242,6 +242,8 @@ class BottomDataPanelContainer(QWidget):
 
         if isinstance(window, Window):
             window.bbox_selection_state.set_selection(selected_keys)
+            logger.trace("Synchronizing table selection to overlay: {}", selected_keys)
+            window.preview_container.set_selected_bbox_keys(selected_keys)
             self._sync_selection_to_active_table(selected_keys)
 
     def select_session(self, s_id: SessionId) -> None:

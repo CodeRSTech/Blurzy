@@ -22,6 +22,8 @@ def build_no_hit_action_map(menu: QMenu) -> dict[QAction, str]:
     action_select_inverse = menu.addAction("Invert Selection")
     action_relabel = menu.addAction("Relabel Selected")
     menu.addSeparator()
+    action_paste = menu.addAction("Paste")
+    menu.addSeparator()
     action_create_bbox_here = menu.addAction("Add Bounding Box Here")
     action_remove_all_boxes = menu.addAction("Remove All Bounding Boxes")
     menu.addSeparator()
@@ -33,6 +35,7 @@ def build_no_hit_action_map(menu: QMenu) -> dict[QAction, str]:
         action_select_none: AnnotationContextActions.SELECT_NONE.value,
         action_select_inverse: AnnotationContextActions.SELECT_INVERSE.value,
         action_relabel: AnnotationContextActions.RELABEL.value,
+        action_paste: AnnotationContextActions.PASTE.value,
         action_create_bbox_here: AnnotationContextActions.ADD_BBOX_HERE.value,
         action_remove_all_boxes: AnnotationContextActions.DELETE_ALL_BBOXES.value,
         action_reset_current_frame: AnnotationContextActions.RESET_FRAME.value,
@@ -83,5 +86,4 @@ def resolve_selected_action(chosen: QAction | None, action_names: dict[QAction, 
     if chosen is None:
         return None
     return action_names.get(chosen)
-
 

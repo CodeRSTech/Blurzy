@@ -110,6 +110,11 @@ class SessionDataStore(QObject):
         with self.data_lock:
             return len(self._data[layer].get(frame_index, [])) > 0
 
+    def has_frame_for_layer_at_frame_index(self, layer: VideoDataLayer, frame_index: int) -> bool:
+        """Return whether a layer frame was initialized, even when it is intentionally empty."""
+        with self.data_lock:
+            return frame_index in self._data[layer]
+
     # ============================== CREATE / UPDATE ==============================
 
     def add_box_to_layer_at_frame_index(

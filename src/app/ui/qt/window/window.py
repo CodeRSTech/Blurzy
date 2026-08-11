@@ -18,6 +18,7 @@ from app.ui.qt.shared.widget_factories import create_progress_bar
 from app.ui.qt.window.splitter_defaults import _WindowSplitterDefaults
 from app.ui.view_state.preview_state import ToolMode
 from app.ui.view_state.bbox_selection_state import BBoxSelectionState
+from app.ui.view_state.selection_history_state import SelectionHistoryState
 if TYPE_CHECKING:
     from collections.abc import Callable, Iterable
     from PySide6.QtGui import QCloseEvent
@@ -47,6 +48,7 @@ class Window(QtWidgets.QMainWindow):
         self._splitter_defaults = _WindowSplitterDefaults()
         self._close_request_handler: Callable[[], bool] | None = None
         self._bbox_selection_state = BBoxSelectionState()
+        self._selection_history_state = SelectionHistoryState()
 
         self.setWindowTitle("EasyBlur")
         self.resize(1300, 850)
@@ -261,6 +263,11 @@ class Window(QtWidgets.QMainWindow):
     def bbox_selection_state(self) -> BBoxSelectionState:
         """Return the current bbox selection state."""
         return self._bbox_selection_state
+
+    @property
+    def selection_history_state(self) -> SelectionHistoryState:
+        """Return selection history and clipboard state."""
+        return self._selection_history_state
 
     @property
     def active_tab_index(self) -> VideoDataLayerGroup:
