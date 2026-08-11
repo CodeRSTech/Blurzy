@@ -16,7 +16,7 @@ class BBoxState:
 
     @property
     def has_valid_rect(self) -> bool:
-        return not self.rect.isNull()
+        return not self.rect.isNull() and self.rect.width() > 0 and self.rect.height() > 0
 
     def __repr__(self) -> str:
         return f"_BBoxState(rect={self.rect}, drag_mode={self.drag_mode}, drag_origin={self.drag_origin}, rect_at_drag_start={self.rect_at_drag_start})"

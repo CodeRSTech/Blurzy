@@ -35,16 +35,34 @@ def get_drag_mode_for_rect_at_pos(rect: QRect, pos: QPoint) -> DragMode:
 
 
 def clamp_rect_to_pixmap(rect: QRect, pixmap_rect: QRect) -> QRect:
-    dx = dy = 0
-    if rect.left() < pixmap_rect.left():
-        dx = pixmap_rect.left() - rect.left()
-    if rect.right() > pixmap_rect.right():
-        dx = pixmap_rect.right() - rect.right()
-    if rect.top() < pixmap_rect.top():
-        dy = pixmap_rect.top() - rect.top()
-    if rect.bottom() > pixmap_rect.bottom():
-        dy = pixmap_rect.bottom() - rect.bottom()
-    return rect.translated(dx, dy)
+    if rect.isNull():
+        return rect
+
+    normalized = rect.normalized()
+    left = normalized.left()
+    right = normalized.right()
+    top = normalized.top()
+    bottom = normalized.bottom()
+
+    if right > pixmap_rect.right():
+        shift = pixmap_rect.right() - right
+        left += shift
+        right += shift
+    elif left < pixmap_rect.left():
+        shift = pixmap_rect.left() - left
+        left += shift
+        right += shift
+
+    if bottom > pixmap_rect.bottom():
+        shift = pixmap_rect.bottom() - bottom
+        top += shift
+        bottom += shift
+    elif top < pixmap_rect.top():
+        shift = pixmap_rect.top() - top
+        top += shift
+        bottom += shift
+
+    return QRect(QPoint(left, top), QPoint(right, bottom)).normalized()
 
 
 def apply_clamped_drag_deltas(mode: DragMode, pr: QRect, x1: int, x2: int, y1: int, y2: int, dx: int, dy: int) -> QRect:

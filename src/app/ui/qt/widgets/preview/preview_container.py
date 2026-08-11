@@ -39,6 +39,7 @@ class PreviewContainer(QWidget):
     bbox_edited = Signal(str, int, int, int, int)
     bbox_deleted = Signal(str)
     context_action_triggered = Signal(str, str)  # action_name, item_key
+    bbox_selected = Signal(str)  # item_key (new: canvas-driven selection)
 
     def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
@@ -65,6 +66,7 @@ class PreviewContainer(QWidget):
         self.bbox_layer.bbox_drawn.connect(self.bbox_drawn.emit)
         self.bbox_layer.bbox_edited.connect(self.bbox_edited.emit)
         self.bbox_layer.bbox_deleted.connect(self.bbox_deleted.emit)
+        self.bbox_layer.bbox_selected.connect(self.bbox_selected.emit)  # New: canvas selection
         self.bbox_layer.context_action_triggered.connect(self.context_action_triggered.emit)
 
         # --- Viewport State ---
@@ -124,6 +126,7 @@ class PreviewContainer(QWidget):
     def _handle_pan(self, dx: int, dy: int) -> None:
         self._current_pan += QPointF(dx, dy)
         self.video_layer.set_pan(self._current_pan.x(), self._current_pan.y())
+        self.bbox_layer.set_pan(self._current_pan.x(), self._current_pan.y())  # Sync to overlay
 
     def _handle_zoom(self, scroll_delta: float, mouse_x: int, mouse_y: int) -> None:
         # TODO:
@@ -161,3 +164,6 @@ class PreviewContainer(QWidget):
 
         self.video_layer.set_zoom(self._current_zoom)
         self.video_layer.set_pan(self._current_pan.x(), self._current_pan.y())
+        # Sync to overlay
+        self.bbox_layer.set_zoom(self._current_zoom)
+        self.bbox_layer.set_pan(self._current_pan.x(), self._current_pan.y())

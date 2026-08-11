@@ -53,6 +53,7 @@ class TransportControlsPanel(QVBoxLayout):
         self.add_mode_btn = QRadioButton("Add")
         self.edit_mode_btn = QRadioButton("Edit")
         self.delete_mode_btn = QRadioButton("Delete")
+        self.delete_mode_btn.setVisible(False)
         self.edit_mode_btn.setChecked(True)
 
         self.play_btn.setToolTip("Play")
@@ -176,7 +177,7 @@ class TransportControlsPanel(QVBoxLayout):
         )
 
         btn_row.addSpacing(12)
-        btn_row.addWidgets((self.add_mode_btn, self.edit_mode_btn, self.delete_mode_btn))  # type: ignore[attr-defined]
+        btn_row.addWidgets((self.add_mode_btn, self.edit_mode_btn))  # type: ignore[attr-defined]
         btn_row.addSpacing(12)
         btn_row.addStretch()
         btn_row.addWidget(self.frame_label)

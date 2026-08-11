@@ -47,7 +47,7 @@ class BottomDataPanelContainer(QWidget):
 
         # Unified action row (non-reset actions only; reset controls are now exposed via Edit menu)
         action_row = create_qhbox_with_widgets([
-            self.edit_box_btn,
+            self.relabel_box_btn,
             self.delete_box_btn,
             self.delete_next_occurrences_btn,
             self.delete_prev_occurrences_btn,
@@ -66,6 +66,7 @@ class BottomDataPanelContainer(QWidget):
         self.data_tab = QTabWidget()
 
         self.edit_box_btn = QPushButton("Edit Selected")
+        self.relabel_box_btn = QPushButton("Relabel Selected")
         self.delete_box_btn = QPushButton("Delete Selected")
         self.copy_to_next_btn = QPushButton("Dup to next")
         self.copy_to_prev_btn = QPushButton("Dup to prev")
@@ -76,6 +77,9 @@ class BottomDataPanelContainer(QWidget):
         self.reset_all_trackers_btn = QPushButton("Reset Trackers (All)")
         self.delete_next_occurrences_btn = QPushButton("Delete Next Occurences")
         self.delete_prev_occurrences_btn = QPushButton("Delete Prev Occurences")
+
+        self.edit_box_btn.setVisible(False)
+        self.relabel_box_btn.setEnabled(False)
 
         # --- UI Elements: Opened files (session) ---
         self.session_file_list = QListWidget()
@@ -178,6 +182,14 @@ class BottomDataPanelContainer(QWidget):
 
     @Slot()
     def _emit_tab_changed(self) -> None:
+        # Clear selection when switching tabs
+        from app.ui.qt.window.window import Window
+        window = self.window()
+        if isinstance(window, Window):
+            window.bbox_selection_state.clear()
+
+        self._sync_selection_to_active_table([])
+
         active_tab_index = self.data_tab.currentIndex()
         self.tab_changed.emit(active_tab_index)
 
@@ -185,13 +197,24 @@ class BottomDataPanelContainer(QWidget):
     def _update_frame_box_buttons_state(self) -> None:
         """
         Enables/Disables certain Buttons based on the number of selected boxes under Detection/Tracking tab.
+        Also syncs selection to the shared BBoxSelectionState.
         """
-        num_selected_boxes = len(self.get_selected_box_keys_from_active_tab)
+        from app.ui.qt.window.window import Window
+
+        window = self.window()
+        if isinstance(window, Window):
+            shared_selected_keys = window.bbox_selection_state.get_selected_keys()
+            selected_keys = shared_selected_keys if shared_selected_keys else self.get_selected_box_keys_from_active_tab
+        else:
+            selected_keys = self.get_selected_box_keys_from_active_tab
+
+        num_selected_boxes = len(selected_keys)
 
         only_one_selected = num_selected_boxes == 1
         one_or_more_selected = num_selected_boxes >= 1
 
-        self.edit_box_btn.setEnabled(only_one_selected)
+        self.edit_box_btn.setEnabled(False)
+        self.relabel_box_btn.setEnabled(one_or_more_selected)
 
         for btn in (self.delete_box_btn,
                     self.copy_to_next_btn,
@@ -199,6 +222,10 @@ class BottomDataPanelContainer(QWidget):
                     self.delete_next_occurrences_btn,
                     self.delete_prev_occurrences_btn):
             btn.setEnabled(one_or_more_selected)
+
+        if isinstance(window, Window):
+            window.bbox_selection_state.set_selection(selected_keys)
+            self._sync_selection_to_active_table(selected_keys)
 
     def select_session(self, s_id: SessionId) -> None:
         for index in range(self.session_file_list.count()):
@@ -228,7 +255,14 @@ class BottomDataPanelContainer(QWidget):
 
     def set_tracker_data_boxes(self, boxes: ListOfBoxes) -> None:
         data_table = self.tracker_tab_frame_data_table
-        selected_box_keys = set(self.get_selected_box_keys_from_active_tab)
+        # Read selection from shared state instead of current table
+        from app.ui.qt.window.window import Window
+        window = self.window()
+        if isinstance(window, Window):
+            selected_box_keys = set(window.bbox_selection_state.get_selected_keys())
+        else:
+            selected_box_keys = set()
+        
         had_focus = data_table.hasFocus()
         self.set_data_table_boxes(boxes, data_table, selected_box_keys)
 
@@ -248,7 +282,14 @@ class BottomDataPanelContainer(QWidget):
         else:
             raise NotImplementedError(f"Unsupported tab: {tab}")
 
-        selected_box_keys = set(self.get_selected_box_keys_from_active_tab)
+        # Read selection from shared state instead of current table
+        from app.ui.qt.window.window import Window
+        window = self.window()
+        if isinstance(window, Window):
+            selected_box_keys = set(window.bbox_selection_state.get_selected_keys())
+        else:
+            selected_box_keys = set()
+        
         had_focus = data_table.hasFocus()
 
         self.set_data_table_boxes(boxes, data_table, selected_box_keys)
@@ -257,6 +298,49 @@ class BottomDataPanelContainer(QWidget):
             data_table.setFocus()
 
         self._update_frame_box_buttons_state()
+
+    def get_all_box_keys_from_active_tab(self) -> list[str]:
+        """Return all box keys visible in the active data table."""
+        table = self.active_data_table_for_current_frame
+        box_keys: list[str] = []
+        seen_keys: set[str] = set()
+
+        for row_idx in range(table.rowCount()):
+            id_item = table.item(row_idx, 0)
+            if id_item is None:
+                continue
+            item_key = id_item.data(Qt.ItemDataRole.UserRole)
+            if item_key in seen_keys:
+                continue
+            seen_keys.add(item_key)
+            box_keys.append(item_key)
+
+        return box_keys
+
+    def _sync_selection_to_active_table(self, selected_box_keys: list[str] | None = None) -> None:
+        """Mirror the shared selection to the currently active data table."""
+        if selected_box_keys is None:
+            selected_box_keys = self.get_selected_box_keys_from_active_tab
+
+        selected_key_set = set(selected_box_keys)
+        data_table = self.active_data_table_for_current_frame
+
+        with QSignalBlocker(data_table):
+            data_table.clearSelection()
+            rows_to_select: list[int] = []
+            for row_idx in range(data_table.rowCount()):
+                id_item = data_table.item(row_idx, 0)
+                if id_item is None:
+                    continue
+                item_key = id_item.data(Qt.ItemDataRole.UserRole)
+                if item_key in selected_key_set:
+                    rows_to_select.append(row_idx)
+
+            for row_idx in rows_to_select:
+                data_table.selectRow(row_idx)
+
+            if rows_to_select:
+                data_table.setCurrentCell(rows_to_select[0], 0)
 
     @staticmethod
     def set_data_table_boxes(boxes: ListOfBoxes, data_table: QTableWidget, selected_box_keys: set[str]):

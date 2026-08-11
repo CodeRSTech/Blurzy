@@ -148,6 +148,7 @@ class UIController(QObject):
         # 2. INSTALL KEYBOARD EVENT FILTER FOR ANNOTATION SHORTCUTS
         # ====================================================================
         # [NOTE] Filters keyboard events (arrow keys for nudge, etc.)
+        self.window.installEventFilter(self._frame_table_key_filter)
         self.detection_tab_data_table.installEventFilter(self._frame_table_key_filter)
         self.tracker_tab_data_table.installEventFilter(self._frame_table_key_filter)
 

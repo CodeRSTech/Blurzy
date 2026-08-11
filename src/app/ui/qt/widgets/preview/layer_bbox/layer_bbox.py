@@ -93,6 +93,7 @@ class AnnotationOverlayWidget(QWidget):
     bbox_edited = Signal(str, int, int, int, int)  # item_key, x1, y1, x2, y2
     bbox_deleted = Signal(str)  # item_key
     context_action_triggered = Signal(str, str)  # action_name, item_key
+    bbox_selected = Signal(str)  # item_key (new: canvas-driven selection)
 
     # NEW: Viewport Signals
     zoom_requested = Signal(float, int, int)  # zoom_delta, mouse_x, mouse_y
@@ -118,6 +119,11 @@ class AnnotationOverlayWidget(QWidget):
         self._is_panning = False
         self._last_pan_pos = QPoint()
 
+        # NEW: Zoom and pan transforms
+        self._zoom: float = 1.0
+        self._pan_x: float = 0.0
+        self._pan_y: float = 0.0
+
     # --- Public API for App ---
 
     def cancel_edit(self) -> None:
@@ -130,6 +136,11 @@ class AnnotationOverlayWidget(QWidget):
 
     def set_pixmap_rect(self, rect: QRect) -> None:
         """Called by the App when the underlying video resizes."""
+        if self._state.has_valid_rect and self._image_size is not None and not self._pixmap_rect.isNull():
+            old_rect = self._state.rect.normalized()
+            image_coords = widget_rect_to_image_space(old_rect, self._pixmap_rect, self._image_size)
+            self._state.rect = image_rect_to_widget_space(*image_coords, rect, self._image_size).normalized()
+
         self._pixmap_rect = rect
         self.update()
 
@@ -154,6 +165,17 @@ class AnnotationOverlayWidget(QWidget):
         else:
             self.setCursor(QCursor(Qt.CursorShape.ArrowCursor))
 
+    def set_zoom(self, zoom: float) -> None:
+        """Update the zoom level for coordinate transforms."""
+        self._zoom = zoom
+        self.update()
+
+    def set_pan(self, pan_x: float, pan_y: float) -> None:
+        """Update the pan offset for coordinate transforms."""
+        self._pan_x = pan_x
+        self._pan_y = pan_y
+        self.update()
+
     def set_tracker_actions_enabled(self, enabled: bool) -> None:
         """Enables tracker-specific context menu options like 'Delete Next Occurrences'."""
         self._tracker_actions_enabled = enabled
@@ -167,6 +189,9 @@ class AnnotationOverlayWidget(QWidget):
             return
 
         hit_box_id = self._get_bbox_id_at_pos(event.pos())
+        if hit_box_id:
+            self.bbox_selected.emit(hit_box_id)
+
         if not hit_box_id:
             menu = QMenu(self)
             action_names = build_no_hit_action_map(menu)
@@ -262,6 +287,7 @@ class AnnotationOverlayWidget(QWidget):
             bbox_id = try_select_bbox_for_edit(state, pos, self._get_bbox_at_pos)
             if bbox_id:
                 self._editing_bbox_id = bbox_id
+                self.bbox_selected.emit(bbox_id)  # Emit selection signal for sync
                 self.update()
                 return
 
@@ -271,10 +297,11 @@ class AnnotationOverlayWidget(QWidget):
     @override
     def mouseReleaseEvent(self, event: QMouseEvent) -> None:
         """Finalize draw/edit outcomes and emit overlay signals when release completes."""
-        # 3. Stop panning safely
+        # 3. Stop panning safely without clearing the active selection state.
         if stop_panning(self._is_panning):
             self._is_panning = False
-            self.cancel_edit()  # Resets cursor back to Arrow
+            self.setCursor(QCursor(Qt.CursorShape.ArrowCursor))
+            self.update()
             return
 
         if event.button() != Qt.MouseButton.LeftButton:
@@ -353,12 +380,16 @@ class AnnotationOverlayWidget(QWidget):
         return clamp_rect_to_pixmap(rect.normalized(), self._pixmap_rect)
 
     def _get_bbox_at_pos(self, pos: QPoint) -> tuple[str | None, QRect | None]:
-        """Finds the closest bbox hit by the given point."""
-        return find_bbox_at_pos(
+        """Finds the closest bbox hit by the given point, accounting for zoom/pan."""
+        from app.ui.qt.widgets.preview.layer_bbox.geometry import find_bbox_at_pos_with_transforms
+        return find_bbox_at_pos_with_transforms(
             active_bboxes=self._active_bboxes,
             pos=pos,
             pixmap_rect=self._pixmap_rect,
             image_size=self._image_size,
+            zoom=self._zoom,
+            pan_x=self._pan_x,
+            pan_y=self._pan_y,
         )
 
     def _get_bbox_id_at_pos(self, pos: QPoint) -> str | None:

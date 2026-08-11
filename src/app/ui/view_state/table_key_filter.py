@@ -20,5 +20,7 @@ class FrameTableKeyFilter(QObject):
     @override
     def eventFilter(self, watched: QObject, event: QEvent) -> bool:
         if event.type() == QEvent.Type.KeyPress and isinstance(event, QKeyEvent):
+            if self._handler.handle_delete_key(event):
+                return True
             return self._handler.handle_nudge_key(event)
         return False

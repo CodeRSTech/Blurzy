@@ -27,9 +27,9 @@ def build_no_hit_action_map(menu: QMenu) -> dict[QAction, str]:
     action_reset_all_frames = menu.addAction("Reset All Frames")
 
     return {
-        action_select_all: AnnotationContextActions.NO_OP.value,
-        action_select_none: AnnotationContextActions.NO_OP.value,
-        action_select_inverse: AnnotationContextActions.NO_OP.value,
+        action_select_all: AnnotationContextActions.SELECT_ALL.value,
+        action_select_none: AnnotationContextActions.SELECT_NONE.value,
+        action_select_inverse: AnnotationContextActions.SELECT_INVERSE.value,
         action_create_bbox_here: AnnotationContextActions.ADD_BBOX_HERE.value,
         action_remove_all_boxes: AnnotationContextActions.DELETE_ALL_BBOXES.value,
         action_reset_current_frame: AnnotationContextActions.RESET_FRAME.value,
@@ -52,9 +52,9 @@ def build_hit_action_map(menu: QMenu, tracker_actions_enabled: bool) -> dict[QAc
     action_delete = menu.addAction("Delete")
 
     action_names: dict[QAction, str] = {
-        action_select_all: AnnotationContextActions.NO_OP.value,
-        action_select_none: AnnotationContextActions.NO_OP.value,
-        action_select_inverse: AnnotationContextActions.NO_OP.value,
+        action_select_all: AnnotationContextActions.SELECT_ALL.value,
+        action_select_none: AnnotationContextActions.SELECT_NONE.value,
+        action_select_inverse: AnnotationContextActions.SELECT_INVERSE.value,
         action_dup_next: AnnotationContextActions.COPY_NEXT.value,
         action_dup_prev: AnnotationContextActions.COPY_PREV.value,
         action_dup_current: AnnotationContextActions.COPY_CURRENT.value,

@@ -23,7 +23,7 @@ ApplyHandleDragFn = Callable[[QRect, DragMode, QPoint], QRect]
 
 def begin_add_drag(state: BBoxState, clamped_pos: QPoint) -> None:
     """Initialize state for drawing a new bbox."""
-    state.rect = QRect(clamped_pos, clamped_pos)
+    state.rect = QRect(clamped_pos, clamped_pos).normalized()
     state.drag_mode = DragMode.DRAW
     state.drag_origin = clamped_pos
 
@@ -117,7 +117,7 @@ def update_drag_rect(
     elif state.drag_mode == DragMode.MOVE:
         delta = pos - state.drag_origin
         moved = state.rect_at_drag_start.translated(delta)
-        state.rect = clamp_rect(moved)
+        state.rect = clamp_rect(moved.normalized())
     else:
         state.rect = apply_handle_drag(
             state.rect_at_drag_start,

@@ -125,9 +125,10 @@ class AnnotationHandler(QObject):
             (preview_container.bbox_drawn, self.on_preview_bbox_drawn),
             (preview_container.bbox_edited, self.on_preview_bbox_edited),
             (preview_container.bbox_deleted, self.on_preview_bbox_deleted),
+            (preview_container.bbox_selected, self.on_preview_bbox_selected),  # New: canvas selection
             (preview_container.context_action_triggered, self.on_preview_context_action),
             # Bottom panel action row buttons
-            (bottom_panel.edit_box_btn.clicked, self.on_edit_selected),
+            (bottom_panel.relabel_box_btn.clicked, self.on_relabel_selected),
             (bottom_panel.delete_box_btn.clicked, self.on_delete_selected),
             (bottom_panel.delete_next_occurrences_btn.clicked, self.on_delete_next_occurrences),
             (bottom_panel.delete_prev_occurrences_btn.clicked, self.on_delete_prev_occurrences),
@@ -211,6 +212,20 @@ class AnnotationHandler(QObject):
             self._controller.render_frame_for_session_id(s_id)
         except Exception as exc:
             self._window.show_error("Edit Failed", str(exc))
+
+    def handle_delete_key(self, event: QKeyEvent) -> bool:
+        if event.modifiers() != Qt.KeyboardModifier.NoModifier:
+            return False
+        if event.key() != Qt.Key.Key_Delete:
+            return False
+
+        s_id = self._window.selected_s_id
+        keys = self._window.selected_frame_box_keys
+        if not s_id or not keys:
+            return True
+
+        self.on_delete_selected()
+        return True
 
     def handle_nudge_key(self, event: QKeyEvent) -> bool:
         if event.modifiers() != Qt.KeyboardModifier.NoModifier:
@@ -302,6 +317,46 @@ class AnnotationHandler(QObject):
             self._controller.render_frame_for_session_id(s_id)
         except Exception as exc:
             self._window.show_error("Delete Failed", str(exc))
+
+    @Slot()
+    def on_relabel_selected(self) -> None:
+        """Relabel the currently selected boxes using a dialog."""
+        s_id = self._window.selected_s_id
+        keys = self._window.selected_frame_box_keys
+        if not s_id or not keys:
+           return
+
+        current_label = ""
+        if len(keys) == 1:
+           layer_name = VideoDataLayer.B if self._window.active_tab_index == VideoDataLayerGroup.DETECTION else VideoDataLayer.D
+           box = self._app.get_layer_box_by_key(s_id, layer_name, keys[0])
+           if box is not None:
+               current_label = box.label
+
+        dialog = LabelDialog(self._window, initial_label=current_label)
+        if dialog.exec() != QDialog.DialogCode.Accepted:
+           return
+
+        new_label = dialog.get_label()
+        if not new_label:
+           return
+
+        try:
+           layer_name = VideoDataLayer.B if self._window.active_tab_index == VideoDataLayerGroup.DETECTION else VideoDataLayer.D
+           for key in keys:
+               box = self._app.get_layer_box_by_key(s_id, layer_name, key)
+               if box is None:
+                   continue
+               self._app.update_box_in_layer_at_current_frame(
+                   s_id=s_id,
+                   layer_name=layer_name,
+                   box_key=key,
+                   label=new_label,
+                   bbox_xyxy=box.bbox_xyxy,
+               )
+           self._controller.render_frame_for_session_id(s_id)
+        except Exception as exc:
+           self._window.show_error("Relabel Failed", str(exc))
 
     @Slot()
     def on_copy_to_next(self) -> None:
@@ -419,6 +474,15 @@ class AnnotationHandler(QObject):
                                                                                       tab=tab)
             self._controller.render_frame_for_session_id(s_id)
 
+    @Slot(str)
+    def on_preview_bbox_selected(self, box_key: str) -> None:
+        """Handle canvas-originated selection and sync to table and shared state."""
+        logger.debug("Canvas bbox selected: {}", box_key)
+        # Update the shared selection state
+        self._window.bbox_selection_state.set_selection([box_key])
+        # Update the table to reflect the canvas selection
+        self._window.bottom_panel._update_frame_box_buttons_state()
+
     @Slot(str, str)
     def on_preview_context_action(self, action: str, box_key: str) -> None:
         logger.debug("Preview detection context action: {}, {}", action, box_key)
@@ -434,25 +498,42 @@ class AnnotationHandler(QObject):
             self._window.set_status_text("Action not implemented yet.")
             return
 
+        if action == AnnotationContextActions.SELECT_ALL.value:
+            self._window.bbox_selection_state.set_selection(self._window.bottom_panel.get_all_box_keys_from_active_tab())
+            self._window.bottom_panel._update_frame_box_buttons_state()
+            return
+        if action == AnnotationContextActions.SELECT_NONE.value:
+            self._window.bbox_selection_state.clear()
+            self._window.bottom_panel._update_frame_box_buttons_state()
+            return
+        if action == AnnotationContextActions.SELECT_INVERSE.value:
+            all_keys = self._window.bottom_panel.get_all_box_keys_from_active_tab()
+            self._window.bbox_selection_state.invert(all_keys)
+            self._window.bottom_panel._update_frame_box_buttons_state()
+            return
+
         # Route the context menu actions directly to the existing backend logic!
-        if action == AnnotationContextActions.COPY_NEXT:
+        if action == AnnotationContextActions.COPY_NEXT.value:
             self._app.copy_boxes_to_adjacent_frame_by_direction(
                 s_id, active_layer, [box_key], Direction.NEXT
             )
             should_render = True
-        elif action == AnnotationContextActions.COPY_PREV:
+        elif action == AnnotationContextActions.COPY_PREV.value:
             self._app.copy_boxes_to_adjacent_frame_by_direction(
                 s_id, active_layer, [box_key], Direction.PREV
             )
             should_render = True
-        elif action == AnnotationContextActions.DELETE_NEXT:
+        elif action == AnnotationContextActions.DELETE.value:
+            self.on_delete_selected()
+            should_render = True
+        elif action == AnnotationContextActions.DELETE_NEXT.value:
             # Extract underlying box_id from box_key (e.g. "track:123" -> "123")
             box = self._app.get_layer_box_by_key(s_id, VideoDataLayer.D, box_key)
             if box is None:
                 return
             self._app.delete_tracks_by_id_and_direction(s_id, box.id, Direction.NEXT)
             should_render = True
-        elif action == AnnotationContextActions.DELETE_PREV:
+        elif action == AnnotationContextActions.DELETE_PREV.value:
             box = self._app.get_layer_box_by_key(s_id, VideoDataLayer.D, box_key)
             if box is None:
                 return

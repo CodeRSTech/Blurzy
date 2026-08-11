@@ -14,6 +14,7 @@ from app.ui.qt.shared.layout_shortcuts import create_vbox_layout
 from app.ui.qt.shared.widget_factories import create_progress_bar
 from app.ui.qt.window.splitter_defaults import _WindowSplitterDefaults
 from app.ui.view_state.preview_state import ToolMode
+from app.ui.view_state.bbox_selection_state import BBoxSelectionState
 
 logger = get_logger("UI->MainWindow")
 
@@ -37,6 +38,7 @@ class Window(QtWidgets.QMainWindow):
 
         self._splitter_defaults = _WindowSplitterDefaults()
         self._close_request_handler: Callable[[], bool] | None = None
+        self._bbox_selection_state = BBoxSelectionState()
 
         self.setWindowTitle("EasyBlur")
         self.resize(1300, 850)
@@ -248,6 +250,11 @@ class Window(QtWidgets.QMainWindow):
     # =========
 
     @property
+    def bbox_selection_state(self) -> BBoxSelectionState:
+        """Return the current bbox selection state."""
+        return self._bbox_selection_state
+
+    @property
     def active_tab_index(self) -> VideoDataLayerGroup:
         return VideoDataLayerGroup(self.bottom_panel.active_tab_index)
 
@@ -257,7 +264,7 @@ class Window(QtWidgets.QMainWindow):
 
     @property
     def selected_frame_box_keys(self) -> list[str]:
-        return self.bottom_panel.get_selected_box_keys_from_active_tab
+        return self.bbox_selection_state.get_selected_keys()
 
     # ========
     # PUBLIC METHODS
