@@ -2,14 +2,17 @@
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
+
 import os
 import struct
 from typing import final, override, cast
 
 import av
 import numpy as np
-from av.container import InputContainer
-from av.video.stream import VideoStream
+
+
 
 from app.domain.video.metadata import VideoMetadata
 from app.infrastructure.dtypes import RGBFrame
@@ -20,6 +23,10 @@ from app.shared.exceptions import (
     VideoStreamStateException,
 )
 from app.shared.logging_cfg import get_logger
+if TYPE_CHECKING:
+    from av.container import InputContainer
+    from av.video.stream import VideoStream
+
 
 logger = get_logger("Infrastructure->Video->Reader")
 

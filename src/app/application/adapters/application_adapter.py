@@ -9,10 +9,13 @@
 #
 from __future__ import annotations
 
-from collections.abc import Iterable
+
 from typing import TYPE_CHECKING
 
 from app.application.interfaces import UIApplicationInterface
+if TYPE_CHECKING:
+    from collections.abc import Iterable
+
 
 if TYPE_CHECKING:
     from app.application.application import Application

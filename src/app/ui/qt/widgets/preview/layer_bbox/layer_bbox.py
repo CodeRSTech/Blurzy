@@ -13,26 +13,19 @@ from __future__ import annotations
 
 from typing import final, override, TYPE_CHECKING
 
-from PySide6.QtCore import Qt, Signal, QSize, QPoint, QRect
-from PySide6.QtGui import (
-    QPainter,
-    QCursor,
-    QPaintEvent,
-    QMouseEvent,
-    QContextMenuEvent,
-    QWheelEvent,
-    QAction,
-)
+from PySide6.QtCore import Qt, Signal, QPoint, QRect
+from PySide6.QtGui import QPainter, QCursor
 from PySide6.QtWidgets import QWidget, QMenu
 
 from app.shared.logging_cfg import get_logger
-from app.ui.view_state.preview.bbox_drag import DragMode, CORNER_CURSOR
-from app.ui.view_state.preview.bbox_state import BBoxState
+from app.ui.qt.widgets.preview.layer_bbox.bbox_drag import DragMode, CORNER_CURSOR
+from app.ui.qt.widgets.preview.layer_bbox.bbox_mouse_release import MouseReleaseOutcome
+from app.ui.qt.widgets.preview.layer_bbox.bbox_state import BBoxState
 from app.ui.qt.widgets.preview.layer_bbox.constants import (
     _MIN_BBOX_PX,
 )
 from app.ui.qt.widgets.preview.layer_bbox.geometry import (
-    find_bbox_at_pos,
+    find_bbox_at_pos_with_transforms,
     image_rect_to_widget_space,
     widget_rect_to_image_space,
 )
@@ -58,6 +51,10 @@ from app.ui.qt.widgets.preview.layer_bbox.helpers import (
     clamp_rect_to_pixmap,
     get_drag_mode_for_rect_at_pos,
 )
+if TYPE_CHECKING:
+    from PySide6.QtCore import QSize
+    from PySide6.QtGui import QPaintEvent, QMouseEvent, QContextMenuEvent, QWheelEvent, QAction
+
 from app.ui.view_state.preview_state import ToolMode
 
 logger = get_logger("UI->Preview->Bbox Layer")
@@ -315,15 +312,15 @@ class AnnotationOverlayWidget(QWidget):
             min_bbox_px=_MIN_BBOX_PX,
             widget_rect_to_image_space=self._widget_rect_to_image_space,
         )
-        if outcome == "cancel":
+        if outcome == MouseReleaseOutcome.CANCEL:
             self.cancel_edit()
             return
-        if outcome == "draw" and payload is not None:
+        if outcome == MouseReleaseOutcome.DRAW and payload is not None:
             x1, y1, x2, y2 = payload
             self.cancel_edit()
             self.bbox_drawn.emit(x1, y1, x2, y2)
             return
-        if outcome == "edit" and payload is not None:
+        if outcome == MouseReleaseOutcome.EDIT and payload is not None:
             item_key, x1, y1, x2, y2 = payload
             self.bbox_edited.emit(item_key, x1, y1, x2, y2)
 
@@ -381,7 +378,6 @@ class AnnotationOverlayWidget(QWidget):
 
     def _get_bbox_at_pos(self, pos: QPoint) -> tuple[str | None, QRect | None]:
         """Finds the closest bbox hit by the given point, accounting for zoom/pan."""
-        from app.ui.qt.widgets.preview.layer_bbox.geometry import find_bbox_at_pos_with_transforms
         return find_bbox_at_pos_with_transforms(
             active_bboxes=self._active_bboxes,
             pos=pos,

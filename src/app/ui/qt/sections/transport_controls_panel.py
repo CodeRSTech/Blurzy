@@ -1,22 +1,22 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
+
 from pathlib import Path
 from typing import final
 
 from PySide6.QtCore import Qt, Slot, QSignalBlocker, Signal, QSize
 from PySide6.QtGui import QIcon, QPalette
-from PySide6.QtWidgets import (
-    QWidget,
-    QVBoxLayout,
-    QPushButton,
-    QSlider,
-    QLabel,
-    QRadioButton,
-    QButtonGroup,
-)
+from PySide6.QtWidgets import QVBoxLayout, QPushButton, QSlider, QLabel, QRadioButton, QButtonGroup
 
 from app.shared.logging_cfg import get_logger
 from app.ui.qt.shared.layout_shortcuts import create_hbox_layout
 from app.ui.qt.shared.icons import create_tinted_icon
 from app.ui.view_state.preview_state import ToolMode
+if TYPE_CHECKING:
+    from PySide6.QtWidgets import QWidget
+
 
 logger = get_logger("UI-> Transport Control Panel")
 

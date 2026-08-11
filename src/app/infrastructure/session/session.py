@@ -10,10 +10,13 @@ from typing import TYPE_CHECKING, final
 
 from PySide6.QtCore import QObject
 
-from app.domain import VideoDataLayer, SessionState
+from app.domain import VideoDataLayer
 from app.shared.logging_cfg import get_logger
 from app.infrastructure.session.session_data_store import SessionDataStore
 from app.infrastructure.session.frame_access import SessionFrameAccessor
+if TYPE_CHECKING:
+    from app.domain import SessionState
+
 
 if TYPE_CHECKING:
     from app.domain.session import SessionId

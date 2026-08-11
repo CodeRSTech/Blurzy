@@ -1,12 +1,18 @@
 from __future__ import annotations
 
-from collections.abc import Callable
+from typing import TYPE_CHECKING
+
+
+
 
 import PySide6.QtCore as Core
 import PySide6.QtGui as Gui
 import PySide6.QtWidgets as Widgets
 
 from app.shared.logging_cfg import get_logger
+if TYPE_CHECKING:
+    from collections.abc import Callable
+
 
 logger = get_logger("Shared->QtDebugRepr")
 

@@ -1,13 +1,16 @@
 from __future__ import annotations
 
-from collections.abc import Callable, Iterable
+from typing import TYPE_CHECKING
+
+
+
 from typing import final, override
 
 from PySide6 import QtWidgets
 from PySide6.QtCore import Qt, Signal, Slot
-from PySide6.QtGui import QAction, QCloseEvent
+from PySide6.QtGui import QAction
 
-from app.domain import SessionId, VideoDataLayerGroup, ModelSelectionViewModel, SessionSettingsViewModel
+from app.domain import VideoDataLayerGroup
 from app.shared.logging_cfg import get_logger
 from app.ui.qt import sections
 from app.ui.qt.shared.layout_shortcuts import create_vbox_layout
@@ -15,6 +18,11 @@ from app.ui.qt.shared.widget_factories import create_progress_bar
 from app.ui.qt.window.splitter_defaults import _WindowSplitterDefaults
 from app.ui.view_state.preview_state import ToolMode
 from app.ui.view_state.bbox_selection_state import BBoxSelectionState
+if TYPE_CHECKING:
+    from collections.abc import Callable, Iterable
+    from PySide6.QtGui import QCloseEvent
+    from app.domain import SessionId, ModelSelectionViewModel, SessionSettingsViewModel
+
 
 logger = get_logger("UI->MainWindow")
 

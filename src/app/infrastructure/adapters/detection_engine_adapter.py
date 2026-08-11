@@ -4,9 +4,12 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-import numpy as np
+
 
 from app.application.interfaces import DetectionEngineInterface
+if TYPE_CHECKING:
+    import numpy as np
+
 
 if TYPE_CHECKING:
     from app.domain.detection.result import DetectionResult

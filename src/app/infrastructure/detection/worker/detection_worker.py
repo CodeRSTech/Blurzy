@@ -2,17 +2,26 @@
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
+
 import time
 from typing import final, override
 
-from PySide6.QtCore import QObject, QThread, QMutex, QMutexLocker, Signal
+from PySide6.QtCore import QThread, QMutex, QMutexLocker, Signal
 
-from app.application.interfaces import DetectionEngineInterface
-from app.domain.detection.result import DetectionResult
-from app.domain.session.session_id import SessionId
+
+
+
 from app.infrastructure.video.reader import VideoReader
 from app.shared.exceptions import EndOfVideoStreamException
 from app.shared.logging_cfg import get_logger
+if TYPE_CHECKING:
+    from PySide6.QtCore import QObject
+    from app.application.interfaces import DetectionEngineInterface
+    from app.domain.detection.result import DetectionResult
+    from app.domain.session.session_id import SessionId
+
 
 logger = get_logger("Infrastructure->Detection->DetectionWorker")
 

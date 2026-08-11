@@ -2,11 +2,14 @@
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
+
 from typing import final, TYPE_CHECKING, override
 
 from PySide6.QtCore import Slot, Qt, QObject
 
-from app.domain.session import SessionId
+
 from app.infrastructure.views.view_models import list_of_session_list_view_models
 from app.shared.exceptions import (
     NoNewOpenedSessionsException,
@@ -15,6 +18,9 @@ from app.shared.exceptions import (
     VideoStreamStateException,
 )
 from app.shared.logging_cfg import get_logger
+if TYPE_CHECKING:
+    from app.domain.session import SessionId
+
 
 if TYPE_CHECKING:
     from app.ui.uicontroller import UIController

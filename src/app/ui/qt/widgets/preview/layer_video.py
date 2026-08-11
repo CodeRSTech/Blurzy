@@ -1,8 +1,14 @@
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
+
 from PySide6.QtCore import Qt, QRect, QSize, Signal, QPointF
-from PySide6.QtGui import QImage, QPainter, QColor, QPaintEvent, QResizeEvent
+from PySide6.QtGui import QPainter, QColor
 from PySide6.QtWidgets import QWidget
+if TYPE_CHECKING:
+    from PySide6.QtGui import QImage, QPaintEvent, QResizeEvent
+
 
 
 class VideoDisplayWidget(QWidget):

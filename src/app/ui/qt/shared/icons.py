@@ -1,9 +1,16 @@
 from __future__ import annotations
 
-from pathlib import Path
+from typing import TYPE_CHECKING
 
-from PySide6.QtCore import QSize
+
+
+
+
 from PySide6.QtGui import QPixmap, QIcon, Qt, QPainter
+if TYPE_CHECKING:
+    from pathlib import Path
+    from PySide6.QtCore import QSize
+
 
 
 def create_tinted_icon(icon_path: Path, icon_size: QSize, normal_tint, disabled_tint) -> QIcon:

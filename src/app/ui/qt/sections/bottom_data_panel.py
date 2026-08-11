@@ -180,6 +180,27 @@ class BottomDataPanelContainer(QWidget):
         s_id = cast(SessionId, item.data(Qt.ItemDataRole.UserRole))
         self.session_selected.emit(s_id)
 
+    def _get_current_selection_keys(self, prefer_shared_selection: bool = False) -> list[str]:
+        """Resolve the current selection from the active table, or from the shared state when requested."""
+        from app.ui.qt.window.window import Window
+
+        window = self.window()
+        if prefer_shared_selection and isinstance(window, Window):
+            shared_selection_keys = window.bbox_selection_state.get_selected_keys()
+            if shared_selection_keys:
+                return shared_selection_keys
+
+        table_selection_keys = self.get_selected_box_keys_from_active_tab
+        if table_selection_keys:
+            return table_selection_keys
+
+        if isinstance(window, Window):
+            shared_selection_keys = window.bbox_selection_state.get_selected_keys()
+            if shared_selection_keys:
+                return shared_selection_keys
+
+        return table_selection_keys
+
     @Slot()
     def _emit_tab_changed(self) -> None:
         # Clear selection when switching tabs
@@ -194,7 +215,7 @@ class BottomDataPanelContainer(QWidget):
         self.tab_changed.emit(active_tab_index)
 
     @Slot()
-    def _update_frame_box_buttons_state(self) -> None:
+    def _update_frame_box_buttons_state(self, prefer_shared_selection: bool = False) -> None:
         """
         Enables/Disables certain Buttons based on the number of selected boxes under Detection/Tracking tab.
         Also syncs selection to the shared BBoxSelectionState.
@@ -202,11 +223,7 @@ class BottomDataPanelContainer(QWidget):
         from app.ui.qt.window.window import Window
 
         window = self.window()
-        if isinstance(window, Window):
-            shared_selected_keys = window.bbox_selection_state.get_selected_keys()
-            selected_keys = shared_selected_keys if shared_selected_keys else self.get_selected_box_keys_from_active_tab
-        else:
-            selected_keys = self.get_selected_box_keys_from_active_tab
+        selected_keys = self._get_current_selection_keys(prefer_shared_selection=prefer_shared_selection)
 
         num_selected_boxes = len(selected_keys)
 
@@ -269,7 +286,7 @@ class BottomDataPanelContainer(QWidget):
         if had_focus:
             data_table.setFocus()
 
-        self._update_frame_box_buttons_state()
+        self._update_frame_box_buttons_state(prefer_shared_selection=True)
 
     def set_data_boxes_for_tab(self, boxes: ListOfBoxes, tab: VideoDataLayerGroup) -> None:
         """
@@ -297,7 +314,7 @@ class BottomDataPanelContainer(QWidget):
         if had_focus:
             data_table.setFocus()
 
-        self._update_frame_box_buttons_state()
+        self._update_frame_box_buttons_state(prefer_shared_selection=True)
 
     def get_all_box_keys_from_active_tab(self) -> list[str]:
         """Return all box keys visible in the active data table."""

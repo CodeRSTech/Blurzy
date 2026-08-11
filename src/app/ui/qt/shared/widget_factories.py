@@ -1,16 +1,14 @@
 from __future__ import annotations
 
-from PySide6.QtWidgets import (
-    QWidget,
-    QTableWidget,
-    QHeaderView,
-    QAbstractItemView,
-    QHBoxLayout,
-    QProgressBar,
-    QDoubleSpinBox,
-)
+from typing import TYPE_CHECKING
+
+
+from PySide6.QtWidgets import QTableWidget, QHeaderView, QAbstractItemView, QProgressBar, QDoubleSpinBox
 
 from app.ui.qt.shared.layout_shortcuts import create_hbox_layout
+if TYPE_CHECKING:
+    from PySide6.QtWidgets import QWidget, QHBoxLayout
+
 
 
 def create_qhbox_with_widgets(widgets: list[QWidget] | tuple[QWidget, ...]) -> QHBoxLayout:

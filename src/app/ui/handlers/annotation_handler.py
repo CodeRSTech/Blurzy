@@ -19,12 +19,15 @@ import time
 from typing import TYPE_CHECKING, final, override
 
 from PySide6.QtCore import Qt, Slot, QObject
-from PySide6.QtGui import QKeyEvent
+
 from PySide6.QtWidgets import QDialog
 
 from app.domain import AnnotationContextActions, Direction, VideoDataLayer, VideoDataLayerGroup
 from app.shared.logging_cfg import get_logger
 from app.ui.qt.dialogs import LabelDialog
+if TYPE_CHECKING:
+    from PySide6.QtGui import QKeyEvent
+
 
 if TYPE_CHECKING:
     from app.domain.session.session_id import SessionId
@@ -213,6 +216,15 @@ class AnnotationHandler(QObject):
         except Exception as exc:
             self._window.show_error("Edit Failed", str(exc))
 
+    def _get_effective_selection_keys(self, fallback_box_key: str | None = None) -> list[str]:
+        """Return the current shared selection, falling back to a clicked box key if needed."""
+        selected_keys = self._window.selected_frame_box_keys
+        if selected_keys:
+            return selected_keys
+        if fallback_box_key:
+            return [fallback_box_key]
+        return []
+
     def handle_delete_key(self, event: QKeyEvent) -> bool:
         if event.modifiers() != Qt.KeyboardModifier.NoModifier:
             return False
@@ -226,6 +238,28 @@ class AnnotationHandler(QObject):
 
         self.on_delete_selected()
         return True
+
+    def handle_selection_shortcut(self, event: QKeyEvent) -> bool:
+        if event.modifiers() != Qt.KeyboardModifier.ControlModifier:
+            return False
+
+        key = event.key()
+        if key == Qt.Key.Key_A:
+            all_keys = self._window.bottom_panel.get_all_box_keys_from_active_tab()
+            self._window.bbox_selection_state.set_selection(all_keys)
+            self._window.bottom_panel._update_frame_box_buttons_state(prefer_shared_selection=True)
+            return True
+        if key == Qt.Key.Key_D:
+            self._window.bbox_selection_state.clear()
+            self._window.bottom_panel._update_frame_box_buttons_state(prefer_shared_selection=True)
+            return True
+        if key == Qt.Key.Key_I:
+            all_keys = self._window.bottom_panel.get_all_box_keys_from_active_tab()
+            self._window.bbox_selection_state.invert(all_keys)
+            self._window.bottom_panel._update_frame_box_buttons_state(prefer_shared_selection=True)
+            return True
+
+        return False
 
     def handle_nudge_key(self, event: QKeyEvent) -> bool:
         if event.modifiers() != Qt.KeyboardModifier.NoModifier:
@@ -478,10 +512,8 @@ class AnnotationHandler(QObject):
     def on_preview_bbox_selected(self, box_key: str) -> None:
         """Handle canvas-originated selection and sync to table and shared state."""
         logger.debug("Canvas bbox selected: {}", box_key)
-        # Update the shared selection state
         self._window.bbox_selection_state.set_selection([box_key])
-        # Update the table to reflect the canvas selection
-        self._window.bottom_panel._update_frame_box_buttons_state()
+        self._window.bottom_panel._update_frame_box_buttons_state(prefer_shared_selection=True)
 
     @Slot(str, str)
     def on_preview_context_action(self, action: str, box_key: str) -> None:
@@ -498,46 +530,63 @@ class AnnotationHandler(QObject):
             self._window.set_status_text("Action not implemented yet.")
             return
 
+        selected_keys = self._get_effective_selection_keys(box_key or None)
+        if selected_keys:
+            self._window.bbox_selection_state.set_selection(selected_keys)
+        elif box_key:
+            selected_keys = [box_key]
+            self._window.bbox_selection_state.set_selection(selected_keys)
+
         if action == AnnotationContextActions.SELECT_ALL.value:
             self._window.bbox_selection_state.set_selection(self._window.bottom_panel.get_all_box_keys_from_active_tab())
-            self._window.bottom_panel._update_frame_box_buttons_state()
+            self._window.bottom_panel._update_frame_box_buttons_state(prefer_shared_selection=True)
             return
         if action == AnnotationContextActions.SELECT_NONE.value:
             self._window.bbox_selection_state.clear()
-            self._window.bottom_panel._update_frame_box_buttons_state()
+            self._window.bottom_panel._update_frame_box_buttons_state(prefer_shared_selection=True)
             return
         if action == AnnotationContextActions.SELECT_INVERSE.value:
             all_keys = self._window.bottom_panel.get_all_box_keys_from_active_tab()
             self._window.bbox_selection_state.invert(all_keys)
-            self._window.bottom_panel._update_frame_box_buttons_state()
+            self._window.bottom_panel._update_frame_box_buttons_state(prefer_shared_selection=True)
             return
 
         # Route the context menu actions directly to the existing backend logic!
         if action == AnnotationContextActions.COPY_NEXT.value:
             self._app.copy_boxes_to_adjacent_frame_by_direction(
-                s_id, active_layer, [box_key], Direction.NEXT
+                s_id, active_layer, selected_keys, Direction.NEXT
             )
             should_render = True
         elif action == AnnotationContextActions.COPY_PREV.value:
             self._app.copy_boxes_to_adjacent_frame_by_direction(
-                s_id, active_layer, [box_key], Direction.PREV
+                s_id, active_layer, selected_keys, Direction.PREV
             )
             should_render = True
         elif action == AnnotationContextActions.DELETE.value:
+            self._window.bbox_selection_state.set_selection(selected_keys)
             self.on_delete_selected()
             should_render = True
         elif action == AnnotationContextActions.DELETE_NEXT.value:
-            # Extract underlying box_id from box_key (e.g. "track:123" -> "123")
-            box = self._app.get_layer_box_by_key(s_id, VideoDataLayer.D, box_key)
-            if box is None:
+            if not selected_keys:
                 return
-            self._app.delete_tracks_by_id_and_direction(s_id, box.id, Direction.NEXT)
+            for key in selected_keys:
+                box = self._app.get_layer_box_by_key(s_id, VideoDataLayer.D, key)
+                if box is None:
+                    continue
+                self._app.delete_tracks_by_id_and_direction(s_id, box.id, Direction.NEXT)
             should_render = True
         elif action == AnnotationContextActions.DELETE_PREV.value:
-            box = self._app.get_layer_box_by_key(s_id, VideoDataLayer.D, box_key)
-            if box is None:
+            if not selected_keys:
                 return
-            self._app.delete_tracks_by_id_and_direction(s_id, box.id, Direction.PREV)
+            for key in selected_keys:
+                box = self._app.get_layer_box_by_key(s_id, VideoDataLayer.D, key)
+                if box is None:
+                    continue
+                self._app.delete_tracks_by_id_and_direction(s_id, box.id, Direction.PREV)
+            should_render = True
+        elif action == AnnotationContextActions.RELABEL.value:
+            self._window.bbox_selection_state.set_selection(selected_keys)
+            self.on_relabel_selected()
             should_render = True
         else:
             logger.info("Preview context action '{}' is not implemented yet.", action)
@@ -547,9 +596,9 @@ class AnnotationHandler(QObject):
         if should_render:
             self._controller.render_frame_for_session_id(s_id)
 
-    def _delete_occurrences(self, direction: Direction) -> None:
+    def _delete_occurrences(self, direction: Direction, keys: list[str] | None = None) -> None:
         s_id = self._window.selected_s_id
-        keys = self._window.selected_frame_box_keys
+        keys = self._window.selected_frame_box_keys if keys is None else keys
         if not s_id or not keys:
             return
 
@@ -571,9 +620,9 @@ class AnnotationHandler(QObject):
         except Exception as exc:
             self._window.show_error("Delete Occurrences Failed", str(exc))
 
-    def copy_to_direction(self, direction: Direction) -> None:
+    def copy_to_direction(self, direction: Direction, keys: list[str] | None = None) -> None:
         s_id = self._window.selected_s_id
-        keys = self._window.selected_frame_box_keys
+        keys = self._window.selected_frame_box_keys if keys is None else keys
         if not s_id or not keys:
             return
 

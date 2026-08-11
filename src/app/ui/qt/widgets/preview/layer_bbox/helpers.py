@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from PySide6.QtCore import QRect, QPoint
 
-from app.ui.view_state.preview.bbox_drag import DragMode
+from app.ui.qt.widgets.preview.layer_bbox.bbox_drag import DragMode
 from app.ui.qt.widgets.preview.layer_bbox.constants import _HANDLE_RADIUS
 
 

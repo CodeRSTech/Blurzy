@@ -1,12 +1,18 @@
+from __future__ import annotations
+
 from typing import TYPE_CHECKING
 
-import numpy as np
 
-from app.domain.detection.result import DetectionResult
+
+
 from app.infrastructure.detection.model.base import BaseDetectionModel
 from app.infrastructure.detection.model.mtcnn_torch.loader_factory import MTCNNTorchModelLoaderFactory
 from app.infrastructure.detection.model.mtcnn_torch.mapper import MTCNNTorchDetectionMapper
 from app.shared import get_logger
+if TYPE_CHECKING:
+    import numpy as np
+    from app.domain.detection.result import DetectionResult
+
 
 if TYPE_CHECKING:
     from facenet_pytorch import MTCNN

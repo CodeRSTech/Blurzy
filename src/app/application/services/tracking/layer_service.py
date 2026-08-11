@@ -2,15 +2,21 @@
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
+
 from typing import final, override, TYPE_CHECKING
 
 from PySide6.QtCore import QObject
 
 from app.application.adapters import ApplicationAdapter
 from app.domain import VideoDataLayer
-from app.domain.session import SessionId
+
 from app.domain.video.direction import Direction
 from app.shared.logging_cfg import get_logger
+if TYPE_CHECKING:
+    from app.domain.session import SessionId
+
 
 if TYPE_CHECKING:
     from app.application.application import Application

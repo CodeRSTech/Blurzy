@@ -2,15 +2,22 @@
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
+
 import threading
 from collections import defaultdict
-from collections.abc import Callable
-from typing import Iterable, final, TYPE_CHECKING
+
+from typing import final, TYPE_CHECKING
 
 from PySide6.QtCore import QObject
 
 from app.domain import VideoDataLayer, new_passes_filter
 from app.shared import get_logger
+if TYPE_CHECKING:
+    from collections.abc import Callable
+    from typing import Iterable
+
 
 if TYPE_CHECKING:
     from app.domain.base.dtypes import ListOfBoxes

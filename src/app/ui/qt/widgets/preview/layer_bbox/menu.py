@@ -8,17 +8,19 @@ Why this module exists:
 
 from __future__ import annotations
 
-from PySide6.QtGui import QAction
-from PySide6.QtWidgets import QMenu
+from typing import TYPE_CHECKING
 
 from app.domain.detection import AnnotationContextActions
 
-
+if TYPE_CHECKING:
+    from PySide6.QtGui import QAction
+    from PySide6.QtWidgets import QMenu
 def build_no_hit_action_map(menu: QMenu) -> dict[QAction, str]:
     """Build context menu actions used when right-clicking empty canvas space."""
     action_select_all = menu.addAction("Select All")
     action_select_none = menu.addAction("Deselect All")
     action_select_inverse = menu.addAction("Invert Selection")
+    action_relabel = menu.addAction("Relabel Selected")
     menu.addSeparator()
     action_create_bbox_here = menu.addAction("Add Bounding Box Here")
     action_remove_all_boxes = menu.addAction("Remove All Bounding Boxes")
@@ -30,6 +32,7 @@ def build_no_hit_action_map(menu: QMenu) -> dict[QAction, str]:
         action_select_all: AnnotationContextActions.SELECT_ALL.value,
         action_select_none: AnnotationContextActions.SELECT_NONE.value,
         action_select_inverse: AnnotationContextActions.SELECT_INVERSE.value,
+        action_relabel: AnnotationContextActions.RELABEL.value,
         action_create_bbox_here: AnnotationContextActions.ADD_BBOX_HERE.value,
         action_remove_all_boxes: AnnotationContextActions.DELETE_ALL_BBOXES.value,
         action_reset_current_frame: AnnotationContextActions.RESET_FRAME.value,
@@ -42,6 +45,7 @@ def build_hit_action_map(menu: QMenu, tracker_actions_enabled: bool) -> dict[QAc
     action_select_all = menu.addAction("Select All")
     action_select_none = menu.addAction("Deselect All")
     action_select_inverse = menu.addAction("Invert Selection")
+    action_relabel = menu.addAction("Relabel Selected")
     action_dup_next = menu.addAction("Duplicate to Next Frame")
     action_dup_prev = menu.addAction("Duplicate to Previous Frame")
     action_dup_current = menu.addAction("Duplicate to Current Frame")
@@ -55,6 +59,7 @@ def build_hit_action_map(menu: QMenu, tracker_actions_enabled: bool) -> dict[QAc
         action_select_all: AnnotationContextActions.SELECT_ALL.value,
         action_select_none: AnnotationContextActions.SELECT_NONE.value,
         action_select_inverse: AnnotationContextActions.SELECT_INVERSE.value,
+        action_relabel: AnnotationContextActions.RELABEL.value,
         action_dup_next: AnnotationContextActions.COPY_NEXT.value,
         action_dup_prev: AnnotationContextActions.COPY_PREV.value,
         action_dup_current: AnnotationContextActions.COPY_CURRENT.value,

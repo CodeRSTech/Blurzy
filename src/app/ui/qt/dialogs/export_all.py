@@ -1,16 +1,12 @@
 from __future__ import annotations
 
-from PySide6.QtWidgets import (
-    QDialog,
-    QDialogButtonBox,
-    QFileDialog,
-    QHBoxLayout,
-    QLabel,
-    QLineEdit,
-    QPushButton,
-    QVBoxLayout,
-    QWidget,
-)
+from typing import TYPE_CHECKING
+
+
+from PySide6.QtWidgets import QDialog, QDialogButtonBox, QFileDialog, QHBoxLayout, QLabel, QLineEdit, QPushButton, QVBoxLayout
+if TYPE_CHECKING:
+    from PySide6.QtWidgets import QWidget
+
 
 
 class ExportAllDialog(QDialog):

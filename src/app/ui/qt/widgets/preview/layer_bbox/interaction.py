@@ -7,11 +7,15 @@ the widget facade can remain thin and easier to test.
 from __future__ import annotations
 
 from collections.abc import Callable
+from typing import TYPE_CHECKING
 
 from PySide6.QtCore import QPoint, QRect
 
-from app.ui.view_state.preview.bbox_drag import DragMode
-from app.ui.view_state.preview.bbox_state import BBoxState
+from app.ui.qt.widgets.preview.layer_bbox.bbox_drag import DragMode
+from app.ui.qt.widgets.preview.layer_bbox.bbox_mouse_release import MouseReleaseOutcome
+
+if TYPE_CHECKING:
+    from app.ui.qt.widgets.preview.layer_bbox.bbox_state import BBoxState
 
 
 BBoxLookupFn = Callable[[QPoint], tuple[str | None, QRect | None]]
@@ -133,17 +137,20 @@ def finalize_release(
     editing_bbox_id: str | None,
     min_bbox_px: int,
     widget_rect_to_image_space: Callable[[QRect], tuple[int, int, int, int]],
-) -> tuple[str, tuple[str, int, int, int, int] | tuple[int, int, int, int] | None]:
+) -> tuple[MouseReleaseOutcome, tuple[str, int, int, int, int] | tuple[int, int, int, int] | None]:
     """Finalize mouse release into ``cancel``/``draw``/``edit``/``none`` outcomes."""
-    if state.drag_mode == DragMode.DRAW:
-        if state.rect.width() < min_bbox_px or state.rect.height() < min_bbox_px:
-            return "cancel", None
+    drag_mode = state.drag_mode
+    rect = state.rect
 
-        x1, y1, x2, y2 = widget_rect_to_image_space(state.rect)
-        return "draw", (x1, y1, x2, y2)
+    if drag_mode == DragMode.DRAW and (rect.width() < min_bbox_px or rect.height() < min_bbox_px):
+        return MouseReleaseOutcome.CANCEL, None
 
-    if editing_bbox_id is not None and state.drag_mode != DragMode.NONE:
-        x1, y1, x2, y2 = widget_rect_to_image_space(state.rect)
-        return "edit", (editing_bbox_id, x1, y1, x2, y2)
+    if drag_mode == DragMode.DRAW:
+        x1, y1, x2, y2 = widget_rect_to_image_space(rect)
+        return MouseReleaseOutcome.DRAW, (x1, y1, x2, y2)
 
-    return "none", None
+    if drag_mode != DragMode.NONE and editing_bbox_id is not None:
+        x1, y1, x2, y2 = widget_rect_to_image_space(rect)
+        return MouseReleaseOutcome.EDIT, (editing_bbox_id, x1, y1, x2, y2)
+
+    return MouseReleaseOutcome.NONE, None

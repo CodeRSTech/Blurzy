@@ -1,7 +1,16 @@
-import numpy as np
 
-from app.domain.detection.result import DetectionResult
+
+
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
+
 from app.infrastructure.detection.model.base import BaseDetectionModel
+if TYPE_CHECKING:
+    import numpy as np
+    from app.domain.detection.result import DetectionResult
+
 
 
 class DummyDetectionModel(BaseDetectionModel):

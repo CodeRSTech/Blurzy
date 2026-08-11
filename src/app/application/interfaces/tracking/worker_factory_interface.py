@@ -2,11 +2,19 @@
 
 from __future__ import annotations
 
-from typing import Protocol
+from typing import TYPE_CHECKING
 
-from app.application.interfaces.tracking.worker_interface import TrackingWorkerInterface
-from app.domain.base.dtypes import ListOfBoxesByFrameIndexAsDict
-from app.domain.session.session_state import SessionState
+
+from typing import Protocol
+if TYPE_CHECKING:
+    from app.application.interfaces.tracking.worker_interface import TrackingWorkerInterface
+    from app.domain.base.dtypes import ListOfBoxesByFrameIndexAsDict
+    from app.domain.session.session_state import SessionState
+
+
+
+
+
 
 
 class TrackingWorkerFactoryInterface(Protocol):

@@ -3,14 +3,19 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, final, override
 
-from PySide6.QtCore import QRect, QSize, Signal, QPointF
-from PySide6.QtGui import QImage
+from PySide6.QtCore import Signal, QPointF
+
 from PySide6.QtWidgets import QWidget, QStackedLayout, QSizePolicy
 
 from app.ui.qt.widgets import AnnotationOverlayWidget, VideoDisplayWidget
-from app.ui.view_state.preview_state import ToolMode
+
 
 from app.shared.logging_cfg import get_logger
+if TYPE_CHECKING:
+    from PySide6.QtCore import QRect, QSize
+    from PySide6.QtGui import QImage
+    from app.ui.view_state.preview_state import ToolMode
+
 if TYPE_CHECKING:
     from app.domain.base.dtypes import BBoxXYXYTuple
 

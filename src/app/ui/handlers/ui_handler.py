@@ -6,10 +6,13 @@ from typing import TYPE_CHECKING, final, override
 
 from PySide6.QtCore import Slot
 
-from app.domain import SessionId, VideoDataLayerGroup
+
 from app.shared.frame_overlay import draw_frame_overlays
 from app.shared.image_utils import rgb_frame_to_q_image
 from app.shared.logging_cfg import get_logger
+if TYPE_CHECKING:
+    from app.domain import SessionId, VideoDataLayerGroup
+
 
 if TYPE_CHECKING:
     from app.infrastructure.dtypes import RGBFrame, ListOfBoxes

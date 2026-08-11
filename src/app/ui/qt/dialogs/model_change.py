@@ -1,14 +1,13 @@
 # app/ui/qt/model_change.py
 from __future__ import annotations
 
-from PySide6.QtWidgets import (
-    QDialog,
-    QDialogButtonBox,
-    QVBoxLayout,
-    QLabel,
-    QCheckBox,
-    QWidget
-)
+from typing import TYPE_CHECKING
+
+
+from PySide6.QtWidgets import QDialog, QDialogButtonBox, QVBoxLayout, QLabel, QCheckBox
+if TYPE_CHECKING:
+    from PySide6.QtWidgets import QWidget
+
 
 
 class ModelChangeWarningDialog(QDialog):

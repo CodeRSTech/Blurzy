@@ -2,15 +2,21 @@
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
+
 import copy
 from typing import Protocol, TYPE_CHECKING
 
-from PySide6.QtCore import QMutex, QMutexLocker, QObject, QThread, Signal
+from PySide6.QtCore import QMutex, QMutexLocker, QThread, Signal
 
 from app.infrastructure.tracking.bytetrack_strategy import ByteTrackStrategy
 from app.infrastructure.tracking.deepsort_strategy import DeepSortStrategy
 from app.infrastructure.tracking.tracking_strategy import HungarianStrategy, DummyTracker
 from app.shared.logging_cfg import get_logger
+if TYPE_CHECKING:
+    from PySide6.QtCore import QObject
+
 
 if TYPE_CHECKING:
     from app.domain.base.dtypes import ListOfBoxesByFrameIndexAsDict

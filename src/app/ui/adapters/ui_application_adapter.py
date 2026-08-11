@@ -2,10 +2,14 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Unpack
+from typing import TYPE_CHECKING
 
-from app.domain import SessionId, VideoDataLayer
+
 from app.ui.interfaces.ui_application_interface import UIApplicationInterface
+if TYPE_CHECKING:
+    from typing import Unpack
+    from app.domain import SessionId, VideoDataLayer
+
 
 if TYPE_CHECKING:
     from app.application.application import Application

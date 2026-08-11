@@ -5,8 +5,11 @@ This module contains paint-only helpers and does not mutate widget state.
 
 from __future__ import annotations
 
-from PySide6.QtCore import QPoint, Qt, QRect
-from PySide6.QtGui import QBrush, QPainter, QPen
+from typing import TYPE_CHECKING
+
+
+from PySide6.QtCore import QPoint, Qt
+from PySide6.QtGui import QBrush, QPen
 
 from app.ui.qt.shared.geometry_ui import get_handle_points_from_rect
 from app.ui.qt.widgets.preview.layer_bbox.constants import (
@@ -16,6 +19,10 @@ from app.ui.qt.widgets.preview.layer_bbox.constants import (
     _HANDLE_COLOR,
     _HANDLE_DRAW_R,
 )
+if TYPE_CHECKING:
+    from PySide6.QtCore import QRect
+    from PySide6.QtGui import QPainter
+
 
 
 def draw_active_bbox(painter: QPainter, rect: QRect) -> None:

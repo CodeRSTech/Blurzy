@@ -2,19 +2,23 @@
 
 from __future__ import annotations
 
-from collections.abc import Iterable
+
 from typing import TYPE_CHECKING
 
 from PySide6.QtCore import QObject
 
 from app.application.adapters import ApplicationAdapter
 from app.application.managers.video_decode_worker import VideoDecodeWorkerManager
-from app.domain.session import SessionId
+
 from app.shared import get_logger
 from app.shared.exceptions import (
     SessionAlreadyExistsException,
     NoNewOpenedSessionsException,
 )
+if TYPE_CHECKING:
+    from collections.abc import Iterable
+    from app.domain.session import SessionId
+
 
 if TYPE_CHECKING:
     from app.application.application import Application

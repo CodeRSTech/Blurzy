@@ -4,10 +4,13 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-import numpy as np
+
 
 from app.infrastructure.detection.model.loader import load_detection_model
 from app.shared.logging_cfg import get_logger
+if TYPE_CHECKING:
+    import numpy as np
+
 
 if TYPE_CHECKING:
     from app.domain.detection.result import DetectionResult

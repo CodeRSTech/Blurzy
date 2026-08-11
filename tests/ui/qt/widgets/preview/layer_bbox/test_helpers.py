@@ -6,7 +6,7 @@ from PySide6.QtWidgets import QApplication
 
 from app.ui.qt.widgets.preview.layer_bbox.helpers import clamp_rect_to_pixmap
 from app.ui.qt.widgets.preview.layer_bbox.layer_bbox import AnnotationOverlayWidget
-from app.ui.view_state.preview.bbox_state import BBoxState
+from app.ui.qt.widgets.preview.layer_bbox.bbox_state import BBoxState
 
 
 def test_zero_size_rect_is_not_considered_valid() -> None:

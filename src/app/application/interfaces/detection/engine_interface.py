@@ -3,8 +3,11 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Protocol, runtime_checkable
+if TYPE_CHECKING:
+    import numpy as np
 
-import numpy as np
+
+
 
 if TYPE_CHECKING:
     from app.domain.detection.result import DetectionResult

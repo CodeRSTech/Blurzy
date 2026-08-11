@@ -2,6 +2,9 @@
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
+
 from typing import final, TYPE_CHECKING
 
 from app.application.adapters import (
@@ -10,11 +13,14 @@ from app.application.adapters import (
 )
 from app.application.managers.tracking_worker import TrackingWorkerManager
 from app.application.services.tracking.result_processor import TrackingResultProcessor
-from app.domain import VideoDataLayer
+
 from app.shared import get_logger
 from app.shared.exceptions import (
     InvalidSessionIdException, EmptyLayerException,
 )
+if TYPE_CHECKING:
+    from app.domain import VideoDataLayer
+
 
 if TYPE_CHECKING:
     from app.application.application import Application

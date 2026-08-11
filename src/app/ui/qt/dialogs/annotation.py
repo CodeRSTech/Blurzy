@@ -1,18 +1,17 @@
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
+
 from typing import final
 
-from PySide6.QtWidgets import (
-    QDialog,
-    QDialogButtonBox,
-    QFormLayout,
-    QLineEdit,
-    QSpinBox,
-    QVBoxLayout,
-    QWidget,
-)
+from PySide6.QtWidgets import QDialog, QDialogButtonBox, QFormLayout, QLineEdit, QSpinBox, QVBoxLayout
+if TYPE_CHECKING:
+    from PySide6.QtWidgets import QWidget
+    from app.domain.base.dtypes import BBoxXYXYTuple
 
-from app.domain.base.dtypes import BBoxXYXYTuple
+
+
 
 
 @final

@@ -52,29 +52,21 @@ See: app/application/services/layer_coercion.py
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
+
 from dataclasses import dataclass
 from typing import final
 
-from PySide6.QtWidgets import (
-    QButtonGroup,
-    QComboBox,
-    QDialog,
-    QDialogButtonBox,
-    QFileDialog,
-    QFormLayout,
-    QGroupBox,
-    QLabel,
-    QLineEdit,
-    QMessageBox,
-    QPushButton,
-    QRadioButton,
-    QWidget,
-)
+from PySide6.QtWidgets import QButtonGroup, QComboBox, QDialog, QDialogButtonBox, QFileDialog, QFormLayout, QGroupBox, QLabel, QLineEdit, QMessageBox, QPushButton, QRadioButton
 
 from app.application.services.helpers.layer_coercion import ensure_import_mode, ensure_layer_enum
 from app.application.services.helpers.import_mode import ImportMode
 from app.domain.video.layer import VideoDataLayer
 from app.ui.qt.shared.layout_shortcuts import create_hbox_layout, create_vbox_layout
+if TYPE_CHECKING:
+    from PySide6.QtWidgets import QWidget
+
 
 
 # ──────────────────────────────────────────────────────────────────────────────

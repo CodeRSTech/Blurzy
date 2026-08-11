@@ -4,9 +4,16 @@
 
 from __future__ import annotations
 
-from app.application.interfaces import DetectionWorkerInterface, DetectionEngineInterface
+from typing import TYPE_CHECKING
+
+
+
 from app.application.interfaces.detection.worker_factory_interface import DetectionWorkerFactoryInterface
-from app.domain.session import SessionId
+if TYPE_CHECKING:
+    from app.application.interfaces import DetectionWorkerInterface, DetectionEngineInterface
+    from app.domain.session import SessionId
+
+
 
 
 class DetectionWorkerFactoryAdapter(DetectionWorkerFactoryInterface):

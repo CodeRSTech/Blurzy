@@ -1,13 +1,20 @@
 from __future__ import annotations
 
-from collections.abc import Callable, Iterable
-from typing import Unpack, final, override, TYPE_CHECKING
+from typing import TYPE_CHECKING
+
+
+
+from typing import final, override, TYPE_CHECKING
 
 from PySide6.QtCore import QObject
 
 from app.application.managers import SessionManager
 from app.application import services
 from app.application.services.helpers.layer_coercion import ensure_import_mode, ensure_layer_enum
+if TYPE_CHECKING:
+    from collections.abc import Callable, Iterable
+    from typing import Unpack
+
 
 if TYPE_CHECKING:
     from app.domain import BBoxXYXYTuple, VideoDataLayer, VideoDataLayerGroup, SessionId, Direction, BBoxViewModel, \

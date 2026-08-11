@@ -12,9 +12,13 @@ import numpy as np
 from PySide6.QtCore import QObject
 
 from app.application.adapters import ApplicationAdapter
-from app.domain import SessionId, BBoxXYXYTuple, VideoDataLayer
-from app.infrastructure.session.session import Session
+from app.domain import VideoDataLayer
+
 from app.shared.logging_cfg import get_logger
+if TYPE_CHECKING:
+    from app.domain import SessionId, BBoxXYXYTuple
+    from app.infrastructure.session.session import Session
+
 
 logger = get_logger("Application->ExportService")
 

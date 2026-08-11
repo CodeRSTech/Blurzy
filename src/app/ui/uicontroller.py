@@ -3,16 +3,22 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, final, override
 
 from PySide6.QtCore import Slot, QObject
-from PySide6.QtWidgets import QApplication, QTableWidget
 
-from app.domain.base.dtypes import ListOfBoxes
-from app.domain import SessionId, VideoDataLayerGroup
+
+
+
 from app.infrastructure.detection.model.helpers import get_available_detection_model_names_as_view_model
 from app.shared import get_logger
 from app.ui.adapters import UIApplicationAdapter, UIControllerAdapter
 from app.ui import handlers
 from app.ui.view_state.table_key_filter import FrameTableKeyFilter
-from app.ui.qt.dialogs import EditAnnotationDialog, ModelChangeWarningDialog
+if TYPE_CHECKING:
+    from PySide6.QtWidgets import QApplication, QTableWidget
+    from app.domain.base.dtypes import ListOfBoxes
+    from app.domain import SessionId, VideoDataLayerGroup
+    from app.ui.qt.dialogs import EditAnnotationDialog, ModelChangeWarningDialog
+
+
 
 if TYPE_CHECKING:
     from app.application.application import Application

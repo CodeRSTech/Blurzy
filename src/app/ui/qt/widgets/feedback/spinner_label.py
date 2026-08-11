@@ -1,7 +1,13 @@
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
+
 from PySide6.QtCore import QTimer
-from PySide6.QtWidgets import QLabel, QWidget
+from PySide6.QtWidgets import QLabel
+if TYPE_CHECKING:
+    from PySide6.QtWidgets import QWidget
+
 
 
 class InlineSpinnerLabel(QLabel):

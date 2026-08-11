@@ -1,6 +1,9 @@
 from __future__ import annotations
 
-from collections.abc import Iterable
+from typing import TYPE_CHECKING
+
+
+
 from typing import override, TYPE_CHECKING
 
 from app.application.managers.session_initializer import SessionInitializer
@@ -9,6 +12,9 @@ from app.infrastructure.session.session import Session
 from app.infrastructure.video.reader import ZeroStreamsInVideoException
 from app.shared.exceptions import SessionAlreadyExistsException, VideoFileOpenException, VideoStreamStateException
 from app.shared.logging_cfg import get_logger
+if TYPE_CHECKING:
+    from collections.abc import Iterable
+
 
 if TYPE_CHECKING:
     from app.application.application import Application

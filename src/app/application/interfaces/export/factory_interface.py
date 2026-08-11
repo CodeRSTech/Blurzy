@@ -3,8 +3,11 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Protocol
+if TYPE_CHECKING:
+    from app.application.interfaces.export.worker_interface import ExportWorkerInterface
 
-from app.application.interfaces.export.worker_interface import ExportWorkerInterface
+
+
 
 if TYPE_CHECKING:
     from PySide6.QtCore import QObject

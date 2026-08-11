@@ -1,16 +1,25 @@
 """Background video decoding worker with ring buffer cache and hard-seek support."""
 
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
+
 import time
 from typing import final
 
 from PySide6.QtCore import QMutex, QMutexLocker, QThread, QObject, Signal
 
-from app.infrastructure.dtypes import RGBFrame
-from app.domain.video.playback_state import PlaybackState
+
+
 from app.domain.video.ring_buffer import VideoRingBuffer
 from app.infrastructure.video.reader import VideoReader
 from app.shared.exceptions import EndOfVideoStreamException
 from app.shared.logging_cfg import get_logger
+if TYPE_CHECKING:
+    from app.infrastructure.dtypes import RGBFrame
+    from app.domain.video.playback_state import PlaybackState
+
 
 logger = get_logger("Infrastructure->VideoDecodeWorker")
 

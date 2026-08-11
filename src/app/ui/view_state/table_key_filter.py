@@ -4,8 +4,11 @@ from typing import TYPE_CHECKING, override
 
 from PySide6.QtCore import QObject, QEvent
 from PySide6.QtGui import QKeyEvent
+if TYPE_CHECKING:
+    from app.domain.base.dtypes import RenderFunction
 
-from app.domain.base.dtypes import RenderFunction
+
+
 
 if TYPE_CHECKING:
     from app.ui.handlers import AnnotationHandler
@@ -20,6 +23,8 @@ class FrameTableKeyFilter(QObject):
     @override
     def eventFilter(self, watched: QObject, event: QEvent) -> bool:
         if event.type() == QEvent.Type.KeyPress and isinstance(event, QKeyEvent):
+            if self._handler.handle_selection_shortcut(event):
+                return True
             if self._handler.handle_delete_key(event):
                 return True
             return self._handler.handle_nudge_key(event)

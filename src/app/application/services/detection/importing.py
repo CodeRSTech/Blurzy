@@ -14,10 +14,13 @@ from app.application.services.helpers.layer_io import (
     deserialize_layer_from_csv,
     deserialize_layer_from_json,
 )
-from app.application.services.helpers.import_mode import ImportMode
+
 from app.domain.video.layer import VideoDataLayer
 from app.shared.exceptions import UnsupportedImportExportFormatException, UnsupportedLayerOperationException
 from app.shared.logging_cfg import get_logger
+if TYPE_CHECKING:
+    from app.application.services.helpers.import_mode import ImportMode
+
 
 if TYPE_CHECKING:
     from app.application.application import Application

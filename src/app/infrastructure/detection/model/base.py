@@ -1,8 +1,17 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
+
 from abc import abstractmethod, ABC
+if TYPE_CHECKING:
+    import numpy as np
+    from app.domain.detection.result import DetectionResult
 
-import numpy as np
 
-from app.domain.detection.result import DetectionResult
+
+
+
 
 
 class BaseDetectionModel(ABC):

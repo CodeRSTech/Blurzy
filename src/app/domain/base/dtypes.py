@@ -1,6 +1,14 @@
 """Type aliases and callback signatures for domain layer."""
 
-from typing import NotRequired, TypedDict, TYPE_CHECKING, Callable
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
+
+from typing import TypedDict, TYPE_CHECKING, Callable
+if TYPE_CHECKING:
+    from typing import NotRequired
+
 
 if TYPE_CHECKING:
     # Import only for the type alias below; runtime imports this module before

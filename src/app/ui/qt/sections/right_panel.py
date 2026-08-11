@@ -12,12 +12,11 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from app.domain.tracking.tracking_strategy import TrackingStrategy
-from app.domain.video.layer import VideoDataLayer
+from app.domain import TrackingStrategy, VideoDataLayer
 from app.ui.qt.shared.layout_shortcuts import create_vbox_layout
 from app.ui.qt.shared.widget_factories import create_qhbox_with_widgets, create_progress_bar, create_spinbox
 from app.ui.qt.widgets.feedback.spinner_label import InlineSpinnerLabel
-from app.ui.qt.widgets.collapsible_widget import CollapsibleBox
+from app.ui.qt.widgets.collapsible_panel import CollapsiblePanel
 
 if TYPE_CHECKING:
     from app.ui.handlers import ExportHandler
@@ -57,7 +56,7 @@ class RightControlPanel(QScrollArea):
         ############################################################################################################
         #   v Detection                                                                                            #
         ############################################################################################################
-        self.detection_box = CollapsibleBox("Detection")
+        self.detection_box = CollapsiblePanel("Detection")
         #
         #               +----------------------------------------------------+
         #   Model:      | YOLOv26X                                     [ v ] |
@@ -120,7 +119,7 @@ class RightControlPanel(QScrollArea):
         ############################################################################################################
         #   v Tracking                                                                                             #
         ############################################################################################################
-        self.tracking_box = CollapsibleBox("Tracking")
+        self.tracking_box = CollapsiblePanel("Tracking")
         self.tracking_config_warning_label = QLabel("⚠️ Settings changed. Re-run tracking.")
         #
         #               +----------------------------------------------------+
@@ -203,7 +202,7 @@ class RightControlPanel(QScrollArea):
         ############################################################################################################
         #   v Preview_Render                                                                                       #
         ############################################################################################################
-        self.render_box = CollapsibleBox("Preview_Render")
+        self.render_box = CollapsiblePanel("Preview_Render")
         #
         #   [ ] Draw bounding boxes
         #
@@ -395,7 +394,7 @@ class RightControlPanel(QScrollArea):
         percent = (current / maximum) * 100
         percent_formatted = f"{percent:.2f} %"
         self.detection_progress_bar.setRange(0, 100)
-        self.detection_progress_bar.setValue(max(0, min(percent, 100)))
+        self.detection_progress_bar.setValue(int(max(0, min(percent, 100))))
         if eta_msecs is not None:
             eta_seconds = int(eta_msecs // 1000)
             eta_formatted = f"{eta_seconds // 3600:02d}:{eta_seconds % 3600 // 60:02d}:{eta_seconds % 60:02d}"

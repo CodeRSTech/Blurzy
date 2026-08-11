@@ -33,6 +33,7 @@ class AnnotationContextActions(str, Enum):
     RESET_ALL = "reset_all_frames"
     RESET_TRACKER_FRAME = "reset_tracker_frame"
     RESET_ALL_TRACKERS = "reset_all_trackers"
+    RELABEL = "relabel"
     SELECT_ALL = "select_all"
     SELECT_NONE = "select_none"
     SELECT_INVERSE = "select_inverse"

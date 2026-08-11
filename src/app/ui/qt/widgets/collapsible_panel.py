@@ -1,11 +1,17 @@
 from __future__ import annotations
 
-from PySide6.QtWidgets import QWidget, QPushButton, QVBoxLayout, QHBoxLayout
+from typing import TYPE_CHECKING
+
+
+from PySide6.QtWidgets import QWidget, QPushButton
 
 from app.ui.qt.shared.layout_shortcuts import create_vbox_layout
+if TYPE_CHECKING:
+    from PySide6.QtWidgets import QVBoxLayout, QHBoxLayout
 
 
-class CollapsibleBox(QWidget):
+
+class CollapsiblePanel(QWidget):
     """
     A custom widget that provides a collapsible panel.
     Clicking the toggle button shows/hides the child widgets.

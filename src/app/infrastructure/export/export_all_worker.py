@@ -5,9 +5,12 @@ from __future__ import annotations
 import os
 from typing import TYPE_CHECKING, final
 
-from PySide6.QtCore import QObject, QThread, Signal
+from PySide6.QtCore import QThread, Signal
 
 from app.domain import VideoDataLayer
+if TYPE_CHECKING:
+    from PySide6.QtCore import QObject
+
 
 if TYPE_CHECKING:
     from app.application.application import Application

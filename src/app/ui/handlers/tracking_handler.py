@@ -2,16 +2,21 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Unpack, final, override
+from typing import TYPE_CHECKING, final, override
 
 from PySide6.QtCore import Slot, QObject
 
 from app.domain import VideoDataLayer
-from app.domain.base.dtypes import ProcessingSettingsKwargs
-from app.domain.session.session_id import SessionId
+
+
 from app.domain.tracking.tracking_strategy import TrackingStrategy
 from app.shared.exceptions import InvalidSessionIdException
 from app.shared.logging_cfg import get_logger
+if TYPE_CHECKING:
+    from typing import Unpack
+    from app.domain.base.dtypes import ProcessingSettingsKwargs
+    from app.domain.session.session_id import SessionId
+
 
 if TYPE_CHECKING:
     from app.ui.interfaces import UIControllerInterface, UIApplicationInterface

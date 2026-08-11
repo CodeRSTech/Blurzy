@@ -8,9 +8,12 @@ from PySide6.QtCore import Slot, QObject
 from PySide6.QtWidgets import QFileDialog
 
 from app.application.adapters import ExportAllWorkerFactoryAdapter, ExportWorkerFactoryAdapter
-from app.domain.session import SessionId
+
 from app.shared.logging_cfg import get_logger
 from app.ui.qt.dialogs.export_all import ExportAllDialog
+if TYPE_CHECKING:
+    from app.domain.session import SessionId
+
 
 if TYPE_CHECKING:
     from app.application.interfaces import ExportAllWorkerInterface, ExportWorkerInterface

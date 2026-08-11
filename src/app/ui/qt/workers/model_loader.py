@@ -1,11 +1,18 @@
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
+
 from typing import final, override, TYPE_CHECKING
 
-from PySide6.QtCore import QObject, QThread, Signal
+from PySide6.QtCore import QThread, Signal
 
-from app.domain.session import SessionId
+
 from app.shared.logging_cfg import get_logger
+if TYPE_CHECKING:
+    from PySide6.QtCore import QObject
+    from app.domain.session import SessionId
+
 
 if TYPE_CHECKING:
     from app.application.application import Application

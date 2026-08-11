@@ -5,8 +5,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, final
 
 from app.application.adapters import ApplicationAdapter
-from app.domain import VideoDataLayer, BoxSource, BBoxXYXYTuple, str_iterable_as_set_without_null_values, \
-    VideoDataLayerGroup, Direction, FrameBoxesViewModel, BBoxViewModel
+from app.domain import VideoDataLayer, BoxSource, str_iterable_as_set_without_null_values, VideoDataLayerGroup, Direction, FrameBoxesViewModel
 from app.domain.helpers.functions import new_passes_filter
 from app.shared import get_logger
 from app.shared.exceptions import (
@@ -16,6 +15,9 @@ from app.shared.exceptions import (
     UnsupportedLayerOperationException,
     UnsupportedTabException,
 )
+if TYPE_CHECKING:
+    from app.domain import BBoxXYXYTuple, BBoxViewModel
+
 
 if TYPE_CHECKING:
     from collections.abc import Iterable

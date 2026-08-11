@@ -6,8 +6,11 @@ from typing import TYPE_CHECKING, final, override
 
 from PySide6.QtCore import QTimer, Slot, QObject, Signal
 
-from app.domain.session.session_id import SessionId
+
 from app.shared.logging_cfg import get_logger
+if TYPE_CHECKING:
+    from app.domain.session.session_id import SessionId
+
 
 if TYPE_CHECKING:
     from app.ui.uicontroller import UIController

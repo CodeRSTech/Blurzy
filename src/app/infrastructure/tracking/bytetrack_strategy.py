@@ -9,16 +9,23 @@ break too quickly.
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
+
 from types import SimpleNamespace
-from typing import Any
+
 
 import numpy as np
 
-from app.domain.base.dtypes import ListOfBoxesByFrameIndexAsDict
+
 from app.domain.detection import BoxSource
 from app.domain.views import BBoxViewModel
 from app.infrastructure.tracking.tracking_strategy import uid_to_color
 from app.shared.logging_cfg import get_logger
+if TYPE_CHECKING:
+    from typing import Any
+    from app.domain.base.dtypes import ListOfBoxesByFrameIndexAsDict
+
 
 logger = get_logger("Infrastructure->Tracking->ByteTrackStrategy")
 

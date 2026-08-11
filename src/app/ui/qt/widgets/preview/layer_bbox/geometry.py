@@ -6,10 +6,12 @@ lookup for selecting the nearest bbox around the cursor.
 
 from __future__ import annotations
 
-from PySide6.QtCore import QPoint, QRect, QSize
+from typing import TYPE_CHECKING
 
-from app.domain.base.dtypes import BBoxXYXYTuple
-
+from PySide6.QtCore import QPoint, QRect
+if TYPE_CHECKING:
+    from PySide6.QtCore import QSize
+    from app.domain.base.dtypes import BBoxXYXYTuple
 
 def image_rect_to_widget_space(
     x1: int,

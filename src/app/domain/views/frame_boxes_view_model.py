@@ -1,8 +1,14 @@
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from typing import TYPE_CHECKING
 
-from app.domain.base.dtypes import ListOfBoxes
+
+from dataclasses import dataclass, field
+if TYPE_CHECKING:
+    from app.domain.base.dtypes import ListOfBoxes
+
+
+
 
 
 @dataclass(slots=True)

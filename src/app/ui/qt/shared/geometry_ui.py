@@ -1,6 +1,12 @@
 from __future__ import annotations
 
-from PySide6.QtCore import QRect, QPoint
+from typing import TYPE_CHECKING
+
+
+from PySide6.QtCore import QPoint
+if TYPE_CHECKING:
+    from PySide6.QtCore import QRect
+
 
 
 def get_handle_points_from_rect(rect: QRect) -> list[QPoint]:
