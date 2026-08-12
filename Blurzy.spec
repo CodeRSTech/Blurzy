@@ -29,8 +29,6 @@ pyz = PYZ(analysis.pure)
 exe = EXE(
     pyz,
     analysis.scripts,
-    analysis.binaries,
-    analysis.datas,
     [],
     name="Blurzy",
     debug=False,
@@ -38,4 +36,16 @@ exe = EXE(
     strip=False,
     upx=True,
     console=False,
+    exclude_binaries=True,
+)
+
+coll = COLLECT(
+    exe,
+    analysis.binaries,
+    analysis.zipfiles,
+    analysis.datas,
+    strip=False,
+    upx=True,
+    upx_exclude=[],
+    name="Blurzy",
 )

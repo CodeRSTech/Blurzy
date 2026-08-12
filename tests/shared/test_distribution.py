@@ -11,7 +11,7 @@ def test_bundled_resource_path_uses_source_tree_when_not_frozen(monkeypatch):
 
     path = distribution.bundled_resource_path("icons", "play-line.svg")
 
-    assert path == Path(distribution.__file__).resolve().parents[2] / "app" / "ui" / "qt" / "resources" / "icons" / "play-line.svg"
+    assert path == Path(distribution.__file__).resolve().parents[3] / "app" / "ui" / "qt" / "resources" / "icons" / "play-line.svg"
 
 
 def test_bundled_resource_path_uses_pyinstaller_bundle_root(monkeypatch, tmp_path):

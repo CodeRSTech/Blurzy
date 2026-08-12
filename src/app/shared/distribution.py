@@ -18,7 +18,7 @@ def _distribution_root() -> Path:
     bundled_root = getattr(sys, "_MEIPASS", None)
     if bundled_root:
         return Path(bundled_root)
-    return Path(__file__).resolve().parents[2]
+    return Path(__file__).resolve().parents[3]
 
 
 def bundled_resource_path(*relative_parts: str) -> Path:
