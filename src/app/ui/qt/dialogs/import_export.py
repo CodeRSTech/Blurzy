@@ -52,6 +52,7 @@ See: app/application/services/layer_coercion.py
 
 from __future__ import annotations
 
+import os
 from typing import TYPE_CHECKING
 
 
@@ -147,6 +148,8 @@ class ImportExportDialog(QDialog):
         self,
         scope_layers: list[VideoDataLayer],
         scope_title: str = "Layer",
+        initial_import_directory: str = "",
+        initial_export_directory: str = "",
         parent: QWidget | None = None,
     ) -> None:
         super().__init__(parent)
@@ -155,6 +158,8 @@ class ImportExportDialog(QDialog):
 
         self._scope_layers = scope_layers
         self._config: ImportExportConfig | None = None
+        self._initial_import_directory = initial_import_directory
+        self._initial_export_directory = initial_export_directory
 
         self._init_widgets()
         self._build_ui()
@@ -289,13 +294,19 @@ class ImportExportDialog(QDialog):
         ext = f".{fmt}"
 
         if self._radio_import.isChecked():
+            start_dir = self._initial_import_directory
             path, _ = QFileDialog.getOpenFileName(
-                self, "Select Import File", "", ext_label
+                self, "Select Import File", start_dir, ext_label
             )
         else:
             default_name = f"layer_export{ext}"
+            start_path = (
+                os.path.join(self._initial_export_directory, default_name)
+                if self._initial_export_directory
+                else default_name
+            )
             path, _ = QFileDialog.getSaveFileName(
-                self, "Select Export Destination", default_name, ext_label
+                self, "Select Export Destination", start_path, ext_label
             )
 
         if path:

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 from typing import TYPE_CHECKING
 
 
@@ -49,8 +50,10 @@ class Window(QtWidgets.QMainWindow):
         self._close_request_handler: Callable[[], bool] | None = None
         self._bbox_selection_state = BBoxSelectionState()
         self._selection_history_state = SelectionHistoryState()
+        self._base_window_title = "EasyBlur"
+        self._current_project_path = ""
 
-        self.setWindowTitle("EasyBlur")
+        self.setWindowTitle(self._base_window_title)
         self.resize(1300, 850)
 
         self._init_sections()
@@ -78,12 +81,17 @@ class Window(QtWidgets.QMainWindow):
         self.setStatusBar(status)
 
     def _build_menu_bar(self) -> None:
-        """Build a real top menu bar hosted in QtWidgets.QMainWindow's menu-widget slot."""
+        """Build a real top menu bar hosted in the window's custom top bar."""
         menu_bar = QtWidgets.QMenuBar(self)
         # Keep menu rendering inside the window consistently across platforms.
         menu_bar.setNativeMenuBar(False)
 
         file_menu = menu_bar.addMenu("&File")
+        file_menu.addAction(self.new_project_action)
+        file_menu.addAction(self.open_project_action)
+        file_menu.addAction(self.save_project_action)
+        file_menu.addAction(self.save_project_as_action)
+        file_menu.addSeparator()
         file_menu.addAction(self.open_videos_action)
         file_menu.addSeparator()
         file_menu.addAction(self.right_panel.export_all_action)
@@ -103,6 +111,10 @@ class Window(QtWidgets.QMainWindow):
         self._register_window_actions(
             (
                 self.open_videos_action,
+                self.new_project_action,
+                self.open_project_action,
+                self.save_project_action,
+                self.save_project_as_action,
                 self.preferences_action,
                 self.right_panel.export_all_action,
                 self.reset_trackers_current_frame_action,
@@ -112,7 +124,17 @@ class Window(QtWidgets.QMainWindow):
             )
         )
 
-        self.setMenuWidget(menu_bar)
+        top_bar = QtWidgets.QWidget(self)
+        top_bar_layout = create_vbox_layout(top_bar, margins=(6, 4, 6, 4), spacing=0)
+        menu_row = QtWidgets.QHBoxLayout()
+        menu_row.setContentsMargins(0, 0, 0, 0)
+        menu_row.setSpacing(8)
+        menu_row.addWidget(menu_bar)
+        menu_row.addStretch(1)
+        menu_row.addWidget(self.project_label)
+        top_bar_layout.addLayout(menu_row)
+
+        self.setMenuWidget(top_bar)
 
     def _build_ui(self) -> None:
         central = QtWidgets.QWidget()
@@ -175,6 +197,7 @@ class Window(QtWidgets.QMainWindow):
         self.bottom_panel.setMinimumHeight(0)
 
         self.info_label = QtWidgets.QLabel("No session loaded")
+        self.project_label = QtWidgets.QLabel("Project: none")
         progress_minimum, progress_maximum = self._splitter_defaults.progress_range
         self.export_progress_bar = create_progress_bar(
             minimum=progress_minimum,
@@ -194,6 +217,22 @@ class Window(QtWidgets.QMainWindow):
         self.open_videos_action = QAction("Open Videos...", self)
         self.open_videos_action.setShortcut("Ctrl+O")
         self.open_videos_action.setStatusTip("Open one or more video files")
+
+        self.new_project_action = QAction("New Project", self)
+        self.new_project_action.setShortcut("Ctrl+N")
+        self.new_project_action.setStatusTip("Close current project and start a new one")
+
+        self.open_project_action = QAction("Open Project...", self)
+        self.open_project_action.setShortcut("Ctrl+Shift+O")
+        self.open_project_action.setStatusTip("Open a saved project file")
+
+        self.save_project_action = QAction("Save Project", self)
+        self.save_project_action.setShortcut("Ctrl+S")
+        self.save_project_action.setStatusTip("Save the current project")
+
+        self.save_project_as_action = QAction("Save Project As...", self)
+        self.save_project_as_action.setShortcut("Ctrl+Shift+S")
+        self.save_project_as_action.setStatusTip("Save the current project to a new file")
 
         self.preferences_action = QAction("Settings...", self)
         self.preferences_action.setShortcut("Ctrl+,")
@@ -380,6 +419,18 @@ class Window(QtWidgets.QMainWindow):
 
     def set_status_text(self, text: str) -> None:
         self.info_label.setText(text)
+
+    def set_current_project_path(self, project_path: str) -> None:
+        self._current_project_path = project_path
+        if project_path:
+            project_name = os.path.basename(project_path)
+            self.project_label.setText(f"Project: {project_name}")
+            self.project_label.setToolTip(project_path)
+            self.setWindowTitle(f"{self._base_window_title} — {project_name}")
+            return
+        self.project_label.setText("Project: none")
+        self.project_label.setToolTip("")
+        self.setWindowTitle(self._base_window_title)
 
     def show_info(self, title: str, msg: str) -> None:
         QtWidgets.QMessageBox.information(self, title, msg)

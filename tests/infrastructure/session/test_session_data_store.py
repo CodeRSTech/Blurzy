@@ -89,3 +89,17 @@ class TestSessionDataStore:
 
         assert store.has_boxes_for_layer_at_frame_index(VideoDataLayer.B, 2) is False
         assert store.has_frame_for_layer_at_frame_index(VideoDataLayer.B, 2) is True
+
+    def test_project_payload_round_trip_restores_boxes(self):
+        store = SessionDataStore(s_id=MagicMock())
+        box = _FakeBox(key="persisted", confidence=0.8, is_manual=False)
+        store.add_box_to_layer_at_frame_index(VideoDataLayer.C, 4, box)
+
+        payload = store.to_project_payload()
+
+        restored = SessionDataStore(s_id=MagicMock())
+        restored.load_project_payload(payload)
+
+        boxes = restored.get_boxes_for_layer_at_frame_index_as_list(VideoDataLayer.C, 4)
+        assert len(boxes) == 1
+        assert boxes[0].key == "persisted"

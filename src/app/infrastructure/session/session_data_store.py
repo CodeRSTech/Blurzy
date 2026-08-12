@@ -13,6 +13,7 @@ from typing import final, TYPE_CHECKING
 from PySide6.QtCore import QObject
 
 from app.domain import VideoDataLayer, new_passes_filter
+from app.application.services.helpers.layer_io import _box_to_dict, _dict_to_box
 from app.shared import get_logger
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -329,3 +330,24 @@ class SessionDataStore(QObject):
         """Replaces the entire layer with a new dictionary of boxes."""
         with self.data_lock:
             self._data[layer][frame_index] = boxes
+
+    def to_project_payload(self) -> dict[str, dict[str, list[dict[str, object]]]]:
+        with self.data_lock:
+            payload: dict[str, dict[str, list[dict[str, object]]]] = {}
+            for layer, frames in self._data.items():
+                payload[layer.value] = {
+                    str(frame_index): [_box_to_dict(box) for box in boxes]
+                    for frame_index, boxes in frames.items()
+                    if boxes
+                }
+            return payload
+
+    def load_project_payload(self, payload: dict[str, dict[str, list[dict[str, object]]]]) -> None:
+        with self.data_lock:
+            for layer in VideoDataLayer:
+                self._data[layer].clear()
+
+            for layer_name, frames in payload.items():
+                layer = VideoDataLayer(layer_name)
+                for frame_index, boxes in frames.items():
+                    self._data[layer][int(frame_index)] = [_dict_to_box(box) for box in boxes]

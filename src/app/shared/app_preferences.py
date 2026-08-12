@@ -79,6 +79,7 @@ class AppPreferences:
     default_draw_boxes: bool = DEFAULT_DRAW_BOXES
     default_blur_enabled: bool = DEFAULT_BLUR_ENABLED
     default_blur_strength: float = DEFAULT_BLUR_STRENGTH
+    last_project_directory: str = ""
     default_export_directory: str = ""
     default_export_prefix: str = ""
     default_export_suffix: str = "_exported"
@@ -118,6 +119,7 @@ class AppPreferencesStore:
         "default_draw_boxes": "preferences/default_draw_boxes",
         "default_blur_enabled": "preferences/default_blur_enabled",
         "default_blur_strength": "preferences/default_blur_strength",
+        "last_project_directory": "preferences/last_project_directory",
         "default_export_directory": "preferences/default_export_directory",
         "default_export_prefix": "preferences/default_export_prefix",
         "default_export_suffix": "preferences/default_export_suffix",
@@ -189,6 +191,10 @@ class AppPreferencesStore:
                 self._settings.value(self._KEYS["default_blur_strength"], defaults.default_blur_strength),
                 defaults.default_blur_strength,
             ),
+            last_project_directory=_coerce_str(
+                self._settings.value(self._KEYS["last_project_directory"], defaults.last_project_directory),
+                defaults.last_project_directory,
+            ),
             default_export_directory=_coerce_str(
                 self._settings.value(self._KEYS["default_export_directory"], defaults.default_export_directory),
                 defaults.default_export_directory,
@@ -222,6 +228,7 @@ class AppPreferencesStore:
         self._settings.setValue(self._KEYS["default_draw_boxes"], preferences.default_draw_boxes)
         self._settings.setValue(self._KEYS["default_blur_enabled"], preferences.default_blur_enabled)
         self._settings.setValue(self._KEYS["default_blur_strength"], preferences.default_blur_strength)
+        self._settings.setValue(self._KEYS["last_project_directory"], preferences.last_project_directory)
         self._settings.setValue(self._KEYS["default_export_directory"], preferences.default_export_directory)
         self._settings.setValue(self._KEYS["default_export_prefix"], preferences.default_export_prefix)
         self._settings.setValue(self._KEYS["default_export_suffix"], preferences.default_export_suffix)

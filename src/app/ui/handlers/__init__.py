@@ -8,6 +8,7 @@ from .import_export_handler import ImportExportHandler
 from .model_handler import ModelHandler
 from .playback_handler import PlaybackHandler
 from .preferences_handler import PreferencesHandler
+from .project_handler import ProjectHandler
 from .session_handler import SessionHandler
 from .tracking_handler import TrackingHandler
 from .ui_handler import UIHandler
@@ -22,6 +23,7 @@ __all__ = [
     "ModelHandler",
     "PlaybackHandler",
     "PreferencesHandler",
+    "ProjectHandler",
     "SessionHandler",
     "TrackingHandler",
     "UIHandler",

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import os
 from typing import TYPE_CHECKING, final, override
 
 from PySide6.QtCore import QObject, Slot
@@ -134,6 +135,8 @@ class ImportExportHandler(QObject):
         dlg = ImportExportDialog(
             scope_layers=scope,
             scope_title=scope_title,
+            initial_import_directory=self._app.project_directories.last_import_directory,
+            initial_export_directory=self._app.project_directories.last_export_directory,
             parent=self._window,
         )
         if dlg.exec() != ImportExportDialog.DialogCode.Accepted:
@@ -150,8 +153,14 @@ class ImportExportHandler(QObject):
         try:
             if cfg.is_import:
                 self._do_import(s_id, cfg)
+                self._app.update_project_directories(
+                    last_import_directory=os.path.dirname(cfg.file_path)
+                )
             else:
                 self._do_export(s_id, cfg)
+                self._app.update_project_directories(
+                    last_export_directory=os.path.dirname(cfg.file_path)
+                )
         except UnsupportedImportExportFormatException as exc:
             self._window.show_error("Import / Export Failed", str(exc))
             logger.warning("Import/Export operation failed with unsupported format: {}", exc)

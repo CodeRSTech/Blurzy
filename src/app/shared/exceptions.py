@@ -173,3 +173,19 @@ class UnsupportedImportExportFormatException(DomainException):
         )
         self.extension = extension
         self.operation = operation
+
+
+class ProjectFormatException(DomainException):
+    def __init__(self, detail: str) -> None:
+        super().__init__(f"Invalid project file: {detail}")
+        self.detail = detail
+
+
+class MissingProjectAssetException(DomainException):
+    def __init__(self, missing_paths: list[str]) -> None:
+        formatted = "\n".join(f"- {path}" for path in missing_paths)
+        super().__init__(
+            "Project file references missing video files:\n"
+            f"{formatted}"
+        )
+        self.missing_paths = missing_paths

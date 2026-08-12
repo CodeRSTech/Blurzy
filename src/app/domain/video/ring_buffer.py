@@ -1,5 +1,7 @@
 """Circular frame buffer with thread-safe O(1) lookup for video playback buffering."""
 
+from __future__ import annotations
+
 import threading
 from typing import TYPE_CHECKING
 

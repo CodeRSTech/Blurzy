@@ -25,6 +25,7 @@ class TestAppPreferencesStore:
         assert preferences.startup_fullscreen is False
         assert preferences.default_detection_model_name == "None"
         assert preferences.default_chosen_labels == ["person", "cat", "dog"]
+        assert preferences.last_project_directory == ""
         assert preferences.default_export_suffix == "_exported"
 
     def test_load_coerces_saved_values(self) -> None:
@@ -55,6 +56,7 @@ class TestAppPreferencesStore:
             startup_fullscreen=True,
             default_detection_model_name="yolov8n",
             default_chosen_labels=["person", "face"],
+            last_project_directory="/projects",
             default_export_directory="/exports",
             default_export_prefix="final_",
             default_export_suffix="_done",
@@ -67,6 +69,7 @@ class TestAppPreferencesStore:
         assert loaded.startup_fullscreen is True
         assert loaded.default_detection_model_name == "yolov8n"
         assert loaded.default_chosen_labels == ["person", "face"]
+        assert loaded.last_project_directory == "/projects"
         assert loaded.default_export_directory == "/exports"
         assert loaded.default_export_prefix == "final_"
         assert loaded.default_export_suffix == "_done"
