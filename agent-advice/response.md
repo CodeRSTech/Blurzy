@@ -20,4 +20,8 @@ Best agent-ready picks:
 - Project save/recovery: high-value workflow feature with strong product impact
 - Annotation workflow polish: best choice if you want the core editing experience to feel excellent
 
+Verification:
+- Secret scan passed for all new markdown files
+- No tests were run because this is a docs-only change
+
 If you want, I can next turn these into a prioritized agent backlog with one deployable prompt per feature.
