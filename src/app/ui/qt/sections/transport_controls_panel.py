@@ -2,14 +2,13 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-
-from pathlib import Path
 from typing import final
 
 from PySide6.QtCore import Qt, Slot, QSignalBlocker, Signal, QSize
 from PySide6.QtGui import QIcon, QPalette
 from PySide6.QtWidgets import QVBoxLayout, QPushButton, QSlider, QLabel, QRadioButton, QButtonGroup
 
+from app.shared.distribution import bundled_resource_path
 from app.shared.logging_cfg import get_logger
 from app.ui.qt.shared.layout_shortcuts import create_hbox_layout
 from app.ui.qt.shared.icons import create_tinted_icon
@@ -30,7 +29,7 @@ class TransportControlsPanel(QVBoxLayout):
         super().__init__(parent)
 
         # Keep resource resolution local so this layout is self-contained.
-        self._icons_dir = Path(__file__).resolve().parent.parent / "resources" / "icons"
+        self._icons_dir = bundled_resource_path("icons")
 
         # All widgets are strictly instantiated as instance attributes here.
         self._init_widgets()

@@ -13,7 +13,9 @@ class TestMainStartup:
     def test_invalid_startup_config_exits_before_bootstrapping_ui(self, monkeypatch, capsys):
         monkeypatch.setenv("BLURZY_LOG_CONSOLE_LEVEL", "verbose")
         configure_logging = MagicMock()
+        configure_qt_application_metadata = MagicMock()
         monkeypatch.setattr(main_module, "configure_logging", configure_logging)
+        monkeypatch.setattr(main_module, "configure_qt_application_metadata", configure_qt_application_metadata)
 
         with pytest.raises(SystemExit) as exc_info:
             main_module.main()
@@ -81,6 +83,7 @@ class TestMainStartup:
         apply_custom_qt_reprs.assert_called_once_with()
         apply_qt_ui_shortcuts.assert_called_once_with()
         q_application.assert_called_once_with(sys.argv)
+        configure_qt_application_metadata.assert_called_once_with(q_app_instance)
         app_cls.assert_called_once_with()
         window_cls.assert_called_once_with()
         ui_controller_cls.assert_called_once_with(
