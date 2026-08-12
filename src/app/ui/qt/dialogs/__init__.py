@@ -3,6 +3,7 @@ from .export_all import ExportAllDialog
 from .import_export import ImportExportDialog, ImportExportConfig
 from .label import LabelDialog
 from .model_change import ModelChangeWarningDialog
+from .preferences import PreferencesDialog
 
 __all__ = [
     "EditAnnotationDialog",
@@ -11,4 +12,5 @@ __all__ = [
     "ImportExportConfig",
     "LabelDialog",
     "ModelChangeWarningDialog",
+    "PreferencesDialog",
 ]

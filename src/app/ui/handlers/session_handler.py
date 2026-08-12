@@ -128,7 +128,11 @@ class SessionHandler(QObject):
             # ====================================================================
             # [NOTE] ``App.open_videos()`` cascades to ``SessionManager``, which
             # creates ``Session`` instances for each video path
-            self._app.open_videos(paths)
+            opened_paths = set(self._app.open_videos(paths))
+
+            for session in self._controller.app.sm.all_sessions:
+                if str(session.s_id) in opened_paths:
+                    self._controller.preferences_handler.apply_defaults_to_session(session.s_id)
 
             # ====================================================================
             # 3. ADOPT ORPHANED SESSIONS (PARENT MANAGEMENT)

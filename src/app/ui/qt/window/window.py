@@ -89,6 +89,8 @@ class Window(QtWidgets.QMainWindow):
         file_menu.addAction(self.right_panel.export_all_action)
 
         edit_menu = menu_bar.addMenu("&Edit")
+        edit_menu.addAction(self.preferences_action)
+        edit_menu.addSeparator()
         reset_trackers_menu = edit_menu.addMenu("Reset Trackers")
         reset_trackers_menu.addAction(self.reset_trackers_current_frame_action)
         reset_trackers_menu.addAction(self.reset_trackers_all_frames_action)
@@ -101,6 +103,7 @@ class Window(QtWidgets.QMainWindow):
         self._register_window_actions(
             (
                 self.open_videos_action,
+                self.preferences_action,
                 self.right_panel.export_all_action,
                 self.reset_trackers_current_frame_action,
                 self.reset_trackers_all_frames_action,
@@ -191,6 +194,10 @@ class Window(QtWidgets.QMainWindow):
         self.open_videos_action = QAction("Open Videos...", self)
         self.open_videos_action.setShortcut("Ctrl+O")
         self.open_videos_action.setStatusTip("Open one or more video files")
+
+        self.preferences_action = QAction("Settings...", self)
+        self.preferences_action.setShortcut("Ctrl+,")
+        self.preferences_action.setStatusTip("Edit persistent app settings and defaults")
 
         self.reset_trackers_current_frame_action = QAction("Reset at current frame", self)
         self.reset_trackers_all_frames_action = QAction("Reset for all frames", self)

@@ -7,6 +7,7 @@ from unittest.mock import MagicMock
 import pytest
 
 import main as main_module
+from app.shared.app_preferences import AppPreferences
 
 
 class TestMainStartup:
@@ -30,6 +31,10 @@ class TestMainStartup:
         configure_qt_application_metadata = MagicMock()
         monkeypatch.setattr(main_module, "configure_logging", configure_logging)
         monkeypatch.setattr(main_module, "configure_qt_application_metadata", configure_qt_application_metadata)
+        preferences_store = MagicMock()
+        preferences_store.load.return_value = AppPreferences()
+        app_preferences_store_cls = MagicMock(return_value=preferences_store)
+        monkeypatch.setattr(main_module, "AppPreferencesStore", app_preferences_store_cls)
 
         q_app_instance = MagicMock()
         q_app_instance.exec.return_value = 0
@@ -92,3 +97,59 @@ class TestMainStartup:
             q_app_instance, window_instance, app_instance
         )
         window_instance.show.assert_called_once_with()
+        window_instance.showFullScreen.assert_not_called()
+
+    def test_main_honors_fullscreen_preference(self, monkeypatch, tmp_path):
+        monkeypatch.setenv("BLURZY_LOG_FILE_PATH", str(tmp_path / "app.log"))
+        monkeypatch.setattr(main_module, "configure_logging", MagicMock())
+        monkeypatch.setattr(main_module, "configure_qt_application_metadata", MagicMock())
+        preferences_store = MagicMock()
+        preferences_store.load.return_value = AppPreferences(startup_fullscreen=True)
+        monkeypatch.setattr(main_module, "AppPreferencesStore", MagicMock(return_value=preferences_store))
+
+        q_app_instance = MagicMock()
+        q_app_instance.exec.return_value = 0
+        q_application = MagicMock(return_value=q_app_instance)
+        app_cls = MagicMock(return_value=MagicMock())
+        window_instance = MagicMock()
+        window_cls = MagicMock(return_value=window_instance)
+        ui_controller_cls = MagicMock()
+        apply_custom_qt_reprs = MagicMock()
+        apply_qt_ui_shortcuts = MagicMock()
+
+        def _package(name: str) -> types.ModuleType:
+            module = types.ModuleType(name)
+            module.__path__ = []
+            return module
+
+        qtwidgets_module = types.ModuleType("PySide6.QtWidgets")
+        qtwidgets_module.QApplication = q_application
+        application_module = types.ModuleType("app.application.application")
+        application_module.Application = app_cls
+        window_module = types.ModuleType("app.ui.qt.window")
+        window_module.Window = window_cls
+        qt_debug_module = types.ModuleType("app.ui.qt.shared.qt_debug_repr")
+        qt_debug_module.apply_custom_qt_reprs = apply_custom_qt_reprs
+        qt_ui_shortcuts_module = types.ModuleType("app.ui.qt.shared.qt_ui_shortcuts")
+        qt_ui_shortcuts_module.apply_qt_ui_shortcuts = apply_qt_ui_shortcuts
+        ui_controller_module = types.ModuleType("app.ui.uicontroller")
+        ui_controller_module.UIController = ui_controller_cls
+
+        monkeypatch.setitem(sys.modules, "PySide6", _package("PySide6"))
+        monkeypatch.setitem(sys.modules, "PySide6.QtWidgets", qtwidgets_module)
+        monkeypatch.setitem(sys.modules, "app.application", _package("app.application"))
+        monkeypatch.setitem(sys.modules, "app.application.application", application_module)
+        monkeypatch.setitem(sys.modules, "app.ui", _package("app.ui"))
+        monkeypatch.setitem(sys.modules, "app.ui.qt", _package("app.ui.qt"))
+        monkeypatch.setitem(sys.modules, "app.ui.qt.shared", _package("app.ui.qt.shared"))
+        monkeypatch.setitem(sys.modules, "app.ui.qt.window", window_module)
+        monkeypatch.setitem(sys.modules, "app.ui.qt.shared.qt_debug_repr", qt_debug_module)
+        monkeypatch.setitem(sys.modules, "app.ui.qt.shared.qt_ui_shortcuts", qt_ui_shortcuts_module)
+        monkeypatch.setitem(sys.modules, "app.ui.uicontroller", ui_controller_module)
+
+        with pytest.raises(SystemExit) as exc_info:
+            main_module.main()
+
+        assert exc_info.value.code == 0
+        window_instance.show.assert_not_called()
+        window_instance.showFullScreen.assert_called_once_with()

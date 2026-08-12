@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from pathlib import Path
 from typing import TYPE_CHECKING, final, override
 
 from PySide6.QtCore import Slot, QObject
@@ -9,6 +10,7 @@ from PySide6.QtWidgets import QFileDialog
 
 from app.application.adapters import ExportAllWorkerFactoryAdapter, ExportWorkerFactoryAdapter
 
+from app.shared.app_preferences import AppPreferencesStore
 from app.shared.logging_cfg import get_logger
 from app.ui.qt.dialogs.export_all import ExportAllDialog
 if TYPE_CHECKING:
@@ -56,6 +58,7 @@ class ExportHandler(QObject):
 
         self._export_worker_factory = ExportWorkerFactoryAdapter()
         self._export_all_worker_factory = ExportAllWorkerFactoryAdapter()
+        self._preferences_store = AppPreferencesStore()
 
         self.__export_worker: ExportWorkerInterface | None = None
         self.__export_all_worker: ExportAllWorkerInterface | None = None
@@ -240,9 +243,19 @@ class ExportHandler(QObject):
         # ====================================================================
         # 3. PROMPT USER FOR OUTPUT FILE PATH
         # ====================================================================
-        default_name = f"{s_id.basename_without_extension}_exported.mp4"
+        preferences = self._preferences_store.load()
+        default_name = (
+            f"{preferences.default_export_prefix}"
+            f"{s_id.basename_without_extension}"
+            f"{preferences.default_export_suffix}.mp4"
+        )
+        default_path = (
+            str(Path(preferences.default_export_directory) / default_name)
+            if preferences.default_export_directory
+            else default_name
+        )
         output_path, _ = QFileDialog.getSaveFileName(
-            self._window, "Export Video", default_name, "Video Files (*.mp4)"
+            self._window, "Export Video", default_path, "Video Files (*.mp4)"
         )
 
         if not output_path:
@@ -326,7 +339,13 @@ class ExportHandler(QObject):
         # ====================================================================
         # 3. SHOW BATCH EXPORT CONFIGURATION DIALOG
         # ====================================================================
-        dlg = ExportAllDialog(self._window)
+        preferences = self._preferences_store.load()
+        dlg = ExportAllDialog(
+            self._window,
+            initial_directory=preferences.default_export_directory,
+            initial_prefix=preferences.default_export_prefix,
+            initial_suffix=preferences.default_export_suffix,
+        )
         if dlg.exec() != ExportAllDialog.DialogCode.Accepted:
             return
 

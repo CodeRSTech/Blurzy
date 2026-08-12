@@ -7,6 +7,7 @@ from .export_handler import ExportHandler
 from .import_export_handler import ImportExportHandler
 from .model_handler import ModelHandler
 from .playback_handler import PlaybackHandler
+from .preferences_handler import PreferencesHandler
 from .session_handler import SessionHandler
 from .tracking_handler import TrackingHandler
 from .ui_handler import UIHandler
@@ -20,6 +21,7 @@ __all__ = [
     "ImportExportHandler",
     "ModelHandler",
     "PlaybackHandler",
+    "PreferencesHandler",
     "SessionHandler",
     "TrackingHandler",
     "UIHandler",
