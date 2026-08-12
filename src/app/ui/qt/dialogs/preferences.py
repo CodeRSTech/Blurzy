@@ -75,7 +75,7 @@ class PreferencesDialog(QDialog):
             self._tracking_strategy_combo_box.addItem(name, value)
 
         self._tracking_source_combo_box = QComboBox()
-        for name, value in [("Raw Detections", VideoDataLayer.B), ("Reviewed Detections", VideoDataLayer.D)]:
+        for name, value in [("Raw Detections", VideoDataLayer.A), ("Reviewed Detections", VideoDataLayer.B)]:
             self._tracking_source_combo_box.addItem(name, value)
 
         self._min_iou_spinbox = create_spinbox(0.0, 1.0, 0.05, 0.3)

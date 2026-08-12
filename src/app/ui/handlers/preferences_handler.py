@@ -45,9 +45,11 @@ class PreferencesHandler(QObject):
 
     def _apply_window_preferences(self) -> None:
         if self._preferences.startup_fullscreen:
-            self._window.showFullScreen()
+            if not self._window.isFullScreen():
+                self._window.showFullScreen()
             return
-        self._window.showNormal()
+        if self._window.isFullScreen():
+            self._window.showNormal()
 
     def apply_defaults_to_session(self, s_id: SessionId) -> None:
         logger.debug("Applying saved default session settings to {}", s_id)
