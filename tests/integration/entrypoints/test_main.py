@@ -27,7 +27,9 @@ class TestMainStartup:
     def test_main_bootstraps_app_when_startup_config_is_valid(self, monkeypatch, tmp_path):
         monkeypatch.setenv("BLURZY_LOG_FILE_PATH", str(tmp_path / "app.log"))
         configure_logging = MagicMock()
+        configure_qt_application_metadata = MagicMock()
         monkeypatch.setattr(main_module, "configure_logging", configure_logging)
+        monkeypatch.setattr(main_module, "configure_qt_application_metadata", configure_qt_application_metadata)
 
         q_app_instance = MagicMock()
         q_app_instance.exec.return_value = 0
