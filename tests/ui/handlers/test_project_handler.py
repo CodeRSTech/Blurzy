@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-import importlib
+import importlib.util
 import sys
 from dataclasses import dataclass
 from unittest.mock import MagicMock
@@ -18,13 +18,17 @@ _qtcore_module = sys.modules.get("PySide6.QtCore")
 if _qtcore_module is not None:
     _qtcore_module.QObject = _QObjectStub
 
-_MODULE_KEY = "app.ui.handlers.project_handler"
-_module = sys.modules.get(_MODULE_KEY)
-if _module is not None:
-    importlib.reload(_module)
-
 from app.shared.app_preferences import AppPreferences
-from app.ui.handlers.project_handler import ProjectHandler
+
+_MODULE_PATH = (
+    "/home/runner/work/Blurzy-development/Blurzy-development/"
+    "src/app/ui/handlers/project_handler.py"
+)
+_spec = importlib.util.spec_from_file_location("project_handler_under_test", _MODULE_PATH)
+assert _spec is not None and _spec.loader is not None
+project_handler_module = importlib.util.module_from_spec(_spec)
+_spec.loader.exec_module(project_handler_module)
+ProjectHandler = project_handler_module.ProjectHandler
 
 
 class _Signal:
@@ -87,8 +91,6 @@ class TestProjectHandler:
         controller.app = app
         controller.session_handler = MagicMock()
 
-        import app.ui.handlers.project_handler as project_handler_module
-
         monkeypatch.setattr(project_handler_module, "AppPreferencesStore", _PreferencesStore)
         monkeypatch.setattr(
             project_handler_module.QFileDialog,
@@ -113,8 +115,6 @@ class TestProjectHandler:
         controller.window = window
         controller.app = app
         controller.session_handler = MagicMock()
-
-        import app.ui.handlers.project_handler as project_handler_module
 
         monkeypatch.setattr(project_handler_module, "AppPreferencesStore", _PreferencesStore)
 

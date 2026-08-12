@@ -13,8 +13,8 @@ from typing import final, TYPE_CHECKING
 from PySide6.QtCore import QObject
 
 from app.domain import VideoDataLayer, new_passes_filter
-from app.application.services.helpers.layer_io import _box_to_dict, _dict_to_box
 from app.shared import get_logger
+from app.shared.box_io import box_to_dict, dict_to_box
 if TYPE_CHECKING:
     from collections.abc import Callable
     from typing import Iterable
@@ -336,7 +336,7 @@ class SessionDataStore(QObject):
             payload: dict[str, dict[str, list[dict[str, object]]]] = {}
             for layer, frames in self._data.items():
                 payload[layer.value] = {
-                    str(frame_index): [_box_to_dict(box) for box in boxes]
+                    str(frame_index): [box_to_dict(box) for box in boxes]
                     for frame_index, boxes in frames.items()
                     if boxes
                 }
@@ -350,4 +350,4 @@ class SessionDataStore(QObject):
             for layer_name, frames in payload.items():
                 layer = VideoDataLayer(layer_name)
                 for frame_index, boxes in frames.items():
-                    self._data[layer][int(frame_index)] = [_dict_to_box(box) for box in boxes]
+                    self._data[layer][int(frame_index)] = [dict_to_box(box) for box in boxes]

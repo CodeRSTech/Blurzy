@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import TYPE_CHECKING, final, cast
 
 from PySide6.QtCore import Signal, Slot, Qt, QSignalBlocker

@@ -1,9 +1,30 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+import importlib
+import sys
 from types import SimpleNamespace
 
 import pytest
+
+
+class _QObjectStub:
+    def __init__(self, *args, **kwargs):
+        pass
+
+
+_qtcore_module = sys.modules.get("PySide6.QtCore")
+if _qtcore_module is not None:
+    _qtcore_module.QObject = _QObjectStub
+
+for _module_name in (
+    "app.infrastructure.session.session_data_store",
+    "app.infrastructure.session.session",
+    "app.application.services.project_service",
+):
+    _module = sys.modules.get(_module_name)
+    if _module is not None:
+        importlib.reload(_module)
 
 from app.application.services.project_service import ProjectService
 from app.domain import VideoDataLayer

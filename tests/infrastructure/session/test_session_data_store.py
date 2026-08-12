@@ -1,7 +1,28 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
+import importlib
+import sys
+from types import SimpleNamespace
 from unittest.mock import MagicMock
+
+
+class _QObjectStub:
+    def __init__(self, *args, **kwargs):
+        pass
+
+
+_qtcore_module = sys.modules.get("PySide6.QtCore")
+if _qtcore_module is not None:
+    _qtcore_module.QObject = _QObjectStub
+
+for _module_name in (
+    "app.infrastructure.session.session_data_store",
+    "app.infrastructure.session.session",
+):
+    _module = sys.modules.get(_module_name)
+    if _module is not None:
+        importlib.reload(_module)
 
 from app.domain import VideoDataLayer
 from app.infrastructure.session.session_data_store import SessionDataStore
@@ -12,14 +33,22 @@ class _FakeBox:
     key: str
     confidence: float
     is_manual: bool
+    id: str = "box-1"
+    source: object = field(default_factory=lambda: SimpleNamespace(value="Detection"))
+    label: str = "person"
     bbox_xyxy: tuple[int, int, int, int] = (0, 0, 10, 10)
+    color_hex: str = "#00ff00"
 
     def clone(self) -> "_FakeBox":
         return _FakeBox(
             key=self.key,
             confidence=self.confidence,
             is_manual=self.is_manual,
+            id=self.id,
+            source=self.source,
+            label=self.label,
             bbox_xyxy=self.bbox_xyxy,
+            color_hex=self.color_hex,
         )
 
 
