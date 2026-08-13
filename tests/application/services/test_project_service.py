@@ -151,7 +151,7 @@ class TestProjectService:
 
         restored_session = restored_app.get_session_by_id(SessionId(str(video_path)))
         assert report.restored_sessions == 1
-        assert report.skipped_missing_paths == []
+        assert report.skipped_session_paths == []
         assert restored.current_project_path == str(project_path)
         assert restored.directories.last_export_directory == "/exports"
         assert restored_session.state.playback.current_frame_index == 7
@@ -180,7 +180,7 @@ class TestProjectService:
         report = service.load_project(str(project_path))
 
         assert report.restored_sessions == 1
-        assert report.skipped_missing_paths == ["/nope/video.mp4"]
+        assert report.skipped_session_paths == ["/nope/video.mp4"]
         assert app.active_session_id == SessionId(str(existing_video_path))
 
     def test_load_ignores_unknown_saved_setting_keys(self, tmp_path) -> None:
@@ -204,4 +204,5 @@ class TestProjectService:
 
         restored_session = app.get_session_by_id(SessionId(str(video_path)))
         assert report.restored_sessions == 1
+        assert report.skipped_session_paths == []
         assert restored_session.state.settings.detection_model_name == "demo"

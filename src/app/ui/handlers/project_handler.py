@@ -54,11 +54,11 @@ class ProjectHandler(QObject):
         self._window.set_current_project_path(project_path)
         self._window.set_status_text(status_text)
 
-    def _show_partial_load_warning(self, skipped_missing_paths: list[str]) -> None:
-        formatted_paths = "\n".join(f"- {path}" for path in skipped_missing_paths)
+    def _show_partial_load_warning(self, skipped_session_paths: list[str]) -> None:
+        formatted_paths = "\n".join(f"- {path}" for path in skipped_session_paths)
         self._window.show_warning(
             "Project Partially Loaded",
-            "Some project video files were missing and were skipped:\n"
+            "Some project sessions could not be restored and were skipped:\n"
             f"{formatted_paths}",
         )
 
@@ -87,8 +87,8 @@ class ProjectHandler(QObject):
             report = self._app.load_project(path)
             self._remember_project_directory(path)
             self._refresh_ui_after_project_change(path, f"Project loaded: {os.path.basename(path)}")
-            if report.skipped_missing_paths:
-                self._show_partial_load_warning(report.skipped_missing_paths)
+            if report.skipped_session_paths:
+                self._show_partial_load_warning(report.skipped_session_paths)
         except Exception as exc:
             self._window.show_error("Open Project Failed", str(exc))
             logger.opt(exception=exc).error("Failed to open project '{}'", path)

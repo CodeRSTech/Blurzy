@@ -20,7 +20,7 @@ logger = get_logger("Application->ProjectService")
 @dataclass(slots=True)
 class ProjectLoadReport:
     restored_sessions: int
-    skipped_missing_paths: list[str]
+    skipped_session_paths: list[str]
 
 
 class ProjectService:
@@ -73,7 +73,7 @@ class ProjectService:
         project = self._store.load(file_path)
         report = self._restore_project_document(project)
         self._current_project_path = file_path
-        self._directories = project.directories
+        self._directories = ProjectDirectories(**asdict(project.directories))
         return report
 
     def _capture_project_document(self) -> ProjectDocument:
@@ -107,33 +107,37 @@ class ProjectService:
     def _restore_project_document(self, project: ProjectDocument) -> ProjectLoadReport:
         self._app.sm.close_all()
         restored_session_paths: set[str] = set()
-        skipped_missing_paths: list[str] = []
+        skipped_session_paths: list[str] = []
         for entry in project.sessions:
             if not os.path.exists(entry.video_path):
-                skipped_missing_paths.append(entry.video_path)
+                skipped_session_paths.append(entry.video_path)
                 logger.warning("Skipping missing project video '{}'", entry.video_path)
                 continue
-            self._app.open_video_from_path(entry.video_path)
-            session = self._app.get_session_by_id(SessionId(entry.video_path))
-            session.state.settings = self._deserialize_settings(entry.video_path, entry.settings)
-            session.state.playback.current_frame_index = max(0, entry.current_frame_index)
-            session.state.next_annotation_id = max(1, entry.next_annotation_id)
-            session.data.load_project_payload(entry.layers)
-            restored_session_paths.add(entry.video_path)
+            try:
+                self._app.open_video_from_path(entry.video_path)
+                session = self._app.get_session_by_id(SessionId(entry.video_path))
+                session.state.settings = self._deserialize_settings(entry.video_path, entry.settings)
+                session.state.playback.current_frame_index = max(0, entry.current_frame_index)
+                session.state.next_annotation_id = max(1, entry.next_annotation_id)
+                session.data.load_project_payload(entry.layers)
+                restored_session_paths.add(entry.video_path)
+            except Exception as exc:
+                skipped_session_paths.append(entry.video_path)
+                logger.warning("Skipping project session '{}' after restore failure: {}", entry.video_path, exc)
 
         if project.active_session_path and project.active_session_path in restored_session_paths:
             self._app.active_session_id = SessionId(project.active_session_path)
         elif restored_session_paths:
             self._app.initialize_active_session()
         logger.trace(
-            "Project restore complete: requested_sessions={} restored_sessions={} skipped_missing_sessions={}",
+            "Project restore complete: requested_sessions={} restored_sessions={} skipped_sessions={}",
             len(project.sessions),
             len(restored_session_paths),
-            len(skipped_missing_paths),
+            len(skipped_session_paths),
         )
         return ProjectLoadReport(
             restored_sessions=len(restored_session_paths),
-            skipped_missing_paths=skipped_missing_paths,
+            skipped_session_paths=skipped_session_paths,
         )
 
     def _deserialize_settings(self, video_path: str, raw_settings: dict[str, object]) -> ProcessingSettings:

@@ -134,7 +134,7 @@ class TestProjectHandler:
         app.current_project_path = ""
         app.load_project.return_value = SimpleNamespace(
             restored_sessions=1,
-            skipped_missing_paths=["/missing/video.mp4"],
+            skipped_session_paths=["/missing/video.mp4"],
         )
         controller = MagicMock()
         controller.window = window
@@ -157,6 +157,6 @@ class TestProjectHandler:
         assert window.warnings == [
             (
                 "Project Partially Loaded",
-                "Some project video files were missing and were skipped:\n- /missing/video.mp4",
+                "Some project sessions could not be restored and were skipped:\n- /missing/video.mp4",
             )
         ]
