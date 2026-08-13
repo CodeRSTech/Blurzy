@@ -173,3 +173,10 @@ class UnsupportedImportExportFormatException(DomainException):
         )
         self.extension = extension
         self.operation = operation
+
+
+class ProjectFormatException(DomainException):
+    def __init__(self, detail: str) -> None:
+        super().__init__(f"Invalid project file: {detail}")
+        self.detail = detail
+

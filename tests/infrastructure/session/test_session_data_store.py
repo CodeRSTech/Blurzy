@@ -1,7 +1,28 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
+import importlib
+import sys
+from types import SimpleNamespace
 from unittest.mock import MagicMock
+
+
+class _QObjectStub:
+    def __init__(self, *args, **kwargs):
+        pass
+
+
+_qtcore_module = sys.modules.get("PySide6.QtCore")
+if _qtcore_module is not None:
+    _qtcore_module.QObject = _QObjectStub
+
+for _module_name in (
+    "app.infrastructure.session.session_data_store",
+    "app.infrastructure.session.session",
+):
+    _module = sys.modules.get(_module_name)
+    if _module is not None:
+        importlib.reload(_module)
 
 from app.domain import VideoDataLayer
 from app.infrastructure.session.session_data_store import SessionDataStore
@@ -12,14 +33,22 @@ class _FakeBox:
     key: str
     confidence: float
     is_manual: bool
+    id: str = "box-1"
+    source: object = field(default_factory=lambda: SimpleNamespace(value="Detection"))
+    label: str = "person"
     bbox_xyxy: tuple[int, int, int, int] = (0, 0, 10, 10)
+    color_hex: str = "#00ff00"
 
     def clone(self) -> "_FakeBox":
         return _FakeBox(
             key=self.key,
             confidence=self.confidence,
             is_manual=self.is_manual,
+            id=self.id,
+            source=self.source,
+            label=self.label,
             bbox_xyxy=self.bbox_xyxy,
+            color_hex=self.color_hex,
         )
 
 
@@ -89,3 +118,17 @@ class TestSessionDataStore:
 
         assert store.has_boxes_for_layer_at_frame_index(VideoDataLayer.B, 2) is False
         assert store.has_frame_for_layer_at_frame_index(VideoDataLayer.B, 2) is True
+
+    def test_project_payload_round_trip_restores_boxes(self):
+        store = SessionDataStore(s_id=MagicMock())
+        box = _FakeBox(key="persisted", confidence=0.8, is_manual=False)
+        store.add_box_to_layer_at_frame_index(VideoDataLayer.C, 4, box)
+
+        payload = store.to_project_payload()
+
+        restored = SessionDataStore(s_id=MagicMock())
+        restored.load_project_payload(payload)
+
+        boxes = restored.get_boxes_for_layer_at_frame_index_as_list(VideoDataLayer.C, 4)
+        assert len(boxes) == 1
+        assert boxes[0].key == "persisted"

@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import sys
 
+from app.shared.app_preferences import AppPreferencesStore
+from app.shared.distribution import configure_qt_application_metadata
 from app.shared.logging_cfg import configure_logging, get_logger
 from app.shared.runtime_config import StartupConfig, StartupConfigurationError
 
@@ -49,12 +51,16 @@ def main() -> None:
 
     logger.info("Starting the application...")
     q_app = QApplication(sys.argv)
+    configure_qt_application_metadata(q_app)
 
     app = Application()
     window = Window()
     UIController(q_app, window, app)
 
-    window.show()
+    if AppPreferencesStore().load().startup_fullscreen:
+        window.showFullScreen()
+    else:
+        window.show()
     sys.exit(q_app.exec())
 
 

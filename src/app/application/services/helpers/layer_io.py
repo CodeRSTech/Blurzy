@@ -58,6 +58,7 @@ from typing import TYPE_CHECKING
 from app.domain import BBoxViewModel
 from app.domain.detection.source import BoxSource
 from app.application.services.helpers.import_mode import ImportMode
+from app.shared.box_io import box_to_dict, dict_to_box
 
 if TYPE_CHECKING:
     from app.domain.base.dtypes import ListOfBoxes
@@ -84,7 +85,7 @@ def serialize_layer_to_json(
     for frame_index, boxes in sorted(data.items()):
         if not boxes:
             continue
-        frames[str(frame_index)] = [_box_to_dict(b) for b in boxes]
+        frames[str(frame_index)] = [box_to_dict(b) for b in boxes]
         total_boxes += len(boxes)
 
     payload = {
@@ -154,7 +155,7 @@ def deserialize_layer_from_json(file_path: str) -> dict[int, ListOfBoxes]:
         payload = json.load(fh)
 
     frames_raw: dict[str, list[dict]] = payload.get("frames", {})
-    return {int(k): [_dict_to_box(d) for d in v] for k, v in frames_raw.items()}
+    return {int(k): [dict_to_box(d) for d in v] for k, v in frames_raw.items()}
 
 
 def deserialize_layer_from_csv(file_path: str) -> dict[int, ListOfBoxes]:
@@ -268,25 +269,8 @@ def _ensure_parent_dir(path: str) -> None:
 
 
 def _box_to_dict(box: BBoxViewModel) -> dict:
-    return {
-        "id": box.id,
-        "source": box.source.value,
-        "label": box.label,
-        "bbox_xyxy": list(box.bbox_xyxy),
-        "color_hex": box.color_hex,
-        "confidence": box.confidence,
-        "key": box.key,
-    }
+    return box_to_dict(box)
 
 
 def _dict_to_box(d: dict) -> BBoxViewModel:
-    return BBoxViewModel(
-        id=d["id"],
-        source=BoxSource(d["source"]),
-        label=d["label"],
-        bbox_xyxy=tuple(d["bbox_xyxy"]),  # type: ignore[arg-type]
-        color_hex=d["color_hex"],
-        confidence=d.get("confidence"),  # type: ignore[arg-type]
-        key=d.get("key", ""),
-    )
-
+    return dict_to_box(d)

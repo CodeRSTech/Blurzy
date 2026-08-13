@@ -15,7 +15,14 @@ class ExportAllDialog(QDialog):
     Requires an output directory and allows optional prefix/suffix.
     """
 
-    def __init__(self, parent: QWidget | None = None) -> None:
+    def __init__(
+        self,
+        parent: QWidget | None = None,
+        *,
+        initial_directory: str = "",
+        initial_prefix: str = "",
+        initial_suffix: str = "_exported",
+    ) -> None:
         super().__init__(parent)
         self.setWindowTitle("Export All Sessions")
         self.resize(450, 150)
@@ -28,10 +35,12 @@ class ExportAllDialog(QDialog):
         self.browse_button.clicked.connect(self._on_browse)
 
         self.prefix_edit = QLineEdit()
+        self.prefix_edit.setText(initial_prefix)
         self.prefix_edit.setPlaceholderText("e.g., final_")
 
-        self.suffix_edit = QLineEdit("_exported")
+        self.suffix_edit = QLineEdit(initial_suffix)
         self.suffix_edit.setPlaceholderText("e.g., _exported")
+        self.dir_edit.setText(initial_directory)
 
         self.button_box = QDialogButtonBox(
             QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel
@@ -65,7 +74,7 @@ class ExportAllDialog(QDialog):
         layout.addWidget(self.button_box)
 
     def _on_browse(self) -> None:
-        directory = QFileDialog.getExistingDirectory(self, "Select Output Directory")
+        directory = QFileDialog.getExistingDirectory(self, "Select Output Directory", self.dir_edit.text().strip())
         if directory:
             self.dir_edit.setText(directory)
             self._update_ok_button()

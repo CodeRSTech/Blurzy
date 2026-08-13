@@ -109,6 +109,27 @@ def test_sequential_miss_times_out_without_seek():
     assert state.current_frame_data is None
 
 
+def test_current_frame_cache_miss_requests_seek_for_restored_position():
+    """A restored current-frame miss should force a seek back to the playhead."""
+    accessor = SessionFrameAccessor(timeout_seconds=0.05, poll_interval_seconds=0.01)
+    state = _StateStub(frame_count=10, current_index=6)
+    worker = MagicMock(name="decode_worker")
+
+    responses = iter([None, "frame-6"])
+    worker.get_cached_frame_at_index.side_effect = lambda _idx: next(responses, None)
+
+    with patch("app.infrastructure.session.frame_access.time.sleep", return_value=None):
+        result = accessor.get_frame_by_index(
+            session_state=cast(Any, state),
+            decode_worker=worker,
+            frame_index=6,
+        )
+
+    assert result == "frame-6"
+    worker.request_seek.assert_called_once_with(6)
+    assert state.updated == (6, "frame-6")
+
+
 def test_get_current_frame_returns_cached_state_without_decode_lookup():
     """Current frame helper should reuse current_frame_data when already available."""
     accessor = SessionFrameAccessor(timeout_seconds=0.05, poll_interval_seconds=0.01)
@@ -149,5 +170,4 @@ def test_next_previous_and_buffered_helpers_use_relative_indices():
     assert next_result == "frame-5"
     assert prev_result == "frame-4"
     assert buffered_result == "frame-5"
-
 

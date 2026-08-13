@@ -95,6 +95,7 @@ class UIHandler:
         # ====================================================================
         session = self._app.active_session
         if session is None:
+            self._window.transport_panel.set_rotation_degrees(0)
             self._window.set_status_text("No session loaded")
             return
 
@@ -104,17 +105,22 @@ class UIHandler:
         metadata = session.state.metadata
         playback = session.state.playback
         model_name = session.state.settings.detection_model_name
+        rotation_degrees = session.video_reader.manual_rotation if session.video_reader is not None else 0
+        width = session.video_reader.width if session.video_reader is not None else metadata.width
+        height = session.video_reader.height if session.video_reader is not None else metadata.height
+        self._window.transport_panel.set_rotation_degrees(rotation_degrees)
 
         # ====================================================================
         # 3. FORMAT STATUS TEXT WITH METADATA
         # ====================================================================
         status_text = (
             f"{metadata.path.split('/')[-1]} | "  # [NOTE] Equivalent to os.path.basename()
-            f"{metadata.width}x{metadata.height} | "
+            f"{width}x{height} | "
             f"{metadata.fps:.2f} fps | "
             f"{playback.current_frame_index + 1}/{metadata.frame_count} frames | "
             f"{'Playing' if playback.is_playing else 'Paused'} | "
-            f"Model: {model_name}"
+            f"Model: {model_name} | "
+            f"Rot: {rotation_degrees}°"
         )
 
         # ====================================================================

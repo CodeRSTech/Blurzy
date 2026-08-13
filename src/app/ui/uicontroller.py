@@ -92,6 +92,8 @@ class UIController(QObject):
         self.import_export_handler = handlers.ImportExportHandler(self)
         self.model_handler = handlers.ModelHandler(self)
         self.playback_handler = handlers.PlaybackHandler(self)
+        self.preferences_handler = handlers.PreferencesHandler(self)
+        self.project_handler = handlers.ProjectHandler(self)
         self.session_handler = handlers.SessionHandler(self)
         self.tracking_handler = handlers.TrackingHandler(self)
         self.ui_handler = handlers.UIHandler(self)

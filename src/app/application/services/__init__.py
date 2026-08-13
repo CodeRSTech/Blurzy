@@ -8,6 +8,7 @@ from app.application.services.detection import (
 )
 from app.application.services.export_service import ExportService
 from app.application.services.helpers.import_mode import ImportMode
+from app.application.services.project_service import ProjectService
 from app.application.services.session_service import SessionService
 from app.application.services.tracking import (
     TrackingLayerService,
@@ -24,6 +25,7 @@ __all__ = [
     "DetectionExportService",
     "ExportService",
     "ImportMode",
+    "ProjectService",
     "SessionService",
     "TrackingService",
     "TrackingLayerService",

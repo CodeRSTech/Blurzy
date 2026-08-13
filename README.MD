@@ -61,6 +61,30 @@ pip install -r requirements.txt
 python src/main.py
 ```
 
+### 📦 Install as an app
+
+```bash
+pip install .
+blurzy
+```
+
+### 🚚 Build distributable artifacts
+
+Build an installable wheel:
+
+```bash
+python -m pip install .[dist]
+python -m build
+```
+
+Build a desktop bundle with PyInstaller:
+
+```bash
+pyinstaller Blurzy.spec
+```
+
+The PyInstaller output is written to `dist/Blurzy/`.
+
 ---
 
 ## 🔄 Startup logging configuration

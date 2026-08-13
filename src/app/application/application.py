@@ -10,6 +10,8 @@ from app.application.services.helpers.layer_coercion import ensure_import_mode, 
 if TYPE_CHECKING:
     from collections.abc import Callable, Iterable
     from typing import Unpack
+    from app.application.services.project_service import ProjectLoadReport
+    from app.domain.project import ProjectDirectories, ProjectDocument
 
 
 if TYPE_CHECKING:
@@ -59,6 +61,7 @@ class Application(QObject):
         self.tracking_svc = services.TrackingService(self)
         self.tracking_layer_svc = services.TrackingLayerService(self)
         self.export_svc = services.ExportService(self)
+        self.project_svc = services.ProjectService(self)
         self.session_svc = services.SessionService(self)
         self.unified_layer_svc = services.UnifiedLayerService(self)
 
@@ -105,6 +108,14 @@ class Application(QObject):
         """Iterate over all ``SessionId`` instances currently managed by the application."""
         return self.sm.all_session_ids
 
+    @property
+    def current_project_path(self) -> str:
+        return self.project_svc.current_project_path
+
+    @property
+    def project_directories(self) -> ProjectDirectories:
+        return self.project_svc.directories
+
     # ══════════════════════════════════════════════════════════════════════════════════════════════════════════════════
     #                       SESSION MANAGER DELEGATION METHODS
     # ══════════════════════════════════════════════════════════════════════════════════════════════════════════════════
@@ -113,6 +124,30 @@ class Application(QObject):
     def close(self) -> None:
         """Close all active sessions and shut down the ``SessionManager``."""
         self.sm.close_all()
+
+    def clear_project(self) -> None:
+        self.project_svc.clear_project()
+
+    def save_project(self, file_path: str) -> ProjectDocument:
+        return self.project_svc.save_project(file_path)
+
+    def load_project(self, file_path: str) -> ProjectLoadReport:
+        return self.project_svc.load_project(file_path)
+
+    def update_project_directories(
+        self,
+        *,
+        last_import_directory: str | None = None,
+        last_export_directory: str | None = None,
+        export_prefix: str | None = None,
+        export_suffix: str | None = None,
+    ) -> None:
+        self.project_svc.update_directories(
+            last_import_directory=last_import_directory,
+            last_export_directory=last_export_directory,
+            export_prefix=export_prefix,
+            export_suffix=export_suffix,
+        )
 
     # Used by SessionService
     def open_video_from_path(self, path: str) -> None:

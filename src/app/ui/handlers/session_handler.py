@@ -5,7 +5,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 
-from typing import final, TYPE_CHECKING, override
+from typing import final, override
 
 from PySide6.QtCore import Slot, Qt, QObject
 
@@ -80,6 +80,32 @@ class SessionHandler(QObject):
             self.on_session_selected
         )
 
+    def refresh_session_views(self) -> None:
+        sessions = list(self._controller.app.sm.all_sessions)
+        self._controller.window.bottom_panel.update_session_file_list(
+            list_of_session_list_view_models(sessions=sessions)
+        )
+        self.update_video_related_widgets_state(is_enabled=bool(sessions))
+
+        active = self._controller.app.active_session
+        if active is None:
+            self._controller.window.set_status_text("No session loaded")
+            return
+
+        self._controller.window.bottom_panel.selected_s_id = active.s_id
+        self._controller.window.restore_session_settings(
+            self._controller.app.get_session_settings(active.s_id)
+        )
+        self._controller.render_frame_for_session_id(active.s_id)
+
+    def prepare_active_session_initial_frame_render(self) -> None:
+        active = self._controller.app.active_session
+        if active is None:
+            return
+        active.video_decode_worker.signals.seek_completed.connect(
+            self.on_video_seek_completed, Qt.ConnectionType.SingleShotConnection
+        )
+
     # ═══════════════════════════════════════════════════════════════
     #                          SLOT: ON_OPEN_VIDEOS
     # ═══════════════════════════════════════════════════════════════
@@ -128,7 +154,11 @@ class SessionHandler(QObject):
             # ====================================================================
             # [NOTE] ``App.open_videos()`` cascades to ``SessionManager``, which
             # creates ``Session`` instances for each video path
-            self._app.open_videos(paths)
+            opened_paths = set(self._app.open_videos(paths))
+
+            for session in self._controller.app.sm.all_sessions:
+                if str(session.s_id) in opened_paths:
+                    self._controller.preferences_handler.apply_defaults_to_session(session.s_id)
 
             # ====================================================================
             # 3. ADOPT ORPHANED SESSIONS (PARENT MANAGEMENT)
@@ -141,32 +171,8 @@ class SessionHandler(QObject):
                 if session.parent() is None:
                     session.setParent(self)
 
-            # ====================================================================
-            # 4. UPDATE SESSION LIST WIDGET
-            # ====================================================================
-            # Convert ``Session`` instances to view model and update the UI list
-            self._controller.window.bottom_panel.update_session_file_list(
-                list_of_session_list_view_models(sessions=sessions)
-            )
-
-            # ====================================================================
-            # 5. ENABLE VIDEO-RELATED WIDGETS
-            # ====================================================================
-            # Make video controls available now that sessions exist
-            self.update_video_related_widgets_state(is_enabled=True)
-
-            # ====================================================================
-            # 6. SET ACTIVE SESSION AND CONNECT PLAYBACK SIGNALS
-            # ====================================================================
-            # Select the active session in the list and connect seek signals
-            active = self._controller.app.active_session
-            if active is not None:
-                self._controller.window.bottom_panel.selected_s_id = active.s_id
-                # [NOTE] ``SingleShotConnection`` ensures this slot fires only once
-                # per seek operation (initial frame render on load)
-                active.video_decode_worker.signals.seek_completed.connect(
-                    self.on_video_seek_completed, Qt.ConnectionType.SingleShotConnection
-                )
+            self.prepare_active_session_initial_frame_render()
+            self.refresh_session_views()
 
         except NoNewOpenedSessionsException as exc:
             self._controller.window.show_info(title="Error!", msg=str(exc))
@@ -221,6 +227,7 @@ class SessionHandler(QObject):
             # Fetch settings view model and update all UI controls
             settings_vm = self._controller.app.get_session_settings(s_id)
             self._controller.window.restore_session_settings(settings_vm)
+            self._controller.window.preview_container.reset_viewport()
 
             # ====================================================================
             # 4. RENDER INITIAL FRAME

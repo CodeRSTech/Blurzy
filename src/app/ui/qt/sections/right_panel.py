@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import final, cast, TYPE_CHECKING
 
 from PySide6.QtCore import Signal, QSignalBlocker, Slot
@@ -13,6 +15,11 @@ from PySide6.QtWidgets import (
 )
 
 from app.domain import TrackingStrategy, VideoDataLayer
+from app.infrastructure.detection.model.helpers import (
+    DETECTION_MODEL_PROVIDER_ALL,
+    get_detection_model_provider_options,
+    resolve_detection_model_provider,
+)
 from app.ui.qt.shared.layout_shortcuts import create_vbox_layout
 from app.ui.qt.shared.widget_factories import create_qhbox_with_widgets, create_progress_bar, create_spinbox
 from app.ui.qt.widgets.feedback.spinner_label import InlineSpinnerLabel
@@ -57,6 +64,12 @@ class RightControlPanel(QScrollArea):
         #   v Detection                                                                                            #
         ############################################################################################################
         self.detection_box = CollapsiblePanel("Detection")
+        self._all_detection_models: list[ModelSelectionViewModel] = []
+        self._active_provider_id = DETECTION_MODEL_PROVIDER_ALL
+        self.provider_combo_box = QComboBox()
+        for provider_id, label in get_detection_model_provider_options():
+            self.provider_combo_box.addItem(label, provider_id)
+        self.provider_selection = create_qhbox_with_widgets([QLabel("Provider:"), self.provider_combo_box])
         #
         #               +----------------------------------------------------+
         #   Model:      | YOLOv26X                                     [ v ] |
@@ -230,6 +243,7 @@ class RightControlPanel(QScrollArea):
         self.export_all_action = QAction("Export All...", self)
 
     def _build_ui(self) -> None:
+        self.detection_box.add_layout(self.provider_selection)
         self.detection_box.add_layout(self.model_selection)
         self.detection_box.add_layout(self.min_confidence_selection)
         self.detection_box.add_layout(self.labels_selection)
@@ -272,6 +286,7 @@ class RightControlPanel(QScrollArea):
 
     def _connect_signals(self) -> None:
         # Detection Panel
+        self.provider_combo_box.currentIndexChanged.connect(self._on_provider_changed)
         self.model_combo_box.currentIndexChanged.connect(self._emit_model_changed)
         self.chosen_labels_edit.editingFinished.connect(self._emit_chosen_labels_changed)
 
@@ -288,6 +303,14 @@ class RightControlPanel(QScrollArea):
     def _emit_model_changed(self) -> None:
         model_id: str = cast(str, self.model_combo_box.currentData())
         self.model_changed.emit(model_id)
+
+    @Slot()
+    def _on_provider_changed(self) -> None:
+        self._active_provider_id = cast(
+            str,
+            self.provider_combo_box.currentData() or DETECTION_MODEL_PROVIDER_ALL,
+        )
+        self._apply_model_provider_filter(emit_model_signal=True)
 
     @Slot()
     def _emit_tracking_strategy_changed(self) -> None:
@@ -312,10 +335,7 @@ class RightControlPanel(QScrollArea):
 
     def restore_session_settings(self, vm: SessionSettingsViewModel) -> None:
         """Populates all right-panel widgets from the provided view model using safe signal blocking."""
-        with QSignalBlocker(self.model_combo_box):
-            idx: int = self.model_combo_box.findData(vm.detection_model_name)
-            if idx >= 0:
-                self.model_combo_box.setCurrentIndex(idx)
+        self.set_selected_detection_model(vm.detection_model_name)
 
         with QSignalBlocker(self.tracking_strategy_combo_box):
             idx: int = self.tracking_strategy_combo_box.findData(vm.tracking_strategy)
@@ -435,16 +455,55 @@ class RightControlPanel(QScrollArea):
         progress_bar.setFormat(label)
 
     def set_detection_model_boxes(self, boxes: list[ModelSelectionViewModel]) -> None:
+        self._all_detection_models = list(boxes)
+        self._apply_model_provider_filter(emit_model_signal=False)
+
+    def _apply_model_provider_filter(
+        self,
+        *,
+        selected_model_id: str | None = None,
+        emit_model_signal: bool,
+    ) -> None:
+        previous_model_id = cast(str | None, self.model_combo_box.currentData())
+        target_model_id = selected_model_id or previous_model_id or "None"
+        filtered = [
+            item
+            for item in self._all_detection_models
+            if item.model_id == "None"
+            or self._active_provider_id == DETECTION_MODEL_PROVIDER_ALL
+            or item.provider_id == self._active_provider_id
+        ]
+        if not filtered:
+            filtered = list(self._all_detection_models)
+
         with QSignalBlocker(self.model_combo_box):
             self.model_combo_box.clear()
-            for item in boxes:
+            for item in filtered:
                 self.model_combo_box.addItem(item.display_name, item.model_id)
+            target_index = self.model_combo_box.findData(target_model_id)
+            if target_index < 0:
+                target_index = self.model_combo_box.findData("None")
+            if target_index < 0 and self.model_combo_box.count() > 0:
+                target_index = 0
+            if target_index >= 0:
+                self.model_combo_box.setCurrentIndex(target_index)
+
+        current_model_id = cast(str | None, self.model_combo_box.currentData())
+        if emit_model_signal and current_model_id and current_model_id != previous_model_id:
+            self.model_changed.emit(current_model_id)
 
     def set_selected_detection_model(self, model_id: str) -> None:
-        with QSignalBlocker(self.model_combo_box):
-            index = self.model_combo_box.findData(model_id)
-            if index >= 0:
-                self.model_combo_box.setCurrentIndex(index)
+        provider_id = (
+            DETECTION_MODEL_PROVIDER_ALL
+            if model_id == "None"
+            else resolve_detection_model_provider(model_id)
+        )
+        with QSignalBlocker(self.provider_combo_box):
+            provider_index = self.provider_combo_box.findData(provider_id)
+            if provider_index >= 0:
+                self.provider_combo_box.setCurrentIndex(provider_index)
+        self._active_provider_id = provider_id
+        self._apply_model_provider_filter(selected_model_id=model_id, emit_model_signal=False)
 
     def connect_signals_to_export_handler(self, export_handler: ExportHandler) -> None:
         self.export_btn.clicked.connect(export_handler.on_export)

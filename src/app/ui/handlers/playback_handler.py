@@ -74,6 +74,8 @@ class PlaybackHandler(QObject):
         self._controller.window.transport_panel.pause_btn.clicked.connect(self.on_pause)
         self._controller.window.transport_panel.next_btn.clicked.connect(self.on_next_frame)
         self._controller.window.transport_panel.previous_btn.clicked.connect(self.on_previous_frame)
+        self._controller.window.transport_panel.rotate_requested.connect(self.on_rotate_requested)
+        self._controller.window.transport_panel.fit_view_requested.connect(self.on_fit_view_requested)
 
     @property
     def selected_s_id(self) -> SessionId:
@@ -197,6 +199,32 @@ class PlaybackHandler(QObject):
 
         except Exception as exc:
             self._window.show_error("Seek Failed", str(exc))
+
+    @Slot(int)
+    def on_rotate_requested(self, delta_degrees: int) -> None:
+        s_id = self.selected_s_id
+        if not s_id:
+            return
+        try:
+            session = self._app.get_session_by_id(s_id)
+            if session.video_reader is None:
+                return
+            session.video_reader.manual_rotation = session.video_reader.manual_rotation + delta_degrees
+            logger.debug(
+                "Adjusted manual rotation for session '{}' by {} degrees to {}.",
+                s_id,
+                delta_degrees,
+                session.video_reader.manual_rotation,
+            )
+            self._window.preview_container.reset_viewport()
+            self._window.transport_panel.set_rotation_degrees(session.video_reader.manual_rotation)
+            self._controller.render_frame_for_session_id(s_id)
+        except Exception as exc:
+            self._window.show_error("Rotate Failed", str(exc))
+
+    @Slot()
+    def on_fit_view_requested(self) -> None:
+        self._window.preview_container.reset_viewport()
 
     @Slot()
     def on_playback_tick(self) -> None:

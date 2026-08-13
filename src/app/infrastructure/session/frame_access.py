@@ -64,7 +64,12 @@ class SessionFrameAccessor:
             return cached_frame
 
         is_sequential_underrun = abs(safe_idx - session_state.playback.current_frame_index) <= 1
-        if not is_sequential_underrun:
+        is_current_frame_cache_miss = (
+            safe_idx == session_state.playback.current_frame_index
+            and session_state.current_frame_data is None
+        )
+        should_request_seek = (not is_sequential_underrun) or is_current_frame_cache_miss
+        if should_request_seek:
             decode_worker.request_seek(safe_idx)
 
         max_attempts = max(1, int(self._timeout_seconds / self._poll_interval_seconds))
@@ -132,4 +137,3 @@ class SessionFrameAccessor:
     ) -> RGBFrame | None:
         """Return lookahead frame (current index + 1) from decode cache flow."""
         return self.get_next_frame(session_state=session_state, decode_worker=decode_worker)
-
