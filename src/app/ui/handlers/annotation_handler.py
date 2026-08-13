@@ -25,6 +25,7 @@ from PySide6.QtWidgets import QDialog
 from app.domain import AnnotationContextActions, Direction, VideoDataLayer, VideoDataLayerGroup
 from app.shared.logging_cfg import get_logger
 from app.ui.qt.dialogs import LabelDialog
+from app.ui.view_state.preview_state import ToolMode
 from app.ui.view_state.selection_history_state import CopiedBBoxSnapshot
 if TYPE_CHECKING:
     from PySide6.QtGui import QKeyEvent
@@ -136,6 +137,7 @@ class AnnotationHandler(QObject):
             (preview_container.bboxes_moved, self.on_preview_bboxes_moved),
             (preview_container.context_action_triggered, self.on_preview_context_action),
             # Bottom panel action row buttons
+            (bottom_panel.edit_box_btn.clicked, self.on_edit_selected),
             (bottom_panel.relabel_box_btn.clicked, self.on_relabel_selected),
             (bottom_panel.delete_box_btn.clicked, self.on_delete_selected),
             (bottom_panel.delete_next_occurrences_btn.clicked, self.on_delete_next_occurrences),
@@ -438,6 +440,40 @@ class AnnotationHandler(QObject):
         except Exception as exc:
             self._window.show_error("Paste Failed", str(exc))
 
+        return True
+
+    def _duplicate_selected_boxes_to_current_frame(self, keys: list[str]) -> bool:
+        s_id = self._window.selected_s_id
+        if not s_id or not keys:
+            self._window.set_status_text("No selected boxes to duplicate.")
+            return True
+
+        frame_boxes_vm = self._app.get_tab_frame_boxes_for_session_id(s_id, self._window.active_tab_index)
+        by_key = {box.key: box for box in frame_boxes_vm.frame_data_boxes}
+        duplicates = [
+            (box.label, box.bbox_xyxy, box.color_hex)
+            for key in keys
+            if (box := by_key.get(key)) is not None
+        ]
+        if not duplicates:
+            self._window.set_status_text("No selected boxes to duplicate.")
+            return True
+
+        try:
+            before_boxes = self._get_current_frame_boxes_snapshot() if self._can_record_mutation() else []
+            before_selection = list(self._window.selected_frame_box_keys)
+            created_keys = self._app.add_manual_boxes_to_current_frame(
+                s_id=s_id,
+                tab=self._window.active_tab_index,
+                boxes=duplicates,
+            )
+            self._apply_selection_keys(created_keys, record_history=False)
+            if self._can_record_mutation():
+                self._record_current_frame_mutation(before_boxes, before_selection)
+            self._controller.render_frame_for_session_id(s_id)
+            self._window.set_status_text(f"Duplicated {len(created_keys)} box(es) on the current frame.")
+        except Exception as exc:
+            self._window.show_error("Duplicate Failed", str(exc))
         return True
 
     def handle_delete_key(self, event: QKeyEvent) -> bool:
@@ -868,16 +904,31 @@ class AnnotationHandler(QObject):
             logger.trace("Pasting clipboard boxes from context menu.")
             self._paste_clipboard_to_current_frame()
             return
+        if action == AnnotationContextActions.COPY_CURRENT.value:
+            logger.trace("Duplicating selected boxes on current frame: {}", selected_keys)
+            self._duplicate_selected_boxes_to_current_frame(selected_keys)
+            return
+        if action == AnnotationContextActions.ADD_BBOX_HERE.value:
+            logger.debug("Switching preview to add mode from context menu.")
+            self._window.transport_panel.add_mode_btn.setChecked(True)
+            self._window.preview_container.set_tool_mode(ToolMode.ADD)
+            self._window.set_status_text("Add mode enabled. Click and drag to place a new box.")
+            return
         if action == AnnotationContextActions.COPY_NEXT.value:
             self.copy_to_direction(Direction.NEXT, selected_keys)
             return
         elif action == AnnotationContextActions.COPY_PREV.value:
             self.copy_to_direction(Direction.PREV, selected_keys)
             return
+        elif action == AnnotationContextActions.DELETE_ALL_BBOXES.value:
+            all_keys = self._window.bottom_panel.get_all_box_keys_from_active_tab()
+            self._apply_selection_keys(all_keys, record_history=False)
+            self.on_delete_selected()
+            return
         elif action == AnnotationContextActions.DELETE.value:
             self._window.bbox_selection_state.set_selection(selected_keys)
             self.on_delete_selected()
-            should_render = True
+            return
         elif action == AnnotationContextActions.DELETE_NEXT.value:
             if not selected_keys:
                 return
@@ -899,7 +950,19 @@ class AnnotationHandler(QObject):
         elif action == AnnotationContextActions.RELABEL.value:
             self._window.bbox_selection_state.set_selection(selected_keys)
             self.on_relabel_selected()
-            should_render = True
+            return
+        elif action == AnnotationContextActions.RESET_FRAME.value:
+            if self._window.active_tab_index == VideoDataLayerGroup.TRACKING:
+                self.on_reset_tracker_frame()
+            else:
+                self.on_reset_frame()
+            return
+        elif action == AnnotationContextActions.RESET_ALL.value:
+            if self._window.active_tab_index == VideoDataLayerGroup.TRACKING:
+                self.on_reset_all_trackers()
+            else:
+                self.on_reset_all()
+            return
         else:
             logger.info("Preview context action '{}' is not implemented yet.", action)
             self._window.set_status_text("Action not implemented yet.")

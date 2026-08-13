@@ -49,6 +49,7 @@ class BottomDataPanelContainer(QWidget):
 
         # Unified action row (non-reset actions only; reset controls are now exposed via Edit menu)
         action_row = create_qhbox_with_widgets([
+            self.edit_box_btn,
             self.relabel_box_btn,
             self.delete_box_btn,
             self.delete_next_occurrences_btn,
@@ -80,7 +81,6 @@ class BottomDataPanelContainer(QWidget):
         self.delete_next_occurrences_btn = QPushButton("Delete Next Occurences")
         self.delete_prev_occurrences_btn = QPushButton("Delete Prev Occurences")
 
-        self.edit_box_btn.setVisible(False)
         self.relabel_box_btn.setEnabled(False)
 
         # --- UI Elements: Opened files (session) ---
@@ -233,14 +233,17 @@ class BottomDataPanelContainer(QWidget):
         one_or_more_selected = num_selected_boxes >= 1
 
         self.edit_box_btn.setEnabled(False)
+        self.edit_box_btn.setEnabled(only_one_selected)
         self.relabel_box_btn.setEnabled(one_or_more_selected)
 
-        for btn in (self.delete_box_btn,
-                    self.copy_to_next_btn,
-                    self.copy_to_prev_btn,
-                    self.delete_next_occurrences_btn,
-                    self.delete_prev_occurrences_btn):
+        for btn in (self.delete_box_btn, self.copy_to_next_btn, self.copy_to_prev_btn):
             btn.setEnabled(one_or_more_selected)
+
+        tracker_batch_actions_enabled = (
+            one_or_more_selected and self.active_tab_index == VideoDataLayerGroup.TRACKING
+        )
+        self.delete_next_occurrences_btn.setEnabled(tracker_batch_actions_enabled)
+        self.delete_prev_occurrences_btn.setEnabled(tracker_batch_actions_enabled)
 
         if isinstance(window, Window):
             window.bbox_selection_state.set_selection(selected_keys)

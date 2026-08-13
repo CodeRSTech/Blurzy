@@ -11,6 +11,8 @@ class ModelSelectionViewModel:
     Attributes:
         model_id (str): Internal identifier used to load the model.
         display_name (str): User-facing label shown in the dropdown.
+        provider_id (str): Stable provider/family identifier used for filtering.
+        provider_display_name (str): User-facing provider label shown in provider pickers.
 
     Note:
         Instances flow from ``DetectionService.get_available_detection_models()``
@@ -20,3 +22,5 @@ class ModelSelectionViewModel:
 
     model_id: str
     display_name: str
+    provider_id: str = "all"
+    provider_display_name: str = "All Models"

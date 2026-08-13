@@ -49,6 +49,7 @@ class PreviewContainer(QWidget):
     bbox_selection_cleared = Signal()
     bbox_marquee_selected = Signal(list)
     bboxes_moved = Signal(list, int, int)
+    viewport_state_changed = Signal(float, float, float)
 
     def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
@@ -128,6 +129,14 @@ class PreviewContainer(QWidget):
     def cancel_active_edits(self) -> None:
         self.bbox_layer.cancel_edit()
 
+    def reset_viewport(self) -> None:
+        self._current_zoom = 1.0
+        self._current_pan = QPointF(0.0, 0.0)
+        self.video_layer.reset_viewport()
+        self.bbox_layer.set_zoom(self._current_zoom)
+        self.bbox_layer.set_pan(self._current_pan.x(), self._current_pan.y())
+        self._emit_viewport_state()
+
     def _handle_video_pixmap_rect_change(self, rect: QRect, size: QSize) -> None:
         self.bbox_layer.set_pixmap_rect(rect)
         self.bbox_layer.set_image_size(size)
@@ -144,6 +153,7 @@ class PreviewContainer(QWidget):
         self._current_pan += QPointF(dx, dy)
         self.video_layer.set_pan(self._current_pan.x(), self._current_pan.y())
         self.bbox_layer.set_pan(self._current_pan.x(), self._current_pan.y())  # Sync to overlay
+        self._emit_viewport_state()
 
     def _handle_zoom(self, scroll_delta: float, mouse_x: int, mouse_y: int) -> None:
         # TODO:
@@ -184,3 +194,11 @@ class PreviewContainer(QWidget):
         # Sync to overlay
         self.bbox_layer.set_zoom(self._current_zoom)
         self.bbox_layer.set_pan(self._current_pan.x(), self._current_pan.y())
+        self._emit_viewport_state()
+
+    def _emit_viewport_state(self) -> None:
+        self.viewport_state_changed.emit(
+            self._current_zoom,
+            self._current_pan.x(),
+            self._current_pan.y(),
+        )

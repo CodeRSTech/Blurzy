@@ -227,6 +227,7 @@ class SessionHandler(QObject):
             # Fetch settings view model and update all UI controls
             settings_vm = self._controller.app.get_session_settings(s_id)
             self._controller.window.restore_session_settings(settings_vm)
+            self._controller.window.preview_container.reset_viewport()
 
             # ====================================================================
             # 4. RENDER INITIAL FRAME

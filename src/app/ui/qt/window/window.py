@@ -183,6 +183,7 @@ class Window(QtWidgets.QMainWindow):
         self.bottom_panel.tab_changed.connect(self._on_tab_changed)
         self.bottom_panel.session_selected.connect(self.session_selected.emit)
         self.open_videos_action.triggered.connect(self._choose_video_files)
+        self.preview_container.viewport_state_changed.connect(self.transport_panel.set_viewport_state)
         # Route menu reset actions through the existing reset buttons to preserve handler connections.
         self._connect_reset_actions()
         logger.debug("Modular UI signals connected.")
