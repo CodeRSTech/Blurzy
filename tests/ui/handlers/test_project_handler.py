@@ -3,6 +3,7 @@ from __future__ import annotations
 import importlib.util
 import sys
 from dataclasses import dataclass
+from types import SimpleNamespace
 from unittest.mock import MagicMock
 
 
@@ -59,6 +60,7 @@ class _Window:
         self.current_project_path = None
         self.status_text = None
         self.errors = []
+        self.warnings = []
 
     def set_current_project_path(self, path: str) -> None:
         self.current_project_path = path
@@ -68,6 +70,9 @@ class _Window:
 
     def show_error(self, title: str, msg: str) -> None:
         self.errors.append((title, msg))
+
+    def show_warning(self, title: str, msg: str) -> None:
+        self.warnings.append((title, msg))
 
 
 class _PreferencesStore:
@@ -124,3 +129,36 @@ class TestProjectHandler:
         app.clear_project.assert_called_once_with()
         assert window.current_project_path == ""
         assert window.status_text == "Started a new project."
+
+    def test_open_project_warns_when_some_videos_are_missing(self, monkeypatch, tmp_path) -> None:
+        window = _Window()
+        app = MagicMock()
+        app.current_project_path = ""
+        app.load_project.return_value = SimpleNamespace(
+            restored_sessions=1,
+            skipped_missing_paths=["/missing/video.mp4"],
+        )
+        controller = MagicMock()
+        controller.window = window
+        controller.app = app
+        controller.session_handler = MagicMock()
+
+        monkeypatch.setattr(project_handler_module, "AppPreferencesStore", _PreferencesStore)
+        monkeypatch.setattr(
+            project_handler_module.QFileDialog,
+            "getOpenFileName",
+            staticmethod(lambda *args, **kwargs: (str(tmp_path / "demo.blurzy"), "")),
+        )
+
+        handler = ProjectHandler(controller)
+        handler.on_open_project()
+
+        app.load_project.assert_called_once_with(str(tmp_path / "demo.blurzy"))
+        assert window.current_project_path == str(tmp_path / "demo.blurzy")
+        assert window.status_text == "Project loaded: demo.blurzy"
+        assert window.warnings == [
+            (
+                "Project Partially Loaded",
+                "Some project video files were missing and were skipped:\n- /missing/video.mp4",
+            )
+        ]

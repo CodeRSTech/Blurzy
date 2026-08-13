@@ -1,14 +1,13 @@
 from __future__ import annotations
 
 import os
-from dataclasses import asdict
+from dataclasses import asdict, dataclass
 from typing import TYPE_CHECKING
 
 from app.domain.export import ProcessingSettings
 from app.domain.project import ProjectDirectories, ProjectDocument, ProjectSessionDocument
 from app.domain.session import SessionId
 from app.infrastructure.project import ProjectStore
-from app.shared.exceptions import MissingProjectAssetException
 from app.shared.logging_cfg import get_logger
 
 if TYPE_CHECKING:
@@ -16,6 +15,13 @@ if TYPE_CHECKING:
 
 
 logger = get_logger("Application->ProjectService")
+
+
+@dataclass(slots=True)
+class ProjectLoadReport:
+    project: ProjectDocument
+    restored_sessions: int
+    skipped_missing_paths: list[str]
 
 
 class ProjectService:
@@ -63,16 +69,13 @@ class ProjectService:
         self._current_project_path = file_path
         return project
 
-    def load_project(self, file_path: str) -> ProjectDocument:
+    def load_project(self, file_path: str) -> ProjectLoadReport:
         logger.debug("Loading project from {}", file_path)
         project = self._store.load(file_path)
-        missing_paths = [entry.video_path for entry in project.sessions if not os.path.exists(entry.video_path)]
-        if missing_paths:
-            raise MissingProjectAssetException(missing_paths)
-        self._restore_project_document(project)
+        report = self._restore_project_document(project)
         self._current_project_path = file_path
         self._directories = project.directories
-        return project
+        return report
 
     def _capture_project_document(self) -> ProjectDocument:
         sessions: list[ProjectSessionDocument] = []
@@ -102,17 +105,35 @@ class ProjectService:
             sessions=sessions,
         )
 
-    def _restore_project_document(self, project: ProjectDocument) -> None:
+    def _restore_project_document(self, project: ProjectDocument) -> ProjectLoadReport:
         self._app.sm.close_all()
+        restored_session_paths: set[str] = set()
+        skipped_missing_paths: list[str] = []
         for entry in project.sessions:
+            if not os.path.exists(entry.video_path):
+                skipped_missing_paths.append(entry.video_path)
+                logger.warning("Skipping missing project video '{}'", entry.video_path)
+                continue
             self._app.open_video_from_path(entry.video_path)
             session = self._app.get_session_by_id(SessionId(entry.video_path))
             session.state.settings = ProcessingSettings(**entry.settings)
             session.state.playback.current_frame_index = max(0, entry.current_frame_index)
             session.state.next_annotation_id = max(1, entry.next_annotation_id)
             session.data.load_project_payload(entry.layers)
+            restored_session_paths.add(entry.video_path)
 
-        if project.active_session_path:
+        if project.active_session_path and project.active_session_path in restored_session_paths:
             self._app.active_session_id = SessionId(project.active_session_path)
-        elif project.sessions:
+        elif restored_session_paths:
             self._app.initialize_active_session()
+        logger.trace(
+            "Project restore complete: requested_sessions={} restored_sessions={} skipped_missing_sessions={}",
+            len(project.sessions),
+            len(restored_session_paths),
+            len(skipped_missing_paths),
+        )
+        return ProjectLoadReport(
+            project=project,
+            restored_sessions=len(restored_session_paths),
+            skipped_missing_paths=skipped_missing_paths,
+        )

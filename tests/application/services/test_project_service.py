@@ -31,7 +31,6 @@ from app.domain import VideoDataLayer
 from app.domain.export import ProcessingSettings
 from app.domain.session import SessionId
 from app.infrastructure.session.session_data_store import SessionDataStore
-from app.shared.exceptions import MissingProjectAssetException
 
 
 @dataclass
@@ -128,9 +127,11 @@ class TestProjectService:
 
         restored_app = _FakeApp()
         restored = ProjectService(restored_app)
-        restored.load_project(str(project_path))
+        report = restored.load_project(str(project_path))
 
         restored_session = restored_app.get_session_by_id(SessionId(str(video_path)))
+        assert report.restored_sessions == 1
+        assert report.skipped_missing_paths == []
         assert restored.current_project_path == str(project_path)
         assert restored.directories.last_export_directory == "/exports"
         assert restored_session.state.playback.current_frame_index == 7
@@ -139,14 +140,25 @@ class TestProjectService:
         assert len(boxes) == 1
         assert boxes[0].key == "box-1"
 
-    def test_load_rejects_missing_video_assets(self, tmp_path) -> None:
+    def test_load_skips_missing_video_assets_and_restores_available_sessions(self, tmp_path) -> None:
         app = _FakeApp()
         service = ProjectService(app)
-        project_path = tmp_path / "missing.blurzy"
+        existing_video_path = tmp_path / "video.mp4"
+        existing_video_path.write_text("stub", encoding="utf-8")
+        project_path = tmp_path / "partial.blurzy"
         project_path.write_text(
-            '{"format_version":"1.0","active_session_path":"","directories":{},"sessions":[{"video_path":"/nope/video.mp4","current_frame_index":0,"next_annotation_id":1,"settings":{},"layers":{}}]}',
+            (
+                '{"format_version":"1.0","active_session_path":"/nope/video.mp4","directories":{},'
+                '"sessions":[{"video_path":"/nope/video.mp4","current_frame_index":0,"next_annotation_id":1,'
+                '"settings":{},"layers":{}},{"video_path":"'
+                f'{existing_video_path}'
+                '","current_frame_index":0,"next_annotation_id":1,"settings":{},"layers":{}}]}'
+            ),
             encoding="utf-8",
         )
 
-        with pytest.raises(MissingProjectAssetException):
-            service.load_project(str(project_path))
+        report = service.load_project(str(project_path))
+
+        assert report.restored_sessions == 1
+        assert report.skipped_missing_paths == ["/nope/video.mp4"]
+        assert app.active_session_id == SessionId(str(existing_video_path))
