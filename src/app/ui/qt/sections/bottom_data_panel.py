@@ -78,8 +78,8 @@ class BottomDataPanelContainer(QWidget):
         self.reset_all_btn = QPushButton("Reset Review (All)")
         self.reset_tracker_frame_btn = QPushButton("Reset Trackers (Frame)")
         self.reset_all_trackers_btn = QPushButton("Reset Trackers (All)")
-        self.delete_next_occurrences_btn = QPushButton("Delete Next Occurences")
-        self.delete_prev_occurrences_btn = QPushButton("Delete Prev Occurences")
+        self.delete_next_occurrences_btn = QPushButton("Delete Next Occurrences")
+        self.delete_prev_occurrences_btn = QPushButton("Delete Prev Occurrences")
 
         self.relabel_box_btn.setEnabled(False)
 
@@ -232,7 +232,6 @@ class BottomDataPanelContainer(QWidget):
         only_one_selected = num_selected_boxes == 1
         one_or_more_selected = num_selected_boxes >= 1
 
-        self.edit_box_btn.setEnabled(False)
         self.edit_box_btn.setEnabled(only_one_selected)
         self.relabel_box_btn.setEnabled(one_or_more_selected)
 
