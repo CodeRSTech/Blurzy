@@ -19,7 +19,6 @@ logger = get_logger("Application->ProjectService")
 
 @dataclass(slots=True)
 class ProjectLoadReport:
-    project: ProjectDocument
     restored_sessions: int
     skipped_missing_paths: list[str]
 
@@ -133,7 +132,6 @@ class ProjectService:
             len(skipped_missing_paths),
         )
         return ProjectLoadReport(
-            project=project,
             restored_sessions=len(restored_session_paths),
             skipped_missing_paths=skipped_missing_paths,
         )
