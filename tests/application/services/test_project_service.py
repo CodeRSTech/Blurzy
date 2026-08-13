@@ -3,10 +3,29 @@ from __future__ import annotations
 from dataclasses import dataclass
 import importlib
 import sys
+import types
 from types import SimpleNamespace
 
-import pytest
+_SRC_ROOT = "/home/runner/work/Blurzy-development/Blurzy-development/src/app"
 
+
+def _package(name: str, path: str) -> types.ModuleType:
+    module = types.ModuleType(name)
+    module.__path__ = [path]
+    return module
+
+
+sys.modules.setdefault("app", _package("app", _SRC_ROOT))
+sys.modules.setdefault("app.application", _package("app.application", f"{_SRC_ROOT}/application"))
+sys.modules.setdefault(
+    "app.application.services",
+    _package("app.application.services", f"{_SRC_ROOT}/application/services"),
+)
+sys.modules.setdefault("app.infrastructure", _package("app.infrastructure", f"{_SRC_ROOT}/infrastructure"))
+sys.modules.setdefault(
+    "app.infrastructure.session",
+    _package("app.infrastructure.session", f"{_SRC_ROOT}/infrastructure/session"),
+)
 
 class _QObjectStub:
     def __init__(self, *args, **kwargs):
