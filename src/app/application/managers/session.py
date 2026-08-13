@@ -126,7 +126,10 @@ class SessionManager:
         logger.warning("Discarding session '{}'", s_id)
         session.close()
         if self._active_s_id == s_id:
-            self._active_s_id = SessionId("")
+            if self._sessions:
+                self._active_s_id = next(iter(self._sessions.keys()))
+            else:
+                self._active_s_id = SessionId("")
 
     def get_session_state_by_id(self, s_id: SessionId) -> SessionState:
         return self.get_session_by_id(s_id).state
