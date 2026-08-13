@@ -10,7 +10,8 @@ from app.application.services.helpers.layer_coercion import ensure_import_mode, 
 if TYPE_CHECKING:
     from collections.abc import Callable, Iterable
     from typing import Unpack
-    from app.domain.project import ProjectDirectories
+    from app.application.services.project_service import ProjectLoadReport
+    from app.domain.project import ProjectDirectories, ProjectDocument
 
 
 if TYPE_CHECKING:
@@ -127,19 +128,19 @@ class Application(QObject):
     def clear_project(self) -> None:
         self.project_svc.clear_project()
 
-    def save_project(self, file_path: str):
+    def save_project(self, file_path: str) -> ProjectDocument:
         return self.project_svc.save_project(file_path)
 
-    def load_project(self, file_path: str):
+    def load_project(self, file_path: str) -> ProjectLoadReport:
         return self.project_svc.load_project(file_path)
 
     def update_project_directories(
-            self,
-            *,
-            last_import_directory: str | None = None,
-            last_export_directory: str | None = None,
-            export_prefix: str | None = None,
-            export_suffix: str | None = None,
+        self,
+        *,
+        last_import_directory: str | None = None,
+        last_export_directory: str | None = None,
+        export_prefix: str | None = None,
+        export_suffix: str | None = None,
     ) -> None:
         self.project_svc.update_directories(
             last_import_directory=last_import_directory,

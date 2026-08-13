@@ -182,3 +182,26 @@ class TestProjectService:
         assert report.restored_sessions == 1
         assert report.skipped_missing_paths == ["/nope/video.mp4"]
         assert app.active_session_id == SessionId(str(existing_video_path))
+
+    def test_load_ignores_unknown_saved_setting_keys(self, tmp_path) -> None:
+        app = _FakeApp()
+        service = ProjectService(app)
+        video_path = tmp_path / "video.mp4"
+        video_path.write_text("stub", encoding="utf-8")
+        project_path = tmp_path / "future.blurzy"
+        project_path.write_text(
+            (
+                '{"format_version":"1.0","active_session_path":"","directories":{},'
+                '"sessions":[{"video_path":"'
+                f'{video_path}'
+                '","current_frame_index":0,"next_annotation_id":1,'
+                '"settings":{"detection_model_name":"demo","future_toggle":true},"layers":{}}]}'
+            ),
+            encoding="utf-8",
+        )
+
+        report = service.load_project(str(project_path))
+
+        restored_session = app.get_session_by_id(SessionId(str(video_path)))
+        assert report.restored_sessions == 1
+        assert restored_session.state.settings.detection_model_name == "demo"

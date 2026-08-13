@@ -116,7 +116,7 @@ class ProjectService:
                 continue
             self._app.open_video_from_path(entry.video_path)
             session = self._app.get_session_by_id(SessionId(entry.video_path))
-            session.state.settings = ProcessingSettings(**entry.settings)
+            session.state.settings = self._deserialize_settings(entry.video_path, entry.settings)
             session.state.playback.current_frame_index = max(0, entry.current_frame_index)
             session.state.next_annotation_id = max(1, entry.next_annotation_id)
             session.data.load_project_payload(entry.layers)
@@ -137,3 +137,15 @@ class ProjectService:
             restored_sessions=len(restored_session_paths),
             skipped_missing_paths=skipped_missing_paths,
         )
+
+    def _deserialize_settings(self, video_path: str, raw_settings: dict[str, object]) -> ProcessingSettings:
+        supported_keys = ProcessingSettings.__dataclass_fields__.keys()
+        filtered_settings = {key: value for key, value in raw_settings.items() if key in supported_keys}
+        ignored_keys = sorted(key for key in raw_settings if key not in supported_keys)
+        if ignored_keys:
+            logger.warning(
+                "Ignoring unsupported project settings for '{}': {}",
+                video_path,
+                ", ".join(ignored_keys),
+            )
+        return ProcessingSettings(**filtered_settings)
