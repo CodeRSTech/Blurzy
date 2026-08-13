@@ -98,6 +98,14 @@ class SessionHandler(QObject):
         )
         self._controller.render_frame_for_session_id(active.s_id)
 
+    def prepare_active_session_initial_frame_render(self) -> None:
+        active = self._controller.app.active_session
+        if active is None:
+            return
+        active.video_decode_worker.signals.seek_completed.connect(
+            self.on_video_seek_completed, Qt.ConnectionType.SingleShotConnection
+        )
+
     # ═══════════════════════════════════════════════════════════════
     #                          SLOT: ON_OPEN_VIDEOS
     # ═══════════════════════════════════════════════════════════════
@@ -163,13 +171,7 @@ class SessionHandler(QObject):
                 if session.parent() is None:
                     session.setParent(self)
 
-            active = self._controller.app.active_session
-            if active is not None:
-                # [NOTE] ``SingleShotConnection`` ensures this slot fires only once
-                # per seek operation (initial frame render on load)
-                active.video_decode_worker.signals.seek_completed.connect(
-                    self.on_video_seek_completed, Qt.ConnectionType.SingleShotConnection
-                )
+            self.prepare_active_session_initial_frame_render()
             self.refresh_session_views()
 
         except NoNewOpenedSessionsException as exc:

@@ -152,6 +152,7 @@ class TestProjectHandler:
         handler.on_open_project()
 
         app.load_project.assert_called_once_with(str(tmp_path / "demo.blurzy"))
+        controller.session_handler.prepare_active_session_initial_frame_render.assert_called_once_with()
         assert window.current_project_path == str(tmp_path / "demo.blurzy")
         assert window.status_text == "Project loaded: demo.blurzy"
         assert window.warnings == [

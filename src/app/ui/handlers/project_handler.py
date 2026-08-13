@@ -86,6 +86,7 @@ class ProjectHandler(QObject):
         try:
             report = self._app.load_project(path)
             self._remember_project_directory(path)
+            self._controller.session_handler.prepare_active_session_initial_frame_render()
             self._refresh_ui_after_project_change(path, f"Project loaded: {os.path.basename(path)}")
             if report.skipped_session_paths:
                 self._show_partial_load_warning(report.skipped_session_paths)
