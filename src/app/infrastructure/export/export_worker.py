@@ -4,7 +4,10 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from PySide6.QtCore import QObject, QThread, Signal
+from PySide6.QtCore import QThread, Signal
+if TYPE_CHECKING:
+    from PySide6.QtCore import QObject
+
 
 if TYPE_CHECKING:
     from app.application.services.export_service import ExportService

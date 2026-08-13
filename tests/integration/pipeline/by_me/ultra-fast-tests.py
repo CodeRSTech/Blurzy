@@ -5,7 +5,7 @@ from app.application.application import Application
 
 from app.domain.session.session_id import SessionId
 
-from app.ui.qt.main_window import MainWindow
+from app.ui.qt.window import Window
 from app.ui.uicontroller import UIController
 
 
@@ -39,7 +39,7 @@ def test_video_loads_and_buffers_seamlessly(qtbot):
 def test_open_video_and_play(qtbot, qapp):
     # 1. SETUP: Initialize the Core, Window, and Controller
     app_core = Application()
-    window = MainWindow()
+    window = Window()
     UIController(q_app=qapp, window=window, app=app_core)
 
     # Register the window with qtbot so it cleans up after the test
@@ -51,8 +51,8 @@ def test_open_video_and_play(qtbot, qapp):
     # 2. ACT: Mock the File Dialog and trigger the Open Action
     # This intercepts Qt's file explorer and forces it to return our test_path instantly.
     with patch("PySide6.QtWidgets.QFileDialog.getOpenFileNames", return_value=([test_path], "")):
-        # Trigger the action exactly as if the user clicked "File -> Open"
-        window.top_row.open_action.trigger()
+        # Trigger the action exactly as if the user clicked "File -> Open Videos"
+        window.open_videos_action.trigger()
 
     session = app_core.get_session_by_id(s_id)
     worker = session.video_decode_worker

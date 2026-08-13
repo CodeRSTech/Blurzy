@@ -2,20 +2,25 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Unpack, final, override
+from typing import TYPE_CHECKING, final, override
 
 from PySide6.QtCore import Slot, QObject
 
 from app.domain import VideoDataLayer
-from app.domain.base.dtypes import ProcessingSettingsKwargs
-from app.domain.session.session_id import SessionId
+
+
 from app.domain.tracking.tracking_strategy import TrackingStrategy
 from app.shared.exceptions import InvalidSessionIdException
 from app.shared.logging_cfg import get_logger
+if TYPE_CHECKING:
+    from typing import Unpack
+    from app.domain.base.dtypes import ProcessingSettingsKwargs
+    from app.domain.session.session_id import SessionId
+
 
 if TYPE_CHECKING:
     from app.ui.interfaces import UIControllerInterface, UIApplicationInterface
-    from app.ui.qt.main_window import MainWindow
+    from app.ui.qt.window import Window
     from app.ui.uicontroller import UIController
 
 logger = get_logger("UI->TrackingHandler")
@@ -48,7 +53,7 @@ class TrackingHandler(QObject):
         super().__init__(parent=controller)
         self._owner = controller
         self._controller: UIControllerInterface = controller.ui_controller
-        self._window: MainWindow = controller.window
+        self._window: Window = controller.window
         self._app: UIApplicationInterface = controller.ui_app
 
         self._connect_signals()
@@ -73,12 +78,12 @@ class TrackingHandler(QObject):
     def _update_processing_settings_and_warn(self, **kwargs: Unpack[ProcessingSettingsKwargs]) -> None:
         # [AUDIT] SRP VIOLATION: Method does 4 distinct things
         # 1. Validate session ID (validation concern) [fixed]
-        # 2. Update settings (state mutation concern)
+        # 2. Update settings (view_state mutation concern)
         # 3. Check for existing tracking data (query concern)
         # 4. Show warning message (UI presentation concern)
         # Recommendation: Split into separate methods:
         #   - _validate_session_id() → raises exception or returns validated ID
-        #   - _update_settings(s_id, **kwargs) → pure state update
+        #   - _update_settings(s_id, **kwargs) → pure view_state update
         #   - _warn_if_tracking_data_exists(s_id) → check and show warning if needed
         # This improves clarity, reusability, and testability.
         # New: used key=value as arg for **kwargs and passed that into update_session_settings
@@ -106,7 +111,7 @@ class TrackingHandler(QObject):
                 on_start_tracking(strategy, source) [this slot]
                   ├── Validate selected and active sessions match
                   ├── Check that detection is not currently running
-                  ├── Set UI to loading state
+                  ├── Set UI to loading view_state
                   ├── Start TrackingWorker in background
                   └──> Connect worker signals for progress/completion
     
@@ -266,7 +271,7 @@ class TrackingHandler(QObject):
             Flow:
                 _on_tracking_finished(s_id) [this slot]
                   ├── Synchronize tracking cache with session
-                  ├── Clear loading state in UI
+                  ├── Clear loading view_state in UI
                   └──> Render frame with tracking results
         """
         logger.info("Tracking finished signal received for session '{}'", s_id)
@@ -295,7 +300,7 @@ class TrackingHandler(QObject):
         Note:
             Triggered by ``TrackingWorker.error_occurred`` signal.
     
-            Action: Clear loading state and show error dialog to user.
+            Action: Clear loading view_state and show error dialog to user.
         """
         logger.debug("Tracking failed signal received: {}", error)
 

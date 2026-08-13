@@ -29,7 +29,7 @@ class VideoDecodeWorkerManager:
 
     ``ValueError`` exceptions from ``set_active()`` are intentionally swallowed
     here to preserve the original silent-return behaviour: they indicate that
-    the worker is in a transient state (e.g. not yet started) where the
+    the worker is in a transient view_state (e.g. not yet started) where the
     toggle cannot be applied.
 
     The session repository is injected, so the manager is independently
@@ -54,7 +54,7 @@ class VideoDecodeWorkerManager:
 
         Note:
             Silently returns if the worker raises ``ValueError`` (transient
-            worker state — mirrors the original ``SessionService`` behaviour).
+            worker view_state — mirrors the original ``SessionService`` behaviour).
         """
         logger.trace("Waking up session {} worker.", s_id)
         session = self._app_adapter.get_session_by_id(s_id)
@@ -64,7 +64,7 @@ class VideoDecodeWorkerManager:
             )
         except ValueError as exc:
             logger.warning(
-                "Decode worker for session {} could not be activated due to transient worker state: {}",
+                "Decode worker for session {} could not be activated due to transient worker view_state: {}",
                 s_id,
                 exc,
             )
@@ -82,7 +82,7 @@ class VideoDecodeWorkerManager:
 
         Note:
             Silently returns if the worker raises ``ValueError`` (transient
-            worker state — mirrors the original ``SessionService`` behaviour).
+            worker view_state — mirrors the original ``SessionService`` behaviour).
         """
         logger.debug("Putting session {} to sleep.", s_id)
         session = self._app_adapter.get_session_by_id(s_id)
@@ -90,7 +90,7 @@ class VideoDecodeWorkerManager:
             session.video_decode_worker.set_active(active=False)
         except ValueError as exc:
             logger.warning(
-                "Decode worker for session {} could not be deactivated due to transient worker state: {}",
+                "Decode worker for session {} could not be deactivated due to transient worker view_state: {}",
                 s_id,
                 exc,
             )

@@ -2,10 +2,17 @@
 
 from __future__ import annotations
 
-from typing import Protocol, TYPE_CHECKING
+from typing import TYPE_CHECKING
 
-from app.application.interfaces.detection.engine_interface import DetectionEngineInterface
-from app.application.interfaces.detection.worker_interface import DetectionWorkerInterface
+
+from typing import Protocol, TYPE_CHECKING
+if TYPE_CHECKING:
+    from app.application.interfaces.detection.engine_interface import DetectionEngineInterface
+    from app.application.interfaces.detection.worker_interface import DetectionWorkerInterface
+
+
+
+
 
 if TYPE_CHECKING:
     from app.domain.session.session_id import SessionId

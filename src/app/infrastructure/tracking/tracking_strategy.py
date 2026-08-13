@@ -1,12 +1,19 @@
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
+
 import copy
 
-from app.domain.base.dtypes import ListOfBoxesByFrameIndexAsDict
+
 from app.domain.detection import BoxSource
 from app.domain.views import BBoxViewModel
-from app.infrastructure.tracking.hungarian_tracker import HungarianIoUTracker, TrackInput, TrackState
+from app.infrastructure.tracking.hungarian_tracker import HungarianIoUTracker, TrackInput
 from app.shared.logging_cfg import get_logger
+if TYPE_CHECKING:
+    from app.domain.base.dtypes import ListOfBoxesByFrameIndexAsDict
+    from app.infrastructure.tracking.hungarian_tracker import TrackState
+
 
 logger = get_logger("Infrastructure->Tracking->HungarianStrategy")
 

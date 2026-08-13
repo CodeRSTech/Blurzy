@@ -1,4 +1,4 @@
-"""QObject-backed session shell for per-video runtime state and layer storage.
+"""QObject-backed session shell for per-video runtime view_state and layer storage.
 
 The expensive runtime collaborators (``VideoReader``, ``SessionState`` and the
 decode worker) are attached by ``SessionInitializer`` in the application layer.
@@ -10,9 +10,13 @@ from typing import TYPE_CHECKING, final
 
 from PySide6.QtCore import QObject
 
-from app.domain import VideoDataLayer, SessionState
+from app.domain import VideoDataLayer
 from app.shared.logging_cfg import get_logger
 from app.infrastructure.session.session_data_store import SessionDataStore
+from app.infrastructure.session.frame_access import SessionFrameAccessor
+if TYPE_CHECKING:
+    from app.domain import SessionState
+
 
 if TYPE_CHECKING:
     from app.domain.session import SessionId
@@ -20,7 +24,7 @@ if TYPE_CHECKING:
     from app.infrastructure.dtypes import RGBFrame
     from app.application.interfaces import DetectionEngineInterface, DetectionWorkerInterface, TrackingWorkerInterface
     from app.infrastructure.video.decode_worker import VideoDecodeWorker
-    from app.infrastructure.video.vid_reader import VideoReader
+    from app.infrastructure.video.reader import VideoReader
 
 logger = get_logger("Domain->Session")
 
@@ -28,12 +32,13 @@ logger = get_logger("Domain->Session")
 @final
 class Session(QObject):
     """
-    Container holding the runtime state and layer storage for a single video
+    Container holding the runtime view_state and layer storage for a single video
     processing session.
 
-    ``Session`` stays a ``QObject`` for now, but it no longer creates its own
-    video reader or decode worker. Those collaborators are attached later by
-    ``SessionInitializer`` so the constructor remains side-effect free.
+    ``Session`` stays a ``QObject`` for now and keeps a narrow runtime role:
+    it owns IDs, layer storage, collaborator references, and thin convenience
+    methods. Expensive initialization and frame-orchestration logic are
+    delegated to dedicated collaborators.
     """
 
     def __init__(self, s_id: SessionId) -> None:
@@ -49,6 +54,7 @@ class Session(QObject):
         self.video_reader: VideoReader | None = None
         self.state: SessionState | None = None
         self.video_decode_worker: VideoDecodeWorker | None = None
+        self._frame_accessor = SessionFrameAccessor()
         self.detection_engine: DetectionEngineInterface | None = None
         self.detection_worker: DetectionWorkerInterface | None = None
         self.tracking_worker: TrackingWorkerInterface | None = None
@@ -57,10 +63,10 @@ class Session(QObject):
         return f"<Session id={self.s_id.basename}>"
 
     def _require_state(self) -> SessionState:
-        """Return the initialized session state or raise a clear error."""
+        """Return the initialized session view_state or raise a clear error."""
         if self.state is None:
             raise RuntimeError(
-                "Session state has not been initialized yet. "
+                "Session view_state has not been initialized yet. "
                 "Use SessionInitializer.initialize(session) before accessing playback or frame data."
             )
         return self.state
@@ -147,8 +153,10 @@ class Session(QObject):
 
     def get_buffered_frame(self) -> RGBFrame | None:
         """Get the next frame (current_idx + 1) from the ring buffer (for lookahead during playback)."""
-        next_idx = self._require_state().playback.current_frame_index + 1
-        return self.get_frame_by_index(next_idx)
+        return self._frame_accessor.get_buffered_frame(
+            session_state=self._require_state(),
+            decode_worker=self._require_video_decode_worker(),
+        )
 
     def get_frame_by_index(self, frame_index: int) -> RGBFrame | None:
         """
@@ -169,85 +177,32 @@ class Session(QObject):
         Returns:
             RGBFrame | None: The requested frame, or ``None`` if it is unavailable.
         """
-        import time
-
-        session_state = self._require_state()
-        max_idx = max(session_state.metadata.frame_count - 1, 0)
-        safe_idx = max(0, min(frame_index, max_idx))
-
-        decode_worker = self._require_video_decode_worker()
-
-        # ====================================
-        # 1. Check if frame at index is cached
-        # ====================================
-        # cached_frame = decode_worker.ring_buffer.get(safe_idx)
-        # [NEW] Bypass directly accessing the ring buffer
-        cached_frame = decode_worker.get_cached_frame_at_index(safe_idx)
-
-        if cached_frame is not None:
-            # Update session state and return cached frame
-            session_state.playback.current_frame_index = safe_idx
-            session_state.current_frame_data = cached_frame
-            return cached_frame
-
-        # ====================================
-        # 2. Cache Miss
-        # ====================================
-        # Check if this is a normal sequential playback (worker just fell a few ms behind)
-        is_sequential_underrun = abs(safe_idx - session_state.playback.current_frame_index) <= 1
-
-        if not is_sequential_underrun:
-            # The user actually scrubbed the timeline. Force an expensive Hard Seek.
-            decode_worker.request_seek(safe_idx)
-        # else:
-        #   It IS underrun, do nothing.
-        #   Let the worker finish its sequential decoding.
-
-        # ====================================
-        # 3. Wait for worker to catch up
-        # ====================================
-
-        # TODO:
-        #       Extract the timeout-loop out of `Session` and
-        #       move it into the `VideoDecodeWorker` (or a new `FrameSynchronizer` class).
-        #       The worker should be responsible for managing its own thread delays.
-        #  OR,
-        #     Use a signal-slot mechanism to notify the session when the frame is ready instead of polling.
-        #  OR,
-        #   Use a condition variable or event to block until the frame is available, instead of busy-waiting.
-        #  OR,
-        #   Pass a timeout argument `cached_frame = decode_worker.get_cached_frame_at_index(safe_idx), timeout=2.0)`
-        #   and let the worker handle the waiting internally.
-        attempts = 0
-        while attempts < 200:  # 2.0 second timeout
-            cached_frame = decode_worker.get_cached_frame_at_index(safe_idx)
-            if cached_frame is not None:
-                self.state.update_current_frame_data_and_index(idx=safe_idx, frame_data=cached_frame)
-                return cached_frame
-            time.sleep(0.01)
-            attempts += 1
-
-        logger.error("Timeout waiting for worker to supply frame {}", safe_idx)
-        return None
+        return self._frame_accessor.get_frame_by_index(
+            session_state=self._require_state(),
+            decode_worker=self._require_video_decode_worker(),
+            frame_index=frame_index,
+        )
 
     def get_current_frame(self) -> RGBFrame | None:
-        """Get frame at current playback position (caches result in state)."""
-        session_state = self._require_state()
-        current_index = session_state.playback.current_frame_index
-
-        # FIX: Ensure we actually update and return the fallback data if empty!
-        if session_state.current_frame_data is None:
-            session_state.current_frame_data = self.get_frame_by_index(current_index)
-
-        return session_state.current_frame_data
+        """Get frame at current playback position (caches result in view_state)."""
+        return self._frame_accessor.get_current_frame(
+            session_state=self._require_state(),
+            decode_worker=self._require_video_decode_worker(),
+        )
 
     def get_next_frame(self) -> RGBFrame | None:
         """Get next frame (current_idx + 1)."""
-        return self.get_frame_by_index(self._require_state().playback.current_frame_index + 1)
+        return self._frame_accessor.get_next_frame(
+            session_state=self._require_state(),
+            decode_worker=self._require_video_decode_worker(),
+        )
 
     def get_previous_frame(self) -> RGBFrame | None:
         """Get previous frame (current_idx - 1)."""
-        return self.get_frame_by_index(self._require_state().playback.current_frame_index - 1)
+        return self._frame_accessor.get_previous_frame(
+            session_state=self._require_state(),
+            decode_worker=self._require_video_decode_worker(),
+        )
 
     def reset_model(self, model_name: str, keep_manual: bool = False) -> None:
         """

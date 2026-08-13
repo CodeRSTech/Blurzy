@@ -1,4 +1,4 @@
-"""Frame rendering and UI state management handler."""
+"""Frame rendering and UI view_state management handler."""
 
 from __future__ import annotations
 
@@ -6,10 +6,13 @@ from typing import TYPE_CHECKING, final, override
 
 from PySide6.QtCore import Slot
 
-from app.domain import SessionId, VideoDataLayerGroup
+
 from app.shared.frame_overlay import draw_frame_overlays
 from app.shared.image_utils import rgb_frame_to_q_image
 from app.shared.logging_cfg import get_logger
+if TYPE_CHECKING:
+    from app.domain import SessionId, VideoDataLayerGroup
+
 
 if TYPE_CHECKING:
     from app.infrastructure.dtypes import RGBFrame, ListOfBoxes
@@ -27,7 +30,7 @@ class UIHandler:
     #   class UIHandler(QObject): ...
     # Verify this doesn't prevent signal connections elsewhere in the codebase.
     """
-    Manages frame rendering and UI state updates.
+    Manages frame rendering and UI view_state updates.
 
     Responsibilities:
         - Fetch and render video frames from session cache.
@@ -75,14 +78,14 @@ class UIHandler:
 
     def update_status_bar(self) -> None:
         """
-        Update status bar with session metadata and playback state.
+        Update status bar with session metadata and playback view_state.
     
         Note:
             Flow:
                 update_status_bar()
                   ├── Fetch active session
                   ├── Extract metadata (filename, resolution, FPS, frame count)
-                  ├── Extract playback state (current frame, playing status)
+                  ├── Extract playback view_state (current frame, playing status)
                   └──> Format and set status text
     
             Status Format: ``filename | 1920x1080 | 30.00 fps | 1/1500 frames | Playing | Model: yolov8n``.
@@ -92,6 +95,7 @@ class UIHandler:
         # ====================================================================
         session = self._app.active_session
         if session is None:
+            self._window.transport_panel.set_rotation_degrees(0)
             self._window.set_status_text("No session loaded")
             return
 
@@ -101,17 +105,22 @@ class UIHandler:
         metadata = session.state.metadata
         playback = session.state.playback
         model_name = session.state.settings.detection_model_name
+        rotation_degrees = session.video_reader.manual_rotation if session.video_reader is not None else 0
+        width = session.video_reader.width if session.video_reader is not None else metadata.width
+        height = session.video_reader.height if session.video_reader is not None else metadata.height
+        self._window.transport_panel.set_rotation_degrees(rotation_degrees)
 
         # ====================================================================
         # 3. FORMAT STATUS TEXT WITH METADATA
         # ====================================================================
         status_text = (
             f"{metadata.path.split('/')[-1]} | "  # [NOTE] Equivalent to os.path.basename()
-            f"{metadata.width}x{metadata.height} | "
+            f"{width}x{height} | "
             f"{metadata.fps:.2f} fps | "
             f"{playback.current_frame_index + 1}/{metadata.frame_count} frames | "
             f"{'Playing' if playback.is_playing else 'Paused'} | "
-            f"Model: {model_name}"
+            f"Model: {model_name} | "
+            f"Rot: {rotation_degrees}°"
         )
 
         # ====================================================================
@@ -140,7 +149,7 @@ class UIHandler:
             Handles:
                 Frame acquisition from session cache.
                 Bounding detection drawing (detection + tracking overlays).
-                UI state sync (frame label, seek position, status text).
+                UI view_state sync (frame label, seek position, status text).
         """
         # ====================================================================
         # 1. GET SESSION AND CURRENT FRAME
@@ -219,7 +228,7 @@ class UIHandler:
         self, frame_label_text: str, idx: int, max_frame_idx: int, status_text: str | None = None
     ) -> None:
         """
-        Synchronize UI controls with frame playback state.
+        Synchronize UI controls with frame playback view_state.
     
         Args:
             frame_label_text (str): Text to display in frame counter (e.g., "Frame 123/1500").
@@ -281,6 +290,9 @@ class UIHandler:
             if boxes_to_draw is not None:
                 active_bboxes = {box.key: box.bbox_xyxy for box in boxes_to_draw}
                 self._window.preview_container.set_active_bboxes(active_bboxes)
+                selected_keys = self._window.selected_frame_box_keys
+                logger.trace("Rendering {} selected overlay boxes: {}", len(selected_keys), selected_keys)
+                self._window.preview_container.set_selected_bbox_keys(selected_keys)
 
             # ================================================================
             # 2. DRAW BOXES ON FRAME
@@ -298,5 +310,5 @@ class UIHandler:
             self.set_boxes_for_tab(boxes_to_draw, tab_index)
         except Exception:
             logger.opt(exception=True).error(
-                "Error updating UI state with boxes",
+                "Error updating UI view_state with boxes",
             )

@@ -1,15 +1,25 @@
 """Background video decoding worker with ring buffer cache and hard-seek support."""
 
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
+
 import time
 from typing import final
 
 from PySide6.QtCore import QMutex, QMutexLocker, QThread, QObject, Signal
 
-from app.infrastructure.dtypes import RGBFrame
-from app.domain.video.playback_state import PlaybackState
+
+
 from app.domain.video.ring_buffer import VideoRingBuffer
-from app.infrastructure.video.vid_reader import VideoReader
+from app.infrastructure.video.reader import VideoReader
+from app.shared.exceptions import EndOfVideoStreamException
 from app.shared.logging_cfg import get_logger
+if TYPE_CHECKING:
+    from app.infrastructure.dtypes import RGBFrame
+    from app.domain.video.playback_state import PlaybackState
+
 
 logger = get_logger("Infrastructure->VideoDecodeWorker")
 
@@ -32,12 +42,12 @@ class VideoDecodeWorker(QThread):
         signals (DecoderSignals): Signal container emitting seek completion events.
         ring_buffer (VideoRingBuffer): Frame cache (90-frame sliding window).
         _reader (VideoReader): Video reader used to decode frames.
-        _playback (PlaybackState): Shared playback state reference.
+        _playback (PlaybackState): Shared playback view_state reference.
         _is_active (bool): True when the worker should decode/cache frames.
         _running (bool): True while the run loop is active.
         _seek_request (int | None): Pending seek target frame index.
         _latest_read_idx (int): Most recent frame index pushed to the buffer.
-        _mutex (QMutex): Guards mutable cross-thread state.
+        _mutex (QMutex): Guards mutable cross-thread view_state.
 
     Notes:
         Core loop behavior:
@@ -67,7 +77,7 @@ class VideoDecodeWorker(QThread):
     def __init__(
             self, path: str, playback: PlaybackState, parent=None
     ) -> None:
-        """Initialize decode worker for ``path`` with reference to ``playback`` state."""
+        """Initialize decode worker for ``path`` with reference to ``playback`` view_state."""
         super().__init__(parent)  # Important for garbage collection
         self.signals = DecoderSignals()
         self._running = False
@@ -86,7 +96,7 @@ class VideoDecodeWorker(QThread):
         self.ring_buffer = VideoRingBuffer(capacity=90)
         self._latest_read_idx = -1
 
-        # Thread-safe seeking state
+        # Thread-safe seeking view_state
         self._seek_request: int | None = None
         self._mutex = QMutex()  # Upgraded to Qt Mutex
 
@@ -158,7 +168,7 @@ class VideoDecodeWorker(QThread):
                 idx, frame = self._reader.read_next_frame()
                 self.ring_buffer.push(idx, frame)
                 self._latest_read_idx = idx
-            except ValueError:
+            except EndOfVideoStreamException:
                 time.sleep(0.1)  # End of video
             except Exception as e:
                 logger.error(

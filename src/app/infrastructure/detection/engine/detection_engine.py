@@ -4,10 +4,13 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-import numpy as np
+
 
 from app.infrastructure.detection.model.loader import load_detection_model
 from app.shared.logging_cfg import get_logger
+if TYPE_CHECKING:
+    import numpy as np
+
 
 if TYPE_CHECKING:
     from app.domain.detection.result import DetectionResult
@@ -28,7 +31,7 @@ class DetectionEngine:
         Design:
             - Single responsibility: load or switch model and run inference only.
             - Decoupling: delegates model loading to ``load_detection_model()``.
-            - Immutability: ``detect()`` returns a new list and does not mutate state.
+            - Immutability: ``detect()`` returns a new list and does not mutate view_state.
 
     Example:
         engine = DetectionEngine("yolov8n")

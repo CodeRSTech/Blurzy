@@ -24,3 +24,5 @@ class BoxSource(str, Enum):
     TRACKING = "Tracking"
     TRACKING_DUMMY = "Track (Dummy)"
     TRACKING_HUNGARIAN = "Track (Hungarian)"
+    TRACKING_BYTETRACK = "Track (ByteTrack)"
+    TRACKING_DEEPSORT = "Track (DeepSORT)"

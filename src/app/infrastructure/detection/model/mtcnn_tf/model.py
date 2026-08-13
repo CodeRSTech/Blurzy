@@ -1,13 +1,19 @@
+from __future__ import annotations
+
 from typing import TYPE_CHECKING
 
-import numpy as np
 
-from app.domain.detection.result import DetectionResult
+
+
 from app.infrastructure.detection.model.base import BaseDetectionModel
 from app.infrastructure.detection.model.names import DEFAULT_MTCNN_TF_CONFIDENCE_THRESHOLD
 from app.infrastructure.detection.model.mtcnn_tf.loader_factory import MTCNNModelLoaderFactory
 from app.infrastructure.detection.model.mtcnn_tf.mapper import MTCNNTFDetectionMapper
 from app.shared import get_logger
+if TYPE_CHECKING:
+    import numpy as np
+    from app.domain.detection.result import DetectionResult
+
 
 if TYPE_CHECKING:
     from mtcnn import MTCNN

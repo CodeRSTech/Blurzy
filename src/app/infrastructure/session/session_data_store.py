@@ -2,15 +2,23 @@
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
+
 import threading
 from collections import defaultdict
-from collections.abc import Callable
-from typing import Iterable, final, TYPE_CHECKING
+
+from typing import final, TYPE_CHECKING
 
 from PySide6.QtCore import QObject
 
 from app.domain import VideoDataLayer, new_passes_filter
 from app.shared import get_logger
+from app.shared.box_io import box_to_dict, dict_to_box
+if TYPE_CHECKING:
+    from collections.abc import Callable
+    from typing import Iterable
+
 
 if TYPE_CHECKING:
     from app.domain.base.dtypes import ListOfBoxes
@@ -102,6 +110,11 @@ class SessionDataStore(QObject):
         """Extremely fast boolean check if any boxes exist for a frame."""
         with self.data_lock:
             return len(self._data[layer].get(frame_index, [])) > 0
+
+    def has_frame_for_layer_at_frame_index(self, layer: VideoDataLayer, frame_index: int) -> bool:
+        """Return whether a layer frame was initialized, even when it is intentionally empty."""
+        with self.data_lock:
+            return frame_index in self._data[layer]
 
     # ============================== CREATE / UPDATE ==============================
 
@@ -317,3 +330,24 @@ class SessionDataStore(QObject):
         """Replaces the entire layer with a new dictionary of boxes."""
         with self.data_lock:
             self._data[layer][frame_index] = boxes
+
+    def to_project_payload(self) -> dict[str, dict[str, list[dict[str, object]]]]:
+        with self.data_lock:
+            payload: dict[str, dict[str, list[dict[str, object]]]] = {}
+            for layer, frames in self._data.items():
+                payload[layer.value] = {
+                    str(frame_index): [box_to_dict(box) for box in boxes]
+                    for frame_index, boxes in frames.items()
+                    if boxes
+                }
+            return payload
+
+    def load_project_payload(self, payload: dict[str, dict[str, list[dict[str, object]]]]) -> None:
+        with self.data_lock:
+            for layer in VideoDataLayer:
+                self._data[layer].clear()
+
+            for layer_name, frames in payload.items():
+                layer = VideoDataLayer(layer_name)
+                for frame_index, boxes in frames.items():
+                    self._data[layer][int(frame_index)] = [dict_to_box(box) for box in boxes]

@@ -70,7 +70,7 @@ class TestDetectionServiceFacade:
     #     app = MagicMock()
     #     session = MagicMock()
     #     session.has_running_detection_worker = False
-    #     session.state.settings = MagicMock(model_name_is_null=False, detection_model_name="yolov8n")
+    #     session.view_state.settings = MagicMock(model_name_is_null=False, detection_model_name="yolov8n")
     #     session.detection_engine = MagicMock()
     #     app.get_session_by_id.return_value = session
     #     service = DetectionService(app)

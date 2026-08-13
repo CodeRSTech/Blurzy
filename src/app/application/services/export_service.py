@@ -12,9 +12,13 @@ import numpy as np
 from PySide6.QtCore import QObject
 
 from app.application.adapters import ApplicationAdapter
-from app.domain import SessionId, BBoxXYXYTuple, VideoDataLayer
-from app.infrastructure.session.session import Session
+from app.domain import VideoDataLayer
+
 from app.shared.logging_cfg import get_logger
+if TYPE_CHECKING:
+    from app.domain import SessionId, BBoxXYXYTuple
+    from app.infrastructure.session.session import Session
+
 
 logger = get_logger("Application->ExportService")
 
@@ -181,7 +185,7 @@ class ExportService(QObject):
 
     # def export_annotations_json(self, s_id: SessionId, output_path: str) -> None:
     #     session = self._app_adapter.get_session_by_id(s_id)
-    #     session_state = session.state
+    #     session_state = session.view_state
     #     frames: dict[str, list[dict[str, object]]] = {}
     #     data: dict[str, object] = {
     #         "s_id": session_state.s_id,

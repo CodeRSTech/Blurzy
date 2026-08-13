@@ -1,9 +1,15 @@
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
+
 from dataclasses import dataclass
 
-from app.domain.base.dtypes import BBoxXYXYTuple
+
 from app.domain.detection import BoxSource
+if TYPE_CHECKING:
+    from app.domain.base.dtypes import BBoxXYXYTuple
+
 
 
 @dataclass(slots=True)

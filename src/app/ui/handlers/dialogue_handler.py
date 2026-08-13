@@ -1,11 +1,16 @@
 """Dialog management handler for UI interactions."""
 
+from __future__ import annotations
+
 from typing import TYPE_CHECKING
 
 from PySide6.QtCore import QObject
 
-from app.domain.session import SessionId
-from app.ui.qt.dialogue_boxes import EditAnnotationDialog, ModelChangeWarningDialog
+
+from app.ui.qt.dialogs import EditAnnotationDialog, ModelChangeWarningDialog
+if TYPE_CHECKING:
+    from app.domain.session import SessionId
+
 
 if TYPE_CHECKING:
     from app.ui.uicontroller import UIController

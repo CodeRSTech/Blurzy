@@ -1,6 +1,14 @@
-from PySide6.QtGui import QImage
+from __future__ import annotations
 
-from app.infrastructure.dtypes import RGBFrame
+from typing import TYPE_CHECKING
+
+
+from PySide6.QtGui import QImage
+if TYPE_CHECKING:
+    from app.infrastructure.dtypes import RGBFrame
+
+
+
 
 
 def rgb_frame_to_q_image(frame: RGBFrame) -> QImage:

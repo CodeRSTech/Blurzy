@@ -2,6 +2,9 @@
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
+
 from typing import final, TYPE_CHECKING
 
 from app.application.adapters import (
@@ -10,11 +13,14 @@ from app.application.adapters import (
 )
 from app.application.managers.tracking_worker import TrackingWorkerManager
 from app.application.services.tracking.result_processor import TrackingResultProcessor
-from app.domain import VideoDataLayer
+
 from app.shared import get_logger
 from app.shared.exceptions import (
     InvalidSessionIdException, EmptyLayerException,
 )
+if TYPE_CHECKING:
+    from app.domain import VideoDataLayer
+
 
 if TYPE_CHECKING:
     from app.application.application import Application
@@ -30,10 +36,10 @@ class TrackingService:
 
     Responsibilities:
         - Start background ``TrackingWorker`` for multi-frame tracking.
-        - Validate tracking prerequisites (layer data, worker state).
+        - Validate tracking prerequisites (layer data, worker view_state).
         - Clear tracking output layers before starting new tracking.
         - Synchronize tracking results from worker to ``DataLayer.C``.
-        - Handle worker creation and state management.
+        - Handle worker creation and view_state management.
 
     Note:
         Creates ``TrackingWorker`` instances (runs in background thread).
@@ -160,7 +166,7 @@ class TrackingService:
         # 3. Prune Layer D
         # ======================================================
         # session.data.purge_boxes_in_layer_by_minimum_confidence(
-        #     DataLayer.D, session.state.settings.min_tracker_confidence
+        #     DataLayer.D, session.view_state.settings.min_tracker_confidence
         # )
 
         logger.info(

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from unittest.mock import MagicMock
 
-from app.application.services.detection.execution_service import DetectionExecutionService
+from app.application.services.detection.execution import DetectionExecutionService
 from app.domain import VideoDataLayer, DetectionResult, ProcessingSettings
 
 

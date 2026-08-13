@@ -68,6 +68,26 @@ class TestStart:
         with pytest.raises(EmptyLayerException):
             manager.start(MagicMock(), "hungarian", VideoDataLayer.A)
 
+    @pytest.mark.parametrize("strategy_name", ["bytetrack", "deepsort"])
+    def test_start_accepts_new_strategy_names(self, strategy_name: str):
+        repo = MagicMock()
+        source_data = {2: [MagicMock()]}
+        session = _make_session(source_data=source_data)
+        repo.get_session_by_id.return_value = session
+        factory = MagicMock()
+        created_worker = MagicMock()
+        factory.create.return_value = created_worker
+        manager = TrackingWorkerManager(repo, factory)
+
+        manager.start(MagicMock(), strategy_name, VideoDataLayer.B)
+
+        factory.create.assert_called_once_with(
+            strategy_name=strategy_name,
+            source_data=source_data,
+            session_state=session.state,
+        )
+        assert session.tracking_worker is created_worker
+
 
 class TestStop:
     def test_stop_calls_worker_stop_and_clears_reference(self):

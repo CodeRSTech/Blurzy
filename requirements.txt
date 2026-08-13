@@ -22,3 +22,4 @@ av
 
 # Testing
 pytest-qt
+deep-sort-realtime

@@ -1,4 +1,4 @@
-"""Session domain model — session ID, state, playback, data layer selection."""
+"""Session domain model — session ID, view_state, playback, data layer selection."""
 
 from .session_id import SessionId
 from .session_state import SessionState

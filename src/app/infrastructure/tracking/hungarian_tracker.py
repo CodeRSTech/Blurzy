@@ -22,6 +22,9 @@ Algorithm
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
+
 from dataclasses import dataclass, field
 from typing import final
 
@@ -29,8 +32,11 @@ import numpy as np
 from scipy.optimize import \
     linear_sum_assignment  # pyright: ignore[reportUnknownVariableType, reportAttributeAccessIssue]
 
-from app.domain.base.dtypes import BBoxXYXYTuple
+
 from app.shared.logging_cfg import get_logger
+if TYPE_CHECKING:
+    from app.domain.base.dtypes import BBoxXYXYTuple
+
 
 logger = get_logger("Infrastructure->HungarianTracker")
 
@@ -65,7 +71,7 @@ class TrackInput:
 
 @dataclass
 class TrackState:
-    """The live state of one confirmed track, returned per frame."""
+    """The live view_state of one confirmed track, returned per frame."""
     uid: int
     bbox_xyxy: BBoxXYXYTuple
     confidence: float
@@ -172,7 +178,7 @@ class HungarianIoUTracker:
 
     def reset(self) -> None:
         """Clear all live tracks and reset the UID counter."""
-        logger.debug("HungarianIoUTracker internal state reset")
+        logger.debug("HungarianIoUTracker internal view_state reset")
         self._tracks = []
         self._next_uid = 1
 

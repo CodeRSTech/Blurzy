@@ -7,9 +7,15 @@ depending on the entire concrete ``UIController`` surface.
 
 from __future__ import annotations
 
-from typing import Protocol
+from typing import TYPE_CHECKING
 
-from app.domain import SessionId
+
+from typing import Protocol
+if TYPE_CHECKING:
+    from app.domain import SessionId
+
+
+
 
 
 class UIControllerInterface(Protocol):

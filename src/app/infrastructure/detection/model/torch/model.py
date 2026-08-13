@@ -1,10 +1,19 @@
-import numpy as np
 
-from app.domain.detection import Box
+
+
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
+
 from app.infrastructure.detection.model.base import BaseDetectionModel
 from app.infrastructure.detection.model.torch.loader_factory import TorchModelLoaderFactory
 from app.infrastructure.detection.model.torch.mapper import TorchDetectionMapper
 from app.shared import get_logger
+if TYPE_CHECKING:
+    import numpy as np
+    from app.domain.detection import Box
+
 
 logger = get_logger("Infrastructure->Detection->Models->Torch")
 

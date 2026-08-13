@@ -2,19 +2,23 @@
 
 from __future__ import annotations
 
-from collections.abc import Iterable
+
 from typing import TYPE_CHECKING
 
 from PySide6.QtCore import QObject
 
 from app.application.adapters import ApplicationAdapter
 from app.application.managers.video_decode_worker import VideoDecodeWorkerManager
-from app.domain.session import SessionId
+
 from app.shared import get_logger
 from app.shared.exceptions import (
     SessionAlreadyExistsException,
     NoNewOpenedSessionsException,
 )
+if TYPE_CHECKING:
+    from collections.abc import Iterable
+    from app.domain.session import SessionId
+
 
 if TYPE_CHECKING:
     from app.application.application import Application
@@ -69,7 +73,7 @@ class SessionService(QObject):
     **Worker Management:**
 
     - ``VideoDecodeWorkerManager.switch_active_session`` is the single canonical
-      entry-point for worker state transitions.
+      entry-point for worker view_state transitions.
     - Only active session's ``VideoDecodeWorker`` is truly active (buffering frames)
     - Inactive sessions' workers are paused to save CPU/memory
     - When switching sessions: old worker paused → new worker resumed
@@ -92,7 +96,7 @@ class SessionService(QObject):
         self, old_s_id: SessionId | None, new_s_id: SessionId
     ) -> None:
         """
-        Coordinate worker state when switching to a different session.
+        Coordinate worker view_state when switching to a different session.
 
         **Parameters:**
 

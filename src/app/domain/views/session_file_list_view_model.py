@@ -1,8 +1,14 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from typing import TYPE_CHECKING
 
-from app.domain.session import SessionId
+
+from dataclasses import dataclass
+if TYPE_CHECKING:
+    from app.domain.session import SessionId
+
+
+
 
 
 @dataclass(slots=True)

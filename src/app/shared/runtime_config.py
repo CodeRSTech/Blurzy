@@ -1,9 +1,15 @@
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
+
 import os
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Mapping
+if TYPE_CHECKING:
+    from typing import Mapping
+
+
 
 DEFAULT_LOG_CONSOLE_LEVEL = "DEBUG"
 DEFAULT_LOG_FILE_LEVEL = "TRACE"

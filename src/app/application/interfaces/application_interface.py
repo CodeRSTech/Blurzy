@@ -2,10 +2,14 @@
 
 from __future__ import annotations
 
-from collections.abc import Iterable
-from typing import TYPE_CHECKING, Protocol
 
-from app.domain import VideoDataLayerGroup, FrameBoxesViewModel, VideoDataLayer, BBoxViewModel
+from typing import TYPE_CHECKING, Protocol
+if TYPE_CHECKING:
+    from collections.abc import Iterable
+    from app.domain import VideoDataLayerGroup, FrameBoxesViewModel, VideoDataLayer, BBoxViewModel
+
+
+
 
 if TYPE_CHECKING:
     from app.domain.session import SessionId

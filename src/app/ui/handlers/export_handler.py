@@ -2,15 +2,20 @@
 
 from __future__ import annotations
 
+from pathlib import Path
 from typing import TYPE_CHECKING, final, override
 
 from PySide6.QtCore import Slot, QObject
 from PySide6.QtWidgets import QFileDialog
 
 from app.application.adapters import ExportAllWorkerFactoryAdapter, ExportWorkerFactoryAdapter
-from app.domain.session import SessionId
+
+from app.shared.app_preferences import AppPreferencesStore
 from app.shared.logging_cfg import get_logger
-from app.ui.qt.dialogue_boxes.export_all_dlg import ExportAllDialog
+from app.ui.qt.dialogs.export_all import ExportAllDialog
+if TYPE_CHECKING:
+    from app.domain.session import SessionId
+
 
 if TYPE_CHECKING:
     from app.application.interfaces import ExportAllWorkerInterface, ExportWorkerInterface
@@ -53,6 +58,7 @@ class ExportHandler(QObject):
 
         self._export_worker_factory = ExportWorkerFactoryAdapter()
         self._export_all_worker_factory = ExportAllWorkerFactoryAdapter()
+        self._preferences_store = AppPreferencesStore()
 
         self.__export_worker: ExportWorkerInterface | None = None
         self.__export_all_worker: ExportAllWorkerInterface | None = None
@@ -68,8 +74,6 @@ class ExportHandler(QObject):
     
     def _connect_signals(self) -> None:
         self._window.right_panel.connect_signals_to_export_handler(self)
-        self._window.top_row.export_all_btn.clicked.connect(self.on_export_all)
-        self._window.top_row.export_all_action.triggered.connect(self.on_export_all)
 
     @property
     def _export_worker(self) -> ExportWorkerInterface:
@@ -194,8 +198,8 @@ class ExportHandler(QObject):
         Export current session video with annotations to file.
     
         Note:
-            Triggered by right panel or top row ``export`` button click.
-    
+            Triggered by right panel ``export_btn.clicked``.
+
             Flow:
                 on_export() [this slot]
                   ├── Validate session is selected
@@ -239,13 +243,30 @@ class ExportHandler(QObject):
         # ====================================================================
         # 3. PROMPT USER FOR OUTPUT FILE PATH
         # ====================================================================
-        default_name = f"{s_id.basename_without_extension}_exported.mp4"
+        preferences = self._preferences_store.load()
+        project_dirs = self._app.project_directories
+        default_name = (
+            f"{project_dirs.export_prefix or preferences.default_export_prefix}"
+            f"{s_id.basename_without_extension}"
+            f"{project_dirs.export_suffix or preferences.default_export_suffix}.mp4"
+        )
+        default_path = (
+            str(Path(project_dirs.last_export_directory or preferences.default_export_directory) / default_name)
+            if project_dirs.last_export_directory or preferences.default_export_directory
+            else default_name
+        )
         output_path, _ = QFileDialog.getSaveFileName(
-            self._window, "Export Video", default_name, "Video Files (*.mp4)"
+            self._window, "Export Video", default_path, "Video Files (*.mp4)"
         )
 
         if not output_path:
             return
+
+        self._app.update_project_directories(
+            last_export_directory=str(Path(output_path).parent),
+            export_prefix=project_dirs.export_prefix or preferences.default_export_prefix,
+            export_suffix=project_dirs.export_suffix or preferences.default_export_suffix,
+        )
 
         # ====================================================================
         # 4. UPDATE UI TO SHOW EXPORT IN PROGRESS
@@ -285,8 +306,8 @@ class ExportHandler(QObject):
         Batch export all open sessions with configurable output paths.
     
         Note:
-            Triggered by top row ``export_all_btn.clicked`` or menu action.
-    
+            Triggered by right panel ``export_all_btn.clicked`` or File menu action.
+
             Flow:
                 on_export_all() [this slot]
                   ├── Validate videos are open
@@ -302,7 +323,7 @@ class ExportHandler(QObject):
     
             Tracks:
                 Failed session count (displayed in final message).
-                Cancellation state (user stops batch).
+                Cancellation view_state (user stops batch).
         """
         # ====================================================================
         # 1. VALIDATE VIDEOS ARE OPEN
@@ -325,7 +346,14 @@ class ExportHandler(QObject):
         # ====================================================================
         # 3. SHOW BATCH EXPORT CONFIGURATION DIALOG
         # ====================================================================
-        dlg = ExportAllDialog(self._window)
+        preferences = self._preferences_store.load()
+        project_dirs = self._app.project_directories
+        dlg = ExportAllDialog(
+            self._window,
+            initial_directory=project_dirs.last_export_directory or preferences.default_export_directory,
+            initial_prefix=project_dirs.export_prefix or preferences.default_export_prefix,
+            initial_suffix=project_dirs.export_suffix or preferences.default_export_suffix,
+        )
         if dlg.exec() != ExportAllDialog.DialogCode.Accepted:
             return
 
@@ -333,6 +361,11 @@ class ExportHandler(QObject):
         # 4. GET EXPORT CONFIGURATION FROM DIALOG
         # ====================================================================
         out_dir, prefix, suffix = dlg.get_export_config()
+        self._app.update_project_directories(
+            last_export_directory=out_dir,
+            export_prefix=prefix,
+            export_suffix=suffix,
+        )
         self._batch_failed_count = 0
         self._batch_cancelled = False
         self._batch_total_sessions = len(s_ids)
@@ -445,7 +478,7 @@ class ExportHandler(QObject):
         Note:
             Triggered by ``ExportWorker.finished_processing`` signal.
     
-            Action: Schedule worker deletion and clear busy state.
+            Action: Schedule worker deletion and clear busy view_state.
         """
         self._window.set_export_busy(False)
         if self.__export_worker is not None:
@@ -515,7 +548,7 @@ class ExportHandler(QObject):
     
             Flow:
                 _on_export_all_finished() [this slot]
-                  ├── Clear busy state in UI
+                  ├── Clear busy view_state in UI
                   ├── Set final status message based on result:
                   │   ├── "cancelled" if user stopped
                   │   ├── "completed with N failures" if some failed

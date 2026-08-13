@@ -1,4 +1,4 @@
-"""Video domain model — playback state, metadata, ring buffer, direction."""
+"""Video domain model — playback view_state, metadata, ring buffer, direction."""
 
 from .direction import Direction
 from .playback_state import PlaybackState

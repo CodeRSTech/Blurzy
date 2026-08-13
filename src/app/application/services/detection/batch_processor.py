@@ -89,7 +89,7 @@ class DetectionBatchProcessor:
 
         raw_boxes = map_detections_to_bbox(raw_detections)
         settings = DetectionBatchProcessor._get_session_settings(session)
-        # filtered_boxes = [detection for detection in raw_boxes if passes_filter_for_layer_b(detection, session.state.settings)]
+        # filtered_boxes = [detection for detection in raw_boxes if passes_filter_for_layer_b(detection, session.view_state.settings)]
         filtered_boxes = [box for box in raw_boxes if new_passes_filter(target_layer, box, settings)]
         session.data.add_boxes_to_layer_at_frame_index(source_layer, frame_index, filtered_boxes)
         return len(filtered_boxes)
@@ -103,7 +103,7 @@ class DetectionBatchProcessor:
         legacy_settings = getattr(session.state, "session_settings", None)
         if isinstance(legacy_settings, ProcessingSettings):
             warnings.warn(
-                "session.state.session_settings is deprecated; use session.state.settings instead.",
+                "session.view_state.session_settings is deprecated; use session.view_state.settings instead.",
                 DeprecationWarning,
                 stacklevel=3,
             )
@@ -112,6 +112,6 @@ class DetectionBatchProcessor:
         settings_type = type(settings).__name__
         legacy_settings_type = type(legacy_settings).__name__
         raise AttributeError(
-            "Session state must expose ProcessingSettings via 'settings' or 'session_settings' "
+            "Session view_state must expose ProcessingSettings via 'settings' or 'session_settings' "
             f"(got settings={settings_type}, session_settings={legacy_settings_type})."
         )

@@ -2,8 +2,15 @@
 
 from __future__ import annotations
 
-from app.application.interfaces import TrackingWorkerInterface, TrackingWorkerFactoryInterface
-from app.domain import ListOfBoxesByFrameIndexAsDict, SessionState
+from typing import TYPE_CHECKING
+
+
+from app.application.interfaces import TrackingWorkerFactoryInterface
+if TYPE_CHECKING:
+    from app.application.interfaces import TrackingWorkerInterface
+    from app.domain import ListOfBoxesByFrameIndexAsDict, SessionState
+
+
 
 
 class TrackingWorkerFactoryAdapter(TrackingWorkerFactoryInterface):

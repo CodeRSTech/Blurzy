@@ -7,9 +7,13 @@ of the application-layer service contracts; it is the UI's view of the app.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Protocol, Unpack
+from typing import TYPE_CHECKING, Protocol
+if TYPE_CHECKING:
+    from typing import Unpack
+    from app.domain import SessionId, VideoDataLayer
 
-from app.domain import SessionId, VideoDataLayer
+
+
 
 if TYPE_CHECKING:
     from app.domain import ProcessingSettingsKwargs

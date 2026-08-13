@@ -3,20 +3,26 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, final, override
 
 from PySide6.QtCore import Slot, QObject
-from PySide6.QtWidgets import QApplication, QTableWidget
 
-from app.domain.base.dtypes import ListOfBoxes
-from app.domain import SessionId, VideoDataLayerGroup
+
+
+
 from app.infrastructure.detection.model.helpers import get_available_detection_model_names_as_view_model
 from app.shared import get_logger
 from app.ui.adapters import UIApplicationAdapter, UIControllerAdapter
 from app.ui import handlers
-from app.ui.qt.data.table_key_filter import FrameTableKeyFilter
-from app.ui.qt.dialogue_boxes import EditAnnotationDialog, ModelChangeWarningDialog
+from app.ui.view_state.table_key_filter import FrameTableKeyFilter
+if TYPE_CHECKING:
+    from PySide6.QtWidgets import QApplication, QTableWidget
+    from app.domain.base.dtypes import ListOfBoxes
+    from app.domain import SessionId, VideoDataLayerGroup
+    from app.ui.qt.dialogs import EditAnnotationDialog, ModelChangeWarningDialog
+
+
 
 if TYPE_CHECKING:
     from app.application.application import Application
-    from app.ui.qt.main_window import MainWindow
+    from app.ui.qt.window import Window
     from app.infrastructure.session.session import Session
 logger = get_logger("UI->Controller")
 
@@ -52,7 +58,7 @@ class UIController(QObject):
     def __init__(
         self,
         q_app: QApplication,
-        window: MainWindow,
+        window: Window,
         app: Application,
     ) -> None:
         logger.info("Initializing UI Controller...")
@@ -86,6 +92,8 @@ class UIController(QObject):
         self.import_export_handler = handlers.ImportExportHandler(self)
         self.model_handler = handlers.ModelHandler(self)
         self.playback_handler = handlers.PlaybackHandler(self)
+        self.preferences_handler = handlers.PreferencesHandler(self)
+        self.project_handler = handlers.ProjectHandler(self)
         self.session_handler = handlers.SessionHandler(self)
         self.tracking_handler = handlers.TrackingHandler(self)
         self.ui_handler = handlers.UIHandler(self)
@@ -148,6 +156,7 @@ class UIController(QObject):
         # 2. INSTALL KEYBOARD EVENT FILTER FOR ANNOTATION SHORTCUTS
         # ====================================================================
         # [NOTE] Filters keyboard events (arrow keys for nudge, etc.)
+        self.window.installEventFilter(self._frame_table_key_filter)
         self.detection_tab_data_table.installEventFilter(self._frame_table_key_filter)
         self.tracker_tab_data_table.installEventFilter(self._frame_table_key_filter)
 

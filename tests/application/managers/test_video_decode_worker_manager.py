@@ -18,7 +18,7 @@ def _make_session_repo(current_frame_index: int = 0, worker_raises: Exception | 
     Return a mock SessionRepositoryInterface whose session has a mock worker.
 
     Args:
-        current_frame_index: The value of ``session.state.playback.current_frame_index``.
+        current_frame_index: The value of ``session.view_state.playback.current_frame_index``.
         worker_raises: If set, ``set_active`` will raise this exception.
     """
     worker = MagicMock()
@@ -78,7 +78,7 @@ class TestActivateValueError:
     """activate() must silently return when set_active raises ValueError."""
 
     def test_silently_returns_on_value_error(self):
-        repo, session, worker = _make_session_repo(worker_raises=ValueError("transient state"))
+        repo, session, worker = _make_session_repo(worker_raises=ValueError("transient view_state"))
         manager = VideoDecodeWorkerManager(repo)
         s_id = MagicMock()
 
@@ -140,7 +140,7 @@ class TestDeactivateValueError:
     """deactivate() must silently return when set_active raises ValueError."""
 
     def test_silently_returns_on_value_error(self):
-        repo, session, worker = _make_session_repo(worker_raises=ValueError("transient state"))
+        repo, session, worker = _make_session_repo(worker_raises=ValueError("transient view_state"))
         manager = VideoDecodeWorkerManager(repo)
         s_id = MagicMock()
 

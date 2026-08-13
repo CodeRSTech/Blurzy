@@ -1,12 +1,21 @@
 """Domain utility functions for string handling and validation."""
 from __future__ import annotations
 
-from collections.abc import Iterable
+from typing import TYPE_CHECKING
 
-from app.domain import VideoDataLayer, BBoxViewModel, ProcessingSettings
-from app.domain.base.dtypes import ListOfBoxes
+
+
+
+from app.domain import VideoDataLayer
+
 from app.domain.base.exceptions import EmptySetGeneratedFromKeysError
-from app.domain.detection.result import DetectionResult
+if TYPE_CHECKING:
+    from collections.abc import Iterable
+    from app.domain import BBoxViewModel, ProcessingSettings
+    from app.domain.base.dtypes import ListOfBoxes
+    from app.domain.detection.result import DetectionResult
+
+
 
 
 def str_iterable_as_set_without_null_values(iterable: Iterable[str]) -> set[str]:

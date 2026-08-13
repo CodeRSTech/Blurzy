@@ -1,13 +1,19 @@
+from __future__ import annotations
+
 from typing import TYPE_CHECKING
 
-import numpy as np
 
-from app.domain.detection.result import DetectionResult
+
+
 from app.infrastructure.detection.model.base import BaseDetectionModel
 from app.infrastructure.detection.model.names import DEFAULT_YOLO_CONFIDENCE_THRESHOLD
 from app.infrastructure.detection.model.yolo.loader_factory import YoloModelLoaderFactory
 from app.infrastructure.detection.model.yolo.mapper import YoloDetectionMapper
 from app.shared import get_logger
+if TYPE_CHECKING:
+    import numpy as np
+    from app.domain.detection.result import DetectionResult
+
 
 if TYPE_CHECKING:
     from ultralytics.models.yolo.model import YOLO

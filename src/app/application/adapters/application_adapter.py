@@ -9,10 +9,13 @@
 #
 from __future__ import annotations
 
-from collections.abc import Iterable
+
 from typing import TYPE_CHECKING
 
 from app.application.interfaces import UIApplicationInterface
+if TYPE_CHECKING:
+    from collections.abc import Iterable
+
 
 if TYPE_CHECKING:
     from app.application.application import Application
@@ -85,7 +88,7 @@ class ApplicationAdapter(UIApplicationInterface):
         return self._sm.get_session_by_id(s_id)
 
     def set_session_state_is_playing(self, s_id: SessionId, is_playing: bool) -> None:
-        """Set the playback state (playing/paused) for the session ``s_id``."""
+        """Set the playback view_state (playing/paused) for the session ``s_id``."""
         self._sm.get_session_state_by_id(s_id).playback.is_playing = is_playing
 
     # Used by PlaybackHandler and SessionHandler

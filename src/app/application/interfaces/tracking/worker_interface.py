@@ -2,9 +2,15 @@
 
 from __future__ import annotations
 
-from typing import Protocol
+from typing import TYPE_CHECKING
 
-from app.domain.base.dtypes import ListOfBoxesByFrameIndexAsDict
+
+from typing import Protocol
+if TYPE_CHECKING:
+    from app.domain.base.dtypes import ListOfBoxesByFrameIndexAsDict
+
+
+
 
 
 class TrackingWorkerInterface(Protocol):

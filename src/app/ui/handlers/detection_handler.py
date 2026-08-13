@@ -7,12 +7,14 @@ from typing import TYPE_CHECKING, final, override
 from PySide6.QtCore import Slot, QObject
 
 from app.domain import VideoDataLayer
-from app.shared.exceptions import WorkerAlreadyRunningException, NullModelNameException
+from app.shared.exceptions import (
+    DomainException,
+    NullModelNameException,
+    WorkerAlreadyRunningException,
+)
 from app.shared.logging_cfg import get_logger
 
 if TYPE_CHECKING:
-    from app.ui.interfaces import UIControllerInterface, UIApplicationInterface
-    from app.ui.qt.main_window import MainWindow
     from app.ui.uicontroller import UIController
 
 logger = get_logger("UI->DetectionHandler")
@@ -29,7 +31,7 @@ class DetectionHandler(QObject):
     - Execute single-frame detection or background detection
     - Manage detection confidence thresholds
     - Filter detections by label selection
-    - Update UI state based on detection results
+    - Update UI view_state based on detection results
 
     **Signal Flow**:
 
@@ -43,9 +45,9 @@ class DetectionHandler(QObject):
         self.setParent(controller)
 
         self._owner = controller
-        self._controller: UIControllerInterface = controller.ui_controller
-        self._window: MainWindow = controller.window
-        self._app: UIApplicationInterface = controller.ui_app
+        self._controller = controller.ui_controller
+        self._window = controller.window
+        self._app = controller.ui_app
 
         self._connect_signals()
 
@@ -96,6 +98,9 @@ class DetectionHandler(QObject):
             # 3. RENDER FRAME WITH DETECTION RESULTS
             # ====================================================================
             self._controller.render_frame_for_session_id(s_id)
+        except DomainException as exc:
+            self._window.show_error("Detection Failed", str(exc))
+            logger.warning("Detection failed due to domain exception: {}", exc)
         except Exception as exc:
             self._window.show_error("Detection Failed", str(exc))
             logger.opt(exception=exc).error("Failed to detect current frame")
@@ -151,6 +156,9 @@ class DetectionHandler(QObject):
             self._window.show_error(
                 title="Background Detection Failed", msg=f"No model selected for session: {s_id}."
             )
+        except DomainException as exc:
+            self._window.show_error("Background Detection Failed", str(exc))
+            logger.warning("Background detection failed due to domain exception: {}", exc)
         except Exception as exc:
             self._window.show_error("Background Detection Failed", str(exc))
             logger.opt(exception=exc).error("Failed to start background detection")
@@ -181,7 +189,8 @@ class DetectionHandler(QObject):
         Update the minimum detection confidence-threshold and refilter detections.
 
         **Triggered By:**
-            Right panel ``min_confidence_spinbox.valueChanged`` signal
+
+        Right panel ``min_confidence_spinbox.valueChanged`` signal
 
         **Flow:**
 

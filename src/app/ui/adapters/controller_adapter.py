@@ -4,8 +4,11 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from app.domain import SessionId
+
 from app.ui.interfaces.controller_interface import UIControllerInterface
+if TYPE_CHECKING:
+    from app.domain import SessionId
+
 
 if TYPE_CHECKING:
 	from app.ui.uicontroller import UIController

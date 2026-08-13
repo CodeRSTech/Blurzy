@@ -2,10 +2,17 @@
 
 from __future__ import annotations
 
-from collections.abc import Callable, Iterable
-from typing import Protocol
+from typing import TYPE_CHECKING
 
-from app.domain  import VideoDataLayer,ListOfBoxes, ProcessingSettings, BBoxViewModel
+
+
+from typing import Protocol
+if TYPE_CHECKING:
+    from collections.abc import Callable, Iterable
+    from app.domain import VideoDataLayer, ListOfBoxes, ProcessingSettings, BBoxViewModel
+
+
+
 
 
 class SessionDataStoreInterface(Protocol):
@@ -25,6 +32,9 @@ class SessionDataStoreInterface(Protocol):
         ...
 
     def has_boxes_for_layer_at_frame_index(self, layer: VideoDataLayer, frame_index: int) -> bool:
+        ...
+
+    def has_frame_for_layer_at_frame_index(self, layer: VideoDataLayer, frame_index: int) -> bool:
         ...
 
     # ============================== CREATE / UPDATE ==============================

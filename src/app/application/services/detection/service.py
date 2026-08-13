@@ -2,6 +2,9 @@
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
+
 from typing import final, override, TYPE_CHECKING
 
 from PySide6.QtCore import Slot
@@ -10,10 +13,13 @@ from app.application.adapters import ApplicationAdapter
 from app.application.adapters.detection_worker_factory_adapter import DetectionWorkerFactoryAdapter
 from app.application.managers.detection_engine import DetectionEngineManager
 from app.application.services.detection.batch_processor import DetectionBatchProcessor
-from app.application.services.detection.execution_service import DetectionExecutionService
-from app.domain import DetectionResult, SessionId
+from app.application.services.detection.execution import DetectionExecutionService
+
 from app.shared.exceptions import WorkerAlreadyRunningException, NullModelNameException
 from app.shared.logging_cfg import get_logger
+if TYPE_CHECKING:
+    from app.domain import DetectionResult, SessionId
+
 
 logger = get_logger("Application->DetectionService")
 

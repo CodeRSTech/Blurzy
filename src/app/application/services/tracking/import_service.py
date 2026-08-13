@@ -8,15 +8,19 @@ from typing import TYPE_CHECKING, final, override
 from PySide6.QtCore import QObject
 
 from app.application.adapters import ApplicationAdapter
-from app.application.services._layer_coercion import ensure_import_mode, ensure_layer_enum
-from app.application.services._layer_io import (
+from app.application.services.helpers.layer_coercion import ensure_import_mode, ensure_layer_enum
+from app.application.services.helpers.layer_io import (
     apply_import_to_layer,
     deserialize_layer_from_csv,
     deserialize_layer_from_json,
 )
-from app.application.services.import_mode import ImportMode
+
 from app.domain.video.layer import VideoDataLayer
+from app.shared.exceptions import UnsupportedImportExportFormatException, UnsupportedLayerOperationException
 from app.shared.logging_cfg import get_logger
+if TYPE_CHECKING:
+    from app.application.services.helpers.import_mode import ImportMode
+
 
 if TYPE_CHECKING:
     from app.application.application import Application
@@ -91,11 +95,7 @@ class TrackingImportService(QObject):
         mode = ensure_import_mode(mode)
 
         if layer not in _ALLOWED_LAYERS:
-            logger.warning(
-                "TrackingImportService asked to write to layer '{}' — "
-                "expected C or D.  Proceeding anyway.",
-                layer,
-            )
+            raise UnsupportedLayerOperationException("tracking_import", layer)
 
         if not os.path.isfile(file_path):
             raise FileNotFoundError(f"Import file not found: {file_path}")
@@ -119,8 +119,4 @@ def _load_file(file_path: str) -> dict:
         return deserialize_layer_from_json(file_path)
     if ext == ".csv":
         return deserialize_layer_from_csv(file_path)
-    raise ValueError(
-        f"Unsupported file extension '{ext}' for tracking import. "
-        "Expected '.json' or '.csv'."
-    )
-
+    raise UnsupportedImportExportFormatException(extension=ext, operation="tracking import")

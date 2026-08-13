@@ -6,8 +6,11 @@ from typing import TYPE_CHECKING, final, override
 
 from PySide6.QtCore import QTimer, Slot, QObject, Signal
 
-from app.domain.session.session_id import SessionId
+
 from app.shared.logging_cfg import get_logger
+if TYPE_CHECKING:
+    from app.domain.session.session_id import SessionId
+
 
 if TYPE_CHECKING:
     from app.ui.uicontroller import UIController
@@ -17,12 +20,12 @@ logger = get_logger("UI->PlaybackHandler")
 # [AUDIT] UNRESOLVED BUG: Seeking interrupts playback
 # Issue: If user is playing video and performs seek, playback pauses instead of resuming.
 # Expected: Playback should resume automatically after seek completes.
-# Current behavior: Playback state is not preserved during seek operation.
+# Current behavior: Playback view_state is not preserved during seek operation.
 # Recommendation: Create GitHub issue to track this bug with details:
 #   - Steps to reproduce: Play → Seek → observe playback stops
 #   - Expected: Should resume playback after seek
 #   - Root cause: Likely seek operation doesn't preserve playback_is_playing flag
-# Estimated fix: Save playback state before seek, restore after seek completes.
+# Estimated fix: Save playback view_state before seek, restore after seek completes.
 # FIXME: If a session was playing while seeking, it should keep playing after seeking
 
 
@@ -71,6 +74,8 @@ class PlaybackHandler(QObject):
         self._controller.window.transport_panel.pause_btn.clicked.connect(self.on_pause)
         self._controller.window.transport_panel.next_btn.clicked.connect(self.on_next_frame)
         self._controller.window.transport_panel.previous_btn.clicked.connect(self.on_previous_frame)
+        self._controller.window.transport_panel.rotate_requested.connect(self.on_rotate_requested)
+        self._controller.window.transport_panel.fit_view_requested.connect(self.on_fit_view_requested)
 
     @property
     def selected_s_id(self) -> SessionId:
@@ -113,7 +118,7 @@ class PlaybackHandler(QObject):
         Note:
             Triggered by transport panel ``pause_btn.clicked`` signal.
     
-            Action: Calls ``stop_playback()`` to halt the playback timer and app playback state.
+            Action: Calls ``stop_playback()`` to halt the playback timer and app playback view_state.
         """
         self.stop_playback()
 
@@ -195,6 +200,32 @@ class PlaybackHandler(QObject):
         except Exception as exc:
             self._window.show_error("Seek Failed", str(exc))
 
+    @Slot(int)
+    def on_rotate_requested(self, delta_degrees: int) -> None:
+        s_id = self.selected_s_id
+        if not s_id:
+            return
+        try:
+            session = self._app.get_session_by_id(s_id)
+            if session.video_reader is None:
+                return
+            session.video_reader.manual_rotation = session.video_reader.manual_rotation + delta_degrees
+            logger.debug(
+                "Adjusted manual rotation for session '{}' by {} degrees to {}.",
+                s_id,
+                delta_degrees,
+                session.video_reader.manual_rotation,
+            )
+            self._window.preview_container.reset_viewport()
+            self._window.transport_panel.set_rotation_degrees(session.video_reader.manual_rotation)
+            self._controller.render_frame_for_session_id(s_id)
+        except Exception as exc:
+            self._window.show_error("Rotate Failed", str(exc))
+
+    @Slot()
+    def on_fit_view_requested(self) -> None:
+        self._window.preview_container.reset_viewport()
+
     @Slot()
     def on_playback_tick(self) -> None:
         """
@@ -256,7 +287,7 @@ class PlaybackHandler(QObject):
         Note:
             Flow:
                 _start_session_playback(s_id)
-                  ├── Tell App to start playback state for session
+                  ├── Tell App to start playback view_state for session
                   ├── Fetch frame interval (milliseconds) from App metadata
                   ├── Start QTimer with calculated interval
                   └──> Update UI status bar with playback info
@@ -265,7 +296,7 @@ class PlaybackHandler(QObject):
                 Notify App that session is starting playback (marks ``is_playing=True``).
                 Calculate ``interval`` from FPS metadata (e.g., 30 fps → 33.33 ms).
                 Start ``_playback_timer`` which triggers ``on_playback_tick()`` every interval.
-                Update status bar to reflect playback state.
+                Update status bar to reflect playback view_state.
         """
         # ====================================================================
         # 1. NOTIFY APP TO START PLAYBACK STATE

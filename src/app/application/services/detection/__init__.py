@@ -1,6 +1,6 @@
-from .export_service import DetectionExportService
-from .import_service import DetectionImportService
-from .layer_service import DetectionLayerService
+from .exporting import DetectionExportService
+from .importing import DetectionImportService
+from .layer import DetectionLayerService
 from .service import DetectionService
 
 __all__ = [

@@ -1,7 +1,26 @@
+[build-system]
+requires = [
+    "setuptools>=68.1.2",
+    "wheel>=0.42.0",
+]
+build-backend = "setuptools.build_meta"
+
 [project]
-name = "Blurzy"
+name = "blurzy"
 version = "0.1.0"
-requires-python = ">=3.14"
+description = "PySide6 desktop app for video detection, tracking, annotation, and subject blurring."
+readme = "README.MD"
+requires-python = ">=3.12"
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Environment :: X11 Applications :: Qt",
+    "Intended Audience :: End Users/Desktop",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Multimedia :: Graphics",
+    "Topic :: Multimedia :: Video",
+]
 dependencies = [
     "loguru",
     "scipy",
@@ -18,13 +37,38 @@ dependencies = [
     "configparser",
     "PySide6",
     "av",
+    "deep-sort-realtime",
 ]
 
-#[pytest]
-#addopts = --color=yes[tool.ruff]
+[project.gui-scripts]
+blurzy = "main:main"
+
+[project.optional-dependencies]
+dist = [
+    "build>=1.5.0",
+    "pyinstaller>=6.22.0",
+]
+
+[project.urls]
+Repository = "https://github.com/CodeRSTech/Blurzy-development"
+
+[tool.setuptools]
+package-dir = { "" = "src" }
+py-modules = ["main"]
+include-package-data = true
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+"app.ui.qt" = ["resources/icons/*.svg"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
 
 # The minimum Python version to target during linting and formatting.
-target-version = "py314"
+[tool.ruff]
+target-version = "py312"
 
 # The standard maximum line length (matching Black's default).
 line-length = 120

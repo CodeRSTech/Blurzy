@@ -360,7 +360,7 @@ Every class should have a docstring explaining its role in the architecture.
 @final
 class Session(QObject):
     """
-    Manages the state and lifecycle of a single video processing session.
+    Manages the view_state and lifecycle of a single video processing session.
     
     Responsibilities:
     - Holds ``SessionState`` (playback, settings, annotations)
@@ -538,7 +538,7 @@ def on_session_created(self, s_id: SessionId) -> None:
     
     **Action:** Refresh the sessions list in the UI and make the new session active.
     
-    **Downstream:** None (leaf node — updates UI state only)
+    **Downstream:** None (leaf node — updates UI view_state only)
     """
     # ====================================================================
     # 1. UPDATE UI
@@ -745,7 +745,7 @@ For **complex `__init__()` methods** with multiple attribute initialization sect
 
 ```python
 def __init__(self, s_id: SessionId) -> None:
-    """Initialize the session with required workers and state."""
+    """Initialize the session with required workers and view_state."""
     super().__init__()
     
     # ┌─ SESSION ID AND DATA STORE ──────────────────────────────────┐
@@ -763,7 +763,7 @@ def __init__(self, s_id: SessionId) -> None:
         raise e
     
     # ├─ SESSION STATE ──────────────────────────────────────────────────────┐
-    # Playback state, settings, and annotations. Initialized with metadata 
+    # Playback view_state, settings, and annotations. Initialized with metadata 
     # from VideoReader (not directly from VideoReader to maintain Clean Architecture).
     self.state = SessionState(self.s_id, self.video_reader.metadata)
     

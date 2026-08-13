@@ -7,7 +7,7 @@ from typing import Protocol, runtime_checkable, TYPE_CHECKING
 if TYPE_CHECKING:
     from app.domain.video.layer import VideoDataLayer
     from app.domain.session.session_id import SessionId
-    from app.application.services.import_mode import ImportMode
+    from app.application.services.helpers.import_mode import ImportMode
 
 
 @runtime_checkable

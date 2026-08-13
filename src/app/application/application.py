@@ -1,26 +1,18 @@
 from __future__ import annotations
 
-from collections.abc import Callable, Iterable
-from typing import Unpack, final, override, TYPE_CHECKING
+from typing import final, override, TYPE_CHECKING
 
 from PySide6.QtCore import QObject
 
-from app.application.managers.session import SessionManager
-from app.application.services import (
-    DetectionExportService,
-    DetectionImportService,
-    DetectionLayerService,
-    DetectionService,
-    ExportService,
-    ImportMode,
-    SessionService,
-    TrackingExportService,
-    TrackingImportService,
-    TrackingService,
-    TrackingLayerService,
-    UnifiedLayerService,
-)
-from app.application.services._layer_coercion import ensure_import_mode, ensure_layer_enum
+from app.application.managers import SessionManager
+from app.application import services
+from app.application.services.helpers.layer_coercion import ensure_import_mode, ensure_layer_enum
+if TYPE_CHECKING:
+    from collections.abc import Callable, Iterable
+    from typing import Unpack
+    from app.application.services.project_service import ProjectLoadReport
+    from app.domain.project import ProjectDirectories, ProjectDocument
+
 
 if TYPE_CHECKING:
     from app.domain import BBoxXYXYTuple, VideoDataLayer, VideoDataLayerGroup, SessionId, Direction, BBoxViewModel, \
@@ -38,7 +30,7 @@ class Application(QObject):
         - Owns all service instances (Detection, Tracking, Export, Session, Layer management).
         - Delegates all calls to the appropriate service without adding business logic.
         - Provides a single entry point for the UI Controller to interact with the application.
-        - Manages the ``SessionManager`` for session lifecycle and state tracking.
+        - Manages the ``SessionManager`` for session lifecycle and view_state tracking.
 
     Note:
         Design pattern:
@@ -64,13 +56,14 @@ class Application(QObject):
         # ====================================================================
         # 2. INITIALIZE ALL SERVICES
         # ====================================================================
-        self.detection_svc = DetectionService(self)
-        self.detection_layer_svc = DetectionLayerService(self)
-        self.tracking_svc = TrackingService(self)
-        self.tracking_layer_svc = TrackingLayerService(self)
-        self.export_svc = ExportService(self)
-        self.session_svc = SessionService(self)
-        self.unified_layer_svc = UnifiedLayerService(self)
+        self.detection_svc = services.DetectionService(self)
+        self.detection_layer_svc = services.DetectionLayerService(self)
+        self.tracking_svc = services.TrackingService(self)
+        self.tracking_layer_svc = services.TrackingLayerService(self)
+        self.export_svc = services.ExportService(self)
+        self.project_svc = services.ProjectService(self)
+        self.session_svc = services.SessionService(self)
+        self.unified_layer_svc = services.UnifiedLayerService(self)
 
         # ====================================================================
         # 3. INITIALIZE IMPORT / EXPORT SERVICES
@@ -79,17 +72,17 @@ class Application(QObject):
         # Tracking  import/export operates on layers C and D.
         # Both pairs share the same wire format (_layer_io) so cross-layer
         # import (e.g. A → C) is also possible via the dialog.
-        self.detection_import_svc = DetectionImportService(self)
-        self.detection_export_svc = DetectionExportService(self)
-        self.tracking_import_svc = TrackingImportService(self)
-        self.tracking_export_svc = TrackingExportService(self)
+        self.detection_import_svc = services.DetectionImportService(self)
+        self.detection_export_svc = services.DetectionExportService(self)
+        self.tracking_import_svc = services.TrackingImportService(self)
+        self.tracking_export_svc = services.TrackingExportService(self)
 
         logger.debug("App initialized.")
 
     @override
     def __repr__(self) -> str:
         """Return a concise representation of the App instance."""
-        return "App()"
+        return "Application()"
 
     # ══════════════════════════════════════════════════════════════════════════════════════════════════════════════════
     #                            PROPERTIES
@@ -115,6 +108,14 @@ class Application(QObject):
         """Iterate over all ``SessionId`` instances currently managed by the application."""
         return self.sm.all_session_ids
 
+    @property
+    def current_project_path(self) -> str:
+        return self.project_svc.current_project_path
+
+    @property
+    def project_directories(self) -> ProjectDirectories:
+        return self.project_svc.directories
+
     # ══════════════════════════════════════════════════════════════════════════════════════════════════════════════════
     #                       SESSION MANAGER DELEGATION METHODS
     # ══════════════════════════════════════════════════════════════════════════════════════════════════════════════════
@@ -123,6 +124,30 @@ class Application(QObject):
     def close(self) -> None:
         """Close all active sessions and shut down the ``SessionManager``."""
         self.sm.close_all()
+
+    def clear_project(self) -> None:
+        self.project_svc.clear_project()
+
+    def save_project(self, file_path: str) -> ProjectDocument:
+        return self.project_svc.save_project(file_path)
+
+    def load_project(self, file_path: str) -> ProjectLoadReport:
+        return self.project_svc.load_project(file_path)
+
+    def update_project_directories(
+        self,
+        *,
+        last_import_directory: str | None = None,
+        last_export_directory: str | None = None,
+        export_prefix: str | None = None,
+        export_suffix: str | None = None,
+    ) -> None:
+        self.project_svc.update_directories(
+            last_import_directory=last_import_directory,
+            last_export_directory=last_export_directory,
+            export_prefix=export_prefix,
+            export_suffix=export_suffix,
+        )
 
     # Used by SessionService
     def open_video_from_path(self, path: str) -> None:
@@ -184,7 +209,7 @@ class Application(QObject):
         self.sm.get_previous_frame_for_session_id(s_id)
 
     def set_session_state_is_playing(self, s_id: SessionId, is_playing: bool) -> None:
-        """Set the playback state (playing/paused) for the session ``s_id``."""
+        """Set the playback view_state (playing/paused) for the session ``s_id``."""
         self.sm.get_session_state_by_id(s_id).playback.is_playing = is_playing
 
     # Used by PlaybackHandler and SessionHandler
@@ -249,23 +274,23 @@ class Application(QObject):
             self,
             s_id: SessionId,
             layer_name: VideoDataLayer,
-            item_key: str,
+            box_key: str,
             label: str,
             bbox_xyxy: BBoxXYXYTuple,
     ) -> None:
         """Update a bounding detection's label and coordinates in the specified ``layer_name``."""
-        self.unified_layer_svc.update_current_frame_box_xyxy(s_id, layer_name, item_key, label, bbox_xyxy)
+        self.unified_layer_svc.update_current_frame_box_xyxy(s_id, layer_name, box_key, label, bbox_xyxy)
 
     # ══════════════════════════════════════════════════════════════════════════════════════════════════════════════════
     #               UNIFIED LAYER SERVICE DELEGATION METHODS
     # ══════════════════════════════════════════════════════════════════════════════════════════════════════════════════
 
     # Used by AnnotationHandler
-    def change_xyxy_for_boxes_at_current_idx_by_keys_and_dxdy(self, s_id: SessionId, layer_name: VideoDataLayer,
-                                                              item_keys: Iterable[str], dx: int, dy: int) -> int:
+    def change_current_layer_boxes_by_keys_and_dxdy(self, s_id: SessionId, layer_name: VideoDataLayer,
+                                                    box_keys: Iterable[str], dx: int, dy: int) -> int:
         """Translate bounding boxes in the specified ``layer_name`` by ``dx`` and ``dy`` pixels; return count moved."""
         return self.unified_layer_svc.change_xyxy_for_boxes_at_current_idx_by_keys_and_dxdy(
-            s_id, layer_name, item_keys, dx, dy
+            s_id, layer_name, box_keys, dx, dy
         )
 
     # Used by AnnotationHandler
@@ -283,12 +308,37 @@ class Application(QObject):
 
     # Used by AnnotationHandler
     def delete_boxes_by_keys_and_tab_id_for_current_frame_by_session_id(
-            self, s_id: SessionId, keys: list[str], tab: VideoDataLayerGroup
+            self, s_id: SessionId, box_keys: list[str], tab: VideoDataLayerGroup
     ):
         """Delete bounding boxes identified by ``keys`` from the current frame in the ``tab`` layer."""
         self.unified_layer_svc.delete_boxes_by_keys_and_tab_id_for_current_frame_by_session_id(
-            s_id, keys, tab
+            s_id, box_keys, tab
         )
+
+    def add_manual_boxes_to_current_frame(
+            self,
+            s_id: SessionId,
+            tab: VideoDataLayerGroup,
+            boxes: Iterable[tuple[str, BBoxXYXYTuple, str]],
+    ) -> list[str]:
+        """Add clipboard boxes as new manual boxes to the active editable layer."""
+        return self.unified_layer_svc.add_manual_boxes_to_current_frame(s_id, tab, boxes)
+
+    def replace_tab_frame_boxes(
+            self,
+            s_id: SessionId,
+            tab: VideoDataLayerGroup,
+            frame_index: int,
+            boxes: list[BBoxViewModel],
+    ) -> None:
+        """Restore an editable tab frame from a mutation-history snapshot."""
+        self.unified_layer_svc.replace_tab_frame_boxes(s_id, tab, frame_index, boxes)
+
+    def get_tab_frame_boxes_at_frame_index(
+            self, s_id: SessionId, tab: VideoDataLayerGroup, frame_index: int
+    ) -> list[BBoxViewModel]:
+        """Return cloned editable-tab boxes for an explicit frame."""
+        return self.unified_layer_svc.get_tab_frame_boxes_at_frame_index(s_id, tab, frame_index)
 
     # Used by UIHandler
     def get_tab_frame_boxes_for_session_id(
@@ -366,7 +416,7 @@ class Application(QObject):
 
     # Used by TrackingHandler
     def sync_tracking_cache(self, s_id: SessionId) -> None:
-        """Synchronize the tracking cache with the current state for ``s_id``."""
+        """Synchronize the tracking cache with the current view_state for ``s_id``."""
         self.tracking_svc.sync_tracking_cache(s_id)
 
     # ══════════════════════════════════════════════════════════════════════════════════════════════════════════════════
@@ -439,7 +489,7 @@ class Application(QObject):
         s_id: SessionId,
         layer: VideoDataLayer | str,
         file_path: str,
-        mode: ImportMode | str,
+        mode: services.ImportMode | str,
     ) -> int:
         """
         Import bounding-box data from ``file_path`` into ``layer`` for ``s_id``.
@@ -495,4 +545,3 @@ class Application(QObject):
         if layer in (_L.A, _L.B):
             return self.detection_export_svc.export_layer(s_id, layer, file_path)
         return self.tracking_export_svc.export_layer(s_id, layer, file_path)
-
