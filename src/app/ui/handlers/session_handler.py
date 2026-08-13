@@ -5,7 +5,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 
-from typing import final, TYPE_CHECKING, override
+from typing import final, override
 
 from PySide6.QtCore import Slot, Qt, QObject
 
