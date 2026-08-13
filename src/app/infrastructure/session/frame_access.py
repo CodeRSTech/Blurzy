@@ -68,7 +68,8 @@ class SessionFrameAccessor:
             safe_idx == session_state.playback.current_frame_index
             and session_state.current_frame_data is None
         )
-        if not is_sequential_underrun or is_current_frame_cache_miss:
+        should_request_seek = (not is_sequential_underrun) or is_current_frame_cache_miss
+        if should_request_seek:
             decode_worker.request_seek(safe_idx)
 
         max_attempts = max(1, int(self._timeout_seconds / self._poll_interval_seconds))
