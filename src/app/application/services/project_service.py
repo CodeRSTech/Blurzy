@@ -122,6 +122,7 @@ class ProjectService:
                 session.data.load_project_payload(entry.layers)
                 restored_session_paths.add(entry.video_path)
             except Exception as exc:
+                self._app.sm.discard_session(SessionId(entry.video_path))
                 skipped_session_paths.append(entry.video_path)
                 logger.warning("Skipping project session '{}' after restore failure: {}", entry.video_path, exc)
 

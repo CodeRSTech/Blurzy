@@ -119,6 +119,15 @@ class SessionManager:
             raise KeyError(f"Unknown session id: {s_id}, available: {list(self._sessions.keys())}")
         return session
 
+    def discard_session(self, s_id: SessionId) -> None:
+        session = self._sessions.pop(s_id, None)
+        if session is None:
+            return
+        logger.warning("Discarding session '{}'", s_id)
+        session.close()
+        if self._active_s_id == s_id:
+            self._active_s_id = SessionId("")
+
     def get_session_state_by_id(self, s_id: SessionId) -> SessionState:
         return self.get_session_by_id(s_id).state
 

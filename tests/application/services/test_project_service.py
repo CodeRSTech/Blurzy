@@ -59,6 +59,9 @@ class _FakeSession:
     state: object
     data: SessionDataStore
 
+    def close(self) -> None:
+        pass
+
 
 class _FakeSessionManager:
     def __init__(self, sessions: list[_FakeSession] | None = None) -> None:
@@ -73,6 +76,11 @@ class _FakeSessionManager:
 
     def add(self, session: _FakeSession) -> None:
         self._sessions[session.s_id] = session
+
+    def discard_session(self, s_id: SessionId) -> None:
+        session = self._sessions.pop(s_id, None)
+        if session is not None:
+            session.close()
 
 
 class _FakeApp:
@@ -206,3 +214,30 @@ class TestProjectService:
         assert report.restored_sessions == 1
         assert report.skipped_session_paths == []
         assert restored_session.state.settings.detection_model_name == "demo"
+
+    def test_load_discards_session_when_restore_fails(self, tmp_path, monkeypatch) -> None:
+        app = _FakeApp()
+        service = ProjectService(app)
+        video_path = tmp_path / "video.mp4"
+        video_path.write_text("stub", encoding="utf-8")
+        project_path = tmp_path / "broken.blurzy"
+        project_path.write_text(
+            (
+                '{"format_version":"1.0","active_session_path":"","directories":{},'
+                '"sessions":[{"video_path":"'
+                f'{video_path}'
+                '","current_frame_index":0,"next_annotation_id":1,"settings":{},"layers":{"b":{"0":[{"bad":true}]}}}]}'
+            ),
+            encoding="utf-8",
+        )
+        monkeypatch.setattr(
+            SessionDataStore,
+            "load_project_payload",
+            lambda self, payload: (_ for _ in ()).throw(RuntimeError("broken payload")),
+        )
+
+        report = service.load_project(str(project_path))
+
+        assert report.restored_sessions == 0
+        assert report.skipped_session_paths == [str(video_path)]
+        assert list(app.sm.all_sessions) == []
