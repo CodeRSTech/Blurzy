@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import importlib.util
+from pathlib import Path
 import sys
 from dataclasses import dataclass
 from types import SimpleNamespace
@@ -21,10 +22,7 @@ if _qtcore_module is not None:
 
 from app.shared.app_preferences import AppPreferences
 
-_MODULE_PATH = (
-    "/home/runner/work/Blurzy-development/Blurzy-development/"
-    "src/app/ui/handlers/project_handler.py"
-)
+_MODULE_PATH = Path(__file__).resolve().parents[3] / "src" / "app" / "ui" / "handlers" / "project_handler.py"
 _spec = importlib.util.spec_from_file_location("project_handler_under_test", _MODULE_PATH)
 assert _spec is not None and _spec.loader is not None
 project_handler_module = importlib.util.module_from_spec(_spec)

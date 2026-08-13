@@ -10,6 +10,7 @@ from app.application.services.helpers.layer_coercion import ensure_import_mode, 
 if TYPE_CHECKING:
     from collections.abc import Callable, Iterable
     from typing import Unpack
+    from app.domain.project import ProjectDirectories
 
 
 if TYPE_CHECKING:
@@ -111,7 +112,7 @@ class Application(QObject):
         return self.project_svc.current_project_path
 
     @property
-    def project_directories(self):
+    def project_directories(self) -> ProjectDirectories:
         return self.project_svc.directories
 
     # ══════════════════════════════════════════════════════════════════════════════════════════════════════════════════

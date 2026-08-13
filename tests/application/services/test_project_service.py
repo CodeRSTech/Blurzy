@@ -2,11 +2,12 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 import importlib
+from pathlib import Path
 import sys
 import types
 from types import SimpleNamespace
 
-_SRC_ROOT = "/home/runner/work/Blurzy-development/Blurzy-development/src/app"
+_SRC_ROOT = str(Path(__file__).resolve().parents[3] / "src" / "app")
 
 
 def _package(name: str, path: str) -> types.ModuleType:
