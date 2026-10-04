@@ -1,25 +1,2 @@
-# Data Handling
-loguru
-scipy
-numpy
-opencv-python
-Pillow
-
-# Deep Learning Models
-ultralytics
-torch
-mtcnn
-facenet-pytorch
-
-# Configuration and Utilities
-pyyaml
-torchvision
-torch-utils
-pandas
-configparser
-PySide6
-av
-
-# Testing
-pytest-qt
-deep-sort-realtime
+# Runtime dependencies are maintained in pyproject.toml.
+-e .
