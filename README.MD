@@ -1,209 +1,95 @@
 # Blurzy
 
-> Blurzy is a PySide6 desktop app for video detection, tracking, annotation, and exporting video with blurred subjects.
+Blurzy is an early-stage desktop video application for detecting and tracking
+subjects, reviewing and editing annotations, and exporting video with selected
+subjects blurred. It brings those steps into one PySide6 workflow, with
+background workers for long-running detection, tracking, and export tasks.
 
----
-## 📚 Overview
+The project grew through hands-on prototyping: its layered design separates
+video/ML integrations from application workflows and the desktop interface, so
+experiments can be refined without putting all of that complexity in the UI.
 
-* 📖 **[User Documentation](https://github.com/your-org/your-repo/wiki)** — Getting started guides and API references.
-* 🛠️ **[Developer Guide](CONTRIBUTING.md)** — Set up your local environment and submission guidelines.
-* 📋 **[Changelog](CHANGELOG.md)** — Recent updates and release history.
+## What it can do
 
----
-### Tests 📠  
+- Open and review video, with playback and frame-level controls.
+- Run detection with supported model providers and track detections.
+- Review and edit bounding-box annotations.
+- Import and export annotation data, and export blurred video.
+- Keep long-running work off the UI thread and surface progress in the app.
 
-All tests pass locally.
----
+Blurzy is actively evolving. Model availability depends on the installed
+providers and their hardware/runtime support; the project does not currently
+claim a stable release or a model-independent detection experience.
 
-## 🎯 Documentation Feature Backlog
+## Get started
 
-We treat documentation as a first-class feature. Below is our active backlog for documentation improvements, new guides, and structural updates.
-
-> **Status Key:**
-> - 🟢 **Completed** — Live in the repo/wiki
-> - 🟡 **In Progress** — Currently being worked on
-> - ⚪ **Backlog** — Planned, open for contributions
-> - 🔴 **Blocked** — On hold pending code changes or clarification
-
-### 🚀 Upcoming & In-Progress
-
-| Status | Feature / Document Topic                                                | Priority | Rationale                                 | Issue / PR |
-|:------:|:------------------------------------------------------------------------|:--------:|:------------------------------------------|:----------:|
-|   🟢   | **Implement Export feature**                                            |   High   | Makes app _complete_ to a certain extent  | Unassigned |
-|   🟢   | **Import/Export detection results**                                     |   High   | Bypass Detection worker overhead          | Unassigned |
-|   ⚪   | **Define constants at one place**                                       |  Medium  | Improve maintainability and reduce errors | Unassigned |
-|   ⚪   | **Delegate creation of view models to a separate service**              |  Medium  | Make code independent of view models      | Unassigned |
-|   ⚪   | **Audit/Split `app.ui.qt.widgets.layer_bbox`**                          |  Medium  | Improve maintainability and reduce errors | Unassigned |
-|   🟡   | **Audit/Split `app.ui.infastructure.session.session` responsibilities** |   Low    | Improve code organization and clarity     | Unassigned |
-|   ⚪   | **SETTINGS window (default model, use gpu, etc.)**                      |   Low    | Helps track progress and contributions    | Unassigned |
-
-## 📋 Feature Ideas & Wishlist
-
-* [x] Phase out using references to `Application` in app services with `ApplicationAdapter`
-* [x] Optimize `src.app.infrastructure` imports via `__init__.py` to reduce circular dependencies
-* [ ] Refine the UI and potentially UX
-* [ ] Use icons and menu bar in UI
-* [ ] Add another dropdown just above "Model", called "Provider", which has "Torch models", "YOLO models" and "MTCNN Models".
-* [ ] Launch app in full screen mode by default, with a toggle to switch to windowed mode.
----
-
-## ⚡ Quickstart
-
-### Install dependencies
+Blurzy requires Python 3.12 or newer. Create a virtual environment, then
+install the package and development tools:
 
 ```bash
-pip install -r requirements.txt
+python -m venv .venv
 ```
 
-### ▶️ Run
+Activate the environment, then run:
 
 ```bash
-python src/main.py
-```
-
-### 📦 Install as an app
-
-```bash
-pip install .
+python -m pip install --upgrade pip
+python -m pip install -e ".[dev]"
 blurzy
 ```
 
-### 🚚 Build distributable artifacts
+The editable install provides the `blurzy` GUI command as well. On Linux, run
+the app from a graphical desktop session. PyTorch and model-provider support
+can have platform-specific requirements; consult the relevant provider's
+installation guidance if its models are unavailable.
 
-Build an installable wheel:
+## Development
+
+Run the automated test suite from the repository root:
 
 ```bash
-python -m pip install .[dist]
+python -m pytest -q
+```
+
+The default suite is intended for local development and CI; it does not require
+downloading model weights. Some video/GUI integration tests require Qt and
+appropriate test media. Run a focused subset while iterating, for example:
+
+```bash
+python -m pytest tests/domain tests/shared -q
+```
+
+`pyproject.toml` is the canonical source for package dependencies and the
+`dev` extra. `requirements.txt` remains available for existing workflows and
+installs the project from that metadata.
+
+For a distributable build:
+
+```bash
+python -m pip install -e ".[dist]"
 python -m build
 ```
 
-Build a desktop bundle with PyInstaller:
+## Architecture
 
-```bash
-pyinstaller Blurzy.spec
-```
+The source follows four broad layers:
 
-The PyInstaller output is written to `dist/Blurzy/`.
+| Layer | Responsibility |
+| --- | --- |
+| `src/app/domain` | Core video, session, detection, tracking, and export types |
+| `src/app/application` | Workflows and services coordinating domain operations |
+| `src/app/infrastructure` | Video, model, tracking, and export integrations/workers |
+| `src/app/ui` | PySide6 window, widgets, handlers, and UI controller |
 
----
+A typical detection flow starts in a UI handler, delegates through the
+application facade and detection service, then runs in an infrastructure
+worker. Worker signals carry progress and results back to the UI. See
+[`docs/architecture.md`](docs/architecture.md) for a guided code map and
+[`tests/README.md`](tests/README.md) for the test layout.
 
-## 🔄 Startup logging configuration
+## Contributing
 
-Blurzy now validates its startup logging configuration before importing the UI stack.
-
-- `BLURZY_LOG_CONSOLE_LEVEL` — console sink level (`TRACE`, `DEBUG`, `INFO`, `SUCCESS`, `WARNING`, `ERROR`, `CRITICAL`)
-- `BLURZY_LOG_FILE_LEVEL` — file sink level (same allowed values)
-- `BLURZY_LOG_FILE_PATH` — writable log file path (default: `logs/app.log`)
-- `BLURZY_LOG_ENABLED_AREAS` — optional comma-separated logger area allow-list
-
-If one of these values is invalid, startup now fails fast with an explicit error message instead of silently falling back.
-
----
-
-## 🧮 Architecture Overview
-
-Code is organized into four layers:
-
-- `src/app/domain`: core types, session state, view models
-- `src/app/application`: `Application` facade and services (detection/tracking/export/session)
-- `src/app/infrastructure`: workers and external integrations (video decode, ML, export)
-- `src/app/ui`: Qt windows, containers, handlers, and controller
-
-Main runtime flow:
-
-1. UI action in `Window` / right panel
-2. Handler in `src/app/ui/handlers/*`
-3. `Application` delegation call
-4. Service + worker execution
-5. Signals back to UI for progress/state updates
-
----
-
-## Exception Handling Policy
-
-Use a **hybrid** exception model.
-
-- Keep exceptions in `src/app/shared/exceptions.py` when they are cross-layer contracts (raised in one layer, handled in another).
-- Keep exceptions local to a module when they are implementation details not meant to cross module boundaries.
-- Use custom exceptions for domain/business failures; keep built-ins (`ValueError`, `TypeError`, `FileNotFoundError`) for input-contract and direct system errors.
-
-Rules of thumb:
-
-1. If UI/Application code needs to distinguish a failure type, define a custom exception.
-2. If callers only need “invalid argument/type”, built-ins are sufficient.
-3. Catch specific custom exceptions at boundaries first, then fallback generic handling.
-
-Example pattern:
-
-- Infrastructure raises `ZeroStreamsInVideoException` / `EndOfVideoStreamException`
-- Application/UI catches those explicitly and applies predictable behavior
-- No broad silent swallowing in lower layers
-
----
-
-## Key Workflows
-
-### 1) Detect
-
-1. Open one or more videos.
-2. Select a detection model in the right panel.
-3. Run:
-   - **Detect Current Frame** for one frame
-   - **Start Background Detection** for full-session processing
-4. Watch detection progress in the Detection section progress bar.
-
-### 2) Track
-
-1. Select source layer + tracking strategy.
-2. Start tracking from the right panel.
-3. Tracking shows an in-progress state and completes with a final progress update.
-
-### 3) Export
-
-- **Single export:** uses frame-level export progress.
-- **Batch export (Export All):**
-  - per-session progress (current session export)
-  - overall progress (sessions completed / total)
-
-## UI Progress + Loading UX
-
-- Detection, tracking, and export all surface progress in UI.
-- Model loading uses an inline spinner indicator and runs in a worker thread.
-- Progress/loading states are reset on success, failure, and cancellation paths.
-
----
-
-## Troubleshooting
-
-### `ModuleNotFoundError` for PySide6 / av / torch
-
-Reinstall dependencies in the active virtualenv:
-
-```bash
-pip install -r requirements.txt
-```
-
-### Tests not running locally
-
-This repo uses `pytest`-style tests under `tests/`, but several tests expect local media paths and optional environment setup.
-Adjust test input paths and install test dependencies before running.
-
-Quick checklist:
-
-1. Install test tools: `pip install pytest pytest-qt`
-2. Ensure Qt dependency is installed (`PySide6`)
-3. Run from repo root with module path:
-   - `PYTHONPATH=src python -m pytest -q`
-4. Update hardcoded local media paths in tests to files available on your machine
-
----
-
-## 💡 How to Propose a Docs Feature
-
-Notice a gap in our docs or have an idea for a guide? We’d love your input!
-
-1. Check the [Documentation Backlog](#-documentation-feature-backlog) above to see if it's already planned.
-2. Open a new issue using our **[Documentation Proposal Template](https://github.com/your-org/your-repo/issues/new?template=doc_proposal.md)**.
-3. To take on an unassigned item from the table above, comment directly on the issue or open a PR referencing the item!
-
----
+Start with the development setup above, run the tests relevant to your change,
+and include a concise description of user-visible behavior in your pull
+request. The focused notes in [`docs/engineering`](docs/engineering/) describe
+the existing documentation and exception-handling conventions.

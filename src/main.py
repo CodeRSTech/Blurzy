@@ -66,24 +66,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-
-
-# [NOTE] [URGENT] [30-07-2024: 11 PM]
-# All class must be based on base classes (such as DetectionResult based on BaseBox / Box)
-# On top, there is `app`, `window` and instantiation of `UIController`
-#
-#   UI Controller is the main character, it also holds refs to app, window and all the handlers
-#   So do the Handlers
-#
-# **Handlers** work with their refs to `_app`, `_window` and `_controller` to do their job
-#
-# Each of the handlers should have a dedicated interface/protocol/adapter for app, window and controller
-#
-# for example:
-# 'src/app/ui/handlers/detection_handler.py'
-# has refs to all three (app, window and controller)
-# could use:
-# `AppDetectionHandlerInterface`, 'AppDetectionHandlerAdapter`, 'WindowDetectionHandlerInterface', 'WindowDetectionHandlerAdapter', 'ControllerDetectionHandlerInterface', 'ControllerDetectionHandlerAdapter`
-#
-# [UPDATE] [31-07-2024: 12 AM]
-#

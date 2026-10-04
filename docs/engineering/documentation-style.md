@@ -1,8 +1,8 @@
-# EazyBlur Documentation Style Guide
+# Blurzy Documentation Style Guide
 
 ## Overview
 
-This document defines the **modern documentation styling** used throughout EazyBlur, with emphasis on consistency, clarity, and developer experience. The codebase is transitioning to this new standard incrementally, starting with fresh files like `session.py`.
+This document defines the **modern documentation styling** used throughout Blurzy, with emphasis on consistency, clarity, and developer experience. The codebase is transitioning to this standard incrementally.
 
 ---
 
@@ -853,7 +853,7 @@ Identify methods without docstrings or with incomplete documentation.
 ### Step 2: Generate Docstrings
 Ask Copilot:
 ```
-Generate one-liner docstrings for these methods using the EazyBlur style guide:
+Generate one-liner docstrings for these methods using the Blurzy style guide:
 - Format variables in backticks
 - Use bold/italic for emphasis
 - Keep it to one line
@@ -887,7 +887,7 @@ Here's the file: [paste code]
 ### Step 5: Review and Iterate
 Ask Copilot:
 ```
-Review this documentation against the EazyBlur style guide. 
+Review this documentation against the Blurzy style guide.
 Are there any inconsistencies or areas that could be clearer?
 Suggest improvements.
 ```
@@ -925,7 +925,7 @@ Suggest improvements.
 
 ## Summary
 
-The **modern EazyBlur documentation style** emphasizes:
+The **modern Blurzy documentation style** emphasizes:
 
 1. ✅ **Clarity** — One-liner docstrings with backtick-formatted variables
 2. ✅ **Structure** — Numbered section blocks (`# 1. STEP NAME`) for multi-step methods

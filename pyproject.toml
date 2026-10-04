@@ -31,6 +31,7 @@ dependencies = [
     "torch",
     "torchvision",
     "mtcnn",
+    "facenet-pytorch",
     "pyyaml",
     "torch-utils",
     "pandas",
@@ -44,6 +45,10 @@ dependencies = [
 blurzy = "main:main"
 
 [project.optional-dependencies]
+dev = [
+    "pytest",
+    "pytest-qt",
+]
 dist = [
     "build>=1.5.0",
     "pyinstaller>=6.22.0",

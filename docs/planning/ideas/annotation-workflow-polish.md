@@ -30,4 +30,4 @@ If any part of that flow is inconsistent, the task becomes slow and error-prone.
 
 ## Why it matters for Blurzy
 
-Your handcrafted selection notes already show this area as a major product seam. That makes it a must-finish component, not just a nice extra.
+Reliable selection and editing are central to the annotation workflow, so this is a useful area for future product work.
