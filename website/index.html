@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Blurzy: a desktop workflow for video detection, tracking, annotation, and subject blurring.">
+    <title>Blurzy — video review and blurring</title>
+    <style>
+      :root { color-scheme: dark; }
+      body {
+        margin: 0;
+        background: #222;
+        color: #fff;
+        font: 1.1rem/1.7 system-ui, sans-serif;
+      }
+      main { max-width: 58rem; margin: 0 auto; padding: 4rem 1.5rem; }
+      h1 { font-size: clamp(2.5rem, 8vw, 4.5rem); margin-bottom: 0; }
+      h2 { margin-top: 2.5rem; }
+      a { color: #00d9ae; }
+      a:hover { text-decoration-thickness: 3px; }
+      a:focus-visible { outline: 3px solid #fff; outline-offset: 5px; }
+      nav { display: flex; flex-wrap: wrap; gap: 1rem; margin: 2rem 0; }
+      nav a { padding: .6rem 1rem; border: 1px solid #00d9ae; border-radius: .3rem; }
+      .intro { font-size: 1.4rem; }
+      footer { margin-top: 3rem; color: #ccc; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header>
+        <h1>Blurzy</h1>
+        <p class="intro">Detect. Track. Review. Blur.</p>
+        <p>A PySide6 desktop workflow for detecting and tracking subjects in video,
+          editing annotations, and exporting video with selected subjects blurred.</p>
+      </header>
+      <nav aria-label="Project links">
+        <a href="docs/">Read the documentation</a>
+        <a href="docs/getting-started/">Get started</a>
+        <a href="https://github.com/CodeRSTech/Blurzy-development">View source on GitHub</a>
+      </nav>
+      <section aria-labelledby="features">
+        <h2 id="features">One workflow, from video to export</h2>
+        <ul>
+          <li>Review video with playback and frame-level controls.</li>
+          <li>Detect and track subjects using supported model providers.</li>
+          <li>Edit bounding boxes and import or export annotation data.</li>
+          <li>Export blurred video while background workers report progress.</li>
+        </ul>
+      </section>
+      <section aria-labelledby="status">
+        <h2 id="status">Built through hands-on prototyping</h2>
+        <p>Blurzy is an early-stage project, not a stable release. Model availability
+          depends on provider installations, weights, and hardware support.
+          Always review annotations and exported video for missed subjects.</p>
+        <p>Explore the <a href="docs/architecture/">architecture</a> or
+          <a href="docs/development/">development guide</a> to contribute.</p>
+      </section>
+      <footer>Python 3.12+ · PySide6 · Video and ML integrations</footer>
+    </main>
+  </body>
+</html>

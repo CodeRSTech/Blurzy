@@ -21,6 +21,24 @@ Blurzy is actively evolving. Model availability depends on the installed
 providers and their hardware/runtime support; the project does not currently
 claim a stable release or a model-independent detection experience.
 
+## Website and documentation
+
+- [Project homepage](https://CodeRSTech.github.io/Blurzy-development/)
+- [Documentation](https://CodeRSTech.github.io/Blurzy-development/docs/)
+
+The documentation is generated with MkDocs and the Darkly theme. To preview it:
+
+```bash
+python -m pip install -r requirements-docs.txt
+python -m mkdocs serve
+```
+
+The Pages workflow checks documentation builds on pull requests and deploys
+the homepage and documentation on `master`. Select **GitHub Actions** under
+**Settings → Pages → Build and deployment** to enable publication. See the
+[documentation development guide](docs/development.md) for the complete site
+build and preview commands.
+
 ## Get started
 
 Blurzy requires Python 3.12 or newer. Create a virtual environment, then
