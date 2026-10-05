@@ -55,7 +55,7 @@ dist = [
 ]
 
 [project.urls]
-Repository = "https://github.com/CodeRSTech/Blurzy-development"
+Repository = "https://github.com/CodeRSTech/Blurzy"
 
 [tool.setuptools]
 package-dir = { "" = "src" }
