@@ -32,6 +32,7 @@ tests/integration/pipeline/by_me/test_frames/outputs/
 dist/
 build/
 *.egg-info/
+site/
 
 # Logs
 logs/

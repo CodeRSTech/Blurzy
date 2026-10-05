@@ -1,0 +1,26 @@
+site_name: Blurzy documentation
+site_description: Setup, workflows, and architecture for the Blurzy desktop video application.
+site_url: https://CodeRSTech.github.io/Blurzy-development/docs/
+repo_url: https://github.com/CodeRSTech/Blurzy-development
+edit_uri: edit/master/docs/
+docs_dir: docs
+site_dir: site/docs
+
+theme:
+  name: darkly
+
+nav:
+  - Overview: index.md
+  - Getting started: getting-started.md
+  - Development: development.md
+  - Architecture: architecture.md
+  - Engineering:
+      - Documentation style: engineering/documentation-style.md
+      - Defensive guards: engineering/defensive-guards.md
+  - Planning (proposals):
+      - About these notes: planning/README.md
+      - Annotation workflow: planning/ideas/annotation-workflow-polish.md
+      - Model providers: planning/ideas/model-provider-management.md
+      - Project save and recovery: planning/ideas/project-save-and-recovery.md
+      - Settings and preferences: planning/ideas/settings-and-preferences.md
+      - Video transforms: planning/ideas/video-transform-controls.md
