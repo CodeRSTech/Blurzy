@@ -1,7 +1,7 @@
 site_name: Blurzy documentation
 site_description: Setup, workflows, and architecture for the Blurzy desktop video application.
-site_url: https://CodeRSTech.github.io/Blurzy-development/docs/
-repo_url: https://github.com/CodeRSTech/Blurzy-development
+site_url: https://CodeRSTech.github.io/Blurzy/docs/
+repo_url: https://github.com/CodeRSTech/Blurzy
 edit_uri: edit/master/docs/
 docs_dir: docs
 site_dir: site/docs
