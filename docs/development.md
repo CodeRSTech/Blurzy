@@ -61,6 +61,10 @@ python -m http.server --directory site 8000
 Visit `http://localhost:8000/` for the homepage and
 `http://localhost:8000/docs/` for the documentation.
 
+Architecture diagrams use fenced Mermaid blocks. MkDocs renders them with the
+Mermaid2 plugin and loads the pinned Mermaid JavaScript module from unpkg in
+the browser; the diagram source remains in the Markdown files.
+
 The published layout is:
 
 - `https://CodeRSTech.github.io/Blurzy-development/`: project homepage,

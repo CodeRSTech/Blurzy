@@ -123,7 +123,7 @@ boxes that survive longer.
 
 ### 1. Adaptive detection and scene-cut handling
 
-**In plain terms:** Give the tracker a fresh look at the video when it needs
+> Give the tracker a fresh look at the video when it needs
 one, rather than relying on old boxes or doing equally expensive work on every
 frame. Treat a camera cut as a new scene, not as sudden movement by the same
 people.
@@ -146,7 +146,7 @@ should not be the only scheduling signal.
 
 ### 2. Smoother boxes, bounded gap filling, and coverage margins
 
-**In plain terms:** Reduce shaking, bridge brief missed detections, and leave
+> Reduce shaking, bridge brief missed detections, and leave
 some extra space around the subject. Keeping a box alive is useful only if it
 continues to cover the right area.
 
@@ -168,7 +168,7 @@ be flagged for review rather than silently filled.
 
 ### 3. Appearance-aware tracking and identity correction
 
-**In plain terms:** Recognize a subject using visual clues as well as where
+> Recognize a subject using visual clues as well as where
 their box is. This could help keep two people from exchanging track IDs when
 they cross paths.
 
@@ -191,7 +191,7 @@ reviewable, especially when some subjects are excluded from redaction.
 
 ### 4. A review timeline and uncertainty queue
 
-**In plain terms:** Show the user where to look instead of asking them to
+> Show the user where to look instead of asking them to
 inspect every frame with equal attention.
 
 **Example usage:** After processing a ten-minute video, the timeline highlights
@@ -212,7 +212,7 @@ person may produce no track anomaly at all.
 
 ### 5. Track-level editing and keyframe propagation
 
-**In plain terms:** Correct a subject once across a stretch of video instead
+> Correct a subject once across a stretch of video instead
 of drawing the same box repeatedly. A keyframe is a frame where the user
 explicitly sets the desired region; intermediate frames are estimated.
 
@@ -233,7 +233,7 @@ track from redaction should be deliberate and easy to audit.
 
 ### 6. More masking effects and shapes
 
-**In plain terms:** Let users choose how much to hide and how the covered
+> Let users choose how much to hide and how the covered
 region looks, rather than always applying a blurred rectangle.
 
 **Example usage:** Use an ellipse around a face, a solid rectangle over a
@@ -255,7 +255,7 @@ fully covered face.
 
 ### 7. Specialized detection for faces, plates, and text
 
-**In plain terms:** Look for the sensitive detail itself rather than relying
+> Look for the sensitive detail itself rather than relying
 only on general object boxes. OCR, or optical character recognition, turns
 visible text into machine-readable words.
 
@@ -276,7 +276,7 @@ representative evaluation and checks of model licenses and distribution terms.
 
 ### 8. Audio redaction as a separate, optional workflow
 
-**In plain terms:** Video masking cannot hide a name spoken aloud. Users may
+> Video masking cannot hide a name spoken aloud. Users may
 also need to mute or replace a selected audio interval.
 
 **Example usage:** Blur a customer's face and mute the moment their phone
@@ -296,7 +296,7 @@ separate extension.
 
 ### 9. Presets, resumable jobs, and hardware-aware processing
 
-**In plain terms:** Make common tasks repeatable and keep long jobs from
+> Make common tasks repeatable and keep long jobs from
 starting over after an interruption.
 
 **Example usage:** A user selects a saved "face review" preset for several
@@ -317,7 +317,7 @@ rather than promise equivalent results.
 
 ### 10. Export controls and privacy-conscious defaults
 
-**In plain terms:** Give users control over the deliverable, not just the
+> Give users control over the deliverable, not just the
 on-screen boxes.
 
 **Example usage:** Export a redacted copy with selected quality settings,

@@ -9,11 +9,79 @@ site_dir: site/docs
 theme:
   name: darkly
 
+plugins:
+  - search
+  - mermaid2:
+      version: 12.1.0
+
 nav:
   - Overview: index.md
   - Getting started: getting-started.md
   - Development: development.md
-  - Architecture: architecture.md
+  - Architecture:
+      - Overview: architecture.md
+      - Components:
+          - Domain:
+              - Overview: architecture/domain/index.md
+              - Base: architecture/domain/base.md
+              - Detection: architecture/domain/detection.md
+              - Export: architecture/domain/export.md
+              - Helpers: architecture/domain/helpers.md
+              - Project: architecture/domain/project.md
+              - Session: architecture/domain/session.md
+              - Tracking: architecture/domain/tracking.md
+              - Video: architecture/domain/video.md
+              - View models: architecture/domain/views.md
+          - Application:
+              - Overview: architecture/application/index.md
+              - Adapters: architecture/application/adapters.md
+              - Interfaces:
+                  - Overview: architecture/application/interfaces/index.md
+                  - Detection: architecture/application/interfaces/detection.md
+                  - Export: architecture/application/interfaces/export.md
+                  - Export all: architecture/application/interfaces/export_all.md
+                  - Session: architecture/application/interfaces/session.md
+                  - Tracking: architecture/application/interfaces/tracking.md
+                  - Video: architecture/application/interfaces/video.md
+              - Managers: architecture/application/managers.md
+              - Services:
+                  - Overview: architecture/application/services/index.md
+                  - Detection: architecture/application/services/detection.md
+                  - Helpers: architecture/application/services/helpers.md
+                  - Tracking: architecture/application/services/tracking.md
+          - Infrastructure:
+              - Overview: architecture/infrastructure/index.md
+              - Adapters: architecture/infrastructure/adapters.md
+              - Detection:
+                  - Overview: architecture/infrastructure/detection/index.md
+                  - Engine: architecture/infrastructure/detection/engine.md
+                  - Models: architecture/infrastructure/detection/model.md
+                  - Worker: architecture/infrastructure/detection/worker.md
+              - Export: architecture/infrastructure/export.md
+              - Project: architecture/infrastructure/project.md
+              - Session: architecture/infrastructure/session.md
+              - Tracking: architecture/infrastructure/tracking.md
+              - Video: architecture/infrastructure/video.md
+              - View models: architecture/infrastructure/views.md
+          - UI:
+              - Overview: architecture/ui/index.md
+              - Adapters: architecture/ui/adapters.md
+              - Handlers: architecture/ui/handlers.md
+              - Interfaces: architecture/ui/interfaces.md
+              - Qt:
+                  - Overview: architecture/ui/qt/index.md
+                  - Dialogs: architecture/ui/qt/dialogs.md
+                  - Main window: architecture/ui/qt/window.md
+                  - Sections: architecture/ui/qt/sections.md
+                  - Shared: architecture/ui/qt/shared.md
+                  - Widgets:
+                      - Overview: architecture/ui/qt/widgets.md
+                      - Feedback: architecture/ui/qt/widgets/feedback.md
+                      - Preview: architecture/ui/qt/widgets/preview.md
+                      - Bounding-box layer: architecture/ui/qt/widgets/preview/layer_bbox.md
+                  - Workers: architecture/ui/qt/workers.md
+              - View state: architecture/ui/view_state.md
+          - Shared: architecture/shared/index.md
   - Engineering:
       - Documentation style: engineering/documentation-style.md
       - Defensive guards: engineering/defensive-guards.md
