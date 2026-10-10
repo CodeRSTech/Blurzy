@@ -67,9 +67,9 @@ the browser; the diagram source remains in the Markdown files.
 
 The published layout is:
 
-- `https://CodeRSTech.github.io/Blurzy-development/`: project homepage,
+- `https://CodeRSTech.github.io/Blurzy/`: project homepage,
   maintained in `website/index.html`.
-- `https://CodeRSTech.github.io/Blurzy-development/docs/`: generated
+- `https://CodeRSTech.github.io/Blurzy/docs/`: generated
   documentation from `docs/`, configured by `mkdocs.yml`.
 
 The Pages workflow builds the site on pushes and pull requests, but only

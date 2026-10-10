@@ -28,5 +28,5 @@ before relying on the result; automated detection can miss subjects.
 - [Planning notes](planning/README.md): read proposals, not implemented features
   or a committed roadmap.
 
-[Project homepage](https://CodeRSTech.github.io/Blurzy-development/) ·
-[Source repository](https://github.com/CodeRSTech/Blurzy-development)
+[Project homepage](https://CodeRSTech.github.io/Blurzy/) ·
+[Source repository](https://github.com/CodeRSTech/Blurzy)
