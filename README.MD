@@ -23,8 +23,8 @@ claim a stable release or a model-independent detection experience.
 
 ## Website and documentation
 
-- [Project homepage](https://CodeRSTech.github.io/Blurzy-development/)
-- [Documentation](https://CodeRSTech.github.io/Blurzy-development/docs/)
+- [Project homepage](https://CodeRSTech.github.io/Blurzy/)
+- [Documentation](https://CodeRSTech.github.io/Blurzy/docs/)
 
 The documentation is generated with MkDocs and the Darkly theme. To preview it:
 
