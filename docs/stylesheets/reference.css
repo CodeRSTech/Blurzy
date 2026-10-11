@@ -1,0 +1,8 @@
+.doc-heading .highlight {
+    display: block;
+    overflow-x: auto;
+}
+
+.doc-heading code {
+    overflow-wrap: anywhere;
+}
