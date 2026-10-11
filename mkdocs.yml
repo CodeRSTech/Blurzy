@@ -7,15 +7,30 @@ docs_dir: docs
 site_dir: site/docs
 
 theme:
-  name: darkly
+  name: material
+  features:
+    - navigation.tabs
+    - navigation.indexes
+    - content.code.copy
+  palette:
+    - scheme: slate
+      primary: blue
+      accent: teal
+      toggle:
+        icon: material/brightness-7
+        name: Switch to light mode
+    - scheme: default
+      primary: blue
+      accent: teal
+      toggle:
+        icon: material/brightness-4
+        name: Switch to dark mode
 
 hooks:
   - scripts/docs_reference.py
 
 plugins:
   - search
-  - mermaid2:
-      version: 12.1.0
   - mkdocstrings:
       handlers:
         python:
@@ -31,9 +46,23 @@ plugins:
             show_root_heading: false
             show_source: false
             heading_level: 2
+            show_symbol_type_heading: true
+            show_symbol_type_toc: true
 
 extra_css:
   - stylesheets/reference.css
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.highlight:
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
 
 nav:
   - Overview: index.md
@@ -41,8 +70,11 @@ nav:
   - Development: development.md
   - Architecture: architecture.md
   - Reference:
-      - Overview: reference/index.md
+      - reference/index.md
+  - API reference:
+      - reference/api/index.md
   - Engineering:
+      - Reference documentation: engineering/reference-documentation.md
       - Documentation style: engineering/documentation-style.md
       - Defensive guards: engineering/defensive-guards.md
   - Planning (proposals):

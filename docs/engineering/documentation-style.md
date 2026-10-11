@@ -7,6 +7,8 @@ This document defines the **modern documentation styling** used throughout Blurz
 API reference pages are generated from Python signatures and docstrings.
 Maintain API explanations in source and cross-component design notes in
 `docs/reference/`; see [Reference authoring](../development.md#reference-authoring).
+The [Reference documentation](reference-documentation.md) article explains
+generation, member selection, fenced examples, and contributor guidelines.
 The renderer uses Google-style sections and Markdown, so prefer single
 backticks for new inline-code text (rather than reStructuredText double
 backticks). Existing docstrings can be modernized incrementally; automation

@@ -41,7 +41,7 @@ python -m build
 
 ## Documentation and homepage
 
-Documentation uses MkDocs with the Bootswatch **Darkly** theme. Install the
+Documentation uses MkDocs with **Material**, including dark and light modes. Install the
 documentation tools separately; this does not install the desktop/ML stack:
 
 ```bash
@@ -61,9 +61,9 @@ python -m http.server --directory site 8000
 Visit `http://localhost:8000/` for the homepage and
 `http://localhost:8000/docs/` for the documentation.
 
-Architecture diagrams use fenced Mermaid blocks. MkDocs renders them with the
-Mermaid2 plugin and loads the pinned Mermaid JavaScript module from unpkg in
-the browser; the diagram source remains in the Markdown files.
+Architecture diagrams use fenced Mermaid blocks. Material renders them through
+its supported SuperFences integration; the diagram source remains in Markdown.
+The Material release controls the bundled Mermaid integration.
 
 The published layout is:
 
@@ -102,10 +102,16 @@ python -m mkdocs build --strict
 
 The Pages workflow runs both.
 
-Public defining-module members appear even without docstrings. Private names,
-imported members, and inherited Qt APIs are omitted; package re-exports link
-to their defining modules. Constructors remain visible. Rare private
-module-level exceptions belong in `MEMBER_EXCEPTIONS` in the hook; an explicit
+The **Reference** menu contains package notes; **API reference** starts directly
+at application, domain, infrastructure, shared, and UI packages. Package titles
+open their index pages without extra Overview links.
+
+Public defining-module members appear even without docstrings. Module-level
+runtime wiring (including loggers), private names, imported members, and
+inherited Qt APIs are omitted; public constants and type aliases remain.
+Package re-exports link to their defining modules. Constructors remain visible.
+Explicit member inclusions/exclusions belong in `MEMBER_EXCEPTIONS` and
+`MEMBER_EXCLUSIONS` in the hook; an explicit
 `::: app.module.Class` directive in a handwritten page can document a selected
 private method when needed.
 
@@ -115,3 +121,6 @@ examples. Generation does not check prose against behavior: lifecycle
 guarantees, signal flows, and design decisions still need human maintenance.
 Missing docstrings do not fail the build, and existing docstrings can be
 improved incrementally.
+
+See [Reference documentation](engineering/reference-documentation.md) for the
+source-to-page pipeline, complete examples, selection rules, and troubleshooting.

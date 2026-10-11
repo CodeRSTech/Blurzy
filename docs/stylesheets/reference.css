@@ -1,8 +1,18 @@
-.doc-heading .highlight {
-    display: block;
-    overflow-x: auto;
+.api-module-path {
+    margin-bottom: 1rem;
+    font-size: 0.8rem;
+    overflow-wrap: anywhere;
 }
 
-.doc-heading code {
-    overflow-wrap: anywhere;
+.md-typeset .doc-heading {
+    font-size: 1rem;
+    line-height: 1.6;
+}
+
+.md-typeset .doc-heading code {
+    white-space: normal;
+}
+
+.md-typeset .doc-labels {
+    font-size: 0.65rem;
 }

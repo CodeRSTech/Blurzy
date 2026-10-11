@@ -3,7 +3,9 @@
 from __future__ import annotations
 
 import importlib.util
+from html import unescape
 from pathlib import Path, PurePosixPath
+import re
 import sys
 from tempfile import TemporaryDirectory
 import unittest
@@ -41,15 +43,20 @@ class ReferenceTests(unittest.TestCase):
         self.write("docs/reference/index.md", "# Reference\n")
         self.note = "# Package notes\n\nSource: `src/app/`\n\nKeep this prose.\n"
         self.write("docs/reference/app.md", self.note)
-        settings = yaml.safe_load((ROOT / "mkdocs.yml").read_text(encoding="utf-8"))
+        settings = yaml.load((ROOT / "mkdocs.yml").read_text(encoding="utf-8"), Loader=yaml.Loader)
         settings["hooks"] = [str(ROOT / "scripts" / "docs_reference.py")]
         settings["plugins"] = [
             item for item in settings["plugins"] if isinstance(item, dict) and "mkdocstrings" in item
         ]
-        settings["nav"] = [{"Reference": [{"Overview": "reference/index.md"}]}]
+        settings["nav"] = [
+            {"Reference": ["reference/index.md"]},
+            {"API reference": ["reference/api/index.md"]},
+            {"Engineering": [{"Reference documentation": "engineering/reference-documentation.md"}]},
+        ]
+        self.write("docs/engineering/reference-documentation.md", "# Reference documentation\n")
         settings["extra_css"] = []
         settings["plugins"][0]["mkdocstrings"]["handlers"]["python"]["paths"] = [str(self.root / "src")]
-        self.write("mkdocs.yml", yaml.safe_dump(settings))
+        self.write("mkdocs.yml", yaml.dump(settings))
 
     def write(self, name, content):
         path = self.root.joinpath(*PurePosixPath(name).parts)
@@ -121,7 +128,7 @@ except Exception:
         old = self.write("src/app/a.py", "")
         first = reference.api_navigation(self.modules())
         self.assertEqual(first, reference.api_navigation(self.modules()))
-        self.assertEqual(list(first[1]), ["a"])
+        self.assertEqual(list(first[0]), ["a"])
         old.rename(old.with_name("renamed.py"))
         new = reference.api_navigation(self.modules())
         self.assertNotEqual(first, new)
@@ -158,7 +165,8 @@ except Exception:
             self.assertTrue(content.startswith(self.note))
             self.assertEqual(content.count("## API reference"), 1)
             self.assertEqual((self.root / "docs" / "reference" / "app.md").read_text(), self.note)
-            self.assertEqual(len(config.nav[0]["Reference"]), 2)
+            self.assertEqual(config.nav[0]["Reference"], ["reference/index.md", {"Package notes": "reference/app.md"}])
+            self.assertEqual(config.nav[1]["API reference"], ["reference/api/index.md"])
         self.assertFalse((self.root / "docs" / "reference" / "api").exists())
 
     def test_missing_note_package_is_an_error(self):
@@ -211,18 +219,117 @@ class Worker(QObject):
         html = html_path.read_text(encoding="utf-8")
         for member in ("Frame", "Worker", "Worker.ready", "Worker.__init__", "Worker.request"):
             self.assertIn(f'id="app.example.{member}"', html)
-        self.assertIn("request(index: int) -&gt; bool", html)
+        self.assertIn("request(index: int) -> bool", unescape(re.sub(r"<[^>]+>", "", html)))
         for member in ("QObject", "Signal", "Worker._private", "Worker.deleteLater"):
             self.assertNotIn(f'id="app.example.{member}"', html)
         self.assertNotIn("edit/master/docs/reference/api", html)
         module.write_text(module.read_text().replace("index: int", "frame: str"), encoding="utf-8")
         build(self.config())
         updated = html_path.read_text(encoding="utf-8")
-        self.assertIn("request(frame: str) -&gt; bool", updated)
+        self.assertIn("request(frame: str) -> bool", unescape(re.sub(r"<[^>]+>", "", updated)))
         module.rename(module.with_name("renamed.py"))
         build(self.config())
         self.assertFalse(html_path.exists())
         self.assertTrue(html_path.parent.parent.joinpath("renamed", "index.html").exists())
+
+    def test_runtime_wiring_is_excluded_and_aliases_and_constants_remain(self):
+        self.write(
+            "src/app/policy.py",
+            """
+from typing import TypeAlias
+logger = get_logger("Example")
+log: Logger = get_logger("Other")
+client = Client()
+client_reference = Client
+pending = None
+cache: dict = {}
+DEFAULT_LABEL = "person"
+VALID_LOG_LEVELS = frozenset({"DEBUG"})
+type Frame = tuple[int, int]
+Margins = tuple[int, int, int, int]
+OrderedWidgets = list[Widget] | tuple[Widget, ...]
+Callback = Callable[[int], None]
+Legacy: TypeAlias = tuple[int, str]
+runtime = factory()
+OMIT_ME = create_singleton()
+""",
+        )
+        module = next(item for item in self.modules() if item.name == "app.policy")
+        self.assertEqual(
+            reference.local_members(module),
+            [
+                "DEFAULT_LABEL",
+                "VALID_LOG_LEVELS",
+                "Frame",
+                "Margins",
+                "OrderedWidgets",
+                "Callback",
+                "Legacy",
+                "OMIT_ME",
+            ],
+        )
+        reference.MEMBER_EXCEPTIONS[module.name] = ("runtime", "OMIT_ME")
+        reference.MEMBER_EXCLUSIONS[module.name] = ("OMIT_ME",)
+        self.addCleanup(reference.MEMBER_EXCEPTIONS.pop, module.name)
+        self.addCleanup(reference.MEMBER_EXCLUSIONS.pop, module.name)
+        members = reference.local_members(module)
+        self.assertIn("runtime", members)
+        self.assertNotIn("OMIT_ME", members)
+
+    def test_menu_shape_and_index_reachability(self):
+        for package in ("application", "domain", "infrastructure", "shared", "ui"):
+            self.write(f"src/app/{package}/__init__.py", "")
+        self.write("src/app/domain/box.py", "class Box: pass\n")
+        self.write("docs/reference/domain/index.md", "# Domain\n\nSource: `src/app/domain/`\n")
+        self.write("docs/reference/domain/box.md", "# Box\n")
+        self.write("docs/reference/shared/index.md", "# Shared\n\nSource: `src/app/shared/`\n")
+        config = self.config()
+        files = config.plugins.on_files(get_files(config), config=config)
+        api = config.nav[1]["API reference"]
+        self.assertEqual(
+            [next(iter(item)) for item in api[1:]],
+            [
+                "application",
+                "domain",
+                "infrastructure",
+                "shared",
+                "ui",
+            ],
+        )
+        self.assertEqual(
+            api[2]["domain"],
+            [
+                "reference/api/app/domain/index.md",
+                {"box": "reference/api/app/domain/box/index.md"},
+            ],
+        )
+        self.assertIn({"Shared": "reference/shared/index.md"}, config.nav[0]["Reference"])
+        for menu in config.nav[:2]:
+            self.assertNotIn("Overview", repr(menu))
+            self.assertNotIn("'app':", repr(menu))
+            self.assertNotIn("'API':", repr(menu))
+        from mkdocs.structure.files import InclusionLevel
+
+        self.assertEqual(files.get_file_from_path("reference/api/app/index.md").inclusion, InclusionLevel.NOT_IN_NAV)
+        self.assertIn("app/index.md", files.get_file_from_path("reference/api/index.md").content_string)
+
+    def test_representative_example_and_logger_html(self):
+        source = (ROOT / "src" / "app" / "infrastructure" / "detection" / "engine" / "detection_engine.py").read_text()
+        self.write("src/app/engine.py", source)
+        build(self.config())
+        html = (self.root / "site" / "docs" / "reference" / "api" / "app" / "engine" / "index.html").read_text(
+            encoding="utf-8"
+        )
+        self.assertNotIn('id="app.engine.logger"', html)
+        self.assertNotIn("get_logger(", html)
+        self.assertIn('id="app.engine.DetectionEngine.model_name"', html)
+        self.assertIn('class="doc doc-label doc-label-property"', html)
+        self.assertIn("Switch to a different model at runtime", html)
+        self.assertNotRegex(html, r"<h[1-6][^>]*>[^<]*Switch to a different model")
+        self.assertIn('class="language-python highlight"', html)
+        self.assertIn("<pre>", html)
+        self.assertIn('class="c1"', html)
+        self.assertIn('class="api-module-path"', html)
 
 
 if __name__ == "__main__":

@@ -26,7 +26,10 @@ claim a stable release or a model-independent detection experience.
 - [Project homepage](https://CodeRSTech.github.io/Blurzy/)
 - [Documentation](https://CodeRSTech.github.io/Blurzy/docs/)
 
-The documentation is generated with MkDocs and the Darkly theme. To preview it:
+The documentation is generated with MkDocs Material, with dark and light modes.
+API reference pages are generated from Python source; see the
+[reference documentation guide](docs/engineering/reference-documentation.md).
+To preview it:
 
 ```bash
 python -m pip install -r requirements-docs.txt

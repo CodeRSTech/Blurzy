@@ -33,13 +33,15 @@ class DetectionEngine:
             - Decoupling: delegates model loading to ``load_detection_model()``.
             - Immutability: ``detect()`` returns a new list and does not mutate view_state.
 
-    Example:
+    Examples:
+        ```python
         engine = DetectionEngine("yolov8n")
         detections: list[DetectionResult] = engine.detect(frame)
 
         # Switch to a different model at runtime
         engine.set_model("yolov8s")
         detections = engine.detect(frame)
+        ```
     """
     def __init__(self, model_name: str) -> None:
         """Load a YOLO model by ``model_name`` (e.g., "yolov8n")."""
