@@ -9,7 +9,7 @@ from app.infrastructure.detection.model.helpers import (
     DETECTION_MODEL_PROVIDER_YOLO,
     get_detection_model_provider_options,
     get_available_detection_model_names_as_str,
-    get_available_detection_model_names_as_view_model,
+    get_detection_model_names_as_view_model_by_provider_id,
     resolve_detection_model_provider,
 )
 from app.infrastructure.detection.model.names import MTCNN_MODELS, TORCH_MODELS, ULTRALYTICS_YOLO_MODELS
@@ -31,7 +31,7 @@ class TestDetectionModelHelpers:
 
     def test_view_models_map_model_id_and_display_name_from_names(self):
         names = get_available_detection_model_names_as_str()
-        models = get_available_detection_model_names_as_view_model()
+        models = get_detection_model_names_as_view_model_by_provider_id()
 
         assert len(models) == len(names)
         assert [m.model_id for m in models] == names
@@ -55,7 +55,7 @@ class TestDetectionModelHelpers:
         assert resolve_detection_model_provider(MTCNN_MODELS[0]) == DETECTION_MODEL_PROVIDER_MTCNN
 
     def test_view_models_can_be_filtered_by_provider(self):
-        torch_models = get_available_detection_model_names_as_view_model(DETECTION_MODEL_PROVIDER_TORCH)
+        torch_models = get_detection_model_names_as_view_model_by_provider_id(DETECTION_MODEL_PROVIDER_TORCH)
 
         assert torch_models[0].model_id == "None"
         assert all(

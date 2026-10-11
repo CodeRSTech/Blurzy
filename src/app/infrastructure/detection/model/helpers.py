@@ -41,7 +41,7 @@ def resolve_detection_model_provider(model_name: str) -> str:
     return DETECTION_MODEL_PROVIDER_ALL
 
 
-def get_available_detection_model_names_as_view_model(
+def get_detection_model_names_as_view_model_by_provider_id(
     provider_id: str = DETECTION_MODEL_PROVIDER_ALL,
 ) -> list[ModelSelectionViewModel]:
     """

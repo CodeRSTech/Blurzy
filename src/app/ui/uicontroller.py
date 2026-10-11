@@ -4,26 +4,21 @@ from typing import TYPE_CHECKING, final, override
 
 from PySide6.QtCore import Slot, QObject
 
-
-
-
-from app.infrastructure.detection.model.helpers import get_available_detection_model_names_as_view_model
+from app.infrastructure.detection.model.helpers import get_detection_model_names_as_view_model_by_provider_id
 from app.shared import get_logger
 from app.ui.adapters import UIApplicationAdapter, UIControllerAdapter
 from app.ui import handlers
 from app.ui.view_state.table_key_filter import FrameTableKeyFilter
+
 if TYPE_CHECKING:
     from PySide6.QtWidgets import QApplication, QTableWidget
+    from app.application.application import Application
     from app.domain.base.dtypes import ListOfBoxes
     from app.domain import SessionId, VideoDataLayerGroup
-    from app.ui.qt.dialogs import EditAnnotationDialog, ModelChangeWarningDialog
-
-
-
-if TYPE_CHECKING:
-    from app.application.application import Application
-    from app.ui.qt.window import Window
     from app.infrastructure.session.session import Session
+    from app.ui.qt.dialogs import EditAnnotationDialog, ModelChangeWarningDialog
+    from app.ui.qt.window import Window
+
 logger = get_logger("UI->Controller")
 
 
@@ -163,7 +158,7 @@ class UIController(QObject):
         # ====================================================================
         # 3. POPULATE MODEL DROPDOWN
         # ====================================================================
-        available_models = get_available_detection_model_names_as_view_model()
+        available_models = get_detection_model_names_as_view_model_by_provider_id()
         self.window.set_detection_model_boxes(available_models)
         self.window.set_selected_detection_model("None")
 

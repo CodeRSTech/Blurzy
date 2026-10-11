@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING, final, override
 from PySide6.QtCore import QObject, Slot
 from PySide6.QtWidgets import QDialog
 
-from app.infrastructure.detection.model.helpers import get_available_detection_model_names_as_view_model
+from app.infrastructure.detection.model.helpers import get_detection_model_names_as_view_model_by_provider_id
 from app.shared.app_preferences import AppPreferences, AppPreferencesStore
 from app.shared.logging_cfg import get_logger
 from app.ui.qt.dialogs import PreferencesDialog
@@ -59,7 +59,7 @@ class PreferencesHandler(QObject):
     def on_preferences_requested(self) -> None:
         dialog = PreferencesDialog(
             preferences=self._preferences,
-            available_models=get_available_detection_model_names_as_view_model(),
+            available_models=get_detection_model_names_as_view_model_by_provider_id(),
             parent=self._window,
         )
         if dialog.exec() != QDialog.DialogCode.Accepted:
