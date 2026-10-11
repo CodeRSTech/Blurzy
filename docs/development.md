@@ -77,3 +77,41 @@ deploys pushes to `master` or manual runs on `master`. In the repository's
 **Settings → Pages → Build and deployment**, select **GitHub Actions** as
 the source before the first deployment. Generated files in `site/` are build
 artifacts and are not committed.
+
+### Reference authoring
+
+Reference documentation has two complementary parts:
+
+- **Package notes** in `docs/reference/` contain architecture explanations,
+  ownership rules, lifecycle notes, and diagrams. Keep the `Source:` line
+  pointing to the corresponding `src/app/` package; the build adds its API link.
+- **API pages** under `reference/api/` are generated in memory from every Python
+  module and package in `src/app/`. Edit signatures, annotations, and docstrings
+  in source, not generated Markdown. New, renamed, and removed modules update
+  the inventory and navigation automatically.
+
+The hook in `scripts/docs_reference.py` uses MkDocs' virtual file API and
+mkdocstrings' static Python handler. Builds do not import the application or
+install Qt/ML dependencies. `python -m mkdocs serve` watches `src/app` as well
+as the documentation. Before submitting documentation-tooling changes, run:
+
+```bash
+python -m unittest discover -s tests -p "test_docs_reference.py"
+python -m mkdocs build --strict
+```
+
+The Pages workflow runs both.
+
+Public defining-module members appear even without docstrings. Private names,
+imported members, and inherited Qt APIs are omitted; package re-exports link
+to their defining modules. Constructors remain visible. Rare private
+module-level exceptions belong in `MEMBER_EXCEPTIONS` in the hook; an explicit
+`::: app.module.Class` directive in a handwritten page can document a selected
+private method when needed.
+
+Write Google-style `Args:`, `Returns:`, `Raises:`, and `Attributes:` sections
+where useful. Use Markdown backticks for inline code and fenced blocks for
+examples. Generation does not check prose against behavior: lifecycle
+guarantees, signal flows, and design decisions still need human maintenance.
+Missing docstrings do not fail the build, and existing docstrings can be
+improved incrementally.

@@ -4,6 +4,14 @@
 
 This document defines the **modern documentation styling** used throughout Blurzy, with emphasis on consistency, clarity, and developer experience. The codebase is transitioning to this standard incrementally.
 
+API reference pages are generated from Python signatures and docstrings.
+Maintain API explanations in source and cross-component design notes in
+`docs/reference/`; see [Reference authoring](../development.md#reference-authoring).
+The renderer uses Google-style sections and Markdown, so prefer single
+backticks for new inline-code text (rather than reStructuredText double
+backticks). Existing docstrings can be modernized incrementally; automation
+does not verify their behavioral claims.
+
 ---
 
 ## Phase 1 Engineering Conventions (Handlers / Services / Workers)

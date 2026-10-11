@@ -23,6 +23,7 @@ logger = get_logger("UI->Controller")
 class UIController(QObject):
     """
     Central coordinator for all UI operations and handler management.
+    Acts as the bridge between App (application/business logic) and Qt UI layer.
 
     Responsibilities:
         - Initialize and own all UI handlers (playback, detection, tracking, detection, export, etc.).
@@ -34,17 +35,14 @@ class UIController(QObject):
         - Handle critical Qt events (close, quit).
 
     Note:
-        Acts as the bridge between App (application/business logic) and Qt UI layer.
         Does NOT inherit from App (circular dependency prevention).
-        Delegates handler ownership and coordination.
-        Delegates frame rendering to UIHandler.
-        Handlers communicate through the controller, never directly to each other.
+        Delegates handler ownership and coordination, frame rendering, and status updates.
+        Handlers communicate through the controller, never directly to each other (avoid coupling).
 
         Signal flow:
             Qt events (clicks, signals) → Handlers (via signal connections).
             Handlers call controller methods for coordination.
             Controller triggers frame renders, status updates, dialog creation.
-            Handlers NEVER talk to each other directly (avoid coupling).
     """
 
     def __init__(self, q_app: QApplication, window: Window, app: Application, ) -> None:
@@ -92,70 +90,40 @@ class UIController(QObject):
             self.annotation_handler, self.ui_handler.render_saved_frame
         )
 
-        self._finalize_init()
-        self._connect_signals()
+        # ====================================================================
+        # Complete UI initialization after handler creation.
+        # ====================================================================
 
-    @override
-    def __repr__(self) -> str:
-        return f"<{self.__class__.__name__}>"
-
-    def _connect_signals(self) -> None:
-        """
-        Wire up critical Qt signals for application lifecycle and UI events.
-    
-        Note:
-            Connections:
-                ``QApplication.aboutToQuit`` → ``on_about_to_quit()`` (cleanup).
-                ``transport_panel.seek_pos_changed`` → ``on_seek_requested()`` (seek slider).
-                ``tool_mode_changed`` → ``preview_container.set_tool_mode()`` (detection mode).
-        """
-        logger.info("Connecting UI Controller signals...")
-
-        # ====================================================================
-        # 1. APPLICATION LIFECYCLE
-        # ====================================================================
-        self.q_app.aboutToQuit.connect(self.on_about_to_quit)
-
-        # ====================================================================
-        # 2. TRANSPORT CONTROLS
-        # ====================================================================
-        self.window.transport_panel.seek_pos_changed.connect(self.on_seek_requested)
-
-        # ====================================================================
-        # 3. PREVIEW CONTAINER AND TOOL MODE
-        # ====================================================================
-        self.window.tool_mode_changed.connect(self.window.preview_container.set_tool_mode)
-
-    def _finalize_init(self) -> None:
-        """
-        Complete UI initialization after handler creation.
-    
-        Note:
-            Tasks:
-                Install close request handler.
-                Install keyboard event filter for data tables.
-                Populate detection model dropdown with available model.
-                Set initial model selection to "None".
-        """
-        # ====================================================================
         # 1. REGISTER CLOSE REQUEST HANDLER
-        # ====================================================================
         self.window.set_close_request_handler(self.on_close_requested)
 
-        # ====================================================================
         # 2. INSTALL KEYBOARD EVENT FILTER FOR ANNOTATION SHORTCUTS
-        # ====================================================================
         # [NOTE] Filters keyboard events (arrow keys for nudge, etc.)
         self.window.installEventFilter(self._frame_table_key_filter)
         self.detection_tab_data_table.installEventFilter(self._frame_table_key_filter)
         self.tracker_tab_data_table.installEventFilter(self._frame_table_key_filter)
 
-        # ====================================================================
         # 3. POPULATE MODEL DROPDOWN
-        # ====================================================================
         available_models = get_detection_model_names_as_view_model_by_provider_id()
         self.window.set_detection_model_boxes(available_models)
         self.window.set_selected_detection_model("None")
+
+        # ====================================================================
+        # Wire up critical Qt signals for application lifecycle and UI events.
+        # ====================================================================
+
+        # 1. APPLICATION LIFECYCLE
+        self.q_app.aboutToQuit.connect(self.on_about_to_quit)
+
+        # 2. TRANSPORT CONTROLS
+        self.window.transport_panel.seek_pos_changed.connect(self.on_seek_requested)
+
+        # 3. PREVIEW CONTAINER AND TOOL MODE
+        self.window.tool_mode_changed.connect(self.window.preview_container.set_tool_mode)
+
+    @override
+    def __repr__(self) -> str:
+        return f"<{self.__class__.__name__}>"
 
     @property
     def active_session(self) -> Session | None:
@@ -170,8 +138,13 @@ class UIController(QObject):
         return self.window.bottom_panel.tracker_tab_frame_data_table
 
     def create_edit_annotation_dialogue(
-        self, initial_label: str, initial_bbox_xyxy: tuple[int, int, int, int]
+            self,
+            initial_label: str,
+            initial_bbox_xyxy: tuple[int, int, int, int]
     ) -> EditAnnotationDialog:
+        """
+        Create and return an ``EditAnnotationDialog`` with the given initial label and bounding box.
+        """
         return self.dialogue_handler.handle_edit_annotation_dialogue(
             initial_label=initial_label, initial_bbox_xyxy=initial_bbox_xyxy
         )
@@ -237,12 +210,13 @@ class UIController(QObject):
             Triggered by ``MainWindow.closeEvent`` → ``set_close_request_handler()``.
 
             Flow:
-                ``on_close_requested()`` [this slot]
-                  |    ├── Check if export currently in progress
-                  |    ├── If no export: allow close
-                  |    └── If export: ask user for confirmation
-                  |        ├── If user confirms: cancel export (wait), then allow close
-                  |        └── If user declines: prevent close
+
+            ``on_close_requested()`` `[this slot]`
+              |    ├── Check if export currently in progress
+              |    ├── If no export: allow close
+              |    └── If export: ask user for confirmation
+              |        ├── If user confirms: cancel export (wait), then allow close
+              |        └── If user declines: prevent close
 
             Safety: Prevents accidental data loss by prompting before closing during export.
         """
