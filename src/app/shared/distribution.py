@@ -1,3 +1,7 @@
+"""
+Module for handling application distribution paths and Qt application metadata configuration.
+"""
+
 from __future__ import annotations
 
 import sys
@@ -15,6 +19,10 @@ _RESOURCE_ROOT_PARTS = ("app", "ui", "qt", "resources")
 
 
 def _distribution_root() -> Path:
+    """
+    Get the root path of the application's distribution.
+    :return: The root path of the application's distribution.
+    """
     bundled_root = getattr(sys, "_MEIPASS", None)
     if bundled_root:
         return Path(bundled_root)
@@ -22,10 +30,20 @@ def _distribution_root() -> Path:
 
 
 def bundled_resource_path(*relative_parts: str) -> Path:
+    """
+    Get the absolute path to a resource file bundled with the application.
+    :param relative_parts: The relative path parts to the resource file.
+    :return: The absolute path to the resource file.
+    """
     return _distribution_root().joinpath(*_RESOURCE_ROOT_PARTS, *relative_parts)
 
 
 def configure_qt_application_metadata(q_app: QApplication) -> None:
+    """
+    Configure the metadata (name, version, organization) for the Qt application.
+    :param q_app: The Qt application instance.
+    :return: None
+    """
     q_app.setApplicationName(APP_NAME)
     q_app.setApplicationDisplayName(APP_NAME)
     q_app.setApplicationVersion(APP_VERSION)
