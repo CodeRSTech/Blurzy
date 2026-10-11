@@ -6,9 +6,6 @@ from PySide6.QtCore import Slot, QObject
 
 from app.infrastructure.detection.model.helpers import get_detection_model_names_as_view_model_by_provider_id
 from app.shared import get_logger
-from app.ui.adapters import UIApplicationAdapter, UIControllerAdapter
-from app.ui import handlers
-from app.ui.view_state.table_key_filter import FrameTableKeyFilter
 
 if TYPE_CHECKING:
     from PySide6.QtWidgets import QApplication, QTableWidget
@@ -50,30 +47,28 @@ class UIController(QObject):
             Handlers NEVER talk to each other directly (avoid coupling).
     """
 
-    def __init__(
-        self,
-        q_app: QApplication,
-        window: Window,
-        app: Application,
-    ) -> None:
+    def __init__(self, q_app: QApplication, window: Window, app: Application, ) -> None:
         logger.info("Initializing UI Controller...")
-        super().__init__()
+
+        from app.ui import handlers, adapters
+        from app.ui.view_state.table_key_filter import FrameTableKeyFilter
 
         # ====================================================================
         # [NOTE] CIRCULAR DEPENDENCY PREVENTION
         # ====================================================================
-        # We did NOT pass ``parent=App`` in the super().__init__() call because
-        # ``Application`` is imported ONLY for TYPE CHECKING. Directly importing ``Application``
-        # at runtime would create a circular dependency. Instead, we use the
-        # ``setParent()`` method to assign the parent reference at runtime.
+        # We do NOT pass `parent=App` in the `super().__init__()` call because
+        # `Application` is imported TYPE CHECKING only.
+        # Directly importing `Application` at runtime would create a circular dependency.
+        # Instead, we use `setParent()` to assign the parent ref at runtime.
+        super().__init__()
         self.setParent(app)
 
         # Long-lived collaborators.
         self.q_app = q_app
         self.window = window
         self.app = app
-        self.ui_app = UIApplicationAdapter(app)
-        self.ui_controller = UIControllerAdapter(self)
+        self.ui_app = adapters.UIApplicationAdapter(app)
+        self.ui_controller = adapters.UIControllerAdapter(self)
 
         # HANDLERS
         # These only talk to their boss, i.e., the UI Controller.
@@ -242,12 +237,12 @@ class UIController(QObject):
             Triggered by ``MainWindow.closeEvent`` → ``set_close_request_handler()``.
 
             Flow:
-                on_close_requested() [this slot]
-                  ├── Check if export currently in progress
-                  ├── If no export: allow close
-                  └── If export: ask user for confirmation
-                      ├── If user confirms: cancel export (wait), then allow close
-                      └── If user declines: prevent close
+                ``on_close_requested()`` [this slot]
+                  |    ├── Check if export currently in progress
+                  |    ├── If no export: allow close
+                  |    └── If export: ask user for confirmation
+                  |        ├── If user confirms: cancel export (wait), then allow close
+                  |        └── If user declines: prevent close
 
             Safety: Prevents accidental data loss by prompting before closing during export.
         """
@@ -283,6 +278,12 @@ class UIController(QObject):
         self.playback_handler.on_seek(idx)
 
     def render_frame_for_session_id(self, s_id: SessionId) -> None:
+        """
+        Render the saved frame for the given session ID.
+
+        Note:
+            Delegates to ``UIHandler.render_saved_frame(s_id)`` for actual rendering.
+        """
         self.ui_handler.render_saved_frame(s_id)
 
     def set_ui_data_tab_frame_boxes(self, tab: VideoDataLayerGroup, boxes: ListOfBoxes) -> None:
