@@ -2,8 +2,6 @@ from __future__ import annotations
 
 import sys
 
-from app.shared.app_preferences import AppPreferencesStore
-from app.shared.distribution import configure_qt_application_metadata
 from app.shared.logging_cfg import configure_logging, get_logger
 from app.shared.runtime_config import StartupConfig, StartupConfigurationError
 
@@ -20,7 +18,6 @@ def _load_startup_config() -> StartupConfig:
             file=sys.stderr,
         )
         raise SystemExit(2) from exc
-
 
 def main() -> None:
     startup_config = _load_startup_config()
@@ -41,12 +38,18 @@ def main() -> None:
     from PySide6.QtWidgets import QApplication
 
     from app.application.application import Application
+    from app.shared.distribution import configure_qt_application_metadata
+    from app.shared.app_preferences import AppPreferencesStore
     from app.ui.qt.window import Window
     from app.ui.qt.shared.qt_debug_repr import apply_custom_qt_reprs
     from app.ui.qt.shared.qt_ui_shortcuts import apply_qt_ui_shortcuts
     from app.ui.uicontroller import UIController
 
+    # Add a __repr__() method to Qt objects for better debugging output in logs and console.
+    # [NOTE] : This can be removed/disabled.
     apply_custom_qt_reprs()
+
+    # Add convenience methods to Qt layout classes for UI construction with less code.
     apply_qt_ui_shortcuts()
 
     logger.info("Starting the application...")
@@ -62,7 +65,6 @@ def main() -> None:
     else:
         window.show()
     sys.exit(q_app.exec())
-
 
 if __name__ == "__main__":
     main()
