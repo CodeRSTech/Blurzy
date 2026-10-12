@@ -16,3 +16,8 @@
 .md-typeset .doc-labels {
     font-size: 0.65rem;
 }
+
+/* Change the 'meth' badge text to 'func' */
+.doc-symbol-method::after {
+    content: "func" !important;
+}
