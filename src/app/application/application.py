@@ -7,14 +7,12 @@ from PySide6.QtCore import QObject
 from app.application.managers import SessionManager
 from app.application import services
 from app.application.services.helpers.layer_coercion import ensure_import_mode, ensure_layer_enum
+
 if TYPE_CHECKING:
     from collections.abc import Callable, Iterable
     from typing import Unpack
     from app.application.services.project_service import ProjectLoadReport
     from app.domain.project import ProjectDirectories, ProjectDocument
-
-
-if TYPE_CHECKING:
     from app.domain import BBoxXYXYTuple, VideoDataLayer, VideoDataLayerGroup, SessionId, Direction, BBoxViewModel, \
         FrameBoxesViewModel, SessionSettingsViewModel, ProcessingSettingsKwargs
     from app.infrastructure.session.session import Session
@@ -110,10 +108,12 @@ class Application(QObject):
 
     @property
     def current_project_path(self) -> str:
+        """Retrieve the file path of the currently active project."""
         return self.project_svc.current_project_path
 
     @property
     def project_directories(self) -> ProjectDirectories:
+        """Retrieve the directories associated with the current project."""
         return self.project_svc.directories
 
     # ══════════════════════════════════════════════════════════════════════════════════════════════════════════════════
@@ -126,12 +126,15 @@ class Application(QObject):
         self.sm.close_all()
 
     def clear_project(self) -> None:
+        """Clear the currently active project."""
         self.project_svc.clear_project()
 
     def save_project(self, file_path: str) -> ProjectDocument:
+        """Save the current project to the specified file path."""
         return self.project_svc.save_project(file_path)
 
     def load_project(self, file_path: str) -> ProjectLoadReport:
+        """Load a project from the specified file path."""
         return self.project_svc.load_project(file_path)
 
     def update_project_directories(
@@ -142,6 +145,7 @@ class Application(QObject):
         export_prefix: str | None = None,
         export_suffix: str | None = None,
     ) -> None:
+        """Update the directories associated with the current project."""
         self.project_svc.update_directories(
             last_import_directory=last_import_directory,
             last_export_directory=last_export_directory,
@@ -178,9 +182,20 @@ class Application(QObject):
             s_id
         ).metadata.calculate_interval_in_mas()
 
-    # Used by AnnotationHandler, DetectionHandler, and UIHandler
+    # Used by AnnotationHandler, DetectionHandler, UIHandler etc.
     def get_session_by_id(self, s_id: SessionId) -> Session:
-        """Fetch the ``Session`` instance identified by ``s_id``."""
+        """
+        Fetch the ``Session`` instance identified by ``s_id``.
+
+        Delegates to the ``SessionManager`` to retrieve the session.
+
+        Raises:
+            KeyError: If the session with ``s_id`` does not exist.
+
+        Note:
+            Not to be confused with ``get_session_state_by_id`` or ``SessionManager.get_session_by_id``.
+            It is recommended to use this method rather than calling the SessionManager directly.
+        """
         return self.sm.get_session_by_id(s_id)
 
     # Used by PlaybackHandler

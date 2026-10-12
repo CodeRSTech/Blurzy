@@ -14,11 +14,9 @@ from app.domain import VideoDataLayer
 from app.shared.logging_cfg import get_logger
 from app.infrastructure.session.session_data_store import SessionDataStore
 from app.infrastructure.session.frame_access import SessionFrameAccessor
+
 if TYPE_CHECKING:
     from app.domain import SessionState
-
-
-if TYPE_CHECKING:
     from app.domain.session import SessionId
     from app.domain.base.dtypes import ListOfBoxesByFrameIndexAsDict, ListOfBoxes
     from app.infrastructure.dtypes import RGBFrame
@@ -51,13 +49,13 @@ class Session(QObject):
 
         self.s_id = s_id
         self.data = SessionDataStore(s_id=self.s_id, parent=self)
-        self.video_reader: VideoReader | None = None
-        self.state: SessionState | None = None
-        self.video_decode_worker: VideoDecodeWorker | None = None
+        self.video_reader = None
+        self.state = None
+        self.video_decode_worker = None
         self._frame_accessor = SessionFrameAccessor()
-        self.detection_engine: DetectionEngineInterface | None = None
-        self.detection_worker: DetectionWorkerInterface | None = None
-        self.tracking_worker: TrackingWorkerInterface | None = None
+        self.detection_engine = None
+        self.detection_worker = None
+        self.tracking_worker = None
 
     def __repr__(self):
         return f"<Session id={self.s_id.basename}>"

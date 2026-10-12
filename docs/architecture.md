@@ -9,22 +9,28 @@ code organization; they are not yet enforced as strict package boundaries.
 ## Layer relationships
 
 ```mermaid
-%%{init: {"theme": "base", "themeVariables": {"fontFamily": "Segoe UI, Arial, sans-serif", "fontSize": "14px"}, "flowchart": {"htmlLabels": true, "rankSpacing": 8, "padding": 12}}}%%
+%%{init: {"theme": "base", "layout": "elk", "themeVariables": {"fontFamily": "Roboto, Segoe UI, Arial, sans-serif", "fontSize": "15px", "lineColor": "#ffffff", "edgeLabelBackground": "#f8fafc", "textColor": "#0f172a"}, "elk": {"nodePlacementStrategy": "SIMPLE"}, "flowchart": {"htmlLabels": true, "useMaxWidth": true, "rankSpacing": 48, "nodeSpacing": 32, "padding": 10, "curve": "linear"}}}%%
 flowchart TB
-    UI["<div style='width:560px;text-align:left;white-space:nowrap'><span style='display:inline-block;width:145px;border-right:1px solid #cbd5e1;margin-right:16px'><b>UI</b></span><span style='font-size:13px;color:#475569'>Qt window · widgets · handlers</span></div>"]
-    APP["<div style='width:560px;text-align:left;white-space:nowrap'><span style='display:inline-block;width:145px;border-right:1px solid #cbd5e1;margin-right:16px'><b>Application</b></span><span style='font-size:13px;color:#475569'>Facade · services · managers · interfaces</span></div>"]
-    DOMAIN["<div style='width:560px;text-align:left;white-space:nowrap'><span style='display:inline-block;width:145px;border-right:1px solid #cbd5e1;margin-right:16px'><b>Domain</b></span><span style='font-size:13px;color:#475569'>Types · state · rules</span></div>"]
-    INFRA["<div style='width:560px;text-align:left;white-space:nowrap'><span style='display:inline-block;width:145px;border-right:1px solid #cbd5e1;margin-right:16px'><b>Infrastructure</b></span><span style='font-size:13px;color:#475569'>Video · models · workers · storage</span></div>"]
-    SHARED["<div style='width:560px;text-align:left;white-space:nowrap'><span style='display:inline-block;width:145px;border-right:1px solid #cbd5e1;margin-right:16px'><b>Shared</b></span><span style='font-size:13px;color:#475569'>Cross-cutting: logging · exceptions · utilities</span></div>"]
+    UI["<div style='width:360px;text-align:center;line-height:1.6;color:#0f172a'><b style='font-size:19px'>UI</b><br/>User interaction and presentation<br/><span style='color:#334155'>Qt windows · widgets · handlers</span></div>"]
+    APP["<div style='width:360px;text-align:center;line-height:1.6;color:#0f172a'><b style='font-size:19px'>Application</b><br/>Workflow coordination and contracts<br/><span style='color:#334155'>Facade · services · interfaces</span></div>"]
+    DOMAIN["<div style='width:360px;text-align:center;line-height:1.6;color:#0f172a'><b style='font-size:19px'>Domain</b><br/>Core types, state, and rules<br/><span style='color:#334155'>Boxes · settings · video metadata</span></div>"]
+    INFRA["<div style='width:360px;text-align:center;line-height:1.6;color:#0f172a'><b style='font-size:19px'>Infrastructure</b><br/>Technical implementations and adapters<br/><span style='color:#334155'>Video I/O · models · workers · storage</span></div>"]
+    SHARED["<div style='width:360px;text-align:center;line-height:1.6;color:#0f172a'><b style='font-size:19px'>Shared</b><br/>Cross-cutting support for all layers<br/><span style='color:#334155'>Logging · exceptions · utilities</span></div>"]
 
-    UI ~~~ APP ~~~ DOMAIN ~~~ INFRA ~~~ SHARED
+    UI -->|Delegates via UI adapter| APP
+    APP -->|Uses types and rules| DOMAIN
+    %% Invisible links establish visual order, not dependencies.
+    DOMAIN ~~~ INFRA
+    INFRA -->|Conforms to contracts| APP
+    INFRA -->|Uses types and rules| DOMAIN
+    INFRA ~~~ SHARED
 
-    classDef base color:#0f172a,stroke-width:1px,rx:5,ry:5;
-    classDef ui fill:#eff6ff,stroke:#93c5fd;
-    classDef app fill:#eef2ff,stroke:#a5b4fc;
-    classDef domain fill:#ecfdf5,stroke:#6ee7b7;
-    classDef infra fill:#fff7ed,stroke:#fdba74;
-    classDef shared fill:#f8fafc,stroke:#94a3b8,stroke-dasharray:4 3;
+    classDef base color:#0f172a,stroke-width:1.5px,rx:8,ry:8;
+    classDef ui fill:#dfe6ef,stroke:#60a5fa;
+    classDef app fill:#dee2ef,stroke:#818cf8;
+    classDef domain fill:#dcede5,stroke:#34d399;
+    classDef infra fill:#dfe7dd,stroke:#fb923c;
+    classDef shared fill:#e8eaec,stroke:#94a3b8,stroke-dasharray:5 4;
 
     class UI,APP,DOMAIN,INFRA,SHARED base;
     class UI ui;
@@ -34,7 +40,23 @@ flowchart TB
     class SHARED shared;
 ```
 
-The stack shows code organization, not a strict dependency hierarchy. UI delegates user actions to Application, which coordinates Domain data and Infrastructure implementations. Infrastructure reads and writes Domain data and implements interfaces declared in Application. Shared utilities are imported across layers. Domain owns concepts such as boxes, processing settings, sessions, and video metadata; it is not the location for Qt workflows or model-specific code.
+| Principal dependency | Boundary |
+| --- | --- |
+| UI → Application | Delegates user actions through the UI adapter |
+| Application → Domain | Uses core types, state, and rules |
+| Infrastructure → Application | Conforms to Application-owned contracts |
+| Infrastructure → Domain | Uses core types, state, and rules |
+
+The stack shows code organization; vertical order does not imply a dependency
+chain. **Arrows in the key point toward the types or contracts a layer depends
+on**, not the direction of runtime data or Qt signals. Shared supports multiple
+layers and is not another step in the dependency chain.
+
+This is a map of the principal boundaries, not an exhaustive import graph or
+strict Clean Architecture. Application still imports concrete Infrastructure
+implementations for factories, session initialization, and persistence.
+`src/main.py` bootstraps Qt and wires Application, Window, and UIController.
+Domain owns core types and rules, not Qt workflows or model-specific code.
 
 ## Layer responsibilities and component map
 
@@ -82,38 +104,50 @@ through the Application and render them in the preview.
 ### Detection
 
 ```mermaid
-%%{init: {"theme": "base", "themeVariables": {"fontFamily": "Segoe UI, Arial, sans-serif", "fontSize": "14px"}, "flowchart": {"htmlLabels": true, "rankSpacing": 8, "padding": 12}}}%%
-flowchart TB
-    USER(["User"])
-    UI["<div style='width:560px;text-align:left'><b>UI</b><br/><span style='font-size:13px;color:#475569'>Qt widget and handler · request detection</span></div>"]
-    APP["<div style='width:560px;text-align:left'><b>Application</b><br/><span style='font-size:13px;color:#475569'>Facade and DetectionService · validate session · prepare engine</span></div>"]
-    WORKER["<div style='width:560px;text-align:left'><b>DetectionWorker</b><br/><span style='font-size:13px;color:#475569'>Background frame processing · report batches and progress</span></div>"]
-    ENGINE["<div style='width:560px;text-align:left'><b>DetectionEngine and model</b><br/><span style='font-size:13px;color:#475569'>Run inference on each frame</span></div>"]
-    DATA["<div style='width:560px;text-align:left'><b>Session data layers</b><br/><span style='font-size:13px;color:#475569'>Process detection batches</span></div>"]
-    VIEW["<div style='width:560px;text-align:left'><b>UI presentation</b><br/><span style='font-size:13px;color:#475569'>Show progress · render results</span></div>"]
+%%{init: {
+  "theme": "base",
+  "themeVariables": {
+    "fontFamily": "Roboto, Segoe UI, Arial, sans-serif",
+    "fontSize": "18px",
+    "primaryColor": "#dfe6ef",
+    "primaryBorderColor": "#60a5fa",
+    "primaryTextColor": "#0f172a",
+    "actorBkg": "#eff6ff",
+    "actorBorder": "#60a5fa",
+    "actorTextColor": "#0f172a",
+    "actorLineColor": "#94a3b8",
+    "signalColor": "#334155",
+    "signalTextColor": "#0f172a",
+    "labelBoxBkgColor": "#f8fafc",
+    "labelBoxBorderColor": "#cbd5e1",
+    "loopTextColor": "#0f172a"
+  }
+}}%%
+sequenceDiagram
+    autonumber
+    actor User
+    participant UI as UI (Qt Widget)
+    participant App as Application (Facade)
+    participant Worker as DetectionWorker (QThread)
+    participant Engine as DetectionEngine (Model)
+    participant Data as Session Data Layers
 
-    USER --> UI --> APP
-    APP -->|Create and start| WORKER
-    WORKER -->|Frame| ENGINE
-    ENGINE -->|Detection results| WORKER
-    WORKER -->|Result batches and progress| APP
-    APP -->|Update layers| DATA
-    APP -->|Progress| VIEW
-    DATA -->|Render results| VIEW
+    User->>UI: Click "Detect"
+    UI->>App: request_detection(session_id)
+    App->>App: Validate session & prepare engine
+    App->>Worker: start() [Background thread]
+    
+    activate Worker
+    loop For each frame / batch
+        Worker->>Engine: run_inference(frame)
+        Engine-->>Worker: detection_results
+        Worker-->>Data: append_results(batch)
+        Worker-->>UI: signal: progress_updated(percent)
+    end
+    deactivate Worker
 
-    classDef base color:#0f172a,stroke-width:1px,rx:5,ry:5;
-    classDef ui fill:#eff6ff,stroke:#93c5fd;
-    classDef app fill:#eef2ff,stroke:#a5b4fc;
-    classDef worker fill:#fff7ed,stroke:#fdba74;
-    classDef engine fill:#ecfdf5,stroke:#6ee7b7;
-    classDef data fill:#f8fafc,stroke:#94a3b8;
-
-    class UI,APP,WORKER,ENGINE,DATA,VIEW base;
-    class UI,VIEW ui;
-    class APP app;
-    class WORKER worker;
-    class ENGINE engine;
-    class DATA data;
+    Data-->>UI: signal: layers_changed()
+    UI->>User: Render bounding boxes & overlays
 ```
 
 Single-frame detection is also available. Background detection reads frames

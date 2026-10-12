@@ -2,6 +2,24 @@
 Application Layer
 =================
 
+The Application Layer is responsible for orchestrating the workflow of the application.
+It coordinates actions across domain objects and infrastructure services,
+deciding what should happen in response to user actions.
+This layer exposes operations that the UI can call,
+without depending on concrete widget behavior or layout details.
+
+It has managers, such as the
+
+``DetectionEngineManager``,
+which centralizes logic for creating, updating, and removing detection engines on a per-session basis.
+
+``SessionManager`` which handles the lifecycle of sessions, including creation, selection, and deletion.
+
+``SessionInitializer`` which is responsible for initializing sessions with the necessary collaborators and resources.
+
+``TrackingWorkerManager`` which manages the lifecycle of tracking workers for sessions.
+
+``VideoDecodeWorkerManager`` which manages the lifecycle of video decode workers for sessions.
 Purpose
 -------
 Implements app use-cases and workflow orchestration.

@@ -2,8 +2,8 @@
 
 ## Requirements
 
-- Python 3.12 or newer.
-- A graphical desktop session for the PySide6 interface.
+- Python 3.12+.
+- A display for the `PySide6` interface.
 - Compatible model providers and model weights for the detection features you
   intend to use. Hardware support varies by provider.
 
