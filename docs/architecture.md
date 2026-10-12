@@ -60,13 +60,13 @@ Domain owns core types and rules, not Qt workflows or model-specific code.
 
 ## Layer responsibilities and component map
 
-| Layer | Responsibility | Main packages |
-| --- | --- | --- |
-| [UI](reference/ui/index.md) | Qt widgets and dialogs, user-action handlers, controller, and view state | `ui/handlers`, `ui/qt`, `ui/adapters` |
-| [Application](reference/application/index.md) | Workflow facade, services, session lifecycle, manager coordination, and worker interfaces | `application/services`, `application/managers`, `application/interfaces` |
-| [Domain](reference/domain/index.md) | Video/session/detection/tracking/export types and rules | `domain/video`, `domain/session`, `domain/detection`, `domain/tracking` |
-| [Infrastructure](reference/infrastructure/index.md) | Video I/O, inference and tracking algorithms, background workers, persistence | `infrastructure/video`, `infrastructure/detection`, `infrastructure/tracking`, `infrastructure/project` |
-| [Shared](reference/shared/index.md) | Cross-cutting logging, exceptions, image and annotation utilities | `shared/` |
+| Layer                                               | Responsibility                                                                            | Main packages                                                                                           |
+|-----------------------------------------------------|-------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------|
+| [UI](reference/ui/index.md)                         | Qt widgets and dialogs, user-action handlers, controller, and view state                  | `ui/handlers`, `ui/qt`, `ui/adapters`                                                                   |
+| [Application](reference/application/index.md)       | Workflow facade, services, session lifecycle, manager coordination, and worker interfaces | `application/services`, `application/managers`, `application/interfaces`                                |
+| [Domain](reference/domain/index.md)                 | Video/session/detection/tracking/export types and rules                                   | `domain/video`, `domain/session`, `domain/detection`, `domain/tracking`                                 |
+| [Infrastructure](reference/infrastructure/index.md) | Video I/O, inference and tracking algorithms, background workers, persistence             | `infrastructure/video`, `infrastructure/detection`, `infrastructure/tracking`, `infrastructure/project` |
+| [Shared](reference/shared/index.md)                 | Cross-cutting logging, exceptions, image and annotation utilities                         | `shared/`                                                                                               |
 
 Package-level component stubs follow the meaningful source-package structure.
 They provide a place to add detailed design notes without creating a page for
