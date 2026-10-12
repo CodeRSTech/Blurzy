@@ -13,7 +13,6 @@ import av
 import numpy as np
 
 
-
 from app.domain.video.metadata import VideoMetadata
 from app.infrastructure.dtypes import RGBFrame
 from app.shared.exceptions import (
@@ -78,11 +77,13 @@ class VideoReader:
         ``VideoReader`` is not thread-safe. Use a separate instance per decoding thread.
 
     Example:
+        ```
         reader = VideoReader("/path/to/video.mp4")
         frame = reader.read_frame_at_index(100)
         idx, frame = reader.read_next_frame()
         metadata = reader.metadata
         reader.close()
+        ```
     """
     def __init__(self, path: str) -> None:
         """Open video file at ``path`` using PyAV (calls ``open()`` automatically)."""

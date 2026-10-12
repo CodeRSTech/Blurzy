@@ -7,6 +7,7 @@ from unittest.mock import MagicMock
 import pytest
 
 import main as main_module
+from app.shared import app_preferences, distribution
 from app.shared.app_preferences import AppPreferences
 
 
@@ -15,8 +16,10 @@ class TestMainStartup:
         monkeypatch.setenv("BLURZY_LOG_CONSOLE_LEVEL", "verbose")
         configure_logging = MagicMock()
         configure_qt_application_metadata = MagicMock()
+        app_preferences_store_cls = MagicMock()
         monkeypatch.setattr(main_module, "configure_logging", configure_logging)
-        monkeypatch.setattr(main_module, "configure_qt_application_metadata", configure_qt_application_metadata)
+        monkeypatch.setattr(distribution, "configure_qt_application_metadata", configure_qt_application_metadata)
+        monkeypatch.setattr(app_preferences, "AppPreferencesStore", app_preferences_store_cls)
 
         with pytest.raises(SystemExit) as exc_info:
             main_module.main()
@@ -24,17 +27,19 @@ class TestMainStartup:
         assert exc_info.value.code == 2
         assert "BLURZY_LOG_CONSOLE_LEVEL" in capsys.readouterr().err
         configure_logging.assert_not_called()
+        configure_qt_application_metadata.assert_not_called()
+        app_preferences_store_cls.assert_not_called()
 
     def test_main_bootstraps_app_when_startup_config_is_valid(self, monkeypatch, tmp_path):
         monkeypatch.setenv("BLURZY_LOG_FILE_PATH", str(tmp_path / "app.log"))
         configure_logging = MagicMock()
         configure_qt_application_metadata = MagicMock()
         monkeypatch.setattr(main_module, "configure_logging", configure_logging)
-        monkeypatch.setattr(main_module, "configure_qt_application_metadata", configure_qt_application_metadata)
+        monkeypatch.setattr(distribution, "configure_qt_application_metadata", configure_qt_application_metadata)
         preferences_store = MagicMock()
         preferences_store.load.return_value = AppPreferences()
         app_preferences_store_cls = MagicMock(return_value=preferences_store)
-        monkeypatch.setattr(main_module, "AppPreferencesStore", app_preferences_store_cls)
+        monkeypatch.setattr(app_preferences, "AppPreferencesStore", app_preferences_store_cls)
 
         q_app_instance = MagicMock()
         q_app_instance.exec.return_value = 0
@@ -91,6 +96,8 @@ class TestMainStartup:
         apply_qt_ui_shortcuts.assert_called_once_with()
         q_application.assert_called_once_with(sys.argv)
         configure_qt_application_metadata.assert_called_once_with(q_app_instance)
+        app_preferences_store_cls.assert_called_once_with()
+        preferences_store.load.assert_called_once_with()
         app_cls.assert_called_once_with()
         window_cls.assert_called_once_with()
         ui_controller_cls.assert_called_once_with(
@@ -102,10 +109,10 @@ class TestMainStartup:
     def test_main_honors_fullscreen_preference(self, monkeypatch, tmp_path):
         monkeypatch.setenv("BLURZY_LOG_FILE_PATH", str(tmp_path / "app.log"))
         monkeypatch.setattr(main_module, "configure_logging", MagicMock())
-        monkeypatch.setattr(main_module, "configure_qt_application_metadata", MagicMock())
+        monkeypatch.setattr(distribution, "configure_qt_application_metadata", MagicMock())
         preferences_store = MagicMock()
         preferences_store.load.return_value = AppPreferences(startup_fullscreen=True)
-        monkeypatch.setattr(main_module, "AppPreferencesStore", MagicMock(return_value=preferences_store))
+        monkeypatch.setattr(app_preferences, "AppPreferencesStore", MagicMock(return_value=preferences_store))
 
         q_app_instance = MagicMock()
         q_app_instance.exec.return_value = 0
