@@ -160,16 +160,16 @@ class Session(QObject):
         """
         Fetch frame at ``frame_index`` from the ring buffer cache with timeout-based seek handling.
 
-        Note:
-            Workflow:
-                1. Clamp ``frame_index`` to the valid range.
-                2. Check the ring buffer cache and return immediately on a hit.
-                3. On a miss, either wait for sequential playback to catch up or trigger
+        Workflow:
+            1. Clamp ``frame_index`` to the valid range.
+            2. Check the ring buffer cache and return immediately on a hit.
+            3. On a miss, either wait for sequential playback to catch up or trigger
                    ``request_seek()`` for a scrub jump.
-                4. Wait up to 2 seconds for the worker to supply the frame.
-                5. Return the frame or ``None`` on timeout.
+            4. Wait up to 2 seconds for the worker to supply the frame.
+            5. Return the frame or ``None`` on timeout.
 
-            Side effects: updates ``playback.current_frame_index`` and
+        Side effects: 
+            updates ``playback.current_frame_index`` and
             ``current_frame_data`` when a frame is retrieved.
 
         Returns:
