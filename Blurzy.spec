@@ -36,6 +36,7 @@ exe = EXE(
     strip=False,
     upx=True,
     console=False,
+    icon=str(resources_root / "icon.ico"),
     exclude_binaries=True,
 )
 

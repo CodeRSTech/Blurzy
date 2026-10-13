@@ -8,6 +8,8 @@ site_dir: site/docs
 
 theme:
   name: material
+  logo: assets/logo.png
+  favicon: assets/icon.ico
   features:
     - navigation.tabs
     - navigation.indexes

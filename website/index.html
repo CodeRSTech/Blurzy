@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="Blurzy: a desktop workflow for video detection, tracking, annotation, and subject blurring.">
     <title>Blurzy — video review and blurring</title>
+    <link rel="icon" type="image/x-icon" href="docs/assets/icon.ico">
+    <link rel="icon" type="image/png" href="docs/assets/logo.png">
     <style>
       :root { color-scheme: dark; }
       body {
@@ -14,7 +16,9 @@
         font: 1.1rem/1.7 system-ui, sans-serif;
       }
       main { max-width: 58rem; margin: 0 auto; padding: 4rem 1.5rem; }
-      h1 { font-size: clamp(2.5rem, 8vw, 4.5rem); margin-bottom: 0; }
+      .brand { display: flex; align-items: center; gap: 1.25rem; margin-bottom: 0.5rem; }
+      .logo { width: clamp(3rem, 9vw, 4.5rem); height: clamp(3rem, 9vw, 4.5rem); border-radius: 0.75rem; }
+      h1 { font-size: clamp(2.5rem, 8vw, 4.5rem); margin: 0; }
       h2 { margin-top: 2.5rem; }
       a { color: #00d9ae; }
       a:hover { text-decoration-thickness: 3px; }
@@ -29,7 +33,10 @@
   <body>
     <main>
       <header>
-        <h1>Blurzy</h1>
+        <div class="brand">
+          <img class="logo" src="docs/assets/logo.png" alt="Blurzy logo">
+          <h1>Blurzy</h1>
+        </div>
         <p class="intro">Detect. Track. Review. Blur.</p>
         <p>A PySide6 desktop workflow for detecting and tracking subjects in video,
           editing annotations, and exporting video with selected subjects blurred.</p>

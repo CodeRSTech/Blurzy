@@ -30,6 +30,7 @@ jobs:
         run: |
           python -m mkdocs build --strict
           cp website/index.html site/index.html
+          cp docs/assets/icon.ico site/favicon.ico
           touch site/.nojekyll
       - name: Configure Pages
         if: github.ref == 'refs/heads/master' && github.event_name != 'pull_request'

@@ -44,7 +44,13 @@ def configure_qt_application_metadata(q_app: QApplication) -> None:
     :param q_app: The Qt application instance.
     :return: None
     """
+    from PySide6.QtGui import QIcon
+
     q_app.setApplicationName(APP_NAME)
     q_app.setApplicationDisplayName(APP_NAME)
     q_app.setApplicationVersion(APP_VERSION)
     q_app.setOrganizationName(APP_ORGANIZATION_NAME)
+
+    icon_path = bundled_resource_path("icon.ico")
+    if icon_path.exists():
+        q_app.setWindowIcon(QIcon(str(icon_path)))

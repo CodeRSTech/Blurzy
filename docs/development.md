@@ -55,6 +55,7 @@ preview the complete Pages artifact, including the project homepage:
 ```bash
 python -m mkdocs build --strict
 cp website/index.html site/index.html
+cp docs/assets/icon.ico site/favicon.ico
 python -m http.server --directory site 8000
 ```
 
