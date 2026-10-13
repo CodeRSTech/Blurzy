@@ -41,8 +41,9 @@ python -m build
 
 ## Documentation and homepage
 
-Documentation uses MkDocs with **Material**, including dark and light modes. Install the
-documentation tools separately; this does not install the desktop/ML stack:
+Documentation uses MkDocs with **Material**, including dark and light modes.
+Use Python **3.12 or newer**, and run these commands from the repository root.
+Install the documentation tools separately; this does not install the desktop/ML stack:
 
 ```bash
 python -m pip install -r requirements-docs.txt
@@ -101,6 +102,11 @@ python -m mkdocs build --strict
 ```
 
 The Pages workflow runs both.
+
+Strict builds fail on broken page links as well as missing navigation targets.
+The documentation tests also check the real repository's navigation, generated
+API inventory, CSS, and theme assets. Material provides the default logo and
+favicon; no custom template overrides or additional plugins are required.
 
 The **Reference** menu contains package notes; **API reference** starts directly
 at application, domain, infrastructure, shared, and UI packages. Package titles
