@@ -116,235 +116,34 @@ worker. Worker signals carry progress and results back to the UI. See
 
 ## Future additions: beyond detection and tracking
 
-This section is a brainstorm, not a list of implemented features or promised
-releases. Blurzy already provides detection, tracking strategies, bounding-box
-editing, annotation import/export, and configurable Gaussian blur. The ideas
-below extend that foundation into a more reliable and convenient workflow:
+> This section is not a list of implemented features or promised
+releases. 
 
-**Detect -> track -> refine -> review -> redact -> export.**
+- **Improve coverage:** Re-detect when tracks become uncertain or scenes change;
+  smooth boxes, add margins, and fill only short gaps. Mark predictions clearly
+  and flag uncertain intervals for review.
+- **Make corrections easier:** Add a review timeline, keyframe and range-based
+  editing, and track split/merge tools. Appearance-aware tracking could help
+  with identity switches, but a track ID is not a verified identity.
+- **Expand redaction options:** Explore shapes, pixelation, solid fill,
+  segmentation, and specialized face, plate, or text detection. Incomplete
+  masks and model errors can still expose sensitive content.
+- **Consider audio separately:** Manual muting or tones could be followed by
+  optional transcription, with explicit privacy choices and synchronization
+  checks.
+- **Support longer workflows:** Presets, resumable jobs, checkpoints, and
+  hardware-aware processing could save time, but require care with sensitive
+  data and reduced-resolution results.
+- **Improve export controls:** Offer quality and audio options, metadata
+  handling, and a pre-export review. Keep outputs separate from originals and
+  explain unresolved issues.
 
-In plain terms, detection asks "where is the subject in this frame?" and
-tracking asks "which subject does this box belong to over time?" Neither step
-proves that every sensitive region remains covered. A box can stay on screen
-while drifting away from a face, and a detector can miss a person entirely.
-The goal should therefore be better coverage and easier correction, not just
-boxes that survive longer.
-
-### 1. Adaptive detection and scene-cut handling
-
-> Give the tracker a fresh look at the video when it needs
-one, rather than relying on old boxes or doing equally expensive work on every
-frame. Treat a camera cut as a new scene, not as sudden movement by the same
-people.
-
-**Example usage:** In an interview with little movement, a fast processing
-preset could use periodic detection between tracking updates. When someone
-turns away, a box jumps, or the camera cuts to the audience, Blurzy would detect
-again sooner. Periodic whole-frame checks would still look for new arrivals.
-
-**Possible implementation:** Schedule detection using a regular maximum
-interval plus triggers such as unmatched tracks, abrupt motion, or scene
-changes. Reset or end tracks at confirmed cuts. Retain suitable low-confidence
-detections for tracker association instead of discarding every weak candidate
-before tracking.
-
-**Tradeoffs:** More frequent detection costs time; fewer checks can miss
-subjects. Camera flashes and fast pans can resemble cuts. Detector confidence
-is a model score, not a calibrated probability that redaction is safe, so it
-should not be the only scheduling signal.
-
-### 2. Smoother boxes, bounded gap filling, and coverage margins
-
-> Reduce shaking, bridge brief missed detections, and leave
-some extra space around the subject. Keeping a box alive is useful only if it
-continues to cover the right area.
-
-**Example usage:** A face detector misses two frames as a speaker turns their
-head. Blurzy could interpolate between the reliable boxes before and after
-the gap, then add a user-selected margin around the face. The user could
-preview the result before accepting it.
-
-**Possible implementation:** Smooth box position and size, use motion
-prediction for short gaps, and offer time-based limits on how long predictions
-remain usable. For offline video, later detections can help refine earlier
-gaps. Add padding relative to box size and clip expanded regions to frame
-boundaries. Mark predicted or interpolated boxes separately from detections.
-
-**Tradeoffs:** Smoothing can lag behind rapid movement and expose an edge;
-padding obscures more content. Interpolation must not connect unrelated
-subjects across long absences or scene cuts. Long or uncertain gaps should
-be flagged for review rather than silently filled.
-
-### 3. Appearance-aware tracking and identity correction
-
-> Recognize a subject using visual clues as well as where
-their box is. This could help keep two people from exchanging track IDs when
-they cross paths.
-
-**Example usage:** A user wants to blur one pedestrian throughout a clip but
-leave another visible. After they pass each other, the tracker should keep
-the blur assigned to the intended person. If it gets confused, the user could
-split the track and reconnect the correct segments.
-
-**Possible implementation:** Supply frame crops or image-derived features to
-an appearance-aware tracker, combined with motion and overlap matching.
-Blurzy's current DeepSORT adapter supplies box-derived features rather than
-visual appearance embeddings; adding frame access would be a substantive
-extension, not merely selecting a different tracker name.
-
-**Tradeoffs:** Similar clothing, lighting changes, and occlusion still cause
-errors. Appearance features add computation and may contain sensitive
-information, so their persistence should be optional and explicit. A track ID
-is not a verified real-world identity. Ambiguous matches should remain
-reviewable, especially when some subjects are excluded from redaction.
-
-### 4. A review timeline and uncertainty queue
-
-> Show the user where to look instead of asking them to
-inspect every frame with equal attention.
-
-**Example usage:** After processing a ten-minute video, the timeline highlights
-a disappearing face, a sudden box jump, and a possible identity swap. Clicking
-each marker plays a short surrounding segment with overlays. The user fixes
-the problem and marks that interval as reviewed.
-
-**Possible implementation:** Flag suspicious gaps, abrupt size or position
-changes, track births/deaths, and unreviewed ranges. Provide next/previous
-issue navigation and distinguish model confidence from review status.
-Changes to annotations, processing settings, or affected tracks should
-invalidate relevant prior review markers.
-
-**Tradeoffs:** Too many warnings create fatigue, while too few create false
-reassurance. Offer adjustable warning sensitivity, but make clear that
-"no warnings" does not mean "no missed subjects": an entirely undetected
-person may produce no track anomaly at all.
-
-### 5. Track-level editing and keyframe propagation
-
-> Correct a subject once across a stretch of video instead
-of drawing the same box repeatedly. A keyframe is a frame where the user
-explicitly sets the desired region; intermediate frames are estimated.
-
-**Example usage:** A user corrects a face box at the start and end of a turn.
-Blurzy previews the intervening boxes. The user adds another keyframe if the
-motion is not smooth, or manually draws a region for an object no model found.
-They could also apply "redact this track" only between two timestamps.
-
-**Possible implementation:** Extend existing box editing with track-wide and
-time-range actions, keyframe interpolation, bounded forward/backward
-propagation, and split/merge operations. Preserve manual corrections when
-rerunning automation, with an explicit choice about replacing them.
-Provide undo/redo and a preview of the affected range.
-
-**Tradeoffs:** One incorrect propagated edit can damage many frames. Scope
-must be visible: current frame, selected range, or whole track. Excluding a
-track from redaction should be deliberate and easy to audit.
-
-### 6. More masking effects and shapes
-
-> Let users choose how much to hide and how the covered
-region looks, rather than always applying a blurred rectangle.
-
-**Example usage:** Use an ellipse around a face, a solid rectangle over a
-license plate, or a polygon over a document. A segmentation mask, which marks
-the pixels belonging to a subject, could hide a moving person while retaining
-more of the surrounding scene.
-
-**Possible implementation:** Add pixelation and solid-fill effects alongside
-Gaussian blur, per-track effect settings, editable polygons/ellipses, and
-optional segmentation-assisted masks. Support mask expansion and temporal
-stabilization. Use the same rendering rules for preview and final export.
-
-**Tradeoffs:** Segmentation adds model and editing cost, and detailed masks can
-flicker or leave holes. Soft edges can leak information at the boundary.
-Blur and pixelation do not guarantee anonymity; solid fill is a stronger
-option for obscuring covered pixels, but an incomplete mask still exposes
-content. Clothing, context, or audio may identify a subject even with a
-fully covered face.
-
-### 7. Specialized detection for faces, plates, and text
-
-> Look for the sensitive detail itself rather than relying
-only on general object boxes. OCR, or optical character recognition, turns
-visible text into machine-readable words.
-
-**Example usage:** In dashcam footage, detect plates instead of hiding whole
-cars. In a recorded presentation, locate and cover an email address or
-account number while leaving the rest of the slide readable.
-
-**Possible implementation:** Offer task-specific model presets, OCR-based
-candidate regions, user-defined text patterns, and manual fallback regions.
-Keep coordinates aligned with the original video when inference uses resized
-frames. Associate regions over time and make recognized text reviewable
-without retaining it unnecessarily.
-
-**Tradeoffs:** Small, rotated, moving, or partially hidden text is difficult.
-OCR may misread a sensitive value, so exact text matching alone can miss it;
-a user may prefer covering an entire text field. Specialized models need
-representative evaluation and checks of model licenses and distribution terms.
-
-### 8. Audio redaction as a separate, optional workflow
-
-> Video masking cannot hide a name spoken aloud. Users may
-also need to mute or replace a selected audio interval.
-
-**Example usage:** Blur a customer's face and mute the moment their phone
-number is spoken. A transcript could help locate the phrase, but the user
-would listen to and adjust the selection before exporting.
-
-**Possible implementation:** Start with manual timestamp-based muting or
-tones, then explore optional speech transcription and phrase search.
-Maintain audio/video synchronization and preview the exact edited interval.
-Transcription should follow the same explicit local/cloud privacy choices
-as video processing.
-
-**Tradeoffs:** Speech recognition can miss words, languages, and overlapping
-speakers. Audio boundaries may need extra padding. This requires an audio
-pipeline rather than just another bounding-box model, so it is a larger,
-separate extension.
-
-### 9. Presets, resumable jobs, and hardware-aware processing
-
-> Make common tasks repeatable and keep long jobs from
-starting over after an interruption.
-
-**Example usage:** A user selects a saved "face review" preset for several
-clips, checks the estimated workload, and queues processing. After closing
-the app, they resume completed stages and review each clip before export.
-A lower-resolution proxy could make editing a large video more responsive.
-
-**Possible implementation:** Extend existing settings and background workers
-with named presets, a persistent job queue, stage checkpoints, and incremental
-reprocessing of affected ranges. Record source fingerprints, model versions,
-and settings so stale results are not reused. Map proxy coordinates and
-timestamps back to the original media, and expose available CPU/GPU options.
-
-**Tradeoffs:** Checkpoints consume storage and can contain sensitive
-annotations. Hardware support varies, and reduced-resolution inference can
-miss small faces or text. Speed presets should explain the coverage tradeoff
-rather than promise equivalent results.
-
-### 10. Export controls and privacy-conscious defaults
-
-> Give users control over the deliverable, not just the
-on-screen boxes.
-
-**Example usage:** Export a redacted copy with selected quality settings,
-choose whether to preserve or remove audio, and remove supported metadata
-that could reveal location or authorship. Preview representative output
-segments before sharing the result.
-
-**Possible implementation:** Add codec/container and quality choices,
-explicit audio handling, metadata inspection/removal, and a pre-export
-summary of effects, exclusions, and unresolved review items. Handle
-variable-frame-rate input and timestamp synchronization explicitly.
-Write outputs separately from originals and report export failures clearly.
-
-**Tradeoffs:** Codec availability and metadata handling vary by format.
-Previewing a few segments cannot establish whole-video safety. Keep processing
-local by default; any future cloud service should require informed consent
-and describe uploads, retention, and deletion. Review reports and project
-files should not expose original images or recognized text by default.
+Start with coverage, review, and correction; evaluate larger model and audio
+features before investing in them. Test against manually reviewed footage with
+small subjects, motion, occlusion, low light, scene cuts, and varied frame
+rates. Measure missed-redaction intervals, coverage, excess masking, track
+errors, review effort, and processing cost. No detector, tracker, or setting
+guarantees anonymization.
 
 ### Suggested priorities and evaluation
 
