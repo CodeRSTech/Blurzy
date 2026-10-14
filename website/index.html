@@ -8,40 +8,127 @@
     <link rel="icon" type="image/x-icon" href="docs/assets/icon.ico">
     <link rel="icon" type="image/svg+xml" href="docs/assets/logo.svg">
     <style>
-      :root { color-scheme: dark; }
+      :root {
+        color-scheme: dark;
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        background: #0d0b12;
+        color: #f5f1fc;
+        font-synthesis: none;
+        text-rendering: optimizeLegibility;
+        -webkit-font-smoothing: antialiased;
+        --surface: #15121d;
+        --border: #30283e;
+        --muted: #b5adbf;
+        --accent: #c4a1ff;
+        --accent-strong: #a879f5;
+      }
+      * { box-sizing: border-box; }
       body {
         margin: 0;
-        background: #222;
-        color: #fff;
-        font: 1.1rem/1.7 system-ui, sans-serif;
+        min-width: 320px;
+        background:
+          radial-gradient(ellipse at 82% 0%, rgb(114 69 170 / 18%), transparent 34rem),
+          radial-gradient(ellipse at 0% 52%, rgb(91 54 135 / 10%), transparent 36rem),
+          #0d0b12;
+        color: #f5f1fc;
+        font-size: 1rem;
+        line-height: 1.7;
       }
-      main { max-width: 58rem; margin: 0 auto; padding: 4rem 1.5rem; }
-      .brand { display: flex; align-items: center; gap: 1.25rem; margin-bottom: 0.5rem; }
-      .logo { width: clamp(6rem, 18vw, 9rem); height: clamp(6rem, 18vw, 9rem); border-radius: 0.75rem; }
-      h1 { font-size: clamp(2.5rem, 8vw, 4.5rem); margin: 0; }
-      h2 { margin-top: 2.5rem; }
-      a { color: #00d9ae; }
-      a:hover { text-decoration-thickness: 3px; }
-      a:focus-visible { outline: 3px solid #fff; outline-offset: 5px; }
-      nav { display: flex; flex-wrap: wrap; gap: 1rem; margin: 2rem 0; }
-      nav a { padding: .6rem 1rem; border: 1px solid #00d9ae; border-radius: .3rem; }
-      .intro { font-size: 1.4rem; }
-      .preview { display: block; width: 100%; height: auto; margin-top: 2rem; border-radius: .3rem; }
-      footer { margin-top: 3rem; color: #ccc; }
+      main { max-width: 76rem; margin: 0 auto; padding: 3rem 2rem 2rem; }
+      .hero {
+        display: grid;
+        grid-template-columns: minmax(0, .82fr) minmax(0, 1.18fr);
+        align-items: center;
+        gap: clamp(2rem, 5vw, 5rem);
+        padding: clamp(1.5rem, 5vw, 4rem) 0 2rem;
+      }
+      .brand { display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem; }
+      .logo {
+        width: clamp(3.5rem, 7vw, 4.5rem);
+        height: clamp(3.5rem, 7vw, 4.5rem);
+        border: 1px solid rgb(255 255 255 / 12%);
+        border-radius: 1.1rem;
+        box-shadow: 0 0.75rem 2.5rem rgb(0 0 0 / 32%);
+      }
+      h1 { margin: 0; font-size: clamp(2.75rem, 6vw, 4.5rem); line-height: 1; letter-spacing: -.065em; }
+      h2 { margin: 0 0 1.25rem; font-size: clamp(1.5rem, 3vw, 2rem); line-height: 1.2; letter-spacing: -.035em; }
+      p { color: var(--muted); }
+      a { color: var(--accent); text-underline-offset: .22em; }
+      a:hover { color: #e3d1ff; text-decoration-thickness: 2px; }
+      a:focus-visible { outline: 3px solid #e3d1ff; outline-offset: 5px; border-radius: .2rem; }
+      nav { display: flex; flex-wrap: wrap; gap: .75rem; margin: 2rem 0 0; }
+      nav a {
+        display: inline-flex;
+        align-items: center;
+        min-height: 2.9rem;
+        padding: .65rem 1rem;
+        border: 1px solid var(--border);
+        border-radius: .8rem;
+        background: rgb(255 255 255 / 3%);
+        color: #e8ddf7;
+        font-size: .94rem;
+        font-weight: 600;
+        text-decoration: none;
+        transition: background-color 160ms ease, border-color 160ms ease, transform 160ms ease;
+      }
+      nav a:hover { transform: translateY(-2px); border-color: #73559a; background: #211a2d; color: #fff; }
+      nav a:nth-child(2) { border-color: var(--accent-strong); background: var(--accent-strong); color: #170e23; }
+      nav a:nth-child(2):hover { border-color: #c4a1ff; background: #c4a1ff; }
+      .intro { margin: 0 0 .85rem; color: #e0caff; font-size: clamp(1.3rem, 2.3vw, 1.7rem); font-weight: 650; letter-spacing: -.025em; }
+      .hero-copy > p:not(.intro) { max-width: 35rem; margin: 0; font-size: 1.08rem; }
+      .preview {
+        display: block;
+        width: 100%;
+        height: auto;
+        border: 1px solid #41334f;
+        border-radius: 1.2rem;
+        background: var(--surface);
+        box-shadow: 0 2rem 6rem rgb(0 0 0 / 42%), 0 0 3rem rgb(121 75 171 / 12%);
+      }
+      section { margin-top: 2rem; padding: clamp(1.5rem, 4vw, 2.5rem); border: 1px solid var(--border); border-radius: 1.2rem; background: linear-gradient(135deg, rgb(28 23 37 / 94%), rgb(19 16 26 / 92%)); }
+      #features + ul {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: .75rem 2rem;
+        margin: 0;
+        padding: 0;
+        list-style: none;
+      }
+      #features + ul li { position: relative; padding: .85rem .75rem .85rem 1.8rem; border-top: 1px solid #30283e; color: #d2cadc; }
+      #features + ul li::before { position: absolute; top: 1.45rem; left: .25rem; width: .45rem; height: .45rem; border-radius: 50%; background: var(--accent-strong); box-shadow: 0 0 .8rem rgb(168 121 245 / 55%); content: ""; }
+      section[aria-labelledby="status"] p { margin: .75rem 0 0; }
+      section[aria-labelledby="status"] p:first-of-type { max-width: 65rem; }
+      footer { margin-top: 2rem; padding: 1.5rem 0; border-top: 1px solid var(--border); color: #aaa1b6; font-size: .9rem; }
+      @media (max-width: 760px) {
+        main { padding: 1.5rem 1.25rem 1rem; }
+        .hero { grid-template-columns: 1fr; gap: 2rem; padding-top: 2.5rem; }
+        .hero-copy > p:not(.intro) { max-width: 42rem; }
+      }
+      @media (max-width: 520px) {
+        #features + ul { grid-template-columns: 1fr; gap: 0; }
+        nav { display: grid; grid-template-columns: 1fr; }
+        nav a { justify-content: center; }
+        section { margin-top: 1.25rem; }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; }
+      }
     </style>
   </head>
   <body>
     <main>
-      <header>
-        <div class="brand">
-          <img class="logo" src="docs/assets/logo.svg" alt="Blurzy logo">
-          <h1>Blurzy</h1>
+      <header class="hero">
+        <div class="hero-copy">
+          <div class="brand">
+            <img class="logo" src="docs/assets/logo.svg" alt="Blurzy logo">
+            <h1>Blurzy</h1>
+          </div>
+          <p class="intro">Detect. Track. Review. Blur.</p>
+          <p>A Qt desktop workflow for detecting and tracking subjects in video,
+            editing annotations, and exporting video with selected subjects blurred.</p>
         </div>
-        <p class="intro">Detect. Track. Review. Blur.</p>
-        <p>A Qt desktop workflow for detecting and tracking subjects in video,
-          editing annotations, and exporting video with selected subjects blurred.</p>
+        <img class="preview" src="assets/images/projects/blurzy.webp" alt="Blurzy desktop interface showing people detected in a video with bounding boxes and detection and tracking controls.">
       </header>
-      <img class="preview" src="assets/images/projects/blurzy.webp" alt="Blurzy desktop interface showing people detected in a video with bounding boxes and detection and tracking controls.">
       <nav aria-label="Project links">
         <a href="docs/">Read the documentation</a>
         <a href="docs/getting-started/">Get started</a>
