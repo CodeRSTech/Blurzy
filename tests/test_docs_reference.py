@@ -232,6 +232,48 @@ class Worker(QObject):
         self.assertFalse(html_path.exists())
         self.assertTrue(html_path.parent.parent.joinpath("renamed", "index.html").exists())
 
+    def test_detection_engine_page_renders_model_names_from_literal_registries(self):
+        self.write(
+            "src/app/infrastructure/detection/engine/detection_engine.py",
+            '"""Detection engine."""\nclass DetectionEngine: pass\nraise RuntimeError("Do not import")\n',
+        )
+        self.write(
+            "src/app/infrastructure/detection/model/names.py",
+            '''
+TORCH_MODELS: dict[str, tuple[str, str]] = {"Torch Example": ("example", "ExampleWeights")}
+ULTRALYTICS_YOLO_MODELS: dict[str, str] = {"YOLO Example": "example.pt"}
+MTCNN_MODELS = ("MTCNN-Example",)
+raise RuntimeError("Do not import")
+''',
+        )
+        for package in (
+            "infrastructure",
+            "infrastructure/detection",
+            "infrastructure/detection/engine",
+            "infrastructure/detection/model",
+        ):
+            self.write(f"src/app/{package}/__init__.py", '"""Test package."""\n')
+        build(self.config())
+        html_path = (
+            self.root
+            / "site"
+            / "docs"
+            / "reference"
+            / "api"
+            / "app"
+            / "infrastructure"
+            / "detection"
+            / "engine"
+            / "detection_engine"
+            / "index.html"
+        )
+        html = html_path.read_text(encoding="utf-8")
+        rendered = unescape(re.sub(r"<[^>]+>", " ", html))
+        for name in ("Supported models", "Torch Example", "YOLO Example", "MTCNN-Example"):
+            self.assertIn(name, rendered)
+        for provider in ("TorchVision", "Ultralytics YOLO", "MTCNN"):
+            self.assertIn(provider, rendered)
+
     def test_runtime_wiring_is_excluded_and_aliases_and_constants_remain(self):
         self.write(
             "src/app/policy.py",

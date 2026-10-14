@@ -75,6 +75,11 @@ the logger initializer or the implementation's `return` statement.
 Generated Markdown is not written into `docs/reference`. HTML and search
 artifacts go to `site/docs`; neither generated Markdown nor HTML is committed.
 
+The generated `DetectionEngine` page also includes supported model names from
+`app.infrastructure.detection.model.names`. The hook reads the literal
+registries with AST parsing, so the catalog stays synchronized without
+importing the model stack or duplicating names in documentation.
+
 ### 3. Collect API information statically
 
 When Markdown processing encounters `::: app.example`, mkdocstrings delegates

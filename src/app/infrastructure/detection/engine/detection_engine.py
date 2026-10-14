@@ -1,18 +1,22 @@
-"""Wrapper around YOLO object detection model — load model and run inference."""
+"""``DetectionEngine`` is the application-facing wrapper around a detection model.
+It loads the named model when created, then passes each image or frame to that model’s ``detect()`` method and
+returns the resulting ``DetectionResult`` list. It can also replace the active model at runtime with ``set_model()``.
+
+The engine itself does not appear to perform image preprocessing, inference, or result conversion:
+those responsibilities are delegated to the loaded model implementation.
+In this code, ``detect()`` returns the model’s results directly,
+so the docstring’s reference to mapping raw output to ``DetectionResult``
+objects describes the expected model-layer behavior, not a conversion performed by the engine."""
 
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-
-
 from app.infrastructure.detection.model.loader import load_detection_model
 from app.shared.logging_cfg import get_logger
+
 if TYPE_CHECKING:
     import numpy as np
-
-
-if TYPE_CHECKING:
     from app.domain.detection.result import DetectionResult
     from app.infrastructure.detection.model.base import BaseDetectionModel
 
@@ -21,30 +25,30 @@ logger = get_logger("Infrastructure->Video->Detection Engine")
 
 class DetectionEngine:
     """
-    Loads and manages a YOLO detection model, converting raw inference output to ``DetectionResult`` objects.
+    Loads and manages a detection model, converting raw inference output to ``DetectionResult`` objects.
+    The generated API page lists supported model names from the model registry.
 
     Attributes:
-        _model_name (str): Current YOLO model name, such as ``"yolov8n"``.
+        _model_name (str): Current detection model name, such as ``"YOLOv8n"``.
         _model (BaseDetectionModel): Loaded detection model instance.
 
-    Note:
-        Design:
-            - Single responsibility: load or switch model and run inference only.
-            - Decoupling: delegates model loading to ``load_detection_model()``.
-            - Immutability: ``detect()`` returns a new list and does not mutate view_state.
+    Design:
+        - Single responsibility: load or switch model and run inference only.
+        - Decoupling: delegates model loading to ``load_detection_model()``.
+        - Immutability: ``detect()`` returns a new list and does not mutate view_state.
 
     Examples:
         ```python
-        engine = DetectionEngine("yolov8n")
+        engine = DetectionEngine("YOLOv8n")
         detections: list[DetectionResult] = engine.detect(frame)
 
         # Switch to a different model at runtime
-        engine.set_model("yolov8s")
+        engine.set_model("YOLOv8s")
         detections = engine.detect(frame)
         ```
     """
     def __init__(self, model_name: str) -> None:
-        """Load a YOLO model by ``model_name`` (e.g., "yolov8n")."""
+        """Load a detection model by ``model_name`` (e.g., "YOLOv8n")."""
         logger.info("Initializing DetectionEngine with model {}", model_name)
         self._model_name = model_name
         self._model = self._load_model(model_name)
@@ -59,7 +63,7 @@ class DetectionEngine:
         return self._model_name
 
     def set_model(self, model_name: str) -> None:
-        """Switch to a different YOLO model by ``model_name``."""
+        """Switch to a different detection model by ``model_name``."""
         logger.trace("Setting detection model to {}", model_name)
         self._model_name = model_name
         self._model = self._load_model(model_name)
@@ -67,7 +71,7 @@ class DetectionEngine:
 
     def detect(self, frame: np.ndarray) -> list[DetectionResult]:
         """
-        Run YOLO inference on ``frame``, returning list of ``DetectionResult`` objects.
+        Run detection model inference on ``frame``, returning list of ``DetectionResult`` objects.
 
         Note:
             Workflow: raw model output is mapped to ``DetectionResult`` objects and
@@ -85,6 +89,6 @@ class DetectionEngine:
 
     @staticmethod
     def _load_model(model_name: str) -> BaseDetectionModel:
-        """Load YOLO model via factory ``load_detection_model()``."""
+        """Load detection model via factory ``load_detection_model()``."""
         logger.info("Loading detection model {}", model_name)
         return load_detection_model(model_name)

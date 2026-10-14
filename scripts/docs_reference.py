@@ -125,6 +125,50 @@ def relative_link(origin: PurePosixPath, target: PurePosixPath) -> str:
     return posixpath.relpath(str(target), str(origin.parent))
 
 
+def registry_assignment(tree: ast.Module, name: str):
+    for node in tree.body:
+        if isinstance(node, ast.AnnAssign) and isinstance(node.target, ast.Name) and node.target.id == name:
+            value = node.value
+        elif isinstance(node, ast.Assign) and any(
+            isinstance(target, ast.Name) and target.id == name for target in node.targets
+        ):
+            value = node.value
+        else:
+            continue
+        try:
+            return ast.literal_eval(value)
+        except (TypeError, ValueError) as exc:
+            raise PluginError(f"Detection model registry {name} must use literal values") from exc
+    raise PluginError(f"Detection model registry is missing {name}")
+
+
+def detection_model_catalog(root: Path) -> str:
+    source = root / "src" / "app" / "infrastructure" / "detection" / "model" / "names.py"
+    tree = ast.parse(source.read_text(encoding="utf-8"), filename=str(source))
+    registries = (
+        ("TorchVision", "TORCH_MODELS"),
+        ("Ultralytics YOLO", "ULTRALYTICS_YOLO_MODELS"),
+        ("MTCNN", "MTCNN_MODELS"),
+    )
+    sections = []
+    for title, name in registries:
+        models = registry_assignment(tree, name)
+        if isinstance(models, dict):
+            names = list(models)
+        elif name == "MTCNN_MODELS" and isinstance(models, (tuple, list)):
+            names = models
+        else:
+            raise PluginError(f"Detection model registry {name} must be a mapping or sequence of names")
+        if not all(isinstance(model_name, str) for model_name in names):
+            raise PluginError(f"Detection model registry {name} must contain string names")
+        sections.append(f"### {title}\n\n" + "".join(f"- `{model_name}`\n" for model_name in names))
+    return (
+        "\n## Supported models\n\n"
+        "This catalog is generated from `app.infrastructure.detection.model.names`.\n\n"
+        + "\n".join(sections)
+    )
+
+
 def children(module: Module, modules: list[Module]) -> list[Module]:
     return [child for child in modules if child.name.rpartition(".")[0] == module.name]
 
@@ -173,6 +217,8 @@ def module_page(module: Module, modules: list[Module], root: Path, repo_url: str
     )
     members = local_members(module)
     text += f"::: {module.name}\n    options:\n        members: {members!r}\n"
+    if module.name == "app.infrastructure.detection.engine.detection_engine":
+        text += detection_model_catalog(root)
     if module.is_package:
         text += "\n## Modules and packages\n\n"
         for child in children(module, modules):
