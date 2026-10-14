@@ -16,14 +16,14 @@ theme:
     - content.code.copy
   palette:
     - scheme: slate
-      primary: blue
+      primary: black
       accent: teal
       toggle:
         icon: material/brightness-7
         name: Switch to light mode
     - scheme: default
-      primary: blue
-      accent: teal
+      primary: orange
+      accent: deep-orange
       toggle:
         icon: material/brightness-4
         name: Switch to dark mode
