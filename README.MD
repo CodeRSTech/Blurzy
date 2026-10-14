@@ -95,18 +95,24 @@ python -m build
 
 The source follows four broad layers:
 
-| Layer | Responsibility |
-| --- | --- |
-| `src/app/domain` | Core video, session, detection, tracking, and export types |
-| `src/app/application` | Workflows and services coordinating domain operations |
-| `src/app/infrastructure` | Video, model, tracking, and export integrations/workers |
-| `src/app/ui` | PySide6 window, widgets, handlers, and UI controller |
+| Layer                    | Responsibility                                             |
+|--------------------------|------------------------------------------------------------|
+| `src/app/domain`         | Core video, session, detection, tracking, and export types |
+| `src/app/application`    | Workflows and services coordinating domain operations      |
+| `src/app/infrastructure` | Video, model, tracking, and export integrations/workers    |
+| `src/app/ui`             | PySide6 window, widgets, handlers, and UI controller       |
 
 A typical detection flow starts in a UI handler, delegates through the
 application facade and detection service, then runs in an infrastructure
 worker. Worker signals carry progress and results back to the UI. See
 [`docs/architecture.md`](docs/architecture.md) for a guided code map and
 [`tests/README.md`](tests/README.md) for the test layout.
+
+## Planned features
+
+| Feature                                                                | Priority | Status     |
+|------------------------------------------------------------------------|----------|------------|
+| Preserve source audio in exported videos (audio is currently stripped) | High     | 🟡 Planned |
 
 ## Future additions: beyond detection and tracking
 
@@ -354,14 +360,14 @@ small subjects, fast motion, crossings, occlusions, low light, camera cuts, and
 different frame rates. Compare against the existing pipeline, not just a
 successful demonstration clip.
 
-| Measure | What it tells us |
-| --- | --- |
-| Missed-redaction frames and longest uncovered interval | How often, and for how long, a sensitive region is exposed |
-| Sensitive-region coverage and excess masked area | Whether masks cover the target without unnecessarily hiding the scene |
-| Identity switches and fragmented tracks | Whether track-based redaction remains attached to the intended subject |
-| Mask jitter and drift | Whether masks stay stable and aligned during movement |
-| Review time, correction count, and warning usefulness | Whether automation actually reduces the user's workload |
-| Processing speed, peak memory, and output synchronization | Whether the workflow is practical on supported hardware |
+| Measure                                                   | What it tells us                                                       |
+|-----------------------------------------------------------|------------------------------------------------------------------------|
+| Missed-redaction frames and longest uncovered interval    | How often, and for how long, a sensitive region is exposed             |
+| Sensitive-region coverage and excess masked area          | Whether masks cover the target without unnecessarily hiding the scene  |
+| Identity switches and fragmented tracks                   | Whether track-based redaction remains attached to the intended subject |
+| Mask jitter and drift                                     | Whether masks stay stable and aligned during movement                  |
+| Review time, correction count, and warning usefulness     | Whether automation actually reduces the user's workload                |
+| Processing speed, peak memory, and output synchronization | Whether the workflow is practical on supported hardware                |
 
 Keep observed detections, automated predictions, manual corrections, and
 review status distinguishable. No detector, tracker, or redaction setting
