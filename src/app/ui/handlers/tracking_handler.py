@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING, final, override
 from PySide6.QtCore import Slot, QObject
 
 from app.domain import VideoDataLayer
+from app.domain import VideoDataLayerGroup
 
 
 from app.domain.tracking.tracking_strategy import TrackingStrategy
@@ -63,6 +64,24 @@ class TrackingHandler(QObject):
         return f"<{self.__class__.__name__}>"
 
     def _connect_signals(self) -> None:
+        """Connect tracking controls to session-setting and worker actions.
+
+        Args:
+            None.
+
+        Returns:
+            None.
+
+        Raises:
+            None.
+
+        Note:
+            Offline stitch settings are stored per session and consumed when a
+            tracking worker is created.
+
+        Example:
+            handler._connect_signals()
+        """
         logger.debug("Connecting signals to tracker handler.")
         right_panel = self._window.right_panel
 
@@ -74,6 +93,15 @@ class TrackingHandler(QObject):
             self.on_min_tracker_confidence_changed
         )
         right_panel.confidence_decay_spinbox.valueChanged.connect(self.on_confidence_decay_changed)
+        right_panel.offline_stitching_checkbox.toggled.connect(
+            self.on_offline_stitching_toggled
+        )
+        right_panel.max_stitch_gap_spinbox.valueChanged.connect(
+            self.on_max_stitch_gap_changed
+        )
+        right_panel.gsi_smoothness_spinbox.valueChanged.connect(
+            self.on_gsi_smoothness_changed
+        )
 
     def _update_processing_settings_and_warn(self, **kwargs: Unpack[ProcessingSettingsKwargs]) -> None:
         # [AUDIT] SRP VIOLATION: Method does 4 distinct things
@@ -260,6 +288,70 @@ class TrackingHandler(QObject):
         logger.trace("Tracking confidence_decay changed to: {}", value)
         self._update_processing_settings_and_warn(confidence_decay=value)
 
+    @Slot(bool)
+    def on_offline_stitching_toggled(self, enabled: bool) -> None:
+        """Update whether post-tracking tracklet stitching is enabled.
+
+        Args:
+            enabled: True to enable bidirectional stitching and GSI.
+
+        Returns:
+            None.
+
+        Raises:
+            InvalidSessionIdException: If the application rejects the selected session.
+
+        Note:
+            The corresponding gap and smoothness controls are gated by the right panel.
+
+        Example:
+            handler.on_offline_stitching_toggled(True)
+        """
+        self._window.right_panel.set_stitching_controls_enabled(enabled)
+        self._update_processing_settings_and_warn(offline_stitching_enabled=enabled)
+
+    @Slot(int)
+    def on_max_stitch_gap_changed(self, value: int) -> None:
+        """Update the maximum number of missed frames eligible for stitching.
+
+        Args:
+            value: Gap length from 1 to 60 frames.
+
+        Returns:
+            None.
+
+        Raises:
+            InvalidSessionIdException: If the application rejects the selected session.
+
+        Note:
+            The right-panel spin box enforces the supported numeric range.
+
+        Example:
+            handler.on_max_stitch_gap_changed(25)
+        """
+        self._update_processing_settings_and_warn(max_stitch_gap=value)
+
+    @Slot(float)
+    def on_gsi_smoothness_changed(self, value: float) -> None:
+        """Update the Gaussian interpolation lengthscale.
+
+        Args:
+            value: Kernel lengthscale from 1.0 to 30.0.
+
+        Returns:
+            None.
+
+        Raises:
+            InvalidSessionIdException: If the application rejects the selected session.
+
+        Note:
+            Higher values blend endpoint predictions across a wider temporal range.
+
+        Example:
+            handler.on_gsi_smoothness_changed(10.0)
+        """
+        self._update_processing_settings_and_warn(gsi_smoothness=value)
+
     @Slot(str)
     def _on_tracking_finished(self, s_id: SessionId) -> None:
         """
@@ -273,6 +365,22 @@ class TrackingHandler(QObject):
                   ├── Synchronize tracking cache with session
                   ├── Clear loading view_state in UI
                   └──> Render frame with tracking results
+
+        Args:
+            s_id: Session whose worker has completed.
+
+        Returns:
+            None.
+
+        Raises:
+            Exception: Propagates synchronization or rendering failures.
+
+        Note:
+            The tracking tab is selected before rendering so its refreshed table
+            and frame boxes are immediately visible.
+
+        Example:
+            handler._on_tracking_finished(session_id)
         """
         logger.info("Tracking finished signal received for session '{}'", s_id)
 
@@ -290,6 +398,9 @@ class TrackingHandler(QObject):
         # ====================================================================
         # 3. RENDER FRAME WITH TRACKING RESULTS
         # ====================================================================
+        self._window.bottom_panel.data_tab.setCurrentIndex(
+            int(VideoDataLayerGroup.TRACKING)
+        )
         self._controller.render_frame_for_session_id(s_id)
 
     @Slot(str)

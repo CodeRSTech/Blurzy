@@ -21,7 +21,13 @@ from app.infrastructure.detection.model.helpers import (
     resolve_detection_model_provider,
 )
 from app.ui.qt.shared.layout_shortcuts import create_vbox_layout
-from app.ui.qt.shared.widget_factories import create_qhbox_with_widgets, create_progress_bar, create_spinbox
+from app.ui.qt.shared.widget_factories import (
+    create_blur_strength_spinbox,
+    create_int_spinbox,
+    create_qhbox_with_widgets,
+    create_progress_bar,
+    create_spinbox,
+)
 from app.ui.qt.widgets.feedback.spinner_label import InlineSpinnerLabel
 from app.ui.qt.widgets.collapsible_panel import CollapsiblePanel
 
@@ -32,7 +38,24 @@ if TYPE_CHECKING:
 
 @final
 class RightControlPanel(QScrollArea):
-    """Encapsulates the Detection, Tracking, and Render controls."""
+    """Encapsulate Detection, Tracking, Preview, and Render controls.
+
+    Args:
+        parent: Optional owner widget.
+
+    Returns:
+        A scrollable panel whose controls emit state and execution requests.
+
+    Raises:
+        None.
+
+    Note:
+        Preview controls affect the editor viewport only; Render controls define
+        final export behavior and gate the optional live preview blur.
+
+    Example:
+        panel = RightControlPanel()
+    """
 
     # --- Signals ---
     # PySide Rule: Signals must be declared at the class level.
@@ -58,6 +81,23 @@ class RightControlPanel(QScrollArea):
         self.setWidget(self._container)
 
     def _init_widgets(self) -> None:
+        """Create every control and label before layout construction.
+
+        Args:
+            None.
+
+        Returns:
+            None.
+
+        Raises:
+            None.
+
+        Note:
+            Tracking and preview numeric ranges match ProcessingSettings validation.
+
+        Example:
+            panel._init_widgets()
+        """
         # --- Detection Widgets ---
 
         ############################################################################################################
@@ -183,7 +223,52 @@ class RightControlPanel(QScrollArea):
         #   Decay:      | 0.05                                     [ ^ | v ] |
         #               +----------------------------------------------------+
         self.confidence_decay_spinbox = create_spinbox(min_val=0.0, max_val=1.0, step=0.01, default=0.05)
-        self.decay_selection = create_qhbox_with_widgets([QLabel("Decay:"), self.confidence_decay_spinbox])
+        self.confidence_decay_label = QLabel("Confidence Decay:")
+        self.confidence_decay_tooltip = (
+            "Per-frame confidence penalty applied when a tracker coasts without a matching detection. "
+            "Unbridged tracks that never reconnect decay at 2x this rate so boxes disappear quickly "
+            "when a subject exits the frame."
+        )
+        self.confidence_decay_label.setToolTip(self.confidence_decay_tooltip)
+        self.confidence_decay_spinbox.setToolTip(self.confidence_decay_tooltip)
+        self.decay_selection = create_qhbox_with_widgets(
+            [self.confidence_decay_label, self.confidence_decay_spinbox]
+        )
+        #
+        #   [ ] Bridge & Smooth Gaps (GSI)
+        #
+        self.offline_stitching_checkbox = QCheckBox("Bridge & Smooth Gaps (GSI)")
+        self.offline_stitching_tooltip = (
+            "When enabled, runs a two-pass bidirectional stitcher after tracking to reconnect broken "
+            "tracks across missed detections and smoothly interpolates the gap using Gaussian Smoothed "
+            "Interpolation (GSI). Unbridged tracks that leave the frame decay rapidly to prevent "
+            "floating ghost blurs."
+        )
+        self.offline_stitching_checkbox.setToolTip(self.offline_stitching_tooltip)
+        self.max_stitch_gap_label = QLabel("Max Stitch Gap (frames):")
+        self.max_stitch_gap_spinbox = create_int_spinbox(1, 60, 1, 25)
+        self.max_stitch_gap_tooltip = (
+            "Maximum number of consecutive missed frames (1–60) over which two broken track segments "
+            "can be stitched together and smoothly interpolated. At 25 FPS, 25 frames equals 1 second "
+            "of occlusion."
+        )
+        self.max_stitch_gap_label.setToolTip(self.max_stitch_gap_tooltip)
+        self.max_stitch_gap_spinbox.setToolTip(self.max_stitch_gap_tooltip)
+        self.max_stitch_gap_selection = create_qhbox_with_widgets(
+            [self.max_stitch_gap_label, self.max_stitch_gap_spinbox]
+        )
+        self.gsi_smoothness_label = QLabel("GSI Smoothness:")
+        self.gsi_smoothness_spinbox = create_spinbox(1.0, 30.0, 0.5, 10.0)
+        self.gsi_smoothness_tooltip = (
+            "Controls the Gaussian kernel lengthscale (tau) used to smooth bounding box trajectories "
+            "across bridged gaps. Higher values produce smoother, more gradual curves; lower values "
+            "hug the raw detector boxes more tightly."
+        )
+        self.gsi_smoothness_label.setToolTip(self.gsi_smoothness_tooltip)
+        self.gsi_smoothness_spinbox.setToolTip(self.gsi_smoothness_tooltip)
+        self.gsi_smoothness_selection = create_qhbox_with_widgets(
+            [self.gsi_smoothness_label, self.gsi_smoothness_spinbox]
+        )
         #
         #   [====================================================]
         #   [                   Start Tracking                   ]
@@ -213,24 +298,66 @@ class RightControlPanel(QScrollArea):
         # --- Render Widgets ---
 
         ############################################################################################################
-        #   v Preview_Render                                                                                       #
+        #   v Preview                                                                                              #
         ############################################################################################################
-        self.render_box = CollapsiblePanel("Preview_Render")
+        self.preview_box = CollapsiblePanel("Preview")
         #
-        #   [ ] Draw bounding boxes
+        #   [ ] Draw Boxes
         #
-        self.draw_boxes_checkbox = QCheckBox("Draw bounding boxes")
+        self.draw_boxes_checkbox = QCheckBox("Draw Boxes")
+        self.draw_boxes_tooltip = (
+            "Show or hide bounding box outlines and ID/label tags in the video editor preview. "
+            "This setting only affects the editor viewport and never draws boxes on the exported video."
+        )
+        self.draw_boxes_checkbox.setToolTip(self.draw_boxes_tooltip)
+        self.box_border_width_label = QLabel("Box Border Width:")
+        self.box_border_width_spinbox = create_int_spinbox(1, 10, 1, 2)
+        self.box_border_width_tooltip = (
+            "Adjust the line thickness (1–10 px) of bounding box borders in the editor preview. "
+            "Useful for high-resolution 4K footage where thin borders are hard to see."
+        )
+        self.box_border_width_label.setToolTip(self.box_border_width_tooltip)
+        self.box_border_width_spinbox.setToolTip(self.box_border_width_tooltip)
+        self.box_border_width_selection = create_qhbox_with_widgets(
+            [self.box_border_width_label, self.box_border_width_spinbox]
+        )
+        self.show_preview_mask_checkbox = QCheckBox("Show Mask")
+        self.show_preview_mask_tooltip = (
+            "Overlay a semi-transparent highlight showing the exact combined alpha mask footprint "
+            "(including the 10-pixel outward feather zone) that will be blurred during video export."
+        )
+        self.show_preview_mask_checkbox.setToolTip(self.show_preview_mask_tooltip)
+        self.preview_blur_checkbox = QCheckBox("Blur Preview")
+        self.preview_blur_tooltip = (
+            "Render the feathered Gaussian blur live in the editor preview. Only available when "
+            "'Enable Blur' is turned on in the Render panel. Disabling this speeds up 4K playback "
+            "in the editor while keeping blur active for the final export."
+        )
+        self.preview_blur_checkbox.setToolTip(self.preview_blur_tooltip)
         #
-        #   [ ] Blur bounding boxes
+        #   v Render
         #
-        self.blur_checkbox = QCheckBox("Blur bounding boxes")
+        self.render_box = CollapsiblePanel("Render")
+        self.blur_checkbox = QCheckBox("Enable Blur")
+        self.blur_tooltip = (
+            "Master toggle to apply Gaussian blur over tracked bounding boxes when exporting the final "
+            "video. Turning this on also unlocks the 'Blur Preview' toggle in the Preview panel."
+        )
+        self.blur_checkbox.setToolTip(self.blur_tooltip)
         #
         #   (Hidden by default)
         #               +----------------------------------------------------+
         # Blur strength:| 5.0                                      [ ^ | v ] |
         #               +----------------------------------------------------+
-        self.blur_strength_label = QLabel("Blur strength:")
-        self.blur_strength_spinbox = create_spinbox(0.0, 10.0, 1.0, 5.0)
+        self.blur_strength_label = QLabel("Blur Strength:")
+        self.blur_strength_spinbox = create_blur_strength_spinbox(15.0)
+        self.blur_strength_tooltip = (
+            "Controls the Gaussian blur kernel size (sigma/radius) applied to redact subjects in the "
+            "exported video (and in the live editor when 'Blur Preview' is active). Higher values "
+            "produce stronger anonymization."
+        )
+        self.blur_strength_label.setToolTip(self.blur_strength_tooltip)
+        self.blur_strength_spinbox.setToolTip(self.blur_strength_tooltip)
         self.blur_strength_selection = create_qhbox_with_widgets(
             [self.blur_strength_label, self.blur_strength_spinbox]
         )
@@ -243,6 +370,23 @@ class RightControlPanel(QScrollArea):
         self.export_all_action = QAction("Export All...", self)
 
     def _build_ui(self) -> None:
+        """Arrange controls into independent collapsible sections.
+
+        Args:
+            None.
+
+        Returns:
+            None.
+
+        Raises:
+            None.
+
+        Note:
+            Export actions remain in Render; editor-only controls are in Preview.
+
+        Example:
+            panel._build_ui()
+        """
         self.detection_box.add_layout(self.provider_selection)
         self.detection_box.add_layout(self.model_selection)
         self.detection_box.add_layout(self.min_confidence_selection)
@@ -259,6 +403,9 @@ class RightControlPanel(QScrollArea):
         self.tracking_box.add_layout(self.min_iou_selection)
         self.tracking_box.add_layout(self.min_tracker_conf_selection)
         self.tracking_box.add_layout(self.decay_selection)
+        self.tracking_box.add_widget(self.offline_stitching_checkbox)
+        self.tracking_box.add_layout(self.max_stitch_gap_selection)
+        self.tracking_box.add_layout(self.gsi_smoothness_selection)
         self.tracking_box.add_widget(self.track_btn)
         self.tracking_box.add_widget(self.imp_exp_tracks_button)
         self._reset_tracking_progress_bar()
@@ -272,7 +419,10 @@ class RightControlPanel(QScrollArea):
         self.blur_strength_spinbox.setVisible(False)
         self.blur_strength_label.setVisible(False)
 
-        self.render_box.add_widget(self.draw_boxes_checkbox)
+        self.preview_box.add_widget(self.draw_boxes_checkbox)
+        self.preview_box.add_layout(self.box_border_width_selection)
+        self.preview_box.add_widget(self.show_preview_mask_checkbox)
+        self.preview_box.add_widget(self.preview_blur_checkbox)
         self.render_box.add_widget(self.blur_checkbox)
         self.render_box.add_layout(self.blur_strength_selection)
         self.render_box.add_widget(self.export_btn)
@@ -281,10 +431,28 @@ class RightControlPanel(QScrollArea):
         # --- Final Assembly ---
         self._layout.addWidget(self.detection_box)
         self._layout.addWidget(self.tracking_box)
+        self._layout.addWidget(self.preview_box)
         self._layout.addWidget(self.render_box)
         self._layout.addStretch()
 
     def _connect_signals(self) -> None:
+        """Connect locally handled input signals to panel actions.
+
+        Args:
+            None.
+
+        Returns:
+            None.
+
+        Raises:
+            None.
+
+        Note:
+            Session-setting updates are connected by TrackingHandler and ExportHandler.
+
+        Example:
+            panel._connect_signals()
+        """
         # Detection Panel
         self.provider_combo_box.currentIndexChanged.connect(self._on_provider_changed)
         self.model_combo_box.currentIndexChanged.connect(self._emit_model_changed)
@@ -334,7 +502,24 @@ class RightControlPanel(QScrollArea):
     # --- Public API ---
 
     def restore_session_settings(self, vm: SessionSettingsViewModel) -> None:
-        """Populates all right-panel widgets from the provided view model using safe signal blocking."""
+        """Restore widgets from a session snapshot without emitting edits.
+
+        Args:
+            vm: Settings view model for the active session.
+
+        Returns:
+            None.
+
+        Raises:
+            None.
+
+        Note:
+            Signal blockers prevent session writes while restoring; dependent
+            controls are enabled explicitly after values have been assigned.
+
+        Example:
+            panel.restore_session_settings(session.settings.as_view_model())
+        """
         self.set_selected_detection_model(vm.detection_model_name)
 
         with QSignalBlocker(self.tracking_strategy_combo_box):
@@ -364,16 +549,31 @@ class RightControlPanel(QScrollArea):
         with QSignalBlocker(self.confidence_decay_spinbox):
             self.confidence_decay_spinbox.setValue(vm.confidence_decay)
 
+        with QSignalBlocker(self.offline_stitching_checkbox):
+            self.offline_stitching_checkbox.setChecked(vm.offline_stitching_enabled)
+        with QSignalBlocker(self.max_stitch_gap_spinbox):
+            self.max_stitch_gap_spinbox.setValue(vm.max_stitch_gap)
+        with QSignalBlocker(self.gsi_smoothness_spinbox):
+            self.gsi_smoothness_spinbox.setValue(vm.gsi_smoothness)
+
         with QSignalBlocker(self.blur_strength_spinbox):
             self.blur_strength_spinbox.setValue(vm.blur_strength)
 
         with QSignalBlocker(self.draw_boxes_checkbox):
             self.draw_boxes_checkbox.setChecked(vm.draw_boxes)
+        with QSignalBlocker(self.box_border_width_spinbox):
+            self.box_border_width_spinbox.setValue(vm.box_border_width)
+        with QSignalBlocker(self.show_preview_mask_checkbox):
+            self.show_preview_mask_checkbox.setChecked(vm.show_preview_mask)
+        with QSignalBlocker(self.preview_blur_checkbox):
+            self.preview_blur_checkbox.setChecked(vm.preview_blur_enabled)
 
         with QSignalBlocker(self.blur_checkbox):
             self.blur_checkbox.setChecked(vm.blur_enabled)
 
+        self.set_stitching_controls_enabled(vm.offline_stitching_enabled)
         self.set_blur_strength_visible(vm.blur_enabled)
+        self.set_preview_blur_enabled(vm.blur_enabled)
         self.set_tracking_config_warning_visible(False)
 
     def set_iou_widgets_visible(self, visible: bool) -> None:
@@ -383,6 +583,50 @@ class RightControlPanel(QScrollArea):
     def set_blur_strength_visible(self, visible: bool) -> None:
         self.blur_strength_label.setVisible(visible)
         self.blur_strength_spinbox.setVisible(visible)
+
+    def set_stitching_controls_enabled(self, enabled: bool) -> None:
+        """Enable gap-bridging parameters only while offline stitching is active.
+
+        Args:
+            enabled: Whether the stitching checkbox is checked.
+
+        Returns:
+            None.
+
+        Raises:
+            None.
+
+        Note:
+            The checkbox remains enabled so users can turn stitching back on.
+
+        Example:
+            panel.set_stitching_controls_enabled(True)
+        """
+        self.max_stitch_gap_label.setEnabled(enabled)
+        self.max_stitch_gap_spinbox.setEnabled(enabled)
+        self.gsi_smoothness_label.setEnabled(enabled)
+        self.gsi_smoothness_spinbox.setEnabled(enabled)
+
+    def set_preview_blur_enabled(self, enabled: bool) -> None:
+        """Gate live preview blur on the Render panel's master blur setting.
+
+        Args:
+            enabled: Whether export blur is enabled.
+
+        Returns:
+            None.
+
+        Raises:
+            None.
+
+        Note:
+            Disabling the master does not alter ``preview_blur_enabled``; it only
+            disables the control and preview rendering.
+
+        Example:
+            panel.set_preview_blur_enabled(False)
+        """
+        self.preview_blur_checkbox.setEnabled(enabled)
 
     def set_tracking_config_warning_visible(self, visible: bool) -> None:
         self.tracking_config_warning_label.setVisible(visible)
@@ -506,9 +750,29 @@ class RightControlPanel(QScrollArea):
         self._apply_model_provider_filter(selected_model_id=model_id, emit_model_signal=False)
 
     def connect_signals_to_export_handler(self, export_handler: ExportHandler) -> None:
+        """Connect preview/render and export actions to the export handler.
+
+        Args:
+            export_handler: Handler updating session settings and starting exports.
+
+        Returns:
+            None.
+
+        Raises:
+            None.
+
+        Note:
+            Preview-only changes re-render the editor but do not affect export pixels.
+
+        Example:
+            panel.connect_signals_to_export_handler(handler)
+        """
         self.export_btn.clicked.connect(export_handler.on_export)
         self.export_all_btn.clicked.connect(export_handler.on_export_all)
         self.export_all_action.triggered.connect(export_handler.on_export_all)
         self.draw_boxes_checkbox.toggled.connect(export_handler.on_draw_boxes_changed)
+        self.box_border_width_spinbox.valueChanged.connect(export_handler.on_box_border_width_changed)
+        self.show_preview_mask_checkbox.toggled.connect(export_handler.on_show_preview_mask_changed)
+        self.preview_blur_checkbox.toggled.connect(export_handler.on_preview_blur_changed)
         self.blur_checkbox.toggled.connect(export_handler.on_blur_toggled)
         self.blur_strength_spinbox.valueChanged.connect(export_handler.on_blur_strength_changed)

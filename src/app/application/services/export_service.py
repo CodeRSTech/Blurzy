@@ -15,8 +15,9 @@ from app.application.adapters import ApplicationAdapter
 from app.domain import VideoDataLayer
 
 from app.shared.logging_cfg import get_logger
+from app.shared.masked_blur import apply_masked_blur
 if TYPE_CHECKING:
-    from app.domain import SessionId, BBoxXYXYTuple
+    from app.domain import SessionId, BBoxViewModel
     from app.infrastructure.session.session import Session
 
 
@@ -41,7 +42,7 @@ class ExportService(QObject):
         - Apply blur effects to detected/tracked regions.
 
     Note:
-        Populates Layer D data Just-in-time during the process.
+        Prefers Layer D when populated and falls back to Layer C for unseeded sessions.
 
         Export Formats:
             Video — MP4 with blur overlay, H.264 codec, original FPS/resolution.
@@ -53,9 +54,9 @@ class ExportService(QObject):
         Blur strength controlled via session settings.
         Exports ``DataLayer.D`` (user-edited tracking/detection final results).
 
-        Applies Gaussian blur to regions within bounding boxes.
-        Strength (sigma) configurable via ``ProcessingSettings.blur_strength``.
-        Uses OpenCV ``cv2.GaussianBlur()`` with adaptive kernel size.
+        Blurs the union of bounding boxes once with a 10-pixel outward feather.
+        Kernel size is configurable via ``ProcessingSettings.blur_strength``.
+        Selected box interiors remain fully blurred; editor preview is unchanged.
     """
 
     def __init__(self, app: Application) -> None:
@@ -152,12 +153,10 @@ class ExportService(QObject):
 
                     boxes = session.data.get_boxes_for_layer_at_frame_index_as_list(layer=export_layer,
                                                                                     frame_index=frame_index)
-                    if session.state.settings.blur_enabled:
-                        for item in boxes:
-                            frame = self._blur_region(
-                                frame,
-                                item.bbox_xyxy,
-                                session.state.settings.blur_strength)
+                    if session.state.settings.blur_enabled and boxes:
+                        frame = self._apply_masked_blur(
+                            frame, boxes, session.state.settings.blur_strength
+                        )
 
                     writer.write(frame)
 
@@ -223,20 +222,11 @@ class ExportService(QObject):
     #     logger.info("JSON annotations written to {}", output_path)
 
     @staticmethod
-    def _blur_region(frame: np.ndarray, bbox_xyxy: BBoxXYXYTuple, strength: float) -> np.ndarray:
-        h, w = frame.shape[:2]
-        x1, y1, x2, y2 = bbox_xyxy
-        x1, y1 = max(0, x1), max(0, y1)
-        x2, y2 = min(w, x2), min(h, y2)
-
-        if x2 <= x1 or y2 <= y1:
-            return frame
-
-        ksize = max(3, int(strength) | 1)  # must be odd and >= 3
-        roi = frame[y1:y2, x1:x2]
-        blurred = cv2.GaussianBlur(roi, (ksize, ksize), 0)
-        frame[y1:y2, x1:x2] = blurred
-        return frame
+    def _apply_masked_blur(
+        frame: np.ndarray, boxes: list[BBoxViewModel], strength: float
+    ) -> np.ndarray:
+        """Apply shared feathered Gaussian blur to export pixels."""
+        return apply_masked_blur(frame, boxes, strength)
 
     def export_annotations_csv(self, s_id: SessionId, output_path: str) -> None:
         session_state = self._app_adapter.get_session_by_id(s_id).state

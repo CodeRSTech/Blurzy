@@ -118,6 +118,7 @@ class AnnotationOverlayWidget(QWidget):
         self._editing_bbox_id: str | None = None
         self._tracker_actions_enabled: bool = False
         self._selected_bbox_keys: set[str] = set()
+        self._box_border_width = 2
         self._group_drag_keys: list[str] = []
         self._marquee_origin: QPoint | None = None
         self._marquee_rect = QRect()
@@ -176,6 +177,31 @@ class AnnotationOverlayWidget(QWidget):
             self._state = BBoxState()
         logger.trace("Overlay selection updated: {}", sorted(self._selected_bbox_keys))
         self.update()
+
+    def set_box_border_width(self, width: int) -> None:
+        """Set the preview outline width for selected and active boxes.
+
+        Args:
+            width: Outline width in pixels, from 1 to 10.
+
+        Returns:
+            None.
+
+        Raises:
+            ValueError: If ``width`` is outside the inclusive range 1..10.
+
+        Note:
+            The right-panel spin box uses the same range; validation also protects
+            callers that update the preview directly.
+
+        Example:
+            overlay.set_box_border_width(3)
+        """
+        if not 1 <= width <= 10:
+            raise ValueError("width must be between 1 and 10.")
+        if self._box_border_width != width:
+            self._box_border_width = width
+            self.update()
 
     def set_tool_mode(self, mode: ToolMode) -> None:
         """Change the active tool mode and update the cursor accordingly."""
@@ -458,9 +484,9 @@ class AnnotationOverlayWidget(QWidget):
             selected_rect = self._image_rect_to_widget_space(*bbox_xyxy)
             if box_key in self._group_drag_keys:
                 selected_rect = selected_rect.translated(group_drag_delta)
-            draw_selected_bbox(painter, selected_rect)
+            draw_selected_bbox(painter, selected_rect, self._box_border_width)
         if self._state.has_valid_rect:
-            draw_active_bbox(painter, self._state.rect)
+            draw_active_bbox(painter, self._state.rect, self._box_border_width)
         if not self._marquee_rect.isNull():
             painter.setPen(QPen(_BOX_COLOR, 2, Qt.PenStyle.DashLine))
             painter.setBrush(Qt.BrushStyle.NoBrush)

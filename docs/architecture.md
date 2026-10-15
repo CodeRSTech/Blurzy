@@ -161,7 +161,14 @@ loading separate from UI widgets.
 Tracking starts from available detection boxes in Layer A or B. The tracking
 service validates the request, creates a `TrackingWorker` with a selected
 strategy, and later synchronizes output to Layer C. Layer D is the
-user-editable result layer, populated from tracking output when needed.
+user-editable result layer. Every completed run refreshes machine-generated
+Layer D boxes across the full frame range while preserving manual annotations.
+Trackers suppress nested same-class detector boxes before association and tag
+coasted estimates separately from detection-backed observations. Optional
+offline stitching uses bidirectional tracklet matching and Gaussian-smoothed
+gap interpolation; rejected tails decay quickly. Preview-only box, mask, and
+live-blur settings are separate from Render controls, which govern exported
+video blur.
 Annotation handlers update the selected layer and request the preview/table
 to render again.
 

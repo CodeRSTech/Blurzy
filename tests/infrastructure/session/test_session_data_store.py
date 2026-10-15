@@ -24,8 +24,8 @@ for _module_name in (
     if _module is not None:
         importlib.reload(_module)
 
-from app.domain import VideoDataLayer
-from app.infrastructure.session.session_data_store import SessionDataStore
+from app.domain import VideoDataLayer  # noqa: E402
+from app.infrastructure.session.session_data_store import SessionDataStore  # noqa: E402
 
 
 @dataclass
@@ -132,3 +132,42 @@ class TestSessionDataStore:
         boxes = restored.get_boxes_for_layer_at_frame_index_as_list(VideoDataLayer.C, 4)
         assert len(boxes) == 1
         assert boxes[0].key == "persisted"
+
+    def test_machine_refresh_preserves_manual_boxes_and_replaces_all_frames_under_one_lock(self):
+        class CountingLock:
+            def __init__(self):
+                import threading
+
+                self._lock = threading.RLock()
+                self.acquisitions = 0
+
+            def __enter__(self):
+                self.acquisitions += 1
+                self._lock.acquire()
+                return self
+
+            def __exit__(self, exc_type, exc_value, traceback):
+                self._lock.release()
+
+        store = SessionDataStore(s_id=MagicMock())
+        manual = _FakeBox(key="manual", confidence=0.7, is_manual=True)
+        stale_machine = _FakeBox(key="stale", confidence=0.8, is_manual=False)
+        replacement = _FakeBox(key="new", confidence=0.9, is_manual=False)
+        store.add_boxes_to_layer_at_frame_index(VideoDataLayer.D, 0, [manual, stale_machine])
+        store.add_box_to_layer_at_frame_index(
+            VideoDataLayer.D,
+            1,
+            _FakeBox(key="stale-empty", confidence=0.8, is_manual=False),
+        )
+        lock = CountingLock()
+        store._lock = lock
+
+        store.replace_machine_boxes_for_frames(VideoDataLayer.D, {0: [replacement]}, 3)
+
+        assert lock.acquisitions == 1
+        frame_zero = store.get_boxes_for_layer_at_frame_index_as_list(VideoDataLayer.D, 0)
+        assert [box.key for box in frame_zero] == ["manual", "new"]
+        assert frame_zero[0] is manual
+        assert frame_zero[1] is not replacement
+        assert store.get_boxes_for_layer_at_frame_index_as_list(VideoDataLayer.D, 1) == []
+        assert store.get_boxes_for_layer_at_frame_index_as_list(VideoDataLayer.D, 2) == []

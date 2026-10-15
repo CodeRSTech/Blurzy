@@ -17,6 +17,7 @@ def _make_session(*, has_existing_boxes: bool = False, settings: ProcessingSetti
         chosen_labels=["person"],
     )
     session.data.has_boxes_for_layer_at_frame_index.return_value = has_existing_boxes
+    session.data.has_frame_for_layer_at_frame_index.return_value = False
     return session
 
 
@@ -55,15 +56,64 @@ class TestDetectionBatchProcessor:
         )
 
         session.data.add_boxes_to_layer_at_frame_index.assert_called_once()
-        layer, frame_index, filtered_boxes = session.data.add_boxes_to_layer_at_frame_index.call_args.args
+        session.data.replace_machine_boxes_at_frame_index.assert_called_once()
+        layer, frame_index, raw_boxes = session.data.add_boxes_to_layer_at_frame_index.call_args.args
         assert layer == VideoDataLayer.A
         assert frame_index == 5
-        assert len(filtered_boxes) == 1
-        assert filtered_boxes[0].id == "1"
-        assert filtered_boxes[0].label == "person"
-        assert filtered_boxes[0].is_detection == True
+        assert len(raw_boxes) == 2
+        assert {box.id for box in raw_boxes} == {"1", "2"}
+        _, _, editable_boxes = session.data.replace_machine_boxes_at_frame_index.call_args.args
+        assert len(editable_boxes) == 1
+        assert editable_boxes[0].id == "1"
+        assert editable_boxes[0].label == "person"
+        assert editable_boxes[0].is_detection
+        assert editable_boxes[0] is raw_boxes[0]
         assert report.written_frames == 1
-        assert report.written_boxes == 1
+        assert report.written_boxes == 2
+
+    def test_refreshes_initialized_layer_b_machine_boxes(self):
+        repo = MagicMock()
+        session = _make_session()
+        session.data.has_frame_for_layer_at_frame_index.return_value = True
+        repo.get_session_by_id.return_value = session
+        processor = DetectionBatchProcessor(repo)
+
+        processor.process_batch(
+            MagicMock(),
+            {
+                5: [
+                    DetectionResult(
+                        item_id="1", label="person", bbox_xyxy=(1, 2, 30, 40), confidence=0.9
+                    )
+                ]
+            },
+        )
+
+        session.data.add_boxes_to_layer_at_frame_index.assert_called_once()
+        session.data.replace_machine_boxes_at_frame_index.assert_called_once()
+        assert session.data.add_boxes_to_layer_at_frame_index.call_args.args[0] == VideoDataLayer.A
+
+    def test_marks_layer_b_frame_initialized_when_all_raw_detections_are_filtered(self):
+        repo = MagicMock()
+        session = _make_session()
+        repo.get_session_by_id.return_value = session
+        processor = DetectionBatchProcessor(repo)
+
+        processor.process_batch(
+            MagicMock(),
+            {
+                5: [
+                    DetectionResult(
+                        item_id="1", label="person", bbox_xyxy=(1, 2, 30, 40), confidence=0.2
+                    )
+                ]
+            },
+        )
+
+        session.data.add_boxes_to_layer_at_frame_index.assert_called_once()
+        session.data.replace_machine_boxes_at_frame_index.assert_called_once_with(
+            VideoDataLayer.B, 5, []
+        )
 
     def test_returns_expected_report_counts(self):
         repo = MagicMock()

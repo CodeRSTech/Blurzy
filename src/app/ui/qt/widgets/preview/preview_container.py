@@ -98,6 +98,26 @@ class PreviewContainer(QWidget):
         """Passes the raw video frame down to the display layer."""
         self.video_layer.set_image(image)
 
+    def set_box_border_width(self, width: int) -> None:
+        """Set box-outline width in the interactive preview overlay.
+
+        Args:
+            width: Outline width in pixels from 1 to 10.
+
+        Returns:
+            None.
+
+        Raises:
+            ValueError: If the width is outside the supported range.
+
+        Note:
+            The setting affects only the editor viewport.
+
+        Example:
+            preview.set_box_border_width(2)
+        """
+        self.bbox_layer.set_box_border_width(width)
+
     def set_message(self, message: str) -> None:
         """Passes placeholder text down to the display layer."""
         self.video_layer.set_message(message)

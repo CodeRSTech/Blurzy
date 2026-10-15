@@ -1,10 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, Protocol, final
-
-if TYPE_CHECKING:
-    from typing import Any
+from typing import Protocol, final
 
 
 DEFAULT_DETECTION_MODEL_NAME = "None"
@@ -15,7 +12,13 @@ DEFAULT_TRACKING_SOURCE = "b"
 DEFAULT_MIN_IOU = 0.3
 DEFAULT_MIN_TRACKER_CONFIDENCE = 0.1
 DEFAULT_CONFIDENCE_DECAY = 0.05
+DEFAULT_OFFLINE_STITCHING_ENABLED = True
+DEFAULT_MAX_STITCH_GAP = 25
+DEFAULT_GSI_SMOOTHNESS = 10.0
 DEFAULT_DRAW_BOXES = True
+DEFAULT_BOX_BORDER_WIDTH = 2
+DEFAULT_SHOW_PREVIEW_MASK = False
+DEFAULT_PREVIEW_BLUR_ENABLED = False
 DEFAULT_BLUR_ENABLED = False
 DEFAULT_BLUR_STRENGTH = 15.0
 
@@ -49,6 +52,35 @@ def _coerce_float(value: object, default: float) -> float:
     return default
 
 
+def _coerce_int(value: object, default: int) -> int:
+    """Convert a stored value to an integer, falling back for invalid input.
+
+    Args:
+        value: Raw QSettings value.
+        default: Fallback used for unsupported or malformed values.
+
+    Returns:
+        An integer suitable for a discrete preference.
+
+    Raises:
+        None.
+
+    Note:
+        Booleans are excluded even though Python treats them as integers.
+
+    Example:
+        frames = _coerce_int("25", 25)
+    """
+    if isinstance(value, int) and not isinstance(value, bool):
+        return value
+    if isinstance(value, str):
+        try:
+            return int(value.strip())
+        except ValueError:
+            return default
+    return default
+
+
 def _coerce_str(value: object, default: str) -> str:
     if value is None:
         return default
@@ -67,6 +99,12 @@ class _SettingsBackend(Protocol):
 
 @dataclass(slots=True)
 class AppPreferences:
+    """Persisted application defaults and last-used locations.
+
+    Note:
+        Default processing options are copied into sessions when they are created;
+        edits to a session do not mutate these global preferences.
+    """
     startup_fullscreen: bool = False
     default_detection_model_name: str = DEFAULT_DETECTION_MODEL_NAME
     default_min_detection_confidence: float = DEFAULT_MIN_DETECTION_CONFIDENCE
@@ -76,7 +114,13 @@ class AppPreferences:
     default_min_iou: float = DEFAULT_MIN_IOU
     default_min_tracker_confidence: float = DEFAULT_MIN_TRACKER_CONFIDENCE
     default_confidence_decay: float = DEFAULT_CONFIDENCE_DECAY
+    default_offline_stitching_enabled: bool = DEFAULT_OFFLINE_STITCHING_ENABLED
+    default_max_stitch_gap: int = DEFAULT_MAX_STITCH_GAP
+    default_gsi_smoothness: float = DEFAULT_GSI_SMOOTHNESS
     default_draw_boxes: bool = DEFAULT_DRAW_BOXES
+    default_box_border_width: int = DEFAULT_BOX_BORDER_WIDTH
+    default_show_preview_mask: bool = DEFAULT_SHOW_PREVIEW_MASK
+    default_preview_blur_enabled: bool = DEFAULT_PREVIEW_BLUR_ENABLED
     default_blur_enabled: bool = DEFAULT_BLUR_ENABLED
     default_blur_strength: float = DEFAULT_BLUR_STRENGTH
     last_project_directory: str = ""
@@ -89,6 +133,23 @@ class AppPreferences:
         return ", ".join(self.default_chosen_labels)
 
     def to_processing_settings_kwargs(self) -> dict[str, object]:
+        """Map persisted defaults to settings accepted by a new session.
+
+        Args:
+            None.
+
+        Returns:
+            Processing setting names and values without preference prefixes.
+
+        Raises:
+            None.
+
+        Note:
+            The chosen labels list is copied so a session cannot mutate global defaults.
+
+        Example:
+            kwargs = preferences.to_processing_settings_kwargs()
+        """
         return {
             "detection_model_name": self.default_detection_model_name,
             "min_detection_confidence": self.default_min_detection_confidence,
@@ -98,7 +159,13 @@ class AppPreferences:
             "min_iou": self.default_min_iou,
             "min_tracker_confidence": self.default_min_tracker_confidence,
             "confidence_decay": self.default_confidence_decay,
+            "offline_stitching_enabled": self.default_offline_stitching_enabled,
+            "max_stitch_gap": self.default_max_stitch_gap,
+            "gsi_smoothness": self.default_gsi_smoothness,
             "draw_boxes": self.default_draw_boxes,
+            "box_border_width": self.default_box_border_width,
+            "show_preview_mask": self.default_show_preview_mask,
+            "preview_blur_enabled": self.default_preview_blur_enabled,
             "blur_enabled": self.default_blur_enabled,
             "blur_strength": self.default_blur_strength,
         }
@@ -106,6 +173,11 @@ class AppPreferences:
 
 @final
 class AppPreferencesStore:
+    """Load and persist ``AppPreferences`` through a settings backend.
+
+    Note:
+        Stored key names are stable across launches and support injected test backends.
+    """
     _KEYS = {
         "startup_fullscreen": "preferences/startup_fullscreen",
         "default_detection_model_name": "preferences/default_detection_model_name",
@@ -116,7 +188,13 @@ class AppPreferencesStore:
         "default_min_iou": "preferences/default_min_iou",
         "default_min_tracker_confidence": "preferences/default_min_tracker_confidence",
         "default_confidence_decay": "preferences/default_confidence_decay",
+        "default_offline_stitching_enabled": "preferences/default_offline_stitching_enabled",
+        "default_max_stitch_gap": "preferences/default_max_stitch_gap",
+        "default_gsi_smoothness": "preferences/default_gsi_smoothness",
         "default_draw_boxes": "preferences/default_draw_boxes",
+        "default_box_border_width": "preferences/default_box_border_width",
+        "default_show_preview_mask": "preferences/default_show_preview_mask",
+        "default_preview_blur_enabled": "preferences/default_preview_blur_enabled",
         "default_blur_enabled": "preferences/default_blur_enabled",
         "default_blur_strength": "preferences/default_blur_strength",
         "last_project_directory": "preferences/last_project_directory",
@@ -126,6 +204,23 @@ class AppPreferencesStore:
     }
 
     def __init__(self, settings: _SettingsBackend | None = None) -> None:
+        """Create a preference store over an injected or Qt settings backend.
+
+        Args:
+            settings: Optional backend, defaulting to ``QSettings``.
+
+        Returns:
+            None.
+
+        Raises:
+            ImportError: If Qt settings are requested but PySide6 is unavailable.
+
+        Note:
+            Inject a small backend in tests to avoid persistent machine settings.
+
+        Example:
+            store = AppPreferencesStore(fake_settings)
+        """
         if settings is None:
             from PySide6.QtCore import QSettings
 
@@ -133,6 +228,23 @@ class AppPreferencesStore:
         self._settings = settings
 
     def load(self) -> AppPreferences:
+        """Load preferences and coerce raw backend values to field types.
+
+        Args:
+            None.
+
+        Returns:
+            Preferences populated with saved values or dataclass defaults.
+
+        Raises:
+            None.
+
+        Note:
+            Invalid scalar values fall back to the corresponding current default.
+
+        Example:
+            preferences = store.load()
+        """
         defaults = AppPreferences()
         return AppPreferences(
             startup_fullscreen=_coerce_bool(
@@ -179,9 +291,42 @@ class AppPreferencesStore:
                 self._settings.value(self._KEYS["default_confidence_decay"], defaults.default_confidence_decay),
                 defaults.default_confidence_decay,
             ),
+            default_offline_stitching_enabled=_coerce_bool(
+                self._settings.value(
+                    self._KEYS["default_offline_stitching_enabled"],
+                    defaults.default_offline_stitching_enabled,
+                ),
+                defaults.default_offline_stitching_enabled,
+            ),
+            default_max_stitch_gap=_coerce_int(
+                self._settings.value(self._KEYS["default_max_stitch_gap"], defaults.default_max_stitch_gap),
+                defaults.default_max_stitch_gap,
+            ),
+            default_gsi_smoothness=_coerce_float(
+                self._settings.value(self._KEYS["default_gsi_smoothness"], defaults.default_gsi_smoothness),
+                defaults.default_gsi_smoothness,
+            ),
             default_draw_boxes=_coerce_bool(
                 self._settings.value(self._KEYS["default_draw_boxes"], defaults.default_draw_boxes),
                 defaults.default_draw_boxes,
+            ),
+            default_box_border_width=_coerce_int(
+                self._settings.value(
+                    self._KEYS["default_box_border_width"], defaults.default_box_border_width
+                ),
+                defaults.default_box_border_width,
+            ),
+            default_show_preview_mask=_coerce_bool(
+                self._settings.value(
+                    self._KEYS["default_show_preview_mask"], defaults.default_show_preview_mask
+                ),
+                defaults.default_show_preview_mask,
+            ),
+            default_preview_blur_enabled=_coerce_bool(
+                self._settings.value(
+                    self._KEYS["default_preview_blur_enabled"], defaults.default_preview_blur_enabled
+                ),
+                defaults.default_preview_blur_enabled,
             ),
             default_blur_enabled=_coerce_bool(
                 self._settings.value(self._KEYS["default_blur_enabled"], defaults.default_blur_enabled),
@@ -210,6 +355,23 @@ class AppPreferencesStore:
         )
 
     def save(self, preferences: AppPreferences) -> None:
+        """Persist all preferences and synchronize the backend.
+
+        Args:
+            preferences: Values to write under the store's stable preference keys.
+
+        Returns:
+            None.
+
+        Raises:
+            Exception: Propagates failures from the settings backend.
+
+        Note:
+            The label list is stored as a comma-separated string for compatibility.
+
+        Example:
+            store.save(AppPreferences(default_max_stitch_gap=25))
+        """
         self._settings.setValue(self._KEYS["startup_fullscreen"], preferences.startup_fullscreen)
         self._settings.setValue(
             self._KEYS["default_detection_model_name"], preferences.default_detection_model_name
@@ -225,7 +387,21 @@ class AppPreferencesStore:
             self._KEYS["default_min_tracker_confidence"], preferences.default_min_tracker_confidence
         )
         self._settings.setValue(self._KEYS["default_confidence_decay"], preferences.default_confidence_decay)
+        self._settings.setValue(
+            self._KEYS["default_offline_stitching_enabled"], preferences.default_offline_stitching_enabled
+        )
+        self._settings.setValue(self._KEYS["default_max_stitch_gap"], preferences.default_max_stitch_gap)
+        self._settings.setValue(self._KEYS["default_gsi_smoothness"], preferences.default_gsi_smoothness)
         self._settings.setValue(self._KEYS["default_draw_boxes"], preferences.default_draw_boxes)
+        self._settings.setValue(
+            self._KEYS["default_box_border_width"], preferences.default_box_border_width
+        )
+        self._settings.setValue(
+            self._KEYS["default_show_preview_mask"], preferences.default_show_preview_mask
+        )
+        self._settings.setValue(
+            self._KEYS["default_preview_blur_enabled"], preferences.default_preview_blur_enabled
+        )
         self._settings.setValue(self._KEYS["default_blur_enabled"], preferences.default_blur_enabled)
         self._settings.setValue(self._KEYS["default_blur_strength"], preferences.default_blur_strength)
         self._settings.setValue(self._KEYS["last_project_directory"], preferences.last_project_directory)

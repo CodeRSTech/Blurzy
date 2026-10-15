@@ -38,22 +38,21 @@ class UnifiedLayerService:
 
     - Route operations to the appropriate layer service (Detection or Tracking).
     - Provide a unified interface for layer-agnostic operations.
-    - Handle lazy seeding of editable layers from immutable sources.
+    - Handle compatibility seeding of editable layers from immutable sources.
     - Prevent operations on immutable layers (A, C).
-    - Implement Just-In-Time (JIT) layer population.
+    - Seed editable layers eagerly for new results and lazily for older sessions.
 
     Note:
         - Delegates to ``DetectionLayerService`` for ``DataLayer.B``/``DataLayer.A`` operations.
         - Delegates to ``TrackingLayerService`` for ``DataLayer.D``/``DataLayer.C`` operations.
         - Does operations by itself for redundant tasks (e.g., copying boxes between frames).
-        - Implements JIT seeding: only populate editable layers when accessed.
+        - Retains JIT seeding as a compatibility path for sessions with older data.
         - Protects immutable layers from user modifications.
 
-        Just-In-Time Seeding:
+        Layer Seeding:
 
-        - When a user opens the`Detection` tab → seed ``DataLayer.B`` from ``DataLayer.A`` on-demand.
-        - When a user opens the `Tracking` tab → seed ``DataLayer.D`` from ``DataLayer.C`` on-demand.
-        - Saves memory and avoids redundant processing.
+        - Older sessions seed missing ``DataLayer.B`` frames from ``DataLayer.A`` on-demand.
+        - Older sessions seed missing ``DataLayer.D`` frames from ``DataLayer.C`` on-demand.
         - User edits to B/D are persistent (don't re-seed on next access).
 
         Layer Mapping:
@@ -296,13 +295,13 @@ class UnifiedLayerService:
         frame_index = session.state.playback.current_frame_index
 
         if tab == VideoDataLayerGroup.DETECTION:
-            # Seed Layer B from Layer A Just-In-Time
+            # Compatibility seeding for Layer B frames not initialized by detection.
             _seed_layer_frame_from_layer(
                 source=VideoDataLayer.A, target=VideoDataLayer.B, session=session, frame_index=frame_index
             )
             boxes = session.data.get_boxes_for_layer_at_frame_index_as_list(VideoDataLayer.B, frame_index)
         elif tab == VideoDataLayerGroup.TRACKING:
-            # Seed Layer D from Layer C Just-In-Time
+            # Compatibility seeding for Layer D frames not initialized by tracking.
             _seed_layer_frame_from_layer(
                 source=VideoDataLayer.C, target=VideoDataLayer.D, session=session, frame_index=frame_index
             )
@@ -367,9 +366,19 @@ class UnifiedLayerService:
 
             if layer_name == VideoDataLayer.B:
                 # ============================================================
-                # Overwrite layer B with layer A at the specified frame index
+                # Overwrite layer B with currently filtered Layer A boxes
                 # ============================================================
-                session.data.overwrite_source_to_target_layer_at_index(VideoDataLayer.A, VideoDataLayer.B, frame_index)
+                source_boxes = session.data.get_boxes_for_layer_at_frame_index_as_list(
+                    VideoDataLayer.A, frame_index
+                )
+                filtered_boxes = [
+                    box.clone()
+                    for box in source_boxes
+                    if new_passes_filter(VideoDataLayer.B, box, session.state.settings)
+                ]
+                session.data.overwrite_layer_at_index_with_boxes(
+                    VideoDataLayer.B, frame_index, filtered_boxes
+                )
 
             if layer_name == VideoDataLayer.D:
                 # ============================================================
@@ -429,7 +438,7 @@ class UnifiedLayerService:
 def _seed_layer_frame_from_layer(
         source: VideoDataLayer, target: VideoDataLayer, session: Session, frame_index: int
 ) -> None:
-    """Just-In-Time (JIT) Seeder: Lazily populates Layer B only when the user looks at it."""
+    """Compatibility seeder for editable-layer frames not populated by current writers."""
     logger.trace("Seeding Layer {} from Layer {} for frame {}", target, source, frame_index)
 
     # A frame remains initialized after its final box is deleted. This must not
@@ -443,14 +452,16 @@ def _seed_layer_frame_from_layer(
         logger.trace("Layer {} is empty for frame {}", source, frame_index)
         return
 
-    # HEAVY LIFT: Fetch the pristine AI boxes from Layer A
+    # Fetch pristine source boxes and apply the destination layer's current filters.
     raw_boxes = session.data.get_boxes_for_layer_at_frame_index_as_list(source, frame_index)
-
-    # Clone them instantly so manual edits in Layer B don't break Layer A
-    copied_boxes = [box.clone() for box in raw_boxes]
+    copied_boxes = [
+        box.clone()
+        for box in raw_boxes
+        if new_passes_filter(target, box, session.state.settings)
+    ]
 
     # Inject into Layer B
     logger.trace(
         "Injecting {} boxes into Layer {} data for frame {}", len(copied_boxes), target, frame_index
     )
-    session.data.add_boxes_to_layer_at_frame_index(target, frame_index, copied_boxes)
+    session.data.overwrite_layer_at_index_with_boxes(target, frame_index, copied_boxes)

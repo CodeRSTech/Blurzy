@@ -2,19 +2,20 @@
 
 ## Current behavior
 
-- Detection keeps raw model output in Layer A and applies the current confidence/label filters when seeding editable Layer B.
-- New batch and current-frame detections eagerly populate uninitialized Layer B frames. The frame-view seeder remains as a compatibility path for older sessions.
+- Detection keeps raw model output in Layer A and applies the current confidence/label filters when refreshing machine-generated Layer B boxes. Existing manual Layer B annotations survive even when the frame was previously initialized as empty.
 - Tracking requested from Layer B seeds any uninitialized, eligible frames from Layer A without replacing existing edits. Batch export falls back to Layer A when its configured tracking source is empty.
-- The tracker keeps coasted state internally for re-association but does not publish coast-only boxes. Completed tracks are post-processed in the tracking worker thread: compatible tracklets may be joined across gaps of at most 25 frames and bounded gaps are filled using bidirectional, Gaussian-weighted motion estimates.
-- Layer D is seeded from Layer C after tracking, only for frames not already initialized, and with the current tracker-confidence filter.
+- Same-class nested detections are suppressed before tracker association with an IoMin containment threshold of 0.80; suppressed coordinates are unioned into the retained box so suppression does not expose subject pixels.
+- Trackers distinguish detection-backed observations from coasted predictions. Offline stitching (default on) joins compatible tracklets across up to 25 missed frames and fills accepted gaps with GSI. Rejected or unbridged tails decay at twice the configured rate and are capped at six frames; disabling stitching uses causal coasting at the normal decay rate.
+- Layer D machine boxes are refreshed from filtered Layer C output across the full video frame range after tracking, preserving manual boxes while removing stale machine tracks.
+- Preview-only controls (box outlines, border width, blur-mask overlay, and optional live blur) are independent of Render controls. Export blur remains controlled by the Render panel, and disabling it gates live preview blur.
 
 ## Safety and limitations
 
-Tracklet links use class agreement, midpoint generalized IoU, area similarity, one-to-one Hungarian assignment, and an ambiguity margin. Appearance/Re-ID is not available, so geometry-only links cannot guarantee identity through ambiguous crossings. Interpolation is limited to gaps bracketed by linked observations; the processor does not extrapolate an unbridged tail or alter observed boxes.
+Tracklet links use class agreement, bidirectional midpoint generalized IoU, scale similarity, one-to-one Hungarian assignment, and an ambiguity margin. Strong projected overlap can tolerate area changes up to 3x for partial occlusion. Appearance/Re-ID is not available, so geometry-only links cannot guarantee identity through ambiguous crossings. GSI changes only internal gaps; observed detections remain untouched.
 
 ## Deferred ideas
 
 - Appearance embeddings/Re-ID for stronger long-occlusion identity matching.
-- Forward-backward optical flow for misses with no later detection.
+- Appearance embeddings/Re-ID and forward-backward optical flow for more robust identity matching.
 - Fixed high-birth/low-continuation confidence thresholds; existing user settings remain authoritative.
 - Velocity-aware dilation of tracking boxes during export.

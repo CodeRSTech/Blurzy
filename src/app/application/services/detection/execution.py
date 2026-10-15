@@ -30,6 +30,24 @@ class DetectionExecutionService:
         self._engine_manager = engine_manager
 
     def execute_for_current_frame(self, s_id: SessionId) -> None:
+        """Detect the current frame and refresh its raw and editable layers.
+
+        Args:
+            s_id: Session identifier whose current frame is processed.
+
+        Returns:
+            None.
+
+        Raises:
+            Exception: Propagates model, filtering, and storage failures.
+
+        Note:
+            The raw Layer A output is retained, while Layer B machine boxes are
+            replaced even when the frame was initialized earlier; manual boxes survive.
+
+        Example:
+            service.execute_for_current_frame(session_id)
+        """
         logger.info("Detecting objects in frame for session '{}'", s_id)
         session = self._app_adapter.get_session_by_id(s_id)
 
@@ -48,8 +66,10 @@ class DetectionExecutionService:
         raw_boxes = map_detections_to_bbox(raw_detections)
         filtered = self._filter_boxes(raw_boxes, session.state.settings)
 
-        session.data.add_boxes_to_layer_at_frame_index(
-            VideoDataLayer.A, session.state.playback.current_frame_index, filtered
+        frame_index = session.state.playback.current_frame_index
+        session.data.add_boxes_to_layer_at_frame_index(VideoDataLayer.A, frame_index, raw_boxes)
+        session.data.replace_machine_boxes_at_frame_index(
+            VideoDataLayer.B, frame_index, filtered
         )
 
         logger.info(
@@ -73,11 +93,4 @@ class DetectionExecutionService:
     def _filter_boxes(
             boxes: ListOfBoxes, settings: ProcessingSettings
     ) -> list[BBoxViewModel]:
-        # [AUDIT] AMBIGUITY: This filters raw detection output (Layer A) but uses DataLayer.B
-        # layer_name = DataLayer.B is semantically incorrect for raw detections.
-        # These boxes come from detect_engine (Layer A raw output) but are filtered using Layer B thresholds.
-        # Clarify intent: Is this pre-filtering before Layer A assignment (should use Layer A)?
-        # Or intentionally using Layer B thresholds? If latter, document why.
-        # Current code: layer_name = DataLayer.B (uses detection confidence, not tracker confidence)
-        layer_name = VideoDataLayer.B
-        return [box for box in boxes if new_passes_filter(layer_name, box, settings)]
+        return [box for box in boxes if new_passes_filter(VideoDataLayer.B, box, settings)]

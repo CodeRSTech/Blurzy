@@ -2,10 +2,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
-
-from typing import final, override, TYPE_CHECKING
+from typing import TYPE_CHECKING, final, override
 
 from PySide6.QtCore import Slot
 
@@ -83,8 +80,8 @@ class DetectionService:
         Run the existing single-frame detection flow via the execution collaborator.
 
         The ``...layer_b...`` name is a backward-compatible legacy API surface.
-        Despite that name, this method populates Layer A, matching the prior
-        runtime behavior; Layer B remains seeded lazily elsewhere.
+        It writes raw output to Layer A and filtered clones to Layer B. The
+        compatibility frame seeder can still populate Layer B for older data.
         """
         self._execution_service.execute_for_current_frame(s_id)
 

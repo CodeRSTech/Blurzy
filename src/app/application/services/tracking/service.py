@@ -2,10 +2,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
-
-from typing import final, TYPE_CHECKING
+from typing import TYPE_CHECKING, final
 
 from app.application.adapters import (
     ApplicationAdapter,
@@ -16,7 +13,7 @@ from app.application.services.tracking.result_processor import TrackingResultPro
 
 from app.shared import get_logger
 from app.shared.exceptions import (
-    InvalidSessionIdException, EmptyLayerException,
+    InvalidSessionIdException,
 )
 if TYPE_CHECKING:
     from app.domain import VideoDataLayer
@@ -44,12 +41,12 @@ class TrackingService:
     Note:
         Creates ``TrackingWorker`` instances (runs in background thread).
         Manages Layer C/D lifecycle (clears C before tracking, syncs after).
-        Validates source layer (A or B detection data required).
+        Validates the source layer and seeds missing Layer B frames from Layer A.
         Does NOT manage tracking layer editing (delegates to ``TrackingLayerService``).
 
         Tracking Layers:
-            ``DataLayer.C`` — Raw tracking output (immutable, machine-written).
-            ``DataLayer.D`` — User-editable tracking results (seeded from C).
+            ``DataLayer.C`` — Post-processed tracking output (immutable, machine-written).
+            ``DataLayer.D`` — User-editable tracking results (eagerly seeded from C).
     """
 
     def __init__(self, app: Application):
@@ -77,8 +74,7 @@ class TrackingService:
                 start_background_tracking(s_id, strategy, source_layer)
                   ├── Validate session ID is valid
                   ├── Check no tracking already running
-                  ├── Validate source layer (A or B only)
-                  ├── Validate source layer has detections
+                  ├── Validate source layer (A or B only), seeding missing B frames
                   ├── Clear Layer C/D (immutable/editable tracking layers)
                   ├── Create TrackingWorker with source data
                   └──> Start worker in background thread
@@ -101,15 +97,6 @@ class TrackingService:
             raise InvalidSessionIdException(
                 message="Error while attempting to start tracking.", session_id=s_id
             )
-        session = self._app_adapter.get_session_by_id(s_id)
-
-        if not session.has_boxes_for_layer(source_layer_name):
-            raise EmptyLayerException(
-                message="Error while attempting to start tracking.",
-                layer_name=source_layer_name,
-                session_id=s_id,
-            )
-
         self._worker_manager.start(s_id, strategy_name, source_layer_name)
 
         logger.info(
@@ -129,12 +116,12 @@ class TrackingService:
         Note:
             Called after ``TrackingWorker`` finishes processing all frames.
             Fetches tracking results from worker (dict of frame_index → [boxes]).
-            Overwrites ``DataLayer.C`` with raw tracking output.
-            ``DataLayer.D`` is seeded lazily (Just-In-Time) when accessed.
+            Overwrites ``DataLayer.C`` with post-processed tracking output.
+            Uninitialized ``DataLayer.D`` frames are eagerly seeded with the current filter.
     
             Layer Updates:
-                Layer.C — Updated with raw tracking worker output (immutable).
-                Layer.D — NOT updated directly; seeded on-demand when user views tracking tab.
+                Layer.C — Updated with post-processed tracking output (immutable).
+                Layer.D — Seeded for uninitialized frames while preserving existing edits.
     
             Error Handling:
                 Raises ``InvalidSessionIdException`` if session ID invalid.
@@ -142,7 +129,7 @@ class TrackingService:
     
             Side Effects:
                 Overwrites all of ``DataLayer.C`` with new tracking data.
-                Does NOT modify ``DataLayer.D`` (user keeps their edits unless user resets).
+                Preserves initialized ``DataLayer.D`` frames (including user edits).
         """
         # ====================================================================
         # 1. VALIDATE SESSION ID
@@ -155,19 +142,6 @@ class TrackingService:
 
         tracked_data = self._worker_manager.get_tracked_data(s_id)
         self._result_processor.overwrite_layer_c(s_id, tracked_data)
-
-        # [AUDIT] DEAD CODE: 6 lines of commented JIT seeding and layer pruning logic
-        # This appears to be deferred functionality for filtering Layer D by confidence.
-        # Recommendation: Either implement or create a GitHub issue to track this feature request.
-        # Leaving it commented creates ambiguity about whether it's intended or obsolete.
-        # The comment "The JIT seeder has to filter out boxes" suggests this was planned.
-        #
-        # ======================================================
-        # 3. Prune Layer D
-        # ======================================================
-        # session.data.purge_boxes_in_layer_by_minimum_confidence(
-        #     DataLayer.D, session.view_state.settings.min_tracker_confidence
-        # )
 
         logger.info(
             "Tracking cache synced for session '{}'. Layer C frames: {}",

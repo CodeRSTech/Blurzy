@@ -16,8 +16,8 @@ Algorithm
 3. Solve the linear assignment problem with scipy.optimize.linear_sum_assignment.
 4. Accept matches whose IoU >= iou_threshold.
 5. Unmatched detections → new tracks.
-6. Unmatched tracks → coast (move by last velocity, decay confidence).
-7. Tracks whose confidence drops below min_confidence are pruned.
+6. Unmatched tracks → coast internally (move by last velocity, decay confidence).
+7. Tracks whose confidence drops below min_confidence are pruned; unobserved states are not emitted.
 """
 
 from __future__ import annotations
@@ -78,6 +78,8 @@ class TrackState:
     label: str
     # velocity in (x, y) pixels — centroid-based, updated on each match
     velocity: tuple[float, float] = field(default=(0.0, 0.0))
+    observed: bool = True
+    time_since_update: int = 0
 
 
 # ---------------------------------------------------------------------------
@@ -91,13 +93,32 @@ class _Track:
     confidence: float
     label: str
     velocity: tuple[float, float] = field(default=(0.0, 0.0))
+    observed: bool = True
+    time_since_update: int = 0
 
     def centroid(self) -> tuple[float, float]:
         x1, y1, x2, y2 = self.bbox_xyxy
         return (x1 + x2) / 2.0, (y1 + y2) / 2.0
 
     def coast(self, confidence_decay: float) -> None:
-        """Advance the track by its velocity and decay confidence."""
+        """Advance a missed track and record its coast age.
+
+        Args:
+            confidence_decay: Confidence reduction per unmatched frame.
+
+        Returns:
+            None.
+
+        Raises:
+            None.
+
+        Note:
+            The bounding box moves by the last observed velocity and the age
+            increments once for each unmatched frame.
+
+        Example:
+            track.coast(confidence_decay=0.05)
+        """
         dx, dy = self.velocity
         x1, y1, x2, y2 = self.bbox_xyxy
         self.bbox_xyxy = (
@@ -107,6 +128,7 @@ class _Track:
             int(round(y2 + dy)),
         )
         self.confidence = max(0.0, self.confidence - confidence_decay)
+        self.time_since_update += 1
 
     def to_state(self) -> TrackState:
         return TrackState(
@@ -115,6 +137,8 @@ class _Track:
             confidence=self.confidence,
             label=self.label,
             velocity=self.velocity,
+            observed=self.observed,
+            time_since_update=self.time_since_update,
         )
 
 
@@ -183,6 +207,24 @@ class HungarianIoUTracker:
         self._next_uid = 1
 
     def update(self, detections: list[TrackInput]) -> list[TrackState]:
+        """Associate one frame of detections and advance unmatched tracks.
+
+        Args:
+            detections: Detection boxes for the current frame.
+
+        Returns:
+            Current active track states, including coast age and observation flags.
+
+        Raises:
+            ValueError: If the assignment solver rejects the cost matrix.
+
+        Note:
+            Coast states remain active until their confidence falls below the
+            configured floor, allowing later detections to reconnect.
+
+        Example:
+            states = tracker.update([TrackInput((0, 0, 10, 10), 0.9, "person")])
+        """
         if not self._tracks and not detections:
             return []
 
@@ -227,11 +269,14 @@ class HungarianIoUTracker:
             old_track.confidence = 1.0
             old_track.label = det.label
             old_track.velocity = (new_cx - old_cx, new_cy - old_cy)
+            old_track.observed = True
+            old_track.time_since_update = 0
 
         coasted_count = 0
         for idx, track in enumerate(self._tracks):
             if idx not in matched_track_ids:
                 track.coast(self._confidence_decay)
+                track.observed = False
                 coasted_count += 1
 
         if coasted_count > 0:

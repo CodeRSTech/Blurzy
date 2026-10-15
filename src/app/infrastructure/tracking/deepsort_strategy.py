@@ -46,7 +46,32 @@ class DeepSortStrategy:
     detection so the strategy works without optional embedder packages.
     """
 
-    def __init__(self, min_iou: float = 0.3, min_confidence: float = 0.1, confidence_decay: float = 0.05) -> None:
+    def __init__(
+        self,
+        min_iou: float = 0.3,
+        min_confidence: float = 0.1,
+        confidence_decay: float = 0.05,
+    ) -> None:
+        """Initialize DeepSORT with age and confidence thresholds.
+
+        Args:
+            min_iou: IoU similarity used to configure the tracker association distance.
+            min_confidence: Minimum coast confidence retained in output.
+            confidence_decay: Confidence penalty applied per missed frame.
+
+        Returns:
+            None.
+
+        Raises:
+            ModuleNotFoundError: If the optional DeepSORT dependency is unavailable.
+
+        Note:
+            DeepSORT's internal maximum age is capped by the same causal confidence
+            decay used to filter emitted coast predictions.
+
+        Example:
+            strategy = DeepSortStrategy(min_iou=0.3, confidence_decay=0.05)
+        """
         try:
             from deep_sort_realtime.deepsort_tracker import DeepSort  # pyright: ignore[reportMissingImports]
         except ModuleNotFoundError as exc:
@@ -55,6 +80,9 @@ class DeepSortStrategy:
             ) from exc
 
         max_age = max(1, int(round(1.0 / max(confidence_decay, 0.01))))
+        self._max_age = max_age
+        self._confidence_decay = confidence_decay
+        self._min_confidence = min_confidence
         self._engine = DeepSort(
             max_age=max_age,
             n_init=1,
@@ -81,6 +109,25 @@ class DeepSortStrategy:
             source_data: ListOfBoxesByFrameIndexAsDict,
             total_frames: int = 0,
     ) -> ListOfBoxesByFrameIndexAsDict:
+        """Run DeepSORT on each frame and convert tracks to app view models.
+
+        Args:
+            source_data: Per-frame detection boxes.
+            total_frames: Video frame count.
+
+        Returns:
+            Detection-backed and confidence-filtered coasted boxes by frame.
+
+        Raises:
+            Exception: Propagates failures from the DeepSORT engine.
+
+        Note:
+            Prediction age and confidence are retained so the post-processor can
+            choose offline GSI or ordinary causal coasting.
+
+        Example:
+            tracked = strategy.track(detections, total_frames=80)
+        """
         tracked: ListOfBoxesByFrameIndexAsDict = {}
         if not source_data:
             return tracked
@@ -105,13 +152,22 @@ class DeepSortStrategy:
             for track in active_tracks:
                 if hasattr(track, "is_confirmed") and not track.is_confirmed():
                     continue
-
                 uid = int(getattr(track, "track_id"))
+                time_since_update = int(getattr(track, "time_since_update", 0))
                 bbox = _as_xyxy_int(track.to_ltrb())
                 label_raw = getattr(track, "det_class", "object")
                 label = str(label_raw) if label_raw is not None else "object"
                 det_conf = getattr(track, "det_conf", 1.0)
-                confidence = float(det_conf if det_conf is not None else 1.0)
+                confidence = max(
+                    0.0,
+                    float(det_conf if det_conf is not None else 1.0)
+                    - time_since_update * self._confidence_decay,
+                )
+                if time_since_update > 0 and (
+                    time_since_update > self._max_age
+                    or confidence < self._min_confidence
+                ):
+                    continue
 
                 frame_output.append(
                     BBoxViewModel(
@@ -122,6 +178,8 @@ class DeepSortStrategy:
                         color_hex=uid_to_color(uid),
                         confidence=round(confidence, 4),
                         key=f"track:{uid}",
+                        detection_backed=time_since_update == 0,
+                        time_since_update=time_since_update,
                     )
                 )
 

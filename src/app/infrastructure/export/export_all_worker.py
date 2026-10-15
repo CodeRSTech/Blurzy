@@ -182,10 +182,23 @@ class ExportAllWorker(QThread):
             if self._stop_requested:
                 return False
             logger.info("ExportAll: running tracking for {}", s_id)
+            configured_source = VideoDataLayer(session.state.settings.tracking_source)
+            source_layer = configured_source
+            if (
+                source_layer == VideoDataLayer.B
+                and not session.get_layer_by_name(VideoDataLayer.B)
+                and session.has_boxes_for_layer(VideoDataLayer.A)
+            ):
+                source_layer = VideoDataLayer.A
+                logger.info(
+                    "ExportAll: configured tracking source {} is empty; falling back to Layer A for {}",
+                    configured_source,
+                    s_id,
+                )
             app.start_tracking_worker(
                 s_id,
                 session.state.settings.tracking_strategy,
-                VideoDataLayer(session.state.settings.tracking_source),
+                source_layer,
             )
             if session.has_running_tracking_worker:
                 session.tracking_worker.wait()

@@ -45,7 +45,32 @@ class ByteTrackStrategy:
     into ``BBoxViewModel`` objects.
     """
 
-    def __init__(self, min_iou: float = 0.3, min_confidence: float = 0.1) -> None:
+    def __init__(
+        self,
+        min_iou: float = 0.3,
+        min_confidence: float = 0.1,
+        confidence_decay: float = 0.05,
+    ) -> None:
+        """Initialize ByteTrack and app-side labels and coast confidence.
+
+        Args:
+            min_iou: IoU similarity used to configure tracker association.
+            min_confidence: Minimum confidence for accepting tracker output.
+            confidence_decay: Confidence reduction per coasted frame.
+
+        Returns:
+            None.
+
+        Raises:
+            ModuleNotFoundError: If the optional Ultralytics dependency is unavailable.
+
+        Note:
+            The wrapped ByteTrack constructor is version-adapted because supported
+            releases differ in their required constructor arguments.
+
+        Example:
+            strategy = ByteTrackStrategy(min_iou=0.3, confidence_decay=0.05)
+        """
         try:
             from ultralytics.trackers.byte_tracker import BYTETracker  # pyright: ignore[reportMissingImports]
             from ultralytics.engine.results import Boxes  # pyright: ignore[reportMissingImports]
@@ -55,6 +80,7 @@ class ByteTrackStrategy:
             ) from exc
 
         self._boxes_cls = Boxes
+        self._confidence_decay = confidence_decay
         self._label_to_id: dict[str, int] = {}
         self._id_to_label: dict[int, str] = {}
 
@@ -84,11 +110,31 @@ class ByteTrackStrategy:
             source_data: ListOfBoxesByFrameIndexAsDict,
             total_frames: int = 0,
     ) -> ListOfBoxesByFrameIndexAsDict:
+        """Track detections and emit detection-backed or coasted frame boxes.
+
+        Args:
+            source_data: Per-frame detections to associate.
+            total_frames: Number of frames to process.
+
+        Returns:
+            Tracking boxes keyed by frame index, tagged with observation age.
+
+        Raises:
+            Exception: Propagates failures from the ByteTrack engine.
+
+        Note:
+            Rows without a detection index are emitted as coasted only when that
+            track has a known prior detection.
+
+        Example:
+            tracked = strategy.track(detections, total_frames=120)
+        """
         tracked: ListOfBoxesByFrameIndexAsDict = {}
         if not source_data:
             return tracked
 
         last_seen_detection_index = max(source_data.keys())
+        last_seen_by_track: dict[int, int] = {}
         frame_idx = 0
         while frame_idx < total_frames:
             frame_boxes = source_data.get(frame_idx, [])
@@ -108,11 +154,24 @@ class ByteTrackStrategy:
             frame_output: list[BBoxViewModel] = []
             # Output row shape: [x1, y1, x2, y2, track_id, score, cls, det_idx]
             for row in active_tracks if getattr(active_tracks, "size", 0) else []:
+                det_idx = int(row[7]) if len(row) > 7 else -1
                 uid = int(row[4])
+                detection_backed = 0 <= det_idx < len(frame_boxes)
+                if not detection_backed and uid not in last_seen_by_track:
+                    continue
+                if detection_backed:
+                    last_seen_by_track[uid] = frame_idx
+                time_since_update = (
+                    0
+                    if detection_backed
+                    else max(1, frame_idx - last_seen_by_track[uid])
+                )
                 bbox = _as_xyxy_int(row[:4])
                 cls_id = int(row[6]) if len(row) > 6 else -1
                 label = self._id_to_label.get(cls_id, f"class-{cls_id}")
                 confidence = float(row[5]) if len(row) > 5 else 1.0
+                if not detection_backed:
+                    confidence = max(0.0, confidence - time_since_update * self._confidence_decay)
                 frame_output.append(
                     BBoxViewModel(
                         id=f"track-{uid}",
@@ -122,6 +181,8 @@ class ByteTrackStrategy:
                         color_hex=uid_to_color(uid),
                         confidence=round(confidence, 4),
                         key=f"track:{uid}",
+                        detection_backed=detection_backed,
+                        time_since_update=time_since_update,
                     )
                 )
 

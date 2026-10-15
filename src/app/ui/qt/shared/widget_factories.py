@@ -3,7 +3,14 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 
-from PySide6.QtWidgets import QTableWidget, QHeaderView, QAbstractItemView, QProgressBar, QDoubleSpinBox
+from PySide6.QtWidgets import (
+    QTableWidget,
+    QHeaderView,
+    QAbstractItemView,
+    QProgressBar,
+    QDoubleSpinBox,
+    QSpinBox,
+)
 
 from app.ui.qt.shared.layout_shortcuts import create_hbox_layout
 if TYPE_CHECKING:
@@ -25,13 +32,47 @@ def create_progress_bar(
     return progress_bar
 
 
-def create_spinbox(min_val: float, max_val: float, step: float, default: float) -> QDoubleSpinBox:
+def create_spinbox(
+    min_val: float, max_val: float, step: float, default: float
+) -> QDoubleSpinBox:
     spinbox = QDoubleSpinBox()
     spinbox.setRange(min_val, max_val)
     spinbox.setSingleStep(step)
     spinbox.setDecimals(2)
     spinbox.setValue(default)
     return spinbox
+
+
+def create_int_spinbox(min_val: int, max_val: int, step: int, default: int) -> QSpinBox:
+    """Create an integer spin box with an explicit inclusive range.
+
+    Args:
+        min_val: Smallest accepted integer.
+        max_val: Largest accepted integer.
+        step: Increment used by the spin-box arrows.
+        default: Initial value, clamped by Qt to the supplied range.
+
+    Returns:
+        A configured ``QSpinBox``.
+
+    Raises:
+        None.
+
+    Note:
+        Use this for settings whose values represent discrete pixels or frames.
+
+    Example:
+        gap = create_int_spinbox(1, 60, 1, 25)
+    """
+    spinbox = QSpinBox()
+    spinbox.setRange(min_val, max_val)
+    spinbox.setSingleStep(step)
+    spinbox.setValue(default)
+    return spinbox
+
+
+def create_blur_strength_spinbox(default: float) -> QDoubleSpinBox:
+    return create_spinbox(0.0, 255.0, 1.0, default)
 
 
 def post_data_table_init(data_table: QTableWidget) -> None:

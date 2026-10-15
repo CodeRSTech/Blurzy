@@ -4,8 +4,11 @@ Source: `src/app/application/services/tracking/`
 
 Tracking services validate source data, start a strategy worker, process its
 output, and coordinate import/export or layer operations. Raw tracking output
-is synchronized to Layer C; editable results use Layer D.
+is synchronized to Layer C; editable results use Layer D. When a new tracking
+run completes, Layer D's machine-generated boxes are refreshed for the session's
+full frame range using the current tracker-confidence filter. Manual Layer D
+annotations are retained, including on frames with no current machine track.
 
-**Expand this stub with:** worker completion handling, result synchronization,
-and editing-layer seeding behavior.
-
+`TrackingHandler` synchronizes the worker cache before rendering the active
+frame and tracking table. The tracking tab is selected after completion so the
+new output is immediately visible.

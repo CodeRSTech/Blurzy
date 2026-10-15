@@ -56,6 +56,12 @@ class TestAppPreferencesStore:
             startup_fullscreen=True,
             default_detection_model_name="yolov8n",
             default_chosen_labels=["person", "face"],
+            default_offline_stitching_enabled=False,
+            default_max_stitch_gap=45,
+            default_gsi_smoothness=12.5,
+            default_box_border_width=5,
+            default_show_preview_mask=True,
+            default_preview_blur_enabled=True,
             last_project_directory="/projects",
             default_export_directory="/exports",
             default_export_prefix="final_",
@@ -69,6 +75,13 @@ class TestAppPreferencesStore:
         assert loaded.startup_fullscreen is True
         assert loaded.default_detection_model_name == "yolov8n"
         assert loaded.default_chosen_labels == ["person", "face"]
+        assert loaded.default_offline_stitching_enabled is False
+        assert loaded.default_max_stitch_gap == 45
+        assert loaded.default_gsi_smoothness == 12.5
+        assert loaded.default_box_border_width == 5
+        assert loaded.default_show_preview_mask is True
+        assert loaded.default_preview_blur_enabled is True
+        assert loaded.to_processing_settings_kwargs()["max_stitch_gap"] == 45
         assert loaded.last_project_directory == "/projects"
         assert loaded.default_export_directory == "/exports"
         assert loaded.default_export_prefix == "final_"

@@ -65,6 +65,8 @@ class VideoReader:
             - Sequential path: buffer-friendly for playback or batch processing.
             - Hard seek path: fast jump to an arbitrary frame via FFmpeg seek.
             - Post-seek anchor: single-use frame timestamp recovery after a seek.
+            - Initial sequential read: a newly opened reader starts at zero, so the
+              first ``read_next_frame()`` returns ``actual_index == 0``.
 
         Rotation handling:
             - Metadata rotation is extracted when the reader opens.
@@ -195,7 +197,7 @@ class VideoReader:
         try:
             self.stream = container.streams.video[0]
         except IndexError:
-            raise ZeroStreamsInVideoException(f"No video stream found in file container", path=self._path)
+            raise ZeroStreamsInVideoException("No video stream found in file container", path=self._path)
         except ValueError as e:
             raise VideoStreamStateException(path=self._path, detail=str(e)) from e
         except Exception as e:
@@ -364,6 +366,8 @@ class VideoReader:
                 - Path 1: sequential buffer iteration when the target is within ±60 frames.
                 - Path 2: hard seek to PTS, then anchor on the first decoded frame timestamp.
                 - Fallback: return ``None`` if the frame cannot be reached.
+                A request for index zero decodes and returns the first frame, which
+                is also the frame used by the first export iteration.
 
             Implementation details:
                 - ``_current_index`` tracks a pure sequential count and ignores variable
@@ -453,7 +457,8 @@ class VideoReader:
 
         Note:
             Increments ``_current_index`` by 1, uses pure sequential counting, and
-            returns the current index before incrementing.
+            returns the current index before incrementing. Since ``open()`` resets
+            the counter to zero, the first call returns frame index zero.
 
         Raises:
             ValueError: If the stream ends and ``StopIteration`` is raised.

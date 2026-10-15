@@ -15,7 +15,29 @@ logger = get_logger("Shared->Frame Overlay")
 def draw_frame_overlays(
         frame: RGBFrame,
         boxes: ListOfBoxes | None,
+        border_width: int = 2,
 ) -> RGBFrame:
+    """Draw preview box borders and labels onto a copy of an RGB frame.
+
+    Args:
+        frame: RGB frame to annotate.
+        boxes: Boxes displayed in the current editor tab, or ``None`` for none.
+        border_width: Border width in pixels from 1 to 10.
+
+    Returns:
+        A frame with overlays, or the original frame if there are no boxes.
+
+    Raises:
+        ValueError: If ``border_width`` is outside the inclusive range 1..10.
+
+    Note:
+        This helper is editor-only; exported video rendering never calls it.
+
+    Example:
+        preview = draw_frame_overlays(frame, tracked_boxes, border_width=3)
+    """
+    if not 1 <= border_width <= 10:
+        raise ValueError("border_width must be between 1 and 10.")
     if not boxes:
         return frame
 
@@ -29,7 +51,7 @@ def draw_frame_overlays(
         x1, y1, x2, y2 = item.bbox_xyxy
 
         color = _hex_to_rgb(item.color_hex)
-        _ = cv2.rectangle(result, (x1, y1), (x2, y2), color, 2)
+        _ = cv2.rectangle(result, (x1, y1), (x2, y2), color, border_width)
 
         label = f"{item.id}:{item.label} {item.confidence_txt}"
         _ = cv2.putText(

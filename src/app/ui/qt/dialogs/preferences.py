@@ -19,7 +19,11 @@ from PySide6.QtWidgets import (
 from app.domain import TrackingStrategy, VideoDataLayer
 from app.shared.app_preferences import AppPreferences
 from app.ui.qt.shared.layout_shortcuts import create_hbox_layout, create_vbox_layout
-from app.ui.qt.shared.widget_factories import create_spinbox
+from app.ui.qt.shared.widget_factories import (
+    create_blur_strength_spinbox,
+    create_int_spinbox,
+    create_spinbox,
+)
 
 if TYPE_CHECKING:
     from PySide6.QtWidgets import QWidget
@@ -36,6 +40,25 @@ class PreferencesDialog(QDialog):
         available_models: list[ModelSelectionViewModel],
         parent: QWidget | None = None,
     ) -> None:
+        """Build the persistent preference dialog and populate saved defaults.
+
+        Args:
+            preferences: Current persisted preferences.
+            available_models: Detection models offered by the application.
+            parent: Optional parent widget.
+
+        Returns:
+            None.
+
+        Raises:
+            None.
+
+        Note:
+            Session defaults apply to sessions opened after the preferences are saved.
+
+        Example:
+            dialog = PreferencesDialog(preferences, available_models)
+        """
         super().__init__(parent)
         self.setWindowTitle("Settings")
         self.setMinimumWidth(560)
@@ -49,6 +72,23 @@ class PreferencesDialog(QDialog):
         self._populate_from_preferences(preferences)
 
     def _init_widgets(self) -> None:
+        """Create preference widgets and assign explanatory hover text.
+
+        Args:
+            None.
+
+        Returns:
+            None.
+
+        Raises:
+            None.
+
+        Note:
+            Numeric ranges mirror the corresponding right-panel settings.
+
+        Example:
+            dialog._init_widgets()
+        """
         self._hint_label = QLabel(
             "These preferences are stored across launches. Session defaults apply to videos opened after saving."
         )
@@ -81,10 +121,74 @@ class PreferencesDialog(QDialog):
         self._min_iou_spinbox = create_spinbox(0.0, 1.0, 0.05, 0.3)
         self._min_tracker_confidence_spinbox = create_spinbox(0.0, 1.0, 0.05, 0.1)
         self._confidence_decay_spinbox = create_spinbox(0.0, 1.0, 0.01, 0.05)
+        self._confidence_decay_tooltip = (
+            "Per-frame confidence penalty applied when a tracker coasts without a matching detection. "
+            "Unbridged tracks that never reconnect decay at 2x this rate so boxes disappear quickly "
+            "when a subject exits the frame."
+        )
+        self._confidence_decay_label = QLabel("Confidence decay:")
+        self._confidence_decay_label.setToolTip(self._confidence_decay_tooltip)
+        self._confidence_decay_spinbox.setToolTip(self._confidence_decay_tooltip)
+        self._offline_stitching_checkbox = QCheckBox("Bridge and smooth tracking gaps by default")
+        self._max_stitch_gap_spinbox = create_int_spinbox(1, 60, 1, 25)
+        self._gsi_smoothness_spinbox = create_spinbox(1.0, 30.0, 0.5, 10.0)
 
         self._draw_boxes_checkbox = QCheckBox("Draw bounding boxes by default")
+        self._box_border_width_spinbox = create_int_spinbox(1, 10, 1, 2)
+        self._show_preview_mask_checkbox = QCheckBox("Show blur mask in preview by default")
+        self._preview_blur_enabled_checkbox = QCheckBox("Blur editor preview by default")
         self._blur_enabled_checkbox = QCheckBox("Blur bounding boxes by default")
-        self._blur_strength_spinbox = create_spinbox(0.0, 25.0, 1.0, 15.0)
+        self._blur_strength_spinbox = create_blur_strength_spinbox(15.0)
+
+        self._offline_stitching_tooltip = (
+            "When enabled, new sessions use offline track stitching and Gaussian Smoothed "
+            "Interpolation after tracking. This default can be changed per session in the Tracking panel."
+        )
+        self._max_stitch_gap_tooltip = (
+            "Default maximum number of consecutive missed frames to bridge, from 1 to 60. "
+            "This value applies to videos opened after saving these preferences."
+        )
+        self._gsi_smoothness_tooltip = (
+            "Default Gaussian interpolation lengthscale (tau), from 1 to 30. "
+            "Higher values produce smoother curves across gaps."
+        )
+        self._box_border_width_tooltip = (
+            "Default editor-preview box outline thickness, from 1 to 10 pixels. "
+            "This setting does not affect exported video."
+        )
+        self._show_preview_mask_tooltip = (
+            "Show the combined blur-mask footprint in the editor preview by default. "
+            "This overlay is not included in exported video."
+        )
+        self._preview_blur_tooltip = (
+            "Render Gaussian blur in the editor preview by default when export blur is enabled. "
+            "This preference does not change the final export setting."
+        )
+        self._default_blur_tooltip = (
+            "Master toggle to apply Gaussian blur over tracked bounding boxes in exported videos. "
+            "Turning this on also makes the 'Blur Preview' option available in the editor."
+        )
+        self._blur_strength_tooltip = (
+            "Controls the Gaussian blur kernel size (sigma/radius) used to redact subjects in exported "
+            "video and in the live editor when 'Blur Preview' is active. Higher values produce stronger "
+            "anonymization."
+        )
+        for widget, tooltip in (
+            (
+                self._draw_boxes_checkbox,
+                "Show bounding box outlines and labels in the editor preview by default. "
+                "This preference does not affect exported video.",
+            ),
+            (self._offline_stitching_checkbox, self._offline_stitching_tooltip),
+            (self._max_stitch_gap_spinbox, self._max_stitch_gap_tooltip),
+            (self._gsi_smoothness_spinbox, self._gsi_smoothness_tooltip),
+            (self._box_border_width_spinbox, self._box_border_width_tooltip),
+            (self._show_preview_mask_checkbox, self._show_preview_mask_tooltip),
+            (self._preview_blur_enabled_checkbox, self._preview_blur_tooltip),
+            (self._blur_enabled_checkbox, self._default_blur_tooltip),
+            (self._blur_strength_spinbox, self._blur_strength_tooltip),
+        ):
+            widget.setToolTip(tooltip)
 
         self._export_directory_edit = QLineEdit()
         self._export_directory_edit.setPlaceholderText("Optional default export directory")
@@ -97,6 +201,23 @@ class PreferencesDialog(QDialog):
         )
 
     def _build_ui(self) -> None:
+        """Arrange preference controls into app, detection, tracking, and render groups.
+
+        Args:
+            None.
+
+        Returns:
+            None.
+
+        Raises:
+            None.
+
+        Note:
+            Preview-only defaults and export rendering defaults use separate groups.
+
+        Example:
+            dialog._build_ui()
+        """
         root = create_vbox_layout(self, spacing=12)
         root.addWidget(self._hint_label)
 
@@ -118,15 +239,32 @@ class PreferencesDialog(QDialog):
         tracking_form.addRow("Source:", self._tracking_source_combo_box)
         tracking_form.addRow("Min IoU:", self._min_iou_spinbox)
         tracking_form.addRow("Min tracker confidence:", self._min_tracker_confidence_spinbox)
-        tracking_form.addRow("Confidence decay:", self._confidence_decay_spinbox)
+        tracking_form.addRow(self._confidence_decay_label, self._confidence_decay_spinbox)
+        tracking_form.addRow("", self._offline_stitching_checkbox)
+        self._max_stitch_gap_label = QLabel("Max stitch gap (frames):")
+        self._max_stitch_gap_label.setToolTip(self._max_stitch_gap_tooltip)
+        tracking_form.addRow(self._max_stitch_gap_label, self._max_stitch_gap_spinbox)
+        self._gsi_smoothness_label = QLabel("GSI smoothness:")
+        self._gsi_smoothness_label.setToolTip(self._gsi_smoothness_tooltip)
+        tracking_form.addRow(self._gsi_smoothness_label, self._gsi_smoothness_spinbox)
         root.addWidget(tracking_group)
 
-        preview_group = QGroupBox("Default Preview / Export Settings")
+        preview_group = QGroupBox("Default Preview Settings")
         preview_form = QFormLayout(preview_group)
         preview_form.addRow("", self._draw_boxes_checkbox)
-        preview_form.addRow("", self._blur_enabled_checkbox)
-        preview_form.addRow("Blur strength:", self._blur_strength_spinbox)
+        self._box_border_width_label = QLabel("Box border width (px):")
+        self._box_border_width_label.setToolTip(self._box_border_width_tooltip)
+        preview_form.addRow(self._box_border_width_label, self._box_border_width_spinbox)
+        preview_form.addRow("", self._show_preview_mask_checkbox)
+        preview_form.addRow("", self._preview_blur_enabled_checkbox)
+        render_group = QGroupBox("Default Render Settings")
+        render_form = QFormLayout(render_group)
+        render_form.addRow("", self._blur_enabled_checkbox)
+        self._blur_strength_label = QLabel("Blur strength:")
+        self._blur_strength_label.setToolTip(self._blur_strength_tooltip)
+        render_form.addRow(self._blur_strength_label, self._blur_strength_spinbox)
         root.addWidget(preview_group)
+        root.addWidget(render_group)
 
         export_group = QGroupBox("Default Export Naming")
         export_form = QFormLayout(export_group)
@@ -143,12 +281,47 @@ class PreferencesDialog(QDialog):
         root.addWidget(self._button_box)
 
     def _connect_signals(self) -> None:
+        """Connect preference controls to dialog state and browse actions.
+
+        Args:
+            None.
+
+        Returns:
+            None.
+
+        Raises:
+            None.
+
+        Note:
+            Master blur and offline stitching toggles gate their dependent settings.
+
+        Example:
+            dialog._connect_signals()
+        """
         self._blur_enabled_checkbox.toggled.connect(self._on_blur_toggled)
+        self._offline_stitching_checkbox.toggled.connect(self._on_offline_stitching_toggled)
         self._browse_export_directory_button.clicked.connect(self._on_browse_export_directory)
         self._button_box.accepted.connect(self.accept)
         self._button_box.rejected.connect(self.reject)
 
     def _populate_from_preferences(self, preferences: AppPreferences) -> None:
+        """Restore preference values and dependent control enabled states.
+
+        Args:
+            preferences: Values to display.
+
+        Returns:
+            None.
+
+        Raises:
+            None.
+
+        Note:
+            Signal state changes are applied explicitly after restoring checkboxes.
+
+        Example:
+            dialog._populate_from_preferences(preferences)
+        """
         self._startup_fullscreen_checkbox.setChecked(preferences.startup_fullscreen)
 
         model_index = self._model_combo_box.findData(preferences.default_detection_model_name)
@@ -168,20 +341,86 @@ class PreferencesDialog(QDialog):
         self._min_iou_spinbox.setValue(preferences.default_min_iou)
         self._min_tracker_confidence_spinbox.setValue(preferences.default_min_tracker_confidence)
         self._confidence_decay_spinbox.setValue(preferences.default_confidence_decay)
+        self._offline_stitching_checkbox.setChecked(preferences.default_offline_stitching_enabled)
+        self._max_stitch_gap_spinbox.setValue(preferences.default_max_stitch_gap)
+        self._gsi_smoothness_spinbox.setValue(preferences.default_gsi_smoothness)
         self._draw_boxes_checkbox.setChecked(preferences.default_draw_boxes)
+        self._box_border_width_spinbox.setValue(preferences.default_box_border_width)
+        self._show_preview_mask_checkbox.setChecked(preferences.default_show_preview_mask)
+        self._preview_blur_enabled_checkbox.setChecked(preferences.default_preview_blur_enabled)
         self._blur_enabled_checkbox.setChecked(preferences.default_blur_enabled)
         self._blur_strength_spinbox.setValue(preferences.default_blur_strength)
         self._export_directory_edit.setText(preferences.default_export_directory)
         self._export_prefix_edit.setText(preferences.default_export_prefix)
         self._export_suffix_edit.setText(preferences.default_export_suffix)
         self._on_blur_toggled(preferences.default_blur_enabled)
+        self._on_offline_stitching_toggled(preferences.default_offline_stitching_enabled)
 
     @Slot(bool)
     def _on_blur_toggled(self, enabled: bool) -> None:
+        """Gate export-strength and preview-blur defaults on master blur.
+
+        Args:
+            enabled: Whether blur is enabled by default for new sessions.
+
+        Returns:
+            None.
+
+        Raises:
+            None.
+
+        Note:
+            Disabling the master keeps the saved preview preference intact but unavailable.
+
+        Example:
+            dialog._on_blur_toggled(False)
+        """
         self._blur_strength_spinbox.setEnabled(enabled)
+        self._preview_blur_enabled_checkbox.setEnabled(enabled)
+
+    @Slot(bool)
+    def _on_offline_stitching_toggled(self, enabled: bool) -> None:
+        """Gate gap length and GSI smoothness preference controls.
+
+        Args:
+            enabled: Whether offline stitching is enabled by default.
+
+        Returns:
+            None.
+
+        Raises:
+            None.
+
+        Note:
+            Values are retained while disabled so toggling back on restores them.
+
+        Example:
+            dialog._on_offline_stitching_toggled(True)
+        """
+        self._max_stitch_gap_spinbox.setEnabled(enabled)
+        self._max_stitch_gap_label.setEnabled(enabled)
+        self._gsi_smoothness_spinbox.setEnabled(enabled)
+        self._gsi_smoothness_label.setEnabled(enabled)
 
     @Slot()
     def _on_browse_export_directory(self) -> None:
+        """Open a directory chooser for the default export location.
+
+        Args:
+            None.
+
+        Returns:
+            None.
+
+        Raises:
+            None.
+
+        Note:
+            Cancelling the chooser leaves the existing preference unchanged.
+
+        Example:
+            dialog._on_browse_export_directory()
+        """
         directory = QFileDialog.getExistingDirectory(
             self,
             "Select Default Export Directory",
@@ -191,6 +430,23 @@ class PreferencesDialog(QDialog):
             self._export_directory_edit.setText(directory)
 
     def get_preferences(self) -> AppPreferences:
+        """Create a preference value object from the current controls.
+
+        Args:
+            None.
+
+        Returns:
+            Updated preferences ready to persist.
+
+        Raises:
+            None.
+
+        Note:
+            Labels are split and whitespace-trimmed before storing.
+
+        Example:
+            updated = dialog.get_preferences()
+        """
         return AppPreferences(
             startup_fullscreen=self._startup_fullscreen_checkbox.isChecked(),
             default_detection_model_name=cast(str, self._model_combo_box.currentData()),
@@ -203,7 +459,13 @@ class PreferencesDialog(QDialog):
             default_min_iou=float(self._min_iou_spinbox.value()),
             default_min_tracker_confidence=float(self._min_tracker_confidence_spinbox.value()),
             default_confidence_decay=float(self._confidence_decay_spinbox.value()),
+            default_offline_stitching_enabled=self._offline_stitching_checkbox.isChecked(),
+            default_max_stitch_gap=int(self._max_stitch_gap_spinbox.value()),
+            default_gsi_smoothness=float(self._gsi_smoothness_spinbox.value()),
             default_draw_boxes=self._draw_boxes_checkbox.isChecked(),
+            default_box_border_width=int(self._box_border_width_spinbox.value()),
+            default_show_preview_mask=self._show_preview_mask_checkbox.isChecked(),
+            default_preview_blur_enabled=self._preview_blur_enabled_checkbox.isChecked(),
             default_blur_enabled=self._blur_enabled_checkbox.isChecked(),
             default_blur_strength=float(self._blur_strength_spinbox.value()),
             default_export_directory=self._export_directory_edit.text().strip(),

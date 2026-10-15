@@ -113,3 +113,23 @@ class SessionDataStoreInterface(Protocol):
         self, layer: VideoDataLayer, frame_index: int, boxes: ListOfBoxes
     ) -> None:
         ...
+
+    def replace_machine_boxes_at_frame_index(
+        self,
+        layer: VideoDataLayer,
+        frame_index: int,
+        boxes: Iterable[BBoxViewModel],
+        filter_fn: Callable[[BBoxViewModel], bool] | None = None,
+    ) -> None:
+        """Replace machine output for one frame while preserving manual boxes."""
+        ...
+
+    def replace_machine_boxes_for_frames(
+        self,
+        layer: VideoDataLayer,
+        boxes_by_frame: dict[int, ListOfBoxes],
+        frame_count: int,
+        filter_fn: Callable[[BBoxViewModel], bool] | None = None,
+    ) -> None:
+        """Refresh machine output over a frame range under one storage lock."""
+        ...

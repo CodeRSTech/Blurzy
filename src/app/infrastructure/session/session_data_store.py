@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING
 import threading
 from collections import defaultdict
 
-from typing import final, TYPE_CHECKING
+from typing import final
 
 from PySide6.QtCore import QObject
 
@@ -305,14 +305,34 @@ class SessionDataStore(QObject):
             self, source_layer: VideoDataLayer, target_layer: VideoDataLayer,
             filter_fn: Callable[[BBoxViewModel], bool] | None = None
     ) -> None:
-        """Copy-and-overwrite an entire layer using fast object cloning."""
-        if filter_fn is None:
-            filter_fn = lambda _: True
+        """Copy all accepted boxes from a source layer to a target layer.
+
+        Args:
+            source_layer: Layer providing box data.
+            target_layer: Layer replaced by the copy.
+            filter_fn: Optional predicate that rejects source boxes.
+
+        Returns:
+            None.
+
+        Raises:
+            Exception: Propagates errors from the optional predicate.
+
+        Note:
+            Existing target data is cleared before cloned source boxes are written.
+
+        Example:
+            store.overwrite_source_layer_to_target_layer(VideoDataLayer.A, VideoDataLayer.B)
+        """
         with self.data_lock:
             self.clear_layer_by_name(target_layer)
             for frame_index, boxes in self._data[source_layer].items():
-                if boxes and filter_fn is not None:
-                    self._data[target_layer][frame_index] = [box.clone() for box in boxes if filter_fn(box)]
+                if boxes:
+                    self._data[target_layer][frame_index] = [
+                        box.clone()
+                        for box in boxes
+                        if filter_fn is None or filter_fn(box)
+                    ]
 
     def overwrite_layer_with_dict_of_boxes(
             self, layer: VideoDataLayer, boxes_dict: dict[int, ListOfBoxes]
@@ -330,6 +350,111 @@ class SessionDataStore(QObject):
         """Replaces the entire layer with a new dictionary of boxes."""
         with self.data_lock:
             self._data[layer][frame_index] = boxes
+
+    def replace_machine_boxes_at_frame_index(
+            self,
+            layer: VideoDataLayer,
+            frame_index: int,
+            boxes: Iterable[BBoxViewModel],
+            filter_fn: Callable[[BBoxViewModel], bool] | None = None,
+    ) -> None:
+        """Replace machine boxes in one frame while retaining manual annotations.
+
+        Args:
+            layer: Target layer whose machine boxes are refreshed.
+            frame_index: Zero-based frame to replace.
+            boxes: New machine-produced boxes for the frame.
+            filter_fn: Optional predicate applied before new boxes are cloned.
+
+        Returns:
+            None.
+
+        Raises:
+            Exception: Propagates errors raised by ``filter_fn``.
+
+        Note:
+            Manual boxes remain in their current order and retain their identity;
+            each accepted machine box is cloned to keep layers independently editable.
+
+        Example:
+            store.replace_machine_boxes_at_frame_index(VideoDataLayer.B, 0, detections)
+        """
+        with self.data_lock:
+            self._replace_machine_boxes_unlocked(layer, frame_index, boxes, filter_fn)
+
+    def replace_machine_boxes_for_frames(
+            self,
+            layer: VideoDataLayer,
+            boxes_by_frame: dict[int, ListOfBoxes],
+            frame_count: int,
+            filter_fn: Callable[[BBoxViewModel], bool] | None = None,
+    ) -> None:
+        """Refresh all machine boxes in a frame range under one lock acquisition.
+
+        Args:
+            layer: Target layer whose machine boxes are refreshed.
+            boxes_by_frame: New machine boxes keyed by zero-based frame index.
+            frame_count: Number of frames to refresh, covering ``0..frame_count - 1``.
+            filter_fn: Optional predicate applied before new boxes are cloned.
+
+        Returns:
+            None.
+
+        Raises:
+            ValueError: If ``frame_count`` is negative.
+            Exception: Propagates errors raised by ``filter_fn``.
+
+        Note:
+            Existing manual boxes are retained on every frame, including frames with
+            no machine detections. Frames outside the requested range are unchanged.
+
+        Example:
+            store.replace_machine_boxes_for_frames(VideoDataLayer.D, tracked, frame_count)
+        """
+        if frame_count < 0:
+            raise ValueError("frame_count must be non-negative.")
+
+        with self.data_lock:
+            for frame_index in range(frame_count):
+                self._replace_machine_boxes_unlocked(
+                    layer, frame_index, boxes_by_frame.get(frame_index, ()), filter_fn
+                )
+
+    def _replace_machine_boxes_unlocked(
+            self,
+            layer: VideoDataLayer,
+            frame_index: int,
+            boxes: Iterable[BBoxViewModel],
+            filter_fn: Callable[[BBoxViewModel], bool] | None,
+    ) -> None:
+        """Replace a frame's machine boxes while the caller holds ``data_lock``.
+
+        Args:
+            layer: Layer being updated.
+            frame_index: Zero-based target frame.
+            boxes: Candidate machine boxes.
+            filter_fn: Optional acceptance predicate.
+
+        Returns:
+            None.
+
+        Raises:
+            Exception: Propagates filtering and cloning errors.
+
+        Note:
+            This helper deliberately does not acquire the lock so bulk updates can
+            process every frame in one critical section.
+
+        Example:
+            store._replace_machine_boxes_unlocked(layer, 0, boxes, predicate)
+        """
+        current = self._data[layer].get(frame_index, [])
+        manual_boxes = [box for box in current if box.is_manual]
+        machine_boxes = [
+            box.clone() for box in boxes
+            if not box.is_manual and (filter_fn is None or filter_fn(box))
+        ]
+        self._data[layer][frame_index] = manual_boxes + machine_boxes
 
     def to_project_payload(self) -> dict[str, dict[str, list[dict[str, object]]]]:
         with self.data_lock:

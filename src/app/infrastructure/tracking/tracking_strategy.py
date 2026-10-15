@@ -38,7 +38,25 @@ class HungarianStrategy:
             confidence_decay: float = 0.05,
             min_confidence: float = 0.1,
     ) -> None:
-        """Initialize ``HungarianIoUTracker`` with matching and decay parameters."""
+        """Initialize the tracker with match and coast thresholds.
+
+        Args:
+            iou_threshold: Minimum IoU accepted for a detection-track match.
+            confidence_decay: Per-frame confidence penalty while coasting.
+            min_confidence: Confidence floor used to prune internal tracks.
+
+        Returns:
+            None.
+
+        Raises:
+            None.
+
+        Note:
+            Coasting states are retained in output with ``detection_backed=False``.
+
+        Example:
+            strategy = HungarianStrategy(iou_threshold=0.3, confidence_decay=0.05)
+        """
         self._engine = HungarianIoUTracker(
             iou_threshold=iou_threshold,
             confidence_decay=confidence_decay,
@@ -50,7 +68,25 @@ class HungarianStrategy:
             source_data: ListOfBoxesByFrameIndexAsDict,
             total_frames: int,
     ) -> ListOfBoxesByFrameIndexAsDict:
-        """Run Hungarian IoU tracker on all frames, return tracked boxes with unique IDs and colors."""
+        """Run Hungarian association and return observed plus coasted boxes.
+
+        Args:
+            source_data: Per-frame detection input.
+            total_frames: Frame count used to process trailing missed frames.
+
+        Returns:
+            Boxes keyed by frame, with detection-backed and coast-age metadata.
+
+        Raises:
+            Exception: Propagates assignment or conversion failures.
+
+        Note:
+            Offline post-processing decides whether coasted estimates are replaced
+            by GSI interpolation or retained as causal predictions.
+
+        Example:
+            tracked = strategy.track(detections, total_frames=120)
+        """
         logger.info("Hungarian Tracker engine starting for {} populated frames", len(source_data))
         self._engine.reset()
         tracked: ListOfBoxesByFrameIndexAsDict = {}
@@ -92,6 +128,8 @@ class HungarianStrategy:
                     color_hex=uid_to_color(t.uid),
                     confidence=round(t.confidence, 4),
                     key=f"track:{t.uid}",
+                    detection_backed=t.observed,
+                    time_since_update=t.time_since_update,
                 )
                 for t in active
             ]

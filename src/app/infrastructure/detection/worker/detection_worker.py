@@ -160,7 +160,7 @@ class DetectionWorker(QThread):
         Note:
             Workflow:
                 1. Open ``VideoReader`` for ``_video_path``.
-                2. Loop: read frame, call ``_detection_engine.detect()``, and store the
+                2. The first sequential read is index zero; loop: read frame, call ``_detection_engine.detect()``, and store the
                    result in the cache and current batch.
                 3. Every 30 frames, emit ``batch_ready(s_id, batch)`` and reset the batch.
                 4. On stream end, flush any remaining batch.
@@ -169,6 +169,18 @@ class DetectionWorker(QThread):
 
             Do not access UI from this thread. Only emit signals.
             ``progress_updated()`` is used to synchronize UI progress.
+
+        Args:
+            None.
+
+        Returns:
+            None.
+
+        Raises:
+            None: Worker failures are reported through ``error_occurred``.
+
+        Example:
+            worker.start()
         """
         logger.trace("Detection worker thread running for {}", self._video_path)
         reader = VideoReader(self._video_path)

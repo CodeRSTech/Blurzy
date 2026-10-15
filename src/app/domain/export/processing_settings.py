@@ -21,8 +21,14 @@ class ProcessingSettings:
         min_iou (float): IoU threshold for matching detections to tracks.
         min_tracker_confidence (float): Confidence floor before pruning a track.
         confidence_decay (float): Per-frame confidence decay for coasted tracks.
-        draw_boxes (bool): Whether detection outlines should be drawn on video frames.
-        blur_enabled (bool): Whether Gaussian blur should be applied.
+        offline_stitching_enabled (bool): Whether post-processing bridges fragmented tracks.
+        max_stitch_gap (int): Maximum number of missed frames to bridge.
+        gsi_smoothness (float): Gaussian interpolation lengthscale.
+        draw_boxes (bool): Whether box outlines are shown in the editor preview.
+        box_border_width (int): Preview outline width in pixels.
+        show_preview_mask (bool): Whether to show the export blur mask in preview.
+        preview_blur_enabled (bool): Whether to render blur in the editor preview.
+        blur_enabled (bool): Whether Gaussian blur is applied during export.
         blur_strength (float): Blur sigma in pixels.
 
     Note:
@@ -52,14 +58,65 @@ class ProcessingSettings:
     min_iou: float = 0.3
     min_tracker_confidence: float = 0.1
     confidence_decay: float = 0.05
+    offline_stitching_enabled: bool = True
+    max_stitch_gap: int = 25
+    gsi_smoothness: float = 10.0
 
-    # --- Preview / Render ---
+    # --- Preview ---
     draw_boxes: bool = True
+    box_border_width: int = 2
+    show_preview_mask: bool = False
+    preview_blur_enabled: bool = False
+
+    # --- Render ---
     blur_enabled: bool = False
     blur_strength: float = 15.0
 
+    def __post_init__(self) -> None:
+        """Validate user-configurable limits before a session uses the settings.
+
+        Args:
+            None.
+
+        Returns:
+            None.
+
+        Raises:
+            ValueError: If a bounded setting is outside its documented range.
+
+        Note:
+            UI widgets use the same ranges; this protects settings restored from
+            preferences or constructed by non-UI callers.
+
+        Example:
+            settings = ProcessingSettings(max_stitch_gap=25)
+        """
+        if not 1 <= self.max_stitch_gap <= 60:
+            raise ValueError("max_stitch_gap must be between 1 and 60.")
+        if not 1.0 <= self.gsi_smoothness <= 30.0:
+            raise ValueError("gsi_smoothness must be between 1.0 and 30.0.")
+        if not 1 <= self.box_border_width <= 10:
+            raise ValueError("box_border_width must be between 1 and 10.")
+
     def as_view_model(self) -> SessionSettingsViewModel:
-        """Convert to ``SessionSettingsViewModel`` (UI-ready: labels joined as comma-separated string)."""
+        """Create the widget-ready view of this session's processing settings.
+
+        Args:
+            None.
+
+        Returns:
+            A view model with labels joined for direct text-field assignment.
+
+        Raises:
+            None.
+
+        Note:
+            This conversion is a snapshot; later UI edits update the settings
+            through the application service rather than mutating the snapshot.
+
+        Example:
+            view_model = settings.as_view_model()
+        """
         s = self
         return SessionSettingsViewModel(
             detection_model_name=s.detection_model_name,
@@ -70,7 +127,13 @@ class ProcessingSettings:
             min_iou=s.min_iou,
             min_tracker_confidence=s.min_tracker_confidence,
             confidence_decay=s.confidence_decay,
+            offline_stitching_enabled=s.offline_stitching_enabled,
+            max_stitch_gap=s.max_stitch_gap,
+            gsi_smoothness=s.gsi_smoothness,
             draw_boxes=s.draw_boxes,
+            box_border_width=s.box_border_width,
+            show_preview_mask=s.show_preview_mask,
+            preview_blur_enabled=s.preview_blur_enabled,
             blur_enabled=s.blur_enabled,
             blur_strength=s.blur_strength,
         )

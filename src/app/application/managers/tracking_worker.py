@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from app.domain import VideoDataLayer
+from app.domain import VideoDataLayer, new_passes_filter
 from app.shared.exceptions import (
     EmptyLayerException,
     TrackingWorkerAlreadyRunningException,
@@ -128,7 +128,24 @@ class TrackingWorkerManager:
         s_id: SessionId,
         source_layer_name: str,
     ) -> ListOfBoxesByFrameIndexAsDict:
-        if source_layer_name == VideoDataLayer.A or source_layer_name == VideoDataLayer.B:
+        if source_layer_name == VideoDataLayer.B:
+            layer_a = session.get_layer_by_name(VideoDataLayer.A)
+            for frame_index, raw_boxes in layer_a.items():
+                if session.data.has_frame_for_layer_at_frame_index(
+                    VideoDataLayer.B, frame_index
+                ):
+                    continue
+                boxes = [
+                    box.clone()
+                    for box in raw_boxes
+                    if new_passes_filter(VideoDataLayer.B, box, session.state.settings)
+                ]
+                session.data.overwrite_layer_at_index_with_boxes(
+                    VideoDataLayer.B, frame_index, boxes
+                )
+            return session.get_layer_by_name(source_layer_name)
+
+        if source_layer_name == VideoDataLayer.A:
             return session.get_layer_by_name(source_layer_name)
 
         raise UnsupportedLayerException(

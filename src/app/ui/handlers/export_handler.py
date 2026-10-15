@@ -117,14 +117,14 @@ class ExportHandler(QObject):
     @Slot(bool)
     def on_draw_boxes_changed(self, enabled: bool) -> None:
         """
-        Toggle bounding detection drawing on exported video.
+        Toggle box outlines and ID/label tags in the editor preview.
     
         Note:
             Triggered by right panel ``draw_boxes_changed`` signal.
     
             Action:
                 Update session setting ``draw_boxes`` to enabled/disabled.
-                Re-render frame to reflect change immediately.
+                Re-render the editor frame immediately; export rendering is unchanged.
         """
         s_id = self._window.selected_s_id
         if s_id:
@@ -136,6 +136,78 @@ class ExportHandler(QObject):
             # ================================================================
             # 2. RENDER FRAME WITH UPDATED SETTING
             # ================================================================
+            self._controller.render_frame_for_session_id(s_id)
+
+    @Slot(int)
+    def on_box_border_width_changed(self, value: int) -> None:
+        """Update preview-only box outline width.
+
+        Args:
+            value: Outline width in pixels, constrained by the panel to 1..10.
+
+        Returns:
+            None.
+
+        Raises:
+            None.
+
+        Note:
+            This setting affects editor overlays only, not video export.
+
+        Example:
+            handler.on_box_border_width_changed(3)
+        """
+        s_id = self._window.selected_s_id
+        if s_id:
+            self._app.update_session_settings(s_id, box_border_width=value)
+            self._controller.render_frame_for_session_id(s_id)
+
+    @Slot(bool)
+    def on_show_preview_mask_changed(self, enabled: bool) -> None:
+        """Toggle the editor overlay for the export blur footprint.
+
+        Args:
+            enabled: Whether to show the semi-transparent alpha mask.
+
+        Returns:
+            None.
+
+        Raises:
+            None.
+
+        Note:
+            The overlay is an editor aid and is not written into exported frames.
+
+        Example:
+            handler.on_show_preview_mask_changed(True)
+        """
+        s_id = self._window.selected_s_id
+        if s_id:
+            self._app.update_session_settings(s_id, show_preview_mask=enabled)
+            self._controller.render_frame_for_session_id(s_id)
+
+    @Slot(bool)
+    def on_preview_blur_changed(self, enabled: bool) -> None:
+        """Toggle live Gaussian blur in the editor independently of export blur.
+
+        Args:
+            enabled: Whether to render blur in the editor when master blur is enabled.
+
+        Returns:
+            None.
+
+        Raises:
+            None.
+
+        Note:
+            Export blur remains controlled by ``blur_enabled``.
+
+        Example:
+            handler.on_preview_blur_changed(True)
+        """
+        s_id = self._window.selected_s_id
+        if s_id:
+            self._app.update_session_settings(s_id, preview_blur_enabled=enabled)
             self._controller.render_frame_for_session_id(s_id)
 
     @Slot(bool)
@@ -150,11 +222,27 @@ class ExportHandler(QObject):
                 Show/hide blur strength slider.
                 Update session setting ``blur_enabled``.
                 Re-render frame to reflect change immediately.
+
+        Args:
+            enabled: Whether Gaussian blur is enabled for video export.
+
+        Returns:
+            None.
+
+        Raises:
+            None.
+
+        Note:
+            This master toggle also enables or disables the independent preview-blur control.
+
+        Example:
+            handler.on_blur_toggled(True)
         """
         # ====================================================================
         # 1. SHOW/HIDE BLUR STRENGTH CONTROLS
         # ====================================================================
         self._window.set_blur_strength_visible(enabled)
+        self._window.right_panel.set_preview_blur_enabled(enabled)
 
         # ====================================================================
         # 2. UPDATE SESSION SETTINGS

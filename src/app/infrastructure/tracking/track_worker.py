@@ -6,13 +6,15 @@ from typing import TYPE_CHECKING
 
 
 import copy
-from typing import Protocol, TYPE_CHECKING
+from typing import Protocol
 
 from PySide6.QtCore import QMutex, QMutexLocker, QThread, Signal
 
 from app.infrastructure.tracking.bytetrack_strategy import ByteTrackStrategy
+from app.infrastructure.tracking.box_deduplication import suppress_nested_same_class_boxes
 from app.infrastructure.tracking.deepsort_strategy import DeepSortStrategy
 from app.infrastructure.tracking.tracking_strategy import HungarianStrategy, DummyTracker
+from app.infrastructure.tracking.post_processor import TrackingPostProcessor
 from app.shared.logging_cfg import get_logger
 if TYPE_CHECKING:
     from PySide6.QtCore import QObject
@@ -47,7 +49,7 @@ class TrackingWorker(QThread):
 
     Strategy behavior in simple words:
         - ``dummy``: copy detections without real tracking.
-        - ``hungarian``: match by box overlap (IoU) and coast tracks with decay.
+        - ``hungarian``: match by box overlap (IoU), coast internally, and emit observed boxes only.
         - ``bytetrack``: prioritize strong matches and use weaker detections to keep IDs stable.
         - ``deepsort``: match using movement + overlap + appearance features.
 
@@ -79,6 +81,29 @@ class TrackingWorker(QThread):
 
     def __init__(self, strategy_name: str, source_data: ListOfBoxesByFrameIndexAsDict, session_state: SessionState,
                  parent: QObject | None = None, start: bool = False) -> None:
+        """Prepare a strategy worker with a stable detection snapshot.
+
+        Args:
+            strategy_name: Registered tracker strategy key.
+            source_data: Per-frame detection boxes.
+            session_state: Settings and video metadata for this run.
+            parent: Optional Qt object parent.
+            start: Whether to begin processing immediately.
+
+        Returns:
+            None.
+
+        Raises:
+            ModuleNotFoundError: If an optional selected tracker dependency is missing.
+            ValueError: If a post-processing setting is outside its supported range.
+
+        Note:
+            Detection boxes are deep-copied and nested same-class duplicates are
+            suppressed before worker-thread association begins.
+
+        Example:
+            worker = TrackingWorker("hungarian", detections, state)
+        """
         super().__init__(parent)
         self._strategy_name = strategy_name
         # [AUDIT] CLARITY: Deep copy without explanation of memory implications
@@ -88,6 +113,11 @@ class TrackingWorker(QThread):
         # PERFORMANCE NOTE: If source_data is large (e.g., 1000+ frames with many detections),
         # this may introduce noticeable latency. Consider adding a configuration option for copy strategy.
         self._source_data = copy.deepcopy(source_data)
+        self._source_data = {
+            frame_index: suppress_nested_same_class_boxes(boxes)
+            for frame_index, boxes in self._source_data.items()
+        }
+        self._processing_settings = copy.deepcopy(session_state.settings)
 
         # EXTRACT AND SAVE TOTAL FRAMES
         self._total_frames = session_state.metadata.frame_count
@@ -112,6 +142,7 @@ class TrackingWorker(QThread):
             self._tracker = ByteTrackStrategy(
                 min_iou=session_state.settings.min_iou,
                 min_confidence=session_state.settings.min_tracker_confidence,
+                confidence_decay=session_state.settings.confidence_decay,
             )
         elif strategy_cls is DeepSortStrategy:
             self._tracker = DeepSortStrategy(
@@ -163,6 +194,22 @@ class TrackingWorker(QThread):
                 4. Emit ``progress_updated(frame_count, frame_count)``.
                 5. On exception, emit ``error_occurred(msg)``.
                 6. Finally, emit ``finished_processing()``.
+
+        Args:
+            None.
+
+        Returns:
+            None.
+
+        Raises:
+            None: Worker failures are signaled through ``error_occurred``.
+
+        Note:
+            Optional post-processing settings control tracklet stitching, GSI, and
+            confidence-decayed coast tails after strategy tracking completes.
+
+        Example:
+            worker.start()
         """
         logger.debug("TrackingWorker QThread loop starting...")
         try:
@@ -172,6 +219,15 @@ class TrackingWorker(QThread):
             if self._stop_requested:
                 logger.debug("TrackingWorker stopped prematurely due to stop request")
                 return
+
+            settings = self._processing_settings
+            result = TrackingPostProcessor(
+                max_gap=settings.max_stitch_gap,
+                gsi_smoothness=settings.gsi_smoothness,
+                confidence_decay=settings.confidence_decay,
+                min_confidence=settings.min_tracker_confidence,
+                offline_stitching_enabled=settings.offline_stitching_enabled,
+            ).process(result, total_frames=self._total_frames)
 
             with QMutexLocker(self._mutex):
                 self._tracked_data = result

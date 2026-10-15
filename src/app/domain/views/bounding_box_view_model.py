@@ -25,6 +25,8 @@ class BBoxViewModel:
         color_hex (str): Display color in ``#RRGGBB`` format.
         confidence: Score from 0.0 to 1.0, or ``None`` for manual boxes.
         key (str): Unique key for selection and editing.
+        detection_backed (bool): Whether the tracker observed a detection on this frame.
+        time_since_update (int): Number of consecutive frames since a detection matched.
 
     Note:
         Stored in ``SessionDataStore`` and displayed in the UI table for the
@@ -45,6 +47,8 @@ class BBoxViewModel:
     # See confidence_txt property (line 47) which handles None case.
     confidence: float
     key: str = ""
+    detection_backed: bool = True
+    time_since_update: int = 0
 
     @property
     def confidence_txt(self) -> str:
@@ -63,7 +67,24 @@ class BBoxViewModel:
         return self.source == BoxSource.DETECTION
 
     def clone(self) -> "BBoxViewModel":
-        """Create shallow copy (all fields are immutable or copied)."""
+        """Create an independent shallow copy of this bounding box.
+
+        Args:
+            None.
+
+        Returns:
+            A box with identical identity, geometry, and tracking observation metadata.
+
+        Raises:
+            None.
+
+        Note:
+            The tuple geometry and scalar metadata are immutable values and are copied
+            by assignment; later field replacement does not affect the original.
+
+        Example:
+            editable = box.clone()
+        """
         # Explicitly pass the attributes to a new instance.
         # (Adjust these arguments to match your actual class __init__)
         return BBoxViewModel(
@@ -73,5 +94,7 @@ class BBoxViewModel:
             bbox_xyxy=self.bbox_xyxy,
             color_hex=self.color_hex,
             confidence=self.confidence,
-            key=self.key
+            key=self.key,
+            detection_backed=self.detection_backed,
+            time_since_update=self.time_since_update,
         )

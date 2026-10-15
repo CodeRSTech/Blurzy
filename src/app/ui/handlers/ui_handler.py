@@ -10,6 +10,12 @@ from PySide6.QtCore import Slot
 from app.shared.frame_overlay import draw_frame_overlays
 from app.shared.image_utils import rgb_frame_to_q_image
 from app.shared.logging_cfg import get_logger
+from app.shared.masked_blur import (
+    apply_masked_blur,
+    compute_blur_alpha_mask,
+    overlay_alpha_mask,
+)
+from app.domain import VideoDataLayer
 if TYPE_CHECKING:
     from app.domain import SessionId, VideoDataLayerGroup
 
@@ -198,6 +204,23 @@ class UIHandler:
     
             Only displays boxes if ``draw_boxes_enabled`` is True.
             Displays detection boxes if Detection tab active, tracking boxes if Tracking tab active.
+
+        Args:
+            s_id: Session whose frame is being rendered.
+            frame: Decoded RGB frame.
+
+        Returns:
+            None.
+
+        Raises:
+            Exception: Propagates failures fetching session data or applying overlays.
+
+        Note:
+            Live Gaussian blur requires both export ``blur_enabled`` and the
+            editor-only ``preview_blur_enabled`` setting.
+
+        Example:
+            handler._draw_boxes_on_frame_for_session_id(session_id, frame)
         """
         session = self._app.get_session_by_id(s_id)
         # ====================================================================
@@ -217,11 +240,29 @@ class UIHandler:
             else None
         )
 
+        settings = session.state.settings
+        render_layer = (
+            VideoDataLayer.D
+            if session.data.has_boxes_for_layer(VideoDataLayer.D)
+            else VideoDataLayer.C
+        )
+        render_boxes = session.data.get_boxes_for_layer_at_frame_index_as_list(
+            render_layer, session.state.playback.current_frame_index
+        )
+        if settings.blur_enabled and settings.preview_blur_enabled and render_boxes:
+            frame = apply_masked_blur(frame.copy(), render_boxes, settings.blur_strength)
+        if settings.show_preview_mask and render_boxes:
+            alpha_mask = compute_blur_alpha_mask(frame.shape, render_boxes)
+            frame = overlay_alpha_mask(frame, alpha_mask)
+
         # ====================================================================
         # 3. UPDATE FRAME WITH BOXES
         # ====================================================================
         self._update_frame_with_bboxes(
-            frame, tab_index=active_tab, boxes_to_draw=display
+            frame,
+            tab_index=active_tab,
+            boxes_to_draw=display,
+            border_width=settings.box_border_width,
         )
 
     def _set_ui_state(
@@ -264,6 +305,7 @@ class UIHandler:
         frame: RGBFrame,
         tab_index: VideoDataLayerGroup,
         boxes_to_draw: ListOfBoxes | None = None,
+        border_width: int = 2,
     ) -> None:
         """
         Draw bounding boxes on frame and update UI preview.
@@ -281,23 +323,48 @@ class UIHandler:
                 Box drawing with color/label overlays.
                 RGB to QImage conversion for Qt display.
                 Data tab population (may be called without drawing if ``boxes_to_draw`` is None).
+
+        Args:
+            frame: RGB image to display.
+            tab_index: Active Detection or Tracking table.
+            boxes_to_draw: Active-tab boxes, or ``None`` to hide outlines.
+            border_width: Preview border width in pixels.
+
+        Returns:
+            None.
+
+        Raises:
+            Exception: Logs UI rendering failures and keeps the event loop alive.
+
+        Note:
+            The width is shared by raster outlines and interactive Qt selection pens.
+
+        Example:
+            handler._update_frame_with_bboxes(frame, tab_index, boxes, border_width=2)
         """
         try:
             # ================================================================
             # 1. SET ACTIVE BBOXES FOR OVERLAY HIGHLIGHTING
             # ================================================================
             # [NOTE] Highlights selected boxes in the preview container
-            if boxes_to_draw is not None:
-                active_bboxes = {box.key: box.bbox_xyxy for box in boxes_to_draw}
-                self._window.preview_container.set_active_bboxes(active_bboxes)
-                selected_keys = self._window.selected_frame_box_keys
-                logger.trace("Rendering {} selected overlay boxes: {}", len(selected_keys), selected_keys)
-                self._window.preview_container.set_selected_bbox_keys(selected_keys)
+            active_bboxes = (
+                {box.key: box.bbox_xyxy for box in boxes_to_draw}
+                if boxes_to_draw is not None
+                else {}
+            )
+            self._window.preview_container.set_active_bboxes(active_bboxes)
+            selected_keys = (
+                self._window.selected_frame_box_keys if boxes_to_draw is not None else []
+            )
+            logger.trace("Rendering {} selected overlay boxes: {}", len(selected_keys), selected_keys)
+            self._window.preview_container.set_selected_bbox_keys(selected_keys)
+
+            self._window.preview_container.set_box_border_width(border_width)
 
             # ================================================================
             # 2. DRAW BOXES ON FRAME
             # ================================================================
-            frame_out = draw_frame_overlays(frame, boxes_to_draw)
+            frame_out = draw_frame_overlays(frame, boxes_to_draw, border_width)
 
             # ================================================================
             # 3. CONVERT TO QIMAGE AND DISPLAY

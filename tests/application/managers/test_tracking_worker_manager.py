@@ -7,7 +7,9 @@ from unittest.mock import MagicMock
 import pytest
 
 from app.application.managers.tracking_worker import TrackingWorkerManager
-from app.domain import VideoDataLayer
+from app.domain import ProcessingSettings, VideoDataLayer
+from app.domain.detection import BoxSource
+from app.domain.views import BBoxViewModel
 from app.shared.exceptions import (
     EmptyLayerException,
     TrackingWorkerAlreadyRunningException,
@@ -67,6 +69,50 @@ class TestStart:
 
         with pytest.raises(EmptyLayerException):
             manager.start(MagicMock(), "hungarian", VideoDataLayer.A)
+
+    def test_start_seeds_uninitialized_layer_b_frames_from_filtered_layer_a(self):
+        def box(box_id: str, confidence: float, label: str = "person") -> BBoxViewModel:
+            return BBoxViewModel(
+                id=box_id,
+                source=BoxSource.DETECTION,
+                label=label,
+                bbox_xyxy=(0, 0, 10, 10),
+                color_hex="#ffffff",
+                confidence=confidence,
+                key=box_id,
+            )
+
+        layer_a = {
+            1: [box("accepted", 0.9), box("low-confidence", 0.2), box("wrong-label", 0.9, "cat")],
+            2: [box("next-frame", 0.8)],
+            3: [box("intentionally-removed", 0.8)],
+        }
+        edited = box("manual-edit", 0.7)
+        layer_b = {2: [edited], 3: []}
+        session = MagicMock()
+        session.state.settings = ProcessingSettings(
+            min_detection_confidence=0.5,
+            chosen_labels=["person"],
+        )
+        session.get_layer_by_name.side_effect = (
+            lambda layer: layer_a if layer == VideoDataLayer.A else layer_b
+        )
+        session.data.has_frame_for_layer_at_frame_index.side_effect = (
+            lambda layer, frame_index: frame_index in layer_b
+        )
+        session.data.overwrite_layer_at_index_with_boxes.side_effect = (
+            lambda layer, frame_index, boxes: layer_b.__setitem__(frame_index, boxes)
+        )
+
+        result = TrackingWorkerManager._get_supported_source_layer_data(
+            session, MagicMock(), VideoDataLayer.B
+        )
+
+        assert result is layer_b
+        assert [item.id for item in layer_b[1]] == ["accepted"]
+        assert layer_b[1][0] is not layer_a[1][0]
+        assert layer_b[2] == [edited]
+        assert layer_b[3] == []
 
     @pytest.mark.parametrize("strategy_name", ["bytetrack", "deepsort"])
     def test_start_accepts_new_strategy_names(self, strategy_name: str):

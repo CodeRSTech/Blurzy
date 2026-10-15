@@ -25,9 +25,9 @@ if TYPE_CHECKING:
 
 
 
-def draw_active_bbox(painter: QPainter, rect: QRect) -> None:
+def draw_active_bbox(painter: QPainter, rect: QRect, border_width: int = 2) -> None:
     """Draw the active bbox with center marker and drag handles."""
-    painter.setPen(QPen(_BOX_COLOR, 2, Qt.PenStyle.SolidLine))
+    painter.setPen(QPen(_BOX_COLOR, border_width, Qt.PenStyle.SolidLine))
     painter.setBrush(Qt.BrushStyle.NoBrush)
     painter.drawRect(rect)
 
@@ -43,8 +43,8 @@ def draw_active_bbox(painter: QPainter, rect: QRect) -> None:
         painter.drawEllipse(pt, _HANDLE_DRAW_R, _HANDLE_DRAW_R)
 
 
-def draw_selected_bbox(painter: QPainter, rect: QRect) -> None:
+def draw_selected_bbox(painter: QPainter, rect: QRect, border_width: int = 2) -> None:
     """Draw a selection outline without edit handles."""
-    painter.setPen(QPen(_BOX_COLOR, 3, Qt.PenStyle.SolidLine))
+    painter.setPen(QPen(_BOX_COLOR, border_width, Qt.PenStyle.SolidLine))
     painter.setBrush(Qt.BrushStyle.NoBrush)
     painter.drawRect(rect)

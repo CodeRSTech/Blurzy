@@ -2,10 +2,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
-
-from typing import final, override, TYPE_CHECKING
+from typing import TYPE_CHECKING, final, override
 
 from PySide6.QtCore import QObject
 
@@ -37,13 +34,13 @@ class TrackingLayerService(QObject):
         - Track lifecycle management.
 
     Note:
-        ``DataLayer.C`` — Raw immutable tracking output (machine-written).
-        ``DataLayer.D`` — User-editable tracks (seeded from C, allows corrections).
+        ``DataLayer.C`` — Post-processed immutable tracking output (machine-written).
+        ``DataLayer.D`` — User-editable tracks seeded from C, allowing corrections.
         Tracks persist across frames (track ID unites multiple frame detections).
         User edits don't affect ``DataLayer.C`` (can always revert).
 
         Design pattern:
-            Layer D is seeded Just-In-Time (lazy) from Layer C when accessed.
+            New tracking output eagerly seeds Layer D; older sessions retain JIT seeding.
             User edits to Layer D are persistent (survives re-rendering).
             Layer C is immutable reference point.
     """

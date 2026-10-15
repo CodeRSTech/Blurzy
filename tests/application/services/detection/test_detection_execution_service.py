@@ -55,6 +55,7 @@ class TestDetectionExecutionService:
             DetectionResult(item_id="2", label="cat", bbox_xyxy=(5, 6, 11, 13), confidence=0.2),
         ]
         session = _make_session(detection_engine=detection_engine)
+        session.data.has_frame_for_layer_at_frame_index.return_value = False
         repo.get_session_by_id.return_value = session
         engine_manager = MagicMock()
         service = DetectionExecutionService(repo, engine_manager)
@@ -63,8 +64,16 @@ class TestDetectionExecutionService:
 
         engine_manager.create_or_update.assert_not_called()
         session.data.add_boxes_to_layer_at_frame_index.assert_called_once()
-        layer, frame_index, filtered_boxes = session.data.add_boxes_to_layer_at_frame_index.call_args.args
+        session.data.replace_machine_boxes_at_frame_index.assert_called_once()
+        layer, frame_index, raw_boxes = session.data.add_boxes_to_layer_at_frame_index.call_args.args
         assert layer == VideoDataLayer.A
+        assert frame_index == 7
+        assert len(raw_boxes) == 2
+        layer, frame_index, filtered_boxes = (
+            session.data.replace_machine_boxes_at_frame_index.call_args.args
+        )
+        assert layer == VideoDataLayer.B
         assert frame_index == 7
         assert len(filtered_boxes) == 1
         assert filtered_boxes[0].label == "person"
+        assert filtered_boxes[0] is raw_boxes[0]

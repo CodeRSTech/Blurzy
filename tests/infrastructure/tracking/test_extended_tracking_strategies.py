@@ -132,6 +132,45 @@ def test_deepsort_strategy_shapes_output_with_fake_backend(monkeypatch):
     assert len(seen_update["embeds"]) == 1
 
 
+def test_deepsort_strategy_emits_coasted_predictions(monkeypatch):
+    fake_mod = types.ModuleType("deep_sort_realtime.deepsort_tracker")
+
+    class FakeTrack:
+        track_id = 3
+        det_class = "person"
+        det_conf = 0.8
+        time_since_update = 1
+
+        @staticmethod
+        def is_confirmed():
+            return True
+
+        @staticmethod
+        def to_ltrb():
+            return 5, 6, 25, 26
+
+    class FakeDeepSort:
+        def __init__(self, **kwargs):
+            pass
+
+        @staticmethod
+        def update_tracks(raw_detections, embeds=None, frame=None):
+            return [FakeTrack()]
+
+    fake_mod.DeepSort = FakeDeepSort
+    monkeypatch.setitem(sys.modules, "deep_sort_realtime.deepsort_tracker", fake_mod)
+
+    result = DeepSortStrategy().track(
+        source_data={0: [_mk_box(box_id="d-1", bbox=(5, 6, 25, 26), conf=0.9, label="person")]},
+        total_frames=1,
+    )
+
+    assert len(result[0]) == 1
+    assert result[0][0].detection_backed is False
+    assert result[0][0].time_since_update == 1
+    assert result[0][0].confidence == 0.75
+
+
 def test_bytetrack_strategy_handles_empty_frame(monkeypatch):
     fake_mod = types.ModuleType("ultralytics.trackers.byte_tracker")
     fake_results_mod = types.ModuleType("ultralytics.engine.results")
@@ -174,6 +213,52 @@ def test_bytetrack_strategy_handles_empty_frame(monkeypatch):
 
     strategy = ByteTrackStrategy()
     result = strategy.track(source_data={0: []}, total_frames=1)
+    assert result == {0: []}
+
+
+def test_bytetrack_strategy_omits_rows_without_a_prior_observation(monkeypatch):
+    fake_mod = types.ModuleType("ultralytics.trackers.byte_tracker")
+    fake_results_mod = types.ModuleType("ultralytics.engine.results")
+
+    class FakeBoxes:
+        def __init__(self, data, shape):
+            self.data = data
+            self.orig_shape = shape
+
+        @property
+        def conf(self):
+            return self.data[:, 4]
+
+        @property
+        def cls(self):
+            return self.data[:, 5]
+
+        @property
+        def xywh(self):
+            return np.asarray([[20, 30, 20, 20]], dtype=np.float32)
+
+        def __len__(self):
+            return int(self.data.shape[0])
+
+    class FakeByteTracker:
+        def __init__(self, *args):
+            pass
+
+        @staticmethod
+        def update(results):
+            return np.asarray([[10, 20, 30, 40, 7, 0.91, 0, -1]], dtype=np.float32)
+
+    fake_mod.BYTETracker = FakeByteTracker
+    fake_results_mod.Boxes = FakeBoxes
+    monkeypatch.setitem(sys.modules, "ultralytics.trackers.byte_tracker", fake_mod)
+    monkeypatch.setitem(sys.modules, "ultralytics.engine.results", fake_results_mod)
+
+    strategy = ByteTrackStrategy()
+    result = strategy.track(
+        source_data={0: [_mk_box(box_id="d-1", bbox=(10, 20, 30, 40), conf=0.8, label="person")]},
+        total_frames=1,
+    )
+
     assert result == {0: []}
 
 
