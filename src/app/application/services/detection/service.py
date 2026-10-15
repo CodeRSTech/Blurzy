@@ -76,12 +76,25 @@ class DetectionService:
         # - Callers already know it's the "current" frame (from context)
         # - Layer/index details are implementation details suitable for docstring
         # Benefits: Improves readability, easier to read call sites
-        """
-        Run the existing single-frame detection flow via the execution collaborator.
+        """Run selected current-frame detection via the execution collaborator.
 
-        The ``...layer_b...`` name is a backward-compatible legacy API surface.
-        It writes raw output to Layer A and filtered clones to Layer B. The
-        compatibility frame seeder can still populate Layer B for older data.
+        Args:
+            s_id: Session whose current frame should be detected.
+
+        Returns:
+            None.
+
+        Raises:
+            Exception: Propagates detection or storage failures.
+
+        Note:
+            The ``...layer_b...`` name is a backward-compatible legacy API surface.
+            Label/confidence-filtered output is stored in Layer A and cloned into
+            Layer B while preserving manual annotations. The compatibility frame
+            seeder can still populate Layer B for older data.
+
+        Example:
+            service.detect_current_frame_and_populate_layer_b_at_current_index(s_id)
         """
         self._execution_service.execute_for_current_frame(s_id)
 

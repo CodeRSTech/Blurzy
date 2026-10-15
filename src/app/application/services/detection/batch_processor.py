@@ -20,7 +20,7 @@ logger = get_logger("Application->DetectionBatchProcessor")
 
 @dataclass(slots=True)
 class DetectionBatchProcessReport:
-    """Batch counts; ``written_boxes`` counts raw boxes retained in Layer A."""
+    """Batch counts; ``written_boxes`` counts filtered boxes retained in Layer A."""
 
     total_frames: int
     skipped_existing_frames: int
@@ -29,7 +29,7 @@ class DetectionBatchProcessReport:
 
 
 class DetectionBatchProcessor:
-    """Store raw detections in Layer A and filtered, editable detections in Layer B.
+    """Store selected detections in Layer A and editable clones in Layer B.
 
     Working principle
         .. code-block:: python
@@ -41,8 +41,8 @@ class DetectionBatchProcessor:
                 raw_boxes = map_detections_to_bbox(raw_detections)
                 settings = get_session_settings(session)
                 filtered_boxes = filter(raw_boxes, new_passes_filter, Layer.B, settings)
-                session.add_boxes(Layer.A, frame_index, raw_boxes)
-                session.add_boxes(Layer.B, frame_index, clone(filtered_boxes))
+                session.add_boxes(Layer.A, frame_index, filtered_boxes)
+                session.replace_machine_boxes(Layer.B, frame_index, filtered_boxes)
             return DetectionBatchProcessReport(...)
     """
 
@@ -85,7 +85,7 @@ class DetectionBatchProcessor:
     def _write_detections_if_frame_empty(
             session: Session, frame_index: int, raw_detections: list[DetectionResult]
     ) -> int | None:
-        """Write raw detections to A and refresh filtered machine boxes in B.
+        """Write selected detections to A and refresh machine boxes in B.
 
         Args:
             session: Session receiving detections.
@@ -93,15 +93,18 @@ class DetectionBatchProcessor:
             raw_detections: Raw model output for this frame.
 
         Returns:
-            The number of raw boxes written, or ``None`` when A already has boxes.
+            The number of filtered boxes written, or ``None`` when A already has boxes.
 
         Raises:
             AttributeError: If session settings are unavailable.
             Exception: Propagates storage or filtering failures.
 
         Note:
-            Existing manual Layer B annotations are preserved by the storage
-            replacement method; existing machine boxes are always refreshed.
+            Label and detection-confidence settings filter results before Layer A
+            storage, matching the historical detection behavior. An empty label
+            selection permits every class. Existing manual Layer B annotations
+            are preserved by the storage replacement method; existing machine
+            boxes are always refreshed.
 
         Example:
             count = DetectionBatchProcessor._write_detections_if_frame_empty(session, 0, detections)
@@ -114,11 +117,23 @@ class DetectionBatchProcessor:
         raw_boxes = map_detections_to_bbox(raw_detections)
         settings = DetectionBatchProcessor._get_session_settings(session)
         filtered_boxes = [box for box in raw_boxes if new_passes_filter(target_layer, box, settings)]
-        session.data.add_boxes_to_layer_at_frame_index(source_layer, frame_index, raw_boxes)
+        logger.trace(
+            "Detection selection for frame {}: labels={} min_confidence={} raw={} retained={}",
+            frame_index,
+            settings.chosen_labels,
+            settings.min_detection_confidence,
+            len(raw_boxes),
+            len(filtered_boxes),
+        )
+        logger.debug(
+            "Writing {} selected detection(s) to Layer A for frame {}",
+            len(filtered_boxes), frame_index,
+        )
+        session.data.add_boxes_to_layer_at_frame_index(source_layer, frame_index, filtered_boxes)
         session.data.replace_machine_boxes_at_frame_index(
             target_layer, frame_index, filtered_boxes
         )
-        return len(raw_boxes)
+        return len(filtered_boxes)
 
     @staticmethod
     def _get_session_settings(session: Session) -> ProcessingSettings:

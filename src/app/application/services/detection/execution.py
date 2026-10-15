@@ -30,7 +30,7 @@ class DetectionExecutionService:
         self._engine_manager = engine_manager
 
     def execute_for_current_frame(self, s_id: SessionId) -> None:
-        """Detect the current frame and refresh its raw and editable layers.
+        """Detect the current frame and refresh its selected and editable detections.
 
         Args:
             s_id: Session identifier whose current frame is processed.
@@ -42,8 +42,10 @@ class DetectionExecutionService:
             Exception: Propagates model, filtering, and storage failures.
 
         Note:
-            The raw Layer A output is retained, while Layer B machine boxes are
-            replaced even when the frame was initialized earlier; manual boxes survive.
+            Label and detection-confidence settings filter model output before
+            Layer A storage. An empty label selection permits every class.
+            Layer B machine boxes are replaced even when the frame was initialized
+            earlier; manual boxes survive.
 
         Example:
             service.execute_for_current_frame(session_id)
@@ -67,7 +69,11 @@ class DetectionExecutionService:
         filtered = self._filter_boxes(raw_boxes, session.state.settings)
 
         frame_index = session.state.playback.current_frame_index
-        session.data.add_boxes_to_layer_at_frame_index(VideoDataLayer.A, frame_index, raw_boxes)
+        logger.debug(
+            "Writing {} selected detection(s) to Layer A for session '{}' frame {}",
+            len(filtered), s_id, frame_index,
+        )
+        session.data.add_boxes_to_layer_at_frame_index(VideoDataLayer.A, frame_index, filtered)
         session.data.replace_machine_boxes_at_frame_index(
             VideoDataLayer.B, frame_index, filtered
         )
@@ -93,4 +99,31 @@ class DetectionExecutionService:
     def _filter_boxes(
             boxes: ListOfBoxes, settings: ProcessingSettings
     ) -> list[BBoxViewModel]:
-        return [box for box in boxes if new_passes_filter(VideoDataLayer.B, box, settings)]
+        """Apply the historical detection selection before storing either layer.
+
+        Args:
+            boxes: Mapped model detections.
+            settings: Selected labels and detection-confidence threshold.
+
+        Returns:
+            Boxes accepted by the Layer B detection predicate.
+
+        Raises:
+            None.
+
+        Note:
+            Layer A also uses this predicate at the detection storage boundary;
+            an empty label list disables class restriction.
+
+        Example:
+            selected = DetectionExecutionService._filter_boxes(boxes, settings)
+        """
+        filtered = [box for box in boxes if new_passes_filter(VideoDataLayer.B, box, settings)]
+        logger.trace(
+            "Detection selection: labels={} min_confidence={} raw={} retained={}",
+            settings.chosen_labels,
+            settings.min_detection_confidence,
+            len(boxes),
+            len(filtered),
+        )
+        return filtered
