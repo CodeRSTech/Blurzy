@@ -2,7 +2,8 @@
 
 ## Current behavior
 
-- Detection keeps raw model output in Layer A and applies the current confidence/label filters when refreshing machine-generated Layer B boxes. Existing manual Layer B annotations survive even when the frame was previously initialized as empty.
+- Detection applies the current confidence/label filters before storing results in Layer A and refreshing machine-generated Layer B boxes. Labels are exact, case-sensitive matches; an empty Labels textbox permits all classes subject to the confidence filter. Existing manual Layer B annotations survive even when the frame was previously initialized as empty.
+- Editing Labels refilters Layer B, not existing Layer A data. Classes excluded during detection require rerunning detection to become available; expanding Labels alone does not recover discarded results.
 - Tracking requested from Layer B seeds any uninitialized, eligible frames from Layer A without replacing existing edits. Batch export falls back to Layer A when its configured tracking source is empty.
 - Same-class nested detections are suppressed before tracker association with an IoMin containment threshold of 0.80; suppressed coordinates are unioned into the retained box so suppression does not expose subject pixels.
 - Trackers distinguish detection-backed observations from coasted predictions. Offline stitching (default on) joins compatible tracklets across up to 25 missed frames and fills accepted gaps with GSI. Rejected or unbridged tails decay at twice the configured rate and are capped at six frames; disabling stitching uses causal coasting at the normal decay rate.
