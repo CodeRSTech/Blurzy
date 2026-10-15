@@ -1,8 +1,10 @@
 # Architecture
 
-Blurzy is a PySide6 desktop application organized into five broad layers under
+Blurzy is a Qt desktop application organized into five broad layers under
 `src/app`: **UI**, **Application**, **Domain**, **Infrastructure**, and
-**Shared**. The layers separate user interaction and workflow coordination
+**Shared**. 
+
+The layers separate user interaction and workflow coordination
 from video/model integrations and core data types. They describe the current
 code organization; they are not yet enforced as strict package boundaries.
 
@@ -52,11 +54,13 @@ chain. **Arrows in the key point toward the types or contracts a layer depends
 on**, not the direction of runtime data or Qt signals. Shared supports multiple
 layers and is not another step in the dependency chain.
 
-This is a map of the principal boundaries, not an exhaustive import graph or
-strict Clean Architecture. Application still imports concrete Infrastructure
-implementations for factories, session initialization, and persistence.
-`src/main.py` bootstraps Qt and wires Application, Window, and UIController.
-Domain owns core types and rules, not Qt workflows or model-specific code.
+???+ warning "Important"
+
+    This is a map of the principal boundaries, not an exhaustive import graph or
+    strict Clean Architecture. Application still imports concrete Infrastructure
+    implementations for factories, session initialization, and persistence.
+    `src/main.py` bootstraps Qt and wires Application, Window, and UIController.
+    Domain owns core types and rules, not Qt workflows or model-specific code.
 
 ## Layer responsibilities and component map
 
@@ -68,9 +72,11 @@ Domain owns core types and rules, not Qt workflows or model-specific code.
 | [Infrastructure](reference/infrastructure/index.md) | Video I/O, inference and tracking algorithms, background workers, persistence             | `infrastructure/video`, `infrastructure/detection`, `infrastructure/tracking`, `infrastructure/project` |
 | [Shared](reference/shared/index.md)                 | Cross-cutting logging, exceptions, image and annotation utilities                         | `shared/`                                                                                               |
 
-Package-level component stubs follow the meaningful source-package structure.
-They provide a place to add detailed design notes without creating a page for
-every Python module. See the component links in the navigation.
+??? info
+    
+    Package-level component stubs follow the meaningful source-package structure.
+    They provide a place to add detailed design notes without creating a page for
+    every Python module. See the component links in the navigation.
 
 ### Important components
 
@@ -158,14 +164,20 @@ loading separate from UI widgets.
 
 ### Tracking, editing, and export
 
-Tracking starts from available detection boxes in Layer A or B. The tracking
-service validates the request, creates a `TrackingWorker` with a selected
-strategy, and later synchronizes output to Layer C. Layer D is the
-user-editable result layer. Every completed run refreshes machine-generated
-Layer D boxes across the full frame range while preserving manual annotations.
-Trackers suppress nested same-class detector boxes before association and tag
-coasted estimates separately from detection-backed observations. Optional
-offline stitching uses bidirectional tracklet matching and Gaussian-smoothed
+Tracking process detection boxes in Layer A/B into layer C after user presses the "Start Tracking" button. 
+
+The tracking service then:
+- validates the request,
+- creates a `TrackingWorker` with a selected strategy, and
+- later synchronizes output to Layer C. 
+
+Layer D is the user-editable result layer. 
+Every run refreshes Layer D boxes across all frames while preserving manual annotations. 
+Trackers suppress nested same-class detector boxes before association and tag coasted estimates separately from detection-backed observations. 
+
+#### Optional
+
+Offline stitching uses bidirectional tracklet matching and Gaussian-smoothed
 gap interpolation; rejected tails decay quickly. Preview-only box, mask, and
 live-blur settings are separate from Render controls, which govern exported
 video blur.
@@ -192,7 +204,7 @@ layers; unavailable or invalid sessions are reported as skipped.
 
 - Domain data includes `SessionId`, `SessionState`, `ProcessingSettings`,
   `DetectionResult`, bounding boxes, project documents, and video metadata.
-- Session annotation data is organized as Layer A (raw detections), Layer B
+- Session annotation data is organized as Layer A (label/confidence-selected detections), Layer B
   (filtered/editable detections), Layer C (raw tracking output), and Layer D
   (editable tracking results).
 - Infrastructure workers do not update Qt widgets directly. They emit Qt
@@ -216,8 +228,10 @@ layers; unavailable or invalid sessions are reported as skipped.
 - Video, model, tracking, persistence, and worker implementations:
   `src/app/infrastructure/`
 - Shared utilities: `src/app/shared/`
-- Tests organized by source layer: `tests/`
+  - Tests organized by source layer: `tests/`
 
-Blurzy is evolving. These pages describe the current implementation and
-provide a structure for future detail; they do not imply that every boundary
-is complete or every proposal is implemented.
+!!! info
+
+    Blurzy is evolving. These pages describe the current implementation and
+    provide a structure for future detail; they do not imply that every boundary
+    is complete or every proposal is implemented.

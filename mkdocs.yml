@@ -81,6 +81,7 @@ nav:
       - Defensive guards: engineering/defensive-guards.md
   - Planning (proposals):
       - About these notes: planning/README.md
+      - Re-ID roadmap: planning/ideas/reid-roadmap.md
       - Annotation workflow: planning/ideas/annotation-workflow-polish.md
       - Model providers: planning/ideas/model-provider-management.md
       - Project save and recovery: planning/ideas/project-save-and-recovery.md

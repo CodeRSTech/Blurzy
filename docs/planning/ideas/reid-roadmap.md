@@ -1,13 +1,11 @@
 # Tracking & Headless Redaction Roadmap
 
-## Context & Problem Statement
-Standard online trackers (Hungarian IoU, ByteTrack, Kalman/DeepSORT) operate strictly forward in time (causal). When an object detector misses a subject for several frames due to motion blur, profile turns, or partial occlusion:
-1. Forward-only Kalman velocity predictions drift linearly off-target, causing failure to re-associate when the detection returns.
-2. Increasing tracker `max_age` blindly causes "ghost blur boxes" to persist over empty backgrounds after a subject walks out of frame.
+???+ abstract "Context & Problem Statement"
 
-Because Blurzy processes complete video sessions (Layers A/B populated prior to Layer C/D tracking), tracking does not need to be restricted to causal, single-pass heuristics.
-
----
+    Standard online trackers (Hungarian IoU, ByteTrack, Kalman/DeepSORT) operate strictly forward in time (causal). When an object detector misses a subject for several frames due to motion blur, profile turns, or partial occlusion:
+    1. Forward-only Kalman velocity predictions drift linearly off-target, causing failure to re-associate when the detection returns.
+    2. Increasing tracker `max_age` blindly causes "ghost blur boxes" to persist over empty backgrounds after a subject walks out of frame.
+    Because Blurzy processes complete video sessions (Layers A/B populated prior to Layer C/D tracking), tracking does not need to be restricted to causal, single-pass heuristics.
 
 ## Planned Enhancements (Ranked by ROI vs. Complexity)
 
