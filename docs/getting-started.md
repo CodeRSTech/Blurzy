@@ -11,10 +11,10 @@
     On Ubuntu, Qt also needs native libraries that are not bundled in its Python
     wheel. For headless tests, install:
 
-```bash
-sudo apt-get update
-sudo apt-get install --no-install-recommends -y libegl1 libopengl0 libpulse0
-```
+    ```bash
+    sudo apt-get update
+    sudo apt-get install --no-install-recommends -y libegl1 libopengl0 libpulse0
+    ```
 
 A desktop session may need additional platform-plugin libraries provided by
 your distribution. The offscreen setting used in CI is for tests, not normal
@@ -41,14 +41,14 @@ The editable installation provides the `blurzy` GUI command. Runtime
 dependencies are maintained in `pyproject.toml`; `requirements.txt` delegates
 to that metadata.
 
-## Typical workflow
+!!! example "Typical workflow"
 
-1. Open a video.
-2. Select a model and start background detection.
-3. Select a tracking strategy and run tracking.
-4. Review the resulting bounding-box annotations.
-5. Edit annotations as needed and select subjects to blur.
-6. Export output file.
+    1. Open a video.
+    2. Select a model and start background detection.
+    3. Select a tracking strategy and run tracking.
+    4. Review the resulting bounding-box annotations.
+    5. Edit annotations as needed and select subjects to blur.
+    6. Export output file.
 
 !!! info
 
