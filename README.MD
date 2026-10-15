@@ -118,6 +118,12 @@ worker. Worker signals carry progress and results back to the UI. See
 | Identify detections using appearance features (Re-ID)                         | Medium   | 🟡 Planned |
 | Implement offline StrongSORT + GSI                                            | High     | 🟡 Planned |
 
+## Bugs
+
+| Bug                                                               | Priority | Status |
+|-------------------------------------------------------------------|----------|--------|
+| "Start Tracking" button does NOT ask user to run detections first | High     | �      |
+
 ## Future additions: beyond detection and tracking
 
 > This section is not a list of implemented features or promised
