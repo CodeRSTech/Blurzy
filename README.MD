@@ -110,9 +110,13 @@ worker. Worker signals carry progress and results back to the UI. See
 
 ## Planned features
 
-| Feature                                                                | Priority | Status     |
-|------------------------------------------------------------------------|----------|------------|
-| Preserve source audio in exported videos (audio is currently stripped) | High     | 🟡 Planned |
+| Feature                                                                       | Priority | Status     |
+|-------------------------------------------------------------------------------|----------|------------|
+| Preserve source audio in exported videos (audio is currently stripped)        | High     | 🟡 Planned |
+| Resume background detection for heavy models without rerunning completed work | High     | 🟡 Planned |
+| Add a backward pass to tracking                                               | Medium   | 🟡 Planned |
+| Identify detections using appearance features (Re-ID)                         | Medium   | 🟡 Planned |
+| Implement offline StrongSORT + GSI                                            | High     | 🟡 Planned |
 
 ## Future additions: beyond detection and tracking
 

@@ -3,12 +3,13 @@
 ## Requirements
 
 - Python 3.12+.
-- A display for the `PySide6` interface.
-- Compatible model providers and model weights for the detection features you
-  intend to use. Hardware support varies by provider.
+- A compatible monitor.
+- Compatible model providers and weights for the intended detection features. *Hardware support varies by provider.*
 
-On Ubuntu, Qt also needs native libraries that are not bundled in its Python
-wheel. For headless tests, install:
+??? info "Running on Ubuntu"
+
+    On Ubuntu, Qt also needs native libraries that are not bundled in its Python
+    wheel. For headless tests, install:
 
 ```bash
 sudo apt-get update
@@ -42,12 +43,15 @@ to that metadata.
 
 ## Typical workflow
 
-1. Open a video and inspect its frames using the playback controls.
-2. Select an available detection provider and run detection.
-3. Run tracking and review the resulting bounding-box annotations.
-4. Edit annotations as needed and select subjects to blur.
-5. Export annotation data or blurred video, then review the output.
+1. Open a video.
+2. Select a model and start background detection.
+3. Select a tracking strategy and run tracking.
+4. Review the resulting bounding-box annotations.
+5. Edit annotations as needed and select subjects to blur.
+6. Export output file.
 
-Long-running operations use background workers and report progress in the UI.
-If a provider is unavailable, consult its installation guidance and verify its
-model weights and hardware requirements.
+!!! info
+
+    Long-running operations use background workers and report progress in the UI.
+    If a provider is unavailable, consult its installation guidance and verify its
+    model weights and hardware requirements.
