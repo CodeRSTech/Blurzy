@@ -23,15 +23,11 @@ Algorithm
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
-
-
 from dataclasses import dataclass, field
 from typing import final
 
 import numpy as np
-from scipy.optimize import \
-    linear_sum_assignment  # pyright: ignore[reportUnknownVariableType, reportAttributeAccessIssue]
-
+from scipy.optimize import linear_sum_assignment
 
 from app.shared.logging_cfg import get_logger
 if TYPE_CHECKING:
