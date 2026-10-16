@@ -13,6 +13,8 @@ from mkdocs.structure.files import File, InclusionLevel
 
 
 API_ROOT = PurePosixPath("reference/api")
+API_ASSET_ROOT = PurePosixPath("assets/api")
+API_ASSET_REFERENCE = re.compile(r'(?P<prefix>(?<![\w:-])src=["\'])api-asset:(?P<path>[^"\']+)(?P<quote>["\'])')
 SOURCE_PATTERN = re.compile(r"^Source: `(?P<path>src/app/[^`]*)`", re.MULTILINE)
 # Exceptions are keyed by defining module; keep private APIs opt-in.
 MEMBER_EXCEPTIONS: dict[str, tuple[str, ...]] = {}
@@ -346,6 +348,31 @@ def on_page_context(context, page, config, nav):
     if PurePosixPath(page.file.src_uri).is_relative_to(API_ROOT):
         page.edit_url = None
     return context
+
+
+def on_post_page(output, page, config):
+    """Resolve stable API-asset references after docstrings have been rendered."""
+    page_path = PurePosixPath(page.file.src_uri)
+    if not page_path.is_relative_to(API_ROOT):
+        return output
+
+    docs_dir = Path(config.docs_dir).resolve()
+    asset_root = (docs_dir / Path(*API_ASSET_ROOT.parts)).resolve()
+
+    def resolve_asset(match: re.Match[str]) -> str:
+        raw_path = match.group("path")
+        asset = PurePosixPath(raw_path)
+        if "\\" in raw_path or asset.is_absolute() or not asset.parts or ".." in asset.parts:
+            raise PluginError(f"Invalid API asset reference: {raw_path}")
+
+        target = API_ASSET_ROOT / asset
+        asset_path = (docs_dir / Path(*target.parts)).resolve()
+        if not asset_path.is_relative_to(asset_root) or not asset_path.is_file():
+            raise PluginError(f"API asset does not exist: {target}")
+
+        return f"{match.group('prefix')}{relative_link(page_path, target)}{match.group('quote')}"
+
+    return API_ASSET_REFERENCE.sub(resolve_asset, output)
 
 
 def on_serve(server, config, builder):
