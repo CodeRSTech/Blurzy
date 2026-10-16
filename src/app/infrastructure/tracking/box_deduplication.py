@@ -61,7 +61,79 @@ def suppress_nested_same_class_boxes(
     boxes: ListOfBoxes,
     iomin_threshold: float = 0.80,
 ) -> ListOfBoxes:
-    """Suppress duplicate same-class boxes mostly contained by a stronger box.
+    r"""Suppress duplicate same-class boxes mostly contained by a stronger box.
+
+    A stronger box is at least as large and as confident as the candidate;
+    manual boxes are prioritized and retained. “Mostly contained” means the
+    intersection covers at least ``iomin_threshold`` of the smaller box.
+    Suppressed candidates are merged into the retained box by taking the
+    union of their bounds.
+
+    ???+ example "Nested detections example"
+        Consider the full body box (682, 447, 1573, 2137) and the nested torso box (676, 458, 1539, 1322)
+        that have IoU near 0.50 but IoMin near 0.99.
+        Suppressing the torso box and unioning the bounds yields (676, 447, 1573, 2137),
+        avoiding duplicate tracks without leaving pixels of the subject uncovered.
+        The input boxes are never mutated.
+
+        Assume both detections are non-manual, share a label, and the blue
+        full-body box is at least as confident as the orange torso box.
+
+        <img class="api-example-image"
+             src="api-asset:tracking/nested-boxes.svg"
+             alt="Blue full-body and orange torso boxes; dashed green union extends six pixels left.">
+
+        *Blue full-body and orange torso boxes; dashed green union extends six pixels left.*
+
+        **Coordinates and areas.** Coordinates use $(x_1, y_1, x_2, y_2)$,
+        with $y$ increasing downward. Width and height are coordinate
+        differences, without adding one pixel.
+
+        | Box | Coordinates | Width by height | Area (${px}^2$) |
+        | --- | --- | --- | --- |
+        | Full body $B$ | $(682, 447, 1573, 2137)$ | $891 \times 1690$ | $1{,}505{,}790$ |
+        | Torso $T$ | $(676, 458, 1539, 1322)$ | $863 \times 864$ | $745{,}632$ |
+
+        **Intersection and union.** The intersection is
+        $(682, 458, 1539, 1322)$:
+
+        $$
+        \begin{aligned}
+        w_I &= \min(1573,1539)-\max(682,676)=857,\\
+        h_I &= \min(2137,1322)-\max(447,458)=864,\\
+        A_I &= 857 \times 864 = 740{,}448,\\
+        A_U &= A_B + A_T - A_I\\
+            &= 1{,}505{,}790 + 745{,}632 - 740{,}448\\
+            &= 1{,}510{,}974.
+        \end{aligned}
+        $$
+
+        **Overlap ratios.** IoMin measures coverage of the smaller box;
+        IoU divides by the union of both regions:
+
+        $$
+        \begin{aligned}
+        \operatorname{IoMin}
+            &= \frac{A_I}{\min(A_B,A_T)}
+             = \frac{740{,}448}{745{,}632}
+             \approx 0.993048,\\
+        \operatorname{IoU}
+            &= \frac{A_I}{A_U}
+             = \frac{740{,}448}{1{,}510{,}974}
+             \approx 0.490047.
+        \end{aligned}
+        $$
+
+        IoMin exceeds the default threshold $0.80$, although IoU is below
+        $0.50$. With the assumptions above, the torso box is merged into
+        the larger full-body box rather than retained as a duplicate.
+
+        **Merged bounds.** Taking the minimum lower coordinates and maximum
+        upper coordinates yields $(676, 447, 1573, 2137)$. The enclosing
+        rectangle is $897 \times 1690$, with area $1{,}515{,}930$.
+        This enclosing-rectangle area is not the union area $A_U$: it also
+        includes the small gaps between the original regions. The left
+        edge expands by $682-676=6$ pixels; all other edges stay unchanged.
 
     Args:
         boxes: Detector boxes from one frame.
@@ -76,15 +148,13 @@ def suppress_nested_same_class_boxes(
     Note:
         Boxes are prioritized by manual origin, confidence, then area. A candidate
         is merged only into a retained same-label box that is at least as large,
-        at least as confident, and has sufficient IoMin. For example, in frame 172,
-        ``(682, 447, 1573, 2137)`` and the nested torso box
-        ``(676, 458, 1539, 1322)`` have IoU near 0.50 but IoMin near 0.99.
-        Suppressing the torso box and unioning the bounds yields
-        ``(676, 447, 1573, 2137)``, avoiding duplicate tracks without leaving
-        pixels of the subject uncovered. The input boxes are never mutated.
+        at least as confident, and has sufficient IoMin. The input list and its
+        boxes are left unchanged.
 
-    Example:
+    !!! example "Usage"
+        ```python
         filtered = suppress_nested_same_class_boxes(frame_boxes)
+        ```
     """
     if not 0.0 <= iomin_threshold <= 1.0:
         raise ValueError("iomin_threshold must be between 0 and 1.")
