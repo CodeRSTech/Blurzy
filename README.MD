@@ -110,19 +110,20 @@ worker. Worker signals carry progress and results back to the UI. See
 
 ## Planned features
 
-| Feature                                                                       | Priority | Status     |
-|-------------------------------------------------------------------------------|----------|------------|
-| Preserve source audio in exported videos (audio is currently stripped)        | High     | 🟡 Planned |
-| Resume background detection for heavy models without rerunning completed work | High     | 🟡 Planned |
-| Identify detections using appearance features (Re-ID)                         | Medium   | 🟡 Planned |
-| Implement offline StrongSORT + GSI                                            | High     | 🟡 Planned |
-
+| Feature                                                                         | Priority | Status     |
+|---------------------------------------------------------------------------------|----------|------------|
+| Preserve source audio in exported videos (audio is currently stripped)          | High     | 🟡 Planned |
+| Resume background detection for heavy models without rerunning completed work   | High     | 🟡 Planned |
+| Identify detections using appearance features (Re-ID)                           | Medium   | 🟡 Planned |
+| Implement offline StrongSORT + GSI                                              | High     | 🟡 Planned |
+| Add RetinaFace ResNet50                                                         | Medium   | 🟡 Planned |
+| Add option to enable/disable supression of nested detections (default: enabled) | Medium   | 🟡 Planned |
 ## Bugs
 
 | Bug                                                                                                                                                     | Priority | Status |
 |---------------------------------------------------------------------------------------------------------------------------------------------------------|----------|--------|
 | "Start Tracking" button does NOT ask user to run detections first                                                                                       | Medium   | �      |
-| Timeout waiting for worker to supply frame n-1 when at frame n (backward seek problem) in app.infrastructure.session.frame_access:get_frame_by_index:83 | High     | �      |
+| Timeout waiting for worker to supply frame n-1 when at frame n (backward seek problem) in app.infrastructure.session.frame_access:get_frame_by_index:83 | Low      | �      |
 
 ## Future additions: beyond detection and tracking
 
