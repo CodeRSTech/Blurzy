@@ -28,12 +28,12 @@ class Box:
 
     Example:
         ```python
-            detection = Box(
-                item_id="yolo-1",
-                label="person",
-                bbox_xyxy=(10, 20, 100, 200),
-                confidence=0.9,
-            )
+        detection = Box(
+            item_id="yolo-1",
+            label="person",
+            bbox_xyxy=(10, 20, 100, 200),
+            confidence=0.9,
+        )
         ```
     """
 
