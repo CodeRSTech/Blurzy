@@ -97,6 +97,13 @@ Signals are documented as declared class attributes; no Qt object is created.
 Static collection cannot infer actual signal connections or prove lifecycle
 guarantees. Document those explicitly.
 
+Keep API-example images in `docs/assets/api/` rather than embedding large SVGs
+in docstrings. Reference them from rendered HTML with the `api-asset:` prefix,
+for example `src="api-asset:tracking/nested-boxes.svg"`. The hook resolves that
+stable asset path after mkdocstrings has rendered the docstring, calculating a
+relative URL for the generated page's depth and failing the build if the asset
+is missing or escapes the API asset directory.
+
 ### 4. Parse docstrings and render HTML
 
 The configured Google-style parser recognizes sections such as `Args:`,
@@ -109,6 +116,14 @@ not extra API declarations.
 Indentation and Markdown syntax matter. An unfenced Python comment beginning
 with `#` can be interpreted as a heading after docstring parsing. Code examples
 must be fenced; a successful build alone does not prove that prose looks right.
+
+Use `$...$` for inline LaTeX and `$$` on separate lines for display equations.
+`pymdownx.arithmatex` preserves the math for MathJax, loaded from a pinned CDN;
+rendering equations therefore requires a network connection. Use raw Python
+docstrings (`r"""..."""`) when formulas contain backslashes, so commands such as
+`\frac` and `\times` reach the renderer unchanged. Keep display equations
+indented with their containing docstring section or admonition. Restart
+`mkdocs serve` after changing configuration or hook code.
 
 ## Member-selection guidelines
 
