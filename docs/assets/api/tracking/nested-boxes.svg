@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg"
+     role="img" aria-labelledby="boxes-title"
+     viewBox="676 447 897 1690" width="897" height="1690">
+  <title id="boxes-title">Full-body box, nested torso box, and merged bounds</title>
+  <rect x="676" y="447" width="897" height="1690"
+        fill="none" stroke="#2ca02c" stroke-width="20"
+        stroke-dasharray="18 12"/>
+  <rect x="682" y="447" width="891" height="1690"
+        fill="#1f77b4" fill-opacity="0.08"
+        stroke="#1f77b4" stroke-width="8"/>
+  <rect x="676" y="458" width="863" height="864"
+        fill="#d95f02" fill-opacity="0.18"
+        stroke="#d95f02" stroke-width="8"/>
+</svg>
