@@ -2,9 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-
 import copy
-
 
 from app.domain.detection import BoxSource
 from app.domain.views import BBoxViewModel

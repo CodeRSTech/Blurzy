@@ -54,6 +54,10 @@ class ReferenceTests(unittest.TestCase):
             {"Engineering": [{"Reference documentation": "engineering/reference-documentation.md"}]},
         ]
         self.write("docs/engineering/reference-documentation.md", "# Reference documentation\n")
+        self.write(
+            "docs/javascripts/mathjax.js",
+            (ROOT / "docs" / "javascripts" / "mathjax.js").read_text(encoding="utf-8"),
+        )
         settings["extra_css"] = []
         settings["plugins"][0]["mkdocstrings"]["handlers"]["python"]["paths"] = [str(self.root / "src")]
         self.write("mkdocs.yml", yaml.dump(settings))
@@ -190,6 +194,81 @@ except Exception:
         )
         reference.on_page_context({}, page, None, None)
         self.assertIsNone(page.edit_url)
+
+    def test_api_asset_references_resolve_for_generated_page_depth(self):
+        from types import SimpleNamespace
+
+        self.write(
+            "docs/assets/api/tracking/nested-boxes.svg",
+            (ROOT / "docs" / "assets" / "api" / "tracking" / "nested-boxes.svg").read_text(encoding="utf-8"),
+        )
+        config = self.config()
+
+        for page_path, expected_path in (
+            ("reference/api/app/index.md", "../../../assets/api/tracking/nested-boxes.svg"),
+            (
+                "reference/api/app/infrastructure/tracking/index.md",
+                "../../../../../assets/api/tracking/nested-boxes.svg",
+            ),
+        ):
+            page = SimpleNamespace(file=SimpleNamespace(src_uri=page_path))
+            html = '<img src="api-asset:tracking/nested-boxes.svg" alt="diagram">'
+            rendered = reference.on_post_page(html, page, config)
+            self.assertIn(f'src="{expected_path}"', rendered)
+
+        page = SimpleNamespace(file=SimpleNamespace(src_uri="reference/api/app/index.md"))
+        with self.assertRaisesRegex(PluginError, "does not exist"):
+            reference.on_post_page('<img src="api-asset:tracking/missing.svg">', page, config)
+        with self.assertRaisesRegex(PluginError, "Invalid API asset"):
+            reference.on_post_page('<img src="api-asset:../secret.svg">', page, config)
+
+        self.write("src/app/infrastructure/__init__.py", '"""Infrastructure."""\n')
+        self.write("src/app/infrastructure/tracking/__init__.py", '"""Tracking."""\n')
+        self.write(
+            "src/app/infrastructure/tracking/box_deduplication.py",
+            (
+                ROOT
+                / "src"
+                / "app"
+                / "infrastructure"
+                / "tracking"
+                / "box_deduplication.py"
+            ).read_text(encoding="utf-8"),
+        )
+        build(config)
+        html_path = (
+            self.root
+            / "site"
+            / "docs"
+            / "reference"
+            / "api"
+            / "app"
+            / "infrastructure"
+            / "tracking"
+            / "box_deduplication"
+            / "index.html"
+        )
+        rendered = html_path.read_text(encoding="utf-8")
+        self.assertIn(
+            'src="../../../../../../assets/api/tracking/nested-boxes.svg"',
+            rendered,
+        )
+        self.assertIn('class="api-example-image"', rendered)
+        self.assertIn("Blue full-body and orange torso boxes", rendered)
+        self.assertIn('class="arithmatex"', rendered)
+        for formula in (
+            r"\frac{740{,}448}{745{,}632}",
+            r"\frac{740{,}448}{1{,}510{,}974}",
+            "0.993048",
+            "0.490047",
+            "1{,}515{,}930",
+        ):
+            self.assertIn(formula, rendered)
+        self.assertIn("javascripts/mathjax.js", rendered)
+        self.assertIn("mathjax@3.2.2/es5/tex-mml-chtml.js", rendered)
+        self.assertTrue(
+            (self.root / "site" / "docs" / "assets" / "api" / "tracking" / "nested-boxes.svg").is_file()
+        )
 
     def test_serve_watches_source_tree(self):
         from unittest.mock import Mock

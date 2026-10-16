@@ -4,7 +4,6 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-
 import copy
 from typing import Protocol
 
@@ -18,9 +17,6 @@ from app.infrastructure.tracking.post_processor import TrackingPostProcessor
 from app.shared.logging_cfg import get_logger
 if TYPE_CHECKING:
     from PySide6.QtCore import QObject
-
-
-if TYPE_CHECKING:
     from app.domain.base.dtypes import ListOfBoxesByFrameIndexAsDict
     from app.domain.session import SessionState
 
@@ -106,12 +102,6 @@ class TrackingWorker(QThread):
         """
         super().__init__(parent)
         self._strategy_name = strategy_name
-        # [AUDIT] CLARITY: Deep copy without explanation of memory implications
-        # Deep copying large detection dictionaries (frame_index → list[boxes]) can be expensive.
-        # WHY deep copy? To isolate tracking worker from concurrent modifications to the source layer
-        # while tracking runs in background. This prevents race conditions and data inconsistency.
-        # PERFORMANCE NOTE: If source_data is large (e.g., 1000+ frames with many detections),
-        # this may introduce noticeable latency. Consider adding a configuration option for copy strategy.
         self._source_data = copy.deepcopy(source_data)
         self._source_data = {
             frame_index: suppress_nested_same_class_boxes(boxes)
