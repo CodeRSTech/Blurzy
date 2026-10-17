@@ -10,7 +10,12 @@ are attached by
 [`SessionInitializer`][app.application.managers.session_initializer.SessionInitializer]
 in the [`Application layer`][app.application].
 
-???+ warning "Design considerations"
+See Also:
+    - [`SessionDataStore`][app.infrastructure.session.session_data_store.SessionDataStore] — layer storage
+    - [`SessionFrameAccessor`][app.infrastructure.session.frame_access.SessionFrameAccessor] — frame access and ring-buffer logic
+
+
+??? warning "Design considerations"
 
     `Session` is a runtime facade, but it still has several reasons to change. It
     coordinates collaborator initialization state and shutdown, exposes playback
