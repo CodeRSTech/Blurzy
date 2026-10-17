@@ -13,7 +13,7 @@ import unittest
 try:
     from mkdocs.commands.build import build
     from mkdocs.config import load_config
-    from mkdocs.exceptions import PluginError
+    from mkdocs.exceptions import Abort, PluginError
     from mkdocs.structure.files import get_files
     import yaml
 except ModuleNotFoundError as exc:
@@ -178,6 +178,11 @@ except Exception:
         config = self.config()
         with self.assertRaisesRegex(PluginError, "missing package"):
             config.plugins.on_files(get_files(config), config=config)
+
+    def test_strict_build_rejects_broken_page_links(self):
+        self.write("docs/reference/app.md", self.note + "\n[Missing page](missing.md)\n")
+        with self.assertRaises(Abort):
+            build(self.config())
 
     def test_generated_subtree_is_reserved(self):
         self.write("docs/reference/api/manual.md", "# Collision\n")
@@ -451,6 +456,50 @@ OMIT_ME = create_singleton()
         self.assertIn("<pre>", html)
         self.assertIn('class="c1"', html)
         self.assertIn('class="api-module-path"', html)
+
+
+class RepositoryDocumentationTests(unittest.TestCase):
+    def test_repository_navigation_and_api_inventory(self):
+        config = load_config(config_file=str(ROOT / "mkdocs.yml"), strict=True)
+        files = config.plugins.on_files(get_files(config), config=config)
+
+        def check_navigation(entries):
+            for entry in entries:
+                if isinstance(entry, dict):
+                    check_navigation(entry.values())
+                elif isinstance(entry, list):
+                    check_navigation(entry)
+                else:
+                    with self.subTest(nav_target=entry):
+                        self.assertIsNotNone(files.get_file_from_path(entry))
+
+        check_navigation(config.nav)
+        self.assertIsNotNone(files.get_file_from_path("reference/api/index.md"))
+        modules = reference.discover_modules(ROOT)
+        generated = [file for file in files if PurePosixPath(file.src_uri).is_relative_to(reference.API_ROOT)]
+        self.assertEqual(len(generated), len(modules) + 1)
+        for module in modules:
+            with self.subTest(module=module.name):
+                page = files.get_file_from_path(str(module.page))
+                self.assertIsNotNone(page)
+                self.assertIn(f"::: {module.name}\n", page.content_string)
+
+    def test_repository_build_renders_api_and_assets(self):
+        with TemporaryDirectory() as directory:
+            config = load_config(config_file=str(ROOT / "mkdocs.yml"), site_dir=directory, strict=True)
+            build(config)
+            site = Path(directory)
+            for asset in [*config.extra_css, *config.extra_javascript, config.theme["favicon"]]:
+                with self.subTest(asset=asset):
+                    self.assertTrue((site / asset).is_file())
+            for module in reference.discover_modules(ROOT):
+                with self.subTest(module=module.name):
+                    html = site.joinpath(*module.page.with_suffix(".html").parts).read_text(encoding="utf-8")
+                    self.assertIn('class="doc doc-object doc-module"', html)
+                    self.assertIn(module.name, html)
+            landing = (site / "reference" / "api" / "index.html").read_text(encoding="utf-8")
+            self.assertIn("Application package index", landing)
+            self.assertIn("stylesheets/reference.css", landing)
 
 
 if __name__ == "__main__":

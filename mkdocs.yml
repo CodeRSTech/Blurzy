@@ -6,6 +6,10 @@ edit_uri: edit/master/docs/
 docs_dir: docs
 site_dir: site/docs
 
+validation:
+  links:
+    not_found: warn
+
 theme:
   name: material
   logo: assets/logo.png
