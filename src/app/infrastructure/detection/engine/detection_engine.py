@@ -2,6 +2,10 @@
 It loads the named model when created, then passes each image or frame to that model’s ``detect()`` method and
 returns the resulting ``DetectionResult`` list. It can also replace the active model at runtime with ``set_model()``.
 
+!!! quote "Simple explanation"
+
+    A ``DetectionEngine`` takes an input image and returns a list of detected objects as ``List[DetectionResult]``
+
 The engine itself does not appear to perform image preprocessing, inference, or result conversion:
 those responsibilities are delegated to the loaded model implementation.
 In this code, ``detect()`` returns the model’s results directly,
@@ -37,7 +41,8 @@ class DetectionEngine:
         - Decoupling: delegates model loading to ``load_detection_model()``.
         - Immutability: ``detect()`` returns a new list and does not mutate view_state.
 
-    Examples:
+    ???+ example "Example usage"
+
         ```python
         engine = DetectionEngine("YOLOv8n")
         detections: list[DetectionResult] = engine.detect(frame)

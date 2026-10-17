@@ -1,4 +1,6 @@
-"""Infrastructure layer — workers, video decoding, model loading, session data management."""
+"""
+Infrastructure layer — workers, video decoding, model loading, session data management.
+"""
 
 from .dtypes import RGBFrame  # depends on numpy only
 from .video import VideoReader, VideoDecodeWorker # reader depends on dtypes, worker depends on reader and dtypes
