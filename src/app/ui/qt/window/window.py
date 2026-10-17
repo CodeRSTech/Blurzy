@@ -50,7 +50,7 @@ class Window(QtWidgets.QMainWindow):
         self._close_request_handler: Callable[[], bool] | None = None
         self._bbox_selection_state = BBoxSelectionState()
         self._selection_history_state = SelectionHistoryState()
-        self._base_window_title = "EasyBlur"
+        self._base_window_title = ""
         self._current_project_path = ""
 
         self.setWindowTitle(self._base_window_title)

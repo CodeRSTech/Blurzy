@@ -6,7 +6,7 @@ requires = [
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "blurzy"
+name = "Blurzy"
 version = "1.1.0"
 description = "PySide6 desktop app for video detection, tracking, annotation, and subject blurring."
 readme = "README.MD"
