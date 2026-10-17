@@ -148,8 +148,6 @@ class ExportHandler(QObject):
         Returns:
             None.
 
-        Raises:
-            None.
 
         Note:
             This setting affects editor overlays only, not video export.
@@ -172,8 +170,6 @@ class ExportHandler(QObject):
         Returns:
             None.
 
-        Raises:
-            None.
 
         Note:
             The overlay is an editor aid and is not written into exported frames.
@@ -196,8 +192,6 @@ class ExportHandler(QObject):
         Returns:
             None.
 
-        Raises:
-            None.
 
         Note:
             Export blur remains controlled by ``blur_enabled``.
@@ -229,8 +223,6 @@ class ExportHandler(QObject):
         Returns:
             None.
 
-        Raises:
-            None.
 
         Note:
             This master toggle also enables or disables the independent preview-blur control.

@@ -55,9 +55,6 @@ def create_int_spinbox(min_val: int, max_val: int, step: int, default: int) -> Q
     Returns:
         A configured ``QSpinBox``.
 
-    Raises:
-        None.
-
     Note:
         Use this for settings whose values represent discrete pixels or frames.
 

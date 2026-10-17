@@ -66,14 +66,10 @@ class TrackingHandler(QObject):
     def _connect_signals(self) -> None:
         """Connect tracking controls to session-setting and worker actions.
 
-        Args:
-            None.
 
         Returns:
             None.
 
-        Raises:
-            None.
 
         Note:
             Offline stitch settings are stored per session and consumed when a

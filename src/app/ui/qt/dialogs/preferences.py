@@ -50,8 +50,6 @@ class PreferencesDialog(QDialog):
         Returns:
             None.
 
-        Raises:
-            None.
 
         Note:
             Session defaults apply to sessions opened after the preferences are saved.
@@ -74,14 +72,10 @@ class PreferencesDialog(QDialog):
     def _init_widgets(self) -> None:
         """Create preference widgets and assign explanatory hover text.
 
-        Args:
-            None.
 
         Returns:
             None.
 
-        Raises:
-            None.
 
         Note:
             Numeric ranges mirror the corresponding right-panel settings.
@@ -203,14 +197,10 @@ class PreferencesDialog(QDialog):
     def _build_ui(self) -> None:
         """Arrange preference controls into app, detection, tracking, and render groups.
 
-        Args:
-            None.
 
         Returns:
             None.
 
-        Raises:
-            None.
 
         Note:
             Preview-only defaults and export rendering defaults use separate groups.
@@ -283,14 +273,10 @@ class PreferencesDialog(QDialog):
     def _connect_signals(self) -> None:
         """Connect preference controls to dialog state and browse actions.
 
-        Args:
-            None.
 
         Returns:
             None.
 
-        Raises:
-            None.
 
         Note:
             Master blur and offline stitching toggles gate their dependent settings.
@@ -313,8 +299,6 @@ class PreferencesDialog(QDialog):
         Returns:
             None.
 
-        Raises:
-            None.
 
         Note:
             Signal state changes are applied explicitly after restoring checkboxes.
@@ -366,8 +350,6 @@ class PreferencesDialog(QDialog):
         Returns:
             None.
 
-        Raises:
-            None.
 
         Note:
             Disabling the master keeps the saved preview preference intact but unavailable.
@@ -388,8 +370,6 @@ class PreferencesDialog(QDialog):
         Returns:
             None.
 
-        Raises:
-            None.
 
         Note:
             Values are retained while disabled so toggling back on restores them.
@@ -406,14 +386,10 @@ class PreferencesDialog(QDialog):
     def _on_browse_export_directory(self) -> None:
         """Open a directory chooser for the default export location.
 
-        Args:
-            None.
 
         Returns:
             None.
 
-        Raises:
-            None.
 
         Note:
             Cancelling the chooser leaves the existing preference unchanged.
@@ -432,14 +408,10 @@ class PreferencesDialog(QDialog):
     def get_preferences(self) -> AppPreferences:
         """Create a preference value object from the current controls.
 
-        Args:
-            None.
 
         Returns:
             Updated preferences ready to persist.
 
-        Raises:
-            None.
 
         Note:
             Labels are split and whitespace-trimmed before storing.

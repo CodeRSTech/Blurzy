@@ -108,8 +108,6 @@ class DetectionExecutionService:
         Returns:
             Boxes accepted by the Layer B detection predicate.
 
-        Raises:
-            None.
 
         Note:
             Layer A also uses this predicate at the detection storage boundary;

@@ -18,9 +18,6 @@ def _area(box: BBoxViewModel) -> int:
     Returns:
         Pixel area, or zero for a degenerate box.
 
-    Raises:
-        None.
-
     Note:
         Negative coordinate extents are treated as zero-width or zero-height.
 
@@ -40,9 +37,6 @@ def _intersection_area(box_a: BBoxViewModel, box_b: BBoxViewModel) -> int:
 
     Returns:
         Non-negative pixel area of their intersection.
-
-    Raises:
-        None.
 
     Note:
         Edge-touching boxes have zero area of intersection.

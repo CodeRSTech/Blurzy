@@ -75,8 +75,6 @@ class ProcessingSettings:
     def __post_init__(self) -> None:
         """Validate user-configurable limits before a session uses the settings.
 
-        Args:
-            None.
 
         Returns:
             None.
@@ -101,14 +99,8 @@ class ProcessingSettings:
     def as_view_model(self) -> SessionSettingsViewModel:
         """Create the widget-ready view of this session's processing settings.
 
-        Args:
-            None.
-
         Returns:
             A view model with labels joined for direct text-field assignment.
-
-        Raises:
-            None.
 
         Note:
             This conversion is a snapshot; later UI edits update the settings

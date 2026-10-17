@@ -10,28 +10,28 @@ without depending on concrete widget behavior or layout details.
 
 It has managers, such as the
 
-``DetectionEngineManager``,
-which centralizes logic for creating, updating, and removing detection engines on a per-session basis.
+[`DetectionEngineManager`][app.application.managers.detection_engine.DetectionEngineManager] - centralizes logic for creating, updating, and removing detection engines on a per-session basis.
 
-``SessionManager`` which handles the lifecycle of sessions, including creation, selection, and deletion.
+[`SessionManager`][app.application.managers.session.SessionManager] - handles the lifecycle of sessions, including creation, selection, and deletion.
 
-``SessionInitializer`` which is responsible for initializing sessions with the necessary collaborators and resources.
+[`SessionInitializer`][app.application.managers.session_initializer.SessionInitializer] - responsible for initializing sessions with the necessary collaborators and resources.
 
-``TrackingWorkerManager`` which manages the lifecycle of tracking workers for sessions.
+[`TrackingWorkerManager`][app.application.managers.tracking_worker.TrackingWorkerManager] - manages the lifecycle of tracking workers for sessions.
 
-``VideoDecodeWorkerManager`` which manages the lifecycle of video decode workers for sessions.
+[`VideoDecodeWorkerManager`][app.application.managers.video_decode_worker.VideoDecodeWorkerManager] - manages the lifecycle of video decode workers for sessions.
+
 Purpose
 -------
 Implements app use-cases and workflow orchestration.
 
-Examples:
+???+ example "Example usage"
 
-- open videos
-- create sessions
-- select active session
-- load frame
-- move to next/previous frame
-- later: play, pause, seek, export
+    - open videos
+    - create sessions
+    - select active session
+    - load frame
+    - move to next/previous frame
+    - later: play, pause, seek, export
 
 Responsibilities
 ----------------
@@ -43,8 +43,8 @@ Responsibilities
 Communication
 -------------
 
-- **Talks upward to:** UI layer through returned data/results
-- **Talks downward to:** Domain layer and Infrastructure layer
+- **Talks upward to:** [UI layer][app.ui] through returned data/results
+- **Talks downward to:** [Domain layer][app.domain] and [Infrastructure layer][app.infrastructure] through method calls and data manipulation
 - **Must not depend on:** concrete widget behavior or layout details
 """
 

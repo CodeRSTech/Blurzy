@@ -1,7 +1,45 @@
-"""QObject-backed session shell for per-video runtime view_state and layer storage.
+"""
+Container for a single video file session, holding the runtime state and layer storage.
 
-The expensive runtime collaborators (``VideoReader``, ``SessionState`` and the
-decode worker) are attached by ``SessionInitializer`` in the application layer.
+The expensive runtime collaborators
+([`VideoReader`][app.infrastructure.video.reader.VideoReader],
+[`SessionState`][app.domain.session.session_state.SessionState]
+and the
+[`VideoDecodeWorker`][app.infrastructure.video.decode_worker.VideoDecodeWorker])
+are attached by
+[`SessionInitializer`][app.application.managers.session_initializer.SessionInitializer]
+in the [`Application layer`][app.application].
+
+???+ warning "Design considerations"
+
+    `Session` is a runtime facade, but it still has several reasons to change. It
+    coordinates collaborator initialization state and shutdown, exposes playback
+    and frame access, forwards layer-storage operations, and changes detection
+    settings and layer contents. This is a potential **Single Responsibility
+    Principle (SRP)** violation: those responsibilities may evolve for different
+    reasons. Delegating frame access to
+    [`SessionFrameAccessor`][app.infrastructure.session.frame_access.SessionFrameAccessor]
+    and storage to
+    [`SessionDataStore`][app.infrastructure.session.session_data_store.SessionDataStore]
+    reduces the concentration of logic, but `Session` remains the entry point for
+    all of these concerns.
+
+    There is some potential **DRY** duplication in repeatedly requiring the
+    session state and decode worker before frame operations. The `_require_*`
+    helpers centralize the checks, however, so this is limited duplication rather
+    than necessarily a design flaw.
+
+    There may also be a **Dependency Inversion Principle (DIP)** concern: `Session`
+    constructs concrete infrastructure collaborators and is coupled to `QObject`.
+    That can make substitution and isolated testing harder. Whether this is a
+    violation depends on the intended boundary: as an infrastructure-level
+    component, `Session` may appropriately depend on infrastructure details, but
+    higher-level policy should avoid depending on those concrete details.
+
+    Finally, `Session` exposes a broad API spanning workers, playback, frames, and
+    layers. That can indicate an **Interface Segregation Principle (ISP)** concern
+    for clients that need only one of those capabilities. These are design tradeoffs
+    to assess against actual change and testing needs, not automatic violations.
 """
 
 from __future__ import annotations
@@ -20,7 +58,6 @@ if TYPE_CHECKING:
     from app.domain.session import SessionId
     from app.domain.base.dtypes import ListOfBoxesByFrameIndexAsDict, ListOfBoxes
     from app.infrastructure.dtypes import RGBFrame
-    from app.application.interfaces import DetectionEngineInterface, DetectionWorkerInterface, TrackingWorkerInterface
     from app.infrastructure.video.decode_worker import VideoDecodeWorker
     from app.infrastructure.video.reader import VideoReader
 
@@ -37,6 +74,17 @@ class Session(QObject):
     it owns IDs, layer storage, collaborator references, and thin convenience
     methods. Expensive initialization and frame-orchestration logic are
     delegated to dedicated collaborators.
+
+    Attributes:
+        s_id: Identifier for this session.
+        data: Layer storage associated with this session.
+        video_reader: Video reader, attached during session initialization.
+        state: Playback and settings state, attached during session initialization.
+        video_decode_worker: Worker that decodes video frames.
+        _frame_accessor: Helper that coordinates frame access.
+        detection_engine: Detection engine used by the session, if initialized.
+        detection_worker: Detection worker, if initialized.
+        tracking_worker: Tracking worker, if initialized.
     """
 
     def __init__(self, s_id: SessionId) -> None:
@@ -87,9 +135,9 @@ class Session(QObject):
             )
         return self.video_decode_worker
 
-    # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    #                           PROPERTIES
-    # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    """ ### PROPERTIES """
+    # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
     @property
     def has_buffered_frame(self) -> bool:
@@ -98,10 +146,12 @@ class Session(QObject):
 
     @property
     def has_running_detection_worker(self) -> bool:
+        """Check if the session has a running detection worker."""
         return self.detection_worker is not None and self.detection_worker.isRunning()
 
     @property
     def has_running_tracking_worker(self) -> bool:
+        """Check if the session has a running tracking worker."""
         return self.tracking_worker is not None and self.tracking_worker.isRunning()
 
     @property
@@ -125,29 +175,34 @@ class Session(QObject):
         if self.video_reader is not None:
             self.video_reader.close()
 
-    # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
     #                            LAYER CRUD MANAGEMENT
-    # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
     def get_layer_by_name(self, layer_name: VideoDataLayer) -> ListOfBoxesByFrameIndexAsDict:
+        """Get all boxes for a specific layer as a dictionary of lists."""
         return self.data.get_all_boxes_for_layer_as_dict_of_lists(layer_name)
 
     def get_layer_boxes_for_index(self, layer_name: VideoDataLayer, frame_index: int) -> ListOfBoxes:
+        """Get all boxes for a specific layer at a specific frame index."""
         # Natively fetches the list directly from the Pandas dataframe!
         return self.data.get_boxes_for_layer_at_frame_index_as_list(layer_name, frame_index)
 
     def get_layer_boxes_for_current_frame(self, layer_name: VideoDataLayer) -> ListOfBoxes:
+        """Get all boxes for a specific layer at the current playback frame index."""
         return self.get_layer_boxes_for_index(layer_name, self._require_state().playback.current_frame_index)
 
     def has_boxes_for_layer(self, layer_name: VideoDataLayer) -> bool:
+        """Check if there are any boxes for a specific layer."""
         return self.data.has_boxes_for_layer(layer_name)
 
     def stop_playback(self):
+        """Stop video playback and reset the playback state."""
         self._require_state().playback.stop_playback()
 
-    # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
     #                           FRAME CONTROLS
-    # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
     def get_buffered_frame(self) -> RGBFrame | None:
         """Get the next frame (current_idx + 1) from the ring buffer (for lookahead during playback)."""
@@ -168,7 +223,7 @@ class Session(QObject):
             4. Wait up to 2 seconds for the worker to supply the frame.
             5. Return the frame or ``None`` on timeout.
 
-        Side effects: 
+        !!! warning "Side effects"
             updates ``playback.current_frame_index`` and
             ``current_frame_data`` when a frame is retrieved.
 
@@ -196,7 +251,7 @@ class Session(QObject):
         )
 
     def get_previous_frame(self) -> RGBFrame | None:
-        """Get previous frame (current_idx - 1)."""
+        """Get previous frame at index ``(current_idx - 1)``."""
         return self._frame_accessor.get_previous_frame(
             session_state=self._require_state(),
             decode_worker=self._require_video_decode_worker(),

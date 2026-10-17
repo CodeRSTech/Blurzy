@@ -105,8 +105,6 @@ class _Track:
         Returns:
             None.
 
-        Raises:
-            None.
 
         Note:
             The bounding box moves by the last observed velocity and the age

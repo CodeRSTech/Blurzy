@@ -69,14 +69,10 @@ class BBoxViewModel:
     def clone(self) -> "BBoxViewModel":
         """Create an independent shallow copy of this bounding box.
 
-        Args:
-            None.
 
         Returns:
             A box with identical identity, geometry, and tracking observation metadata.
 
-        Raises:
-            None.
 
         Note:
             The tuple geometry and scalar metadata are immutable values and are copied

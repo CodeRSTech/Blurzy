@@ -230,8 +230,6 @@ class TrackingPostProcessor:
         Returns:
             None.
 
-        Raises:
-            None.
 
         Note:
             Same-class observations at a frame stop a coast instead of adding an
@@ -409,8 +407,6 @@ class TrackingPostProcessor:
         Returns:
             A finite link cost or ``None`` when projected geometry is implausible.
 
-        Raises:
-            None.
 
         Note:
             Endpoint motion is projected in both directions to the shared temporal
@@ -472,8 +468,6 @@ class TrackingPostProcessor:
         Returns:
             Number of interpolated frames.
 
-        Raises:
-            None.
 
         Note:
             Each endpoint prediction is weighted by a Gaussian of its temporal
@@ -536,8 +530,6 @@ class TrackingPostProcessor:
         Returns:
             A coasted clone, or ``None`` when confidence falls below the floor.
 
-        Raises:
-            None.
 
         Note:
             Unbridged offline estimates lose confidence at twice the standard

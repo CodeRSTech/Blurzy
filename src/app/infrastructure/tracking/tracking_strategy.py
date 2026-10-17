@@ -46,8 +46,6 @@ class HungarianStrategy:
         Returns:
             None.
 
-        Raises:
-            None.
 
         Note:
             Coasting states are retained in output with ``detection_backed=False``.

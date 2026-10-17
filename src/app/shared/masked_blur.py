@@ -30,9 +30,6 @@ def _clipped_boxes(
     Returns:
         Non-empty coordinates clipped to the image.
 
-    Raises:
-        None.
-
     Note:
         Offscreen and degenerate boxes are omitted and logged at trace level.
 
@@ -68,9 +65,6 @@ def _roi_alpha_mask(
 
     Returns:
         Float alpha values with shape ``roi_shape``.
-
-    Raises:
-        None.
 
     Note:
         The distance transform expands the union mask smoothly beyond box edges.

@@ -38,16 +38,12 @@ if TYPE_CHECKING:
 
 @final
 class RightControlPanel(QScrollArea):
-    """Encapsulate Detection, Tracking, Preview, and Render controls.
+    """Scrollable panel containing Detection, Tracking, Preview, and Render controls.
+
+    Controls emit state changes and execution requests.
 
     Args:
         parent: Optional owner widget.
-
-    Returns:
-        A scrollable panel whose controls emit state and execution requests.
-
-    Raises:
-        None.
 
     Note:
         Preview controls affect the editor viewport only; Render controls define
@@ -83,14 +79,10 @@ class RightControlPanel(QScrollArea):
     def _init_widgets(self) -> None:
         """Create every control and label before layout construction.
 
-        Args:
-            None.
 
         Returns:
             None.
 
-        Raises:
-            None.
 
         Note:
             Tracking and preview numeric ranges match ProcessingSettings validation.
@@ -372,14 +364,10 @@ class RightControlPanel(QScrollArea):
     def _build_ui(self) -> None:
         """Arrange controls into independent collapsible sections.
 
-        Args:
-            None.
 
         Returns:
             None.
 
-        Raises:
-            None.
 
         Note:
             Export actions remain in Render; editor-only controls are in Preview.
@@ -438,14 +426,10 @@ class RightControlPanel(QScrollArea):
     def _connect_signals(self) -> None:
         """Connect locally handled input signals to panel actions.
 
-        Args:
-            None.
 
         Returns:
             None.
 
-        Raises:
-            None.
 
         Note:
             Session-setting updates are connected by TrackingHandler and ExportHandler.
@@ -510,8 +494,6 @@ class RightControlPanel(QScrollArea):
         Returns:
             None.
 
-        Raises:
-            None.
 
         Note:
             Signal blockers prevent session writes while restoring; dependent
@@ -593,8 +575,6 @@ class RightControlPanel(QScrollArea):
         Returns:
             None.
 
-        Raises:
-            None.
 
         Note:
             The checkbox remains enabled so users can turn stitching back on.
@@ -616,8 +596,6 @@ class RightControlPanel(QScrollArea):
         Returns:
             None.
 
-        Raises:
-            None.
 
         Note:
             Disabling the master does not alter ``preview_blur_enabled``; it only
@@ -758,8 +736,6 @@ class RightControlPanel(QScrollArea):
         Returns:
             None.
 
-        Raises:
-            None.
 
         Note:
             Preview-only changes re-render the editor but do not affect export pixels.

@@ -1,4 +1,10 @@
-"""Detection result — output from YOLO object detection model."""
+"""
+Detection result — output from YOLO object detection model.
+
+See Also:
+    - [`Box`][app.domain.detection.box.Box] — base bounding-detection domain dataclass
+    - [`BBoxViewModel`][app.domain.views.bounding_box_view_model.BBoxViewModel] — view model for UI display of bounding boxes
+"""
 
 from __future__ import annotations
 
@@ -31,18 +37,17 @@ class DetectionResult(Box):
         ``BBoxViewModel`` for UI display.
 
     Example:
+        ```python
+        detection = DetectionResult(
+            item_id="yolo-42",
+            label="person",
+            bbox_xyxy=(100, 200, 300, 400),  # (x1, y1, x2, y2)
+            confidence=0.95,
+            color_hex="#808080"
+        )
 
-        .. code-block:: python
-
-            detection = DetectionResult(
-                item_id="yolo-42",
-                label="person",
-                bbox_xyxy=(100, 200, 300, 400),  # (x1, y1, x2, y2)
-                confidence=0.95,
-                color_hex="#808080"
-            )
-
-            box_view = detection.to_frame_box_view_model()
+        box_view = detection.to_frame_box_view_model()
+        ```
     """
 
     def to_frame_box_view_model(self) -> BBoxViewModel:
@@ -60,13 +65,13 @@ class DetectionResult(Box):
     def __post_init__(self) -> None:
         logger.trace("Created detection result {}", self)
 
-    # @override
-    # def __repr__(self) -> str:
-    #    return f"DetectionResult(bbox_xyxy={self.bbox_xyxy}, confidence={self.confidence:.2f}, label={self.label}, item_id={self.item_id})"
-
     @override
-    def __str__(self) -> str:
-        return f"DetectionResult<id={self.item_id}, lbl={self.label})>, (x1,y1,x2,y2)={self.bbox_xyxy}, cnf={self.confidence:.2f}>"
+    def __repr__(self) -> str:
+        item_id = self.item_id
+        lbl = self.label
+        bbox = self.bbox_xyxy
+        cnf = self.confidence
+        return f"DetectionResult<id={item_id}, lbl={lbl}, bbox={bbox}, cnf={cnf:.2f}>"
 
     @override
     def __eq__(self, other: object) -> bool:

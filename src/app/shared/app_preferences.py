@@ -62,9 +62,6 @@ def _coerce_int(value: object, default: int) -> int:
     Returns:
         An integer suitable for a discrete preference.
 
-    Raises:
-        None.
-
     Note:
         Booleans are excluded even though Python treats them as integers.
 
@@ -135,14 +132,10 @@ class AppPreferences:
     def to_processing_settings_kwargs(self) -> dict[str, object]:
         """Map persisted defaults to settings accepted by a new session.
 
-        Args:
-            None.
 
         Returns:
             Processing setting names and values without preference prefixes.
 
-        Raises:
-            None.
 
         Note:
             The chosen labels list is copied so a session cannot mutate global defaults.
@@ -230,14 +223,10 @@ class AppPreferencesStore:
     def load(self) -> AppPreferences:
         """Load preferences and coerce raw backend values to field types.
 
-        Args:
-            None.
 
         Returns:
             Preferences populated with saved values or dataclass defaults.
 
-        Raises:
-            None.
 
         Note:
             Invalid scalar values fall back to the corresponding current default.

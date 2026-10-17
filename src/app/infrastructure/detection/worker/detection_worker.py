@@ -170,8 +170,6 @@ class DetectionWorker(QThread):
             Do not access UI from this thread. Only emit signals.
             ``progress_updated()`` is used to synchronize UI progress.
 
-        Args:
-            None.
 
         Returns:
             None.
