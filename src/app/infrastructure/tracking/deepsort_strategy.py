@@ -1,6 +1,5 @@
-"""DeepSORT strategy adapter.
+"""DeepSORT strategy.
 
-Simple explanation:
 DeepSORT keeps object IDs stable by combining three signals:
 1) where the box moved,
 2) how much boxes overlap,
@@ -14,11 +13,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-
-
-
 import numpy as np
-
 
 from app.domain.detection import BoxSource
 from app.domain.views import BBoxViewModel
@@ -40,10 +35,10 @@ def _as_xyxy_int(bbox: Any) -> tuple[int, int, int, int]:
 class DeepSortStrategy:
     """Track objects using DeepSORT while returning app-native view models.
 
-    Simple runtime note:
-    This app feeds tracking from box data only (no frame pixels in this layer).
-    We run DeepSORT with ``embedder=None`` and supply lightweight embeddings per
-    detection so the strategy works without optional embedder packages.
+    ???+ Simple runtime note:
+        This app feeds tracking from box data only (no frame pixels in this layer).
+        We run DeepSORT with ``embedder=None`` and supply lightweight embeddings per
+        detection so the strategy works without optional embedder packages.
     """
 
     def __init__(
@@ -70,7 +65,9 @@ class DeepSortStrategy:
             decay used to filter emitted coast predictions.
 
         Example:
+            ```python
             strategy = DeepSortStrategy(min_iou=0.3, confidence_decay=0.05)
+            ```
         """
         try:
             from deep_sort_realtime.deepsort_tracker import DeepSort  # pyright: ignore[reportMissingImports]
