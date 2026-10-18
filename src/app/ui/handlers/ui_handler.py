@@ -208,10 +208,6 @@ class UIHandler:
         Args:
             s_id: Session whose frame is being rendered.
             frame: Decoded RGB frame.
-
-        Returns:
-            None.
-
         Raises:
             Exception: Propagates failures fetching session data or applying overlays.
 
@@ -329,10 +325,6 @@ class UIHandler:
             tab_index: Active Detection or Tracking table.
             boxes_to_draw: Active-tab boxes, or ``None`` to hide outlines.
             border_width: Preview border width in pixels.
-
-        Returns:
-            None.
-
         Raises:
             Exception: Logs UI rendering failures and keeps the event loop alive.
 

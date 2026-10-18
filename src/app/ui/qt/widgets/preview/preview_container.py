@@ -103,10 +103,6 @@ class PreviewContainer(QWidget):
 
         Args:
             width: Outline width in pixels from 1 to 10.
-
-        Returns:
-            None.
-
         Raises:
             ValueError: If the width is outside the supported range.
 

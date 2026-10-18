@@ -28,10 +28,6 @@ class TrackingResultProcessor:
         Args:
             s_id: Session identifier receiving tracking results.
             tracked_data: Post-processed tracking boxes indexed by frame.
-
-        Returns:
-            None.
-
         Raises:
             Exception: Propagates invalid-session, filtering, and storage failures.
 

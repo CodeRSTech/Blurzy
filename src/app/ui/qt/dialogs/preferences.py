@@ -47,10 +47,6 @@ class PreferencesDialog(QDialog):
             available_models: Detection models offered by the application.
             parent: Optional parent widget.
 
-        Returns:
-            None.
-
-
         Note:
             Session defaults apply to sessions opened after the preferences are saved.
 
@@ -71,10 +67,6 @@ class PreferencesDialog(QDialog):
 
     def _init_widgets(self) -> None:
         """Create preference widgets and assign explanatory hover text.
-
-
-        Returns:
-            None.
 
 
         Note:
@@ -220,10 +212,6 @@ class PreferencesDialog(QDialog):
         """Arrange preference controls into app, detection, tracking, and render groups.
 
 
-        Returns:
-            None.
-
-
         Note:
             Preview-only defaults and export rendering defaults use separate groups.
 
@@ -301,10 +289,6 @@ class PreferencesDialog(QDialog):
         """Connect preference controls to dialog state and browse actions.
 
 
-        Returns:
-            None.
-
-
         Note:
             Master blur and offline stitching toggles gate their dependent settings.
 
@@ -322,10 +306,6 @@ class PreferencesDialog(QDialog):
 
         Args:
             preferences: Values to display.
-
-        Returns:
-            None.
-
 
         Note:
             Signal state changes are applied explicitly after restoring checkboxes.
@@ -378,10 +358,6 @@ class PreferencesDialog(QDialog):
         Args:
             enabled: Whether blur is enabled by default for new sessions.
 
-        Returns:
-            None.
-
-
         Note:
             Disabling the master keeps the saved preview preference intact but unavailable.
 
@@ -398,10 +374,6 @@ class PreferencesDialog(QDialog):
         Args:
             enabled: Whether offline stitching is enabled by default.
 
-        Returns:
-            None.
-
-
         Note:
             Values are retained while disabled so toggling back on restores them.
 
@@ -416,10 +388,6 @@ class PreferencesDialog(QDialog):
     @Slot()
     def _on_browse_export_directory(self) -> None:
         """Open a directory chooser for the default export location.
-
-
-        Returns:
-            None.
 
 
         Note:

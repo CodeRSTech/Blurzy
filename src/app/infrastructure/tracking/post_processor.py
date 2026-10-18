@@ -245,10 +245,6 @@ class TrackingPostProcessor:
             canonical_boxes: Root identity template for each tracklet.
             total_frames: Exclusive end of the video frame range.
 
-        Returns:
-            None.
-
-
         Note:
             Same-class observations at a frame stop a coast instead of adding an
             ambiguous ghost beside a different detected subject.

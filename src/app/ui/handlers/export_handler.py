@@ -145,10 +145,6 @@ class ExportHandler(QObject):
         Args:
             value: Outline width in pixels, constrained by the panel to 1..10.
 
-        Returns:
-            None.
-
-
         Note:
             This setting affects editor overlays only, not video export.
 
@@ -167,10 +163,6 @@ class ExportHandler(QObject):
         Args:
             enabled: Whether to show the semi-transparent alpha mask.
 
-        Returns:
-            None.
-
-
         Note:
             The overlay is an editor aid and is not written into exported frames.
 
@@ -188,10 +180,6 @@ class ExportHandler(QObject):
 
         Args:
             enabled: Whether to render blur in the editor when master blur is enabled.
-
-        Returns:
-            None.
-
 
         Note:
             Export blur remains controlled by ``blur_enabled``.
@@ -219,10 +207,6 @@ class ExportHandler(QObject):
 
         Args:
             enabled: Whether Gaussian blur is enabled for video export.
-
-        Returns:
-            None.
-
 
         Note:
             This master toggle also enables or disables the independent preview-blur control.

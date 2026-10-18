@@ -48,10 +48,6 @@ class HungarianStrategy:
             confidence_decay: Per-frame confidence penalty while coasting.
             min_confidence: Confidence floor used to prune internal tracks.
 
-        Returns:
-            None.
-
-
         Note:
             Coasting states are retained in output with ``detection_backed=False``.
 

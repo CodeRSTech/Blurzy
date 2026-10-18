@@ -61,10 +61,6 @@ class ByteTrackStrategy:
             min_iou: IoU similarity used to configure tracker association.
             min_confidence: Minimum confidence for accepting tracker output.
             confidence_decay: Confidence reduction per coasted frame.
-
-        Returns:
-            None.
-
         Raises:
             ModuleNotFoundError: If the optional Ultralytics dependency is unavailable.
 

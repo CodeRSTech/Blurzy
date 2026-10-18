@@ -106,10 +106,6 @@ class TrackingWorker(QThread):
             session_state: Settings and video metadata for this run.
             parent: Optional Qt object parent.
             start: Whether to begin processing immediately.
-
-        Returns:
-            None.
-
         Raises:
             ModuleNotFoundError: If an optional selected tracker dependency is missing.
             ValueError: If a post-processing setting is outside its supported range.
@@ -213,10 +209,6 @@ class TrackingWorker(QThread):
                 4. Store the result in ``_tracked_data`` under the mutex.
                 5. Emit ``error_occurred(msg)`` on exceptions and always emit
                    ``finished_processing()``.
-
-        Returns:
-            None.
-
         Raises:
             None: Worker failures are signaled through ``error_occurred``.
 

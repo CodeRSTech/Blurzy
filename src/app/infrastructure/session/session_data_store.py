@@ -311,10 +311,6 @@ class SessionDataStore(QObject):
             source_layer: Layer providing box data.
             target_layer: Layer replaced by the copy.
             filter_fn: Optional predicate that rejects source boxes.
-
-        Returns:
-            None.
-
         Raises:
             Exception: Propagates errors from the optional predicate.
 
@@ -365,10 +361,6 @@ class SessionDataStore(QObject):
             frame_index: Zero-based frame to replace.
             boxes: New machine-produced boxes for the frame.
             filter_fn: Optional predicate applied before new boxes are cloned.
-
-        Returns:
-            None.
-
         Raises:
             Exception: Propagates errors raised by ``filter_fn``.
 
@@ -396,10 +388,6 @@ class SessionDataStore(QObject):
             boxes_by_frame: New machine boxes keyed by zero-based frame index.
             frame_count: Number of frames to refresh, covering ``0..frame_count - 1``.
             filter_fn: Optional predicate applied before new boxes are cloned.
-
-        Returns:
-            None.
-
         Raises:
             ValueError: If ``frame_count`` is negative.
             Exception: Propagates errors raised by ``filter_fn``.
@@ -434,10 +422,6 @@ class SessionDataStore(QObject):
             frame_index: Zero-based target frame.
             boxes: Candidate machine boxes.
             filter_fn: Optional acceptance predicate.
-
-        Returns:
-            None.
-
         Raises:
             Exception: Propagates filtering and cloning errors.
 

@@ -81,10 +81,6 @@ class PartBasedAppearanceEmbedder:
 
         Raises:
             ValueError: If the requested dimension is unsupported.
-
-        Returns:
-            None.
-
         Note:
             No learned weights or network downloads are required.
 

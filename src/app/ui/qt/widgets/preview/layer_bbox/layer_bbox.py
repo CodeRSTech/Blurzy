@@ -183,10 +183,6 @@ class AnnotationOverlayWidget(QWidget):
 
         Args:
             width: Outline width in pixels, from 1 to 10.
-
-        Returns:
-            None.
-
         Raises:
             ValueError: If ``width`` is outside the inclusive range 1..10.
 

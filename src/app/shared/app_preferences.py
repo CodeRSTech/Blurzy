@@ -219,10 +219,6 @@ class AppPreferencesStore:
 
         Args:
             settings: Optional backend, defaulting to ``QSettings``.
-
-        Returns:
-            None.
-
         Raises:
             ImportError: If Qt settings are requested but PySide6 is unavailable.
 
@@ -370,10 +366,6 @@ class AppPreferencesStore:
 
         Args:
             preferences: Values to write under the store's stable preference keys.
-
-        Returns:
-            None.
-
         Raises:
             Exception: Propagates failures from the settings backend.
 

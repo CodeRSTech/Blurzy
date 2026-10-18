@@ -80,10 +80,6 @@ class DetectionService:
 
         Args:
             s_id: Session whose current frame should be detected.
-
-        Returns:
-            None.
-
         Raises:
             Exception: Propagates detection or storage failures.
 

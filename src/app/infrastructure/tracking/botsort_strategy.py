@@ -173,10 +173,6 @@ class BotSortStrategy:
 
         Raises:
             ValueError: If a threshold, decay, age, or EMA weight is invalid.
-
-        Returns:
-            None.
-
         Note:
             The default appearance extractor is created lazily only when RGB
             frames are supplied without explicit embeddings.

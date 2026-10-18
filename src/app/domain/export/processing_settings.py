@@ -77,10 +77,6 @@ class ProcessingSettings:
     def __post_init__(self) -> None:
         """Validate user-configurable limits before a session uses the settings.
 
-
-        Returns:
-            None.
-
         Raises:
             ValueError: If a bounded setting is outside its documented range or
                 ``reid_embedding_dim`` is not one of 128, 256, or 512.

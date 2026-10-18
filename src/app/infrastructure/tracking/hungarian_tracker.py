@@ -102,10 +102,6 @@ class _Track:
         Args:
             confidence_decay: Confidence reduction per unmatched frame.
 
-        Returns:
-            None.
-
-
         Note:
             The bounding box moves by the last observed velocity and the age
             increments once for each unmatched frame.

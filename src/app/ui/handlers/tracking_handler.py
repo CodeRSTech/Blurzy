@@ -67,10 +67,6 @@ class TrackingHandler(QObject):
         """Connect tracking controls to session-setting and worker actions.
 
 
-        Returns:
-            None.
-
-
         Note:
             Offline stitch settings are stored per session and consumed when a
             tracking worker is created.
@@ -258,10 +254,6 @@ class TrackingHandler(QObject):
 
         Args:
             dimension: Embedding vector size selected in the tracking panel.
-
-        Returns:
-            None.
-
         Note:
             The panel offers only the dimensions accepted by ProcessingSettings.
 
@@ -309,10 +301,6 @@ class TrackingHandler(QObject):
 
         Args:
             enabled: True to enable bidirectional stitching and GSI.
-
-        Returns:
-            None.
-
         Raises:
             InvalidSessionIdException: If the application rejects the selected session.
 
@@ -331,10 +319,6 @@ class TrackingHandler(QObject):
 
         Args:
             value: Gap length from 1 to 60 frames.
-
-        Returns:
-            None.
-
         Raises:
             InvalidSessionIdException: If the application rejects the selected session.
 
@@ -352,10 +336,6 @@ class TrackingHandler(QObject):
 
         Args:
             value: Kernel lengthscale from 1.0 to 30.0.
-
-        Returns:
-            None.
-
         Raises:
             InvalidSessionIdException: If the application rejects the selected session.
 
@@ -383,10 +363,6 @@ class TrackingHandler(QObject):
 
         Args:
             s_id: Session whose worker has completed.
-
-        Returns:
-            None.
-
         Raises:
             Exception: Propagates synchronization or rendering failures.
 

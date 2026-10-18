@@ -34,10 +34,6 @@ class DetectionExecutionService:
 
         Args:
             s_id: Session identifier whose current frame is processed.
-
-        Returns:
-            None.
-
         Raises:
             Exception: Propagates model, filtering, and storage failures.
 

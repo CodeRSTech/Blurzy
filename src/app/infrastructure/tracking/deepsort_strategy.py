@@ -172,10 +172,6 @@ class DeepSortStrategy:
 
         Raises:
             ValueError: If thresholds are outside their valid ranges.
-
-        Returns:
-            None.
-
         Note:
             If the historical external DeepSORT backend is available, it is
             initialized only for compatibility with the legacy batch wrapper.
