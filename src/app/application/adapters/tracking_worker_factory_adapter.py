@@ -1,4 +1,12 @@
-"""Infrastructure-backed factory adapter for tracking workers."""
+"""
+Infrastructure-backed factory adapter for tracking workers.
+
+Based on the
+[`TrackingWorkerFactoryInterface`][app.application.interfaces.tracking.worker_factory_interface.TrackingWorkerFactoryInterface]
+interface contract, this adapter creates concrete
+[`TrackingWorker`][app.infrastructure.tracking.worker.TrackingWorker]
+instances behind an interface seam.
+"""
 
 from __future__ import annotations
 
@@ -19,6 +27,7 @@ class TrackingWorkerFactoryAdapter(TrackingWorkerFactoryInterface):
         source_data: ListOfBoxesByFrameIndexAsDict,
         session_state: SessionState,
     ) -> TrackingWorkerInterface:
+        """Build and return a ``TrackingWorker`` instance."""
         from app.infrastructure.tracking import TrackingWorker  # lazy import
 
         return TrackingWorker(

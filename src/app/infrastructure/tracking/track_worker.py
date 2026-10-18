@@ -185,7 +185,6 @@ class TrackingWorker(QThread):
                 5. On exception, emit ``error_occurred(msg)``.
                 6. Finally, emit ``finished_processing()``.
 
-
         Returns:
             None.
 
