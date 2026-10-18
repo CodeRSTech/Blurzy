@@ -6,13 +6,13 @@
 
     API reference pages are generated from Python signatures  and docstrings.
     Maintain API explanations in source and cross-component design notes in
-`docs/reference/`; see [Reference authoring](../development.md#reference-authoring).
+    `docs/reference/`; see [Reference authoring](../development.md#reference-authoring).
     The [Reference documentation](reference-documentation.md) article explains
-generation, member selection, fenced examples, and contributor guidelines.
+    generation, member selection, fenced examples, and contributor guidelines.
     The renderer uses Google-style sections and Markdown, so prefer single
     backticks for new inline-code text (rather than reStructuredText double
-backticks). Existing docstrings can be modernized incrementally; automation
-does not verify their behavioral claims.
+    backticks). Existing docstrings can be modernized incrementally; automation
+    does not verify their behavioral claims.
 
 ---
 
@@ -71,9 +71,9 @@ UI handlers must:
 
 ## 1. One-Liner Docstrings
 
-### Rule: Simple, Direct Purpose
+!!! abstract "Rule: Simple, Direct Purpose"
 
-Every method should have a **single-line docstring** that completes the sentence: *"This method..."*
+    Every method should at least have a **single-line docstring** that gives a concise description of its what it does.
 
 #### Format
 ```python
@@ -95,38 +95,38 @@ Use **formatting directives** for emphasis:
 - `*italic text*` — for gentle emphasis
 - `>>` or `→` — for flow/direction
 
-#### Examples
+??? example "Examples"
 
-✅ **GOOD:**
-```python
-def get_layer_by_name(self, layer_name: DataLayer) -> BoxesByFrameIndex:
-    """Fetch all bounding boxes grouped by frame index for the specified ``layer_name``."""
-    return self.data.get_all_boxes_for_layer_as_dict_of_lists(layer_name)
-
-def has_boxes_for_layer(self, layer_name: DataLayer) -> bool:
-    """Check if ``layer_name`` contains **any** bounding boxes."""
-    return self.data.has_boxes_for_layer(layer_name)
-
-```
-
-❌ **BAD:**
-```python
-def get_layer_by_name(self, layer_name):
-    """Get layer"""  # Vague, no variable formatting
-    ...
-
-def has_boxes_for_layer(self, layer_name):
-    """Returns true or false if boxes exist"""  # Awkward grammar, no formatting
-    ...
-```
+    !!! success " **GOOD:**"
+        ```python
+        def get_layer_by_name(self, layer_name: DataLayer) -> BoxesByFrameIndex:
+            """Fetch all bounding boxes grouped by frame index for the specified ``layer_name``."""
+            return self.data.get_all_boxes_for_layer_as_dict_of_lists(layer_name)
+        
+        def has_boxes_for_layer(self, layer_name: DataLayer) -> bool:
+            """Check if ``layer_name`` contains **any** bounding boxes."""
+            return self.data.has_boxes_for_layer(layer_name)
+    
+    ```
+    
+    !!! failure " **BAD:**"
+        ```python
+        def get_layer_by_name(self, layer_name):
+            """Get layer"""  # Vague, no variable formatting
+            ...
+        
+        def has_boxes_for_layer(self, layer_name):
+            """Returns true or false if boxes exist"""  # Awkward grammar, no formatting
+            ...
+        ```
 
 ---
 
 ## 2. Flow Documentation with Section Blocks
 
-### Rule: Structured Step-by-Step Comments
+!!! abstract "Rule: Structured Step-by-Step Comments"
 
-For methods with multiple logical steps, use **section dividers** to organize flow. This pattern is used consistently in `session.py` and `service.py`.
+    For methods with multiple logical steps, use **section dividers** to organize flow. This pattern is used consistently in `session.py` and `service.py`.
 
 #### Format
 
@@ -152,81 +152,81 @@ def complex_operation(self):
     return process_result(step_1_result)
 ```
 
-#### Rules for Step Blocks
+!!! abstract "Rules for Step Blocks"
 
-1. **Use ALL CAPS for step names**: `# 1. FETCH SESSION INSTANCE`
-2. **Precede with `# =============...` (60+ `=` chars)**
-3. **Number steps sequentially**: `# 1.`, `# 2.`, etc.
-4. **Add brief explanation after the dash**: `# 1. STEP NAME — What it does`
-5. **Include context comments above if needed** — especially for non-obvious logic
-6. **One blank line before and after the section block**
+    1. **Use ALL CAPS for step names**: `# 1. FETCH SESSION INSTANCE`
+    2. **Precede with `# =============...` (60+ `=` chars)**
+    3. **Number steps sequentially**: `# 1.`, `# 2.`, etc.
+    4. **Add brief explanation after the dash**: `# 1. STEP NAME — What it does`
+    5. **Include context comments above if needed** — especially for non-obvious logic
+    6. **One blank line before and after the section block**
 
-#### Real Examples from Codebase
-
-**From `session.py` (lines 197–243):**
-```python
-def get_frame_by_index(self, frame_index: int) -> RGBFrame | None:
-    """Fetches a specific frame directly from the O(1) Ring Buffer, or triggers a seek."""
+???+ example "Real Examples from Codebase"
     
-    # ====================================
-    # 1. Check if frame at index is cached
-    # ====================================
-    cached_frame = decode_worker.get_cached_frame_at_index(safe_idx)
-    if cached_frame is not None:
-        session_state.playback.current_frame_index = safe_idx
-        return cached_frame
-    
-    # ====================================
-    # 2. Cache Miss
-    # ====================================
-    is_sequential_underrun = abs(safe_idx - session_state.playback.current_frame_index) <= 1
-    if not is_sequential_underrun:
-        decode_worker.request_seek(safe_idx)
-    
-    # ====================================
-    # 3. Wait for worker to catch up
-    # ====================================
-    attempts = 0
-    while attempts < 200:  # 2.0 second timeout
+    **From `session.py` (lines 197–243):**
+    ```python
+    def get_frame_by_index(self, frame_index: int) -> RGBFrame | None:
+        """Fetches a specific frame directly from the O(1) Ring Buffer, or triggers a seek."""
+        
+        # ====================================
+        # 1. Check if frame at index is cached
+        # ====================================
         cached_frame = decode_worker.get_cached_frame_at_index(safe_idx)
         if cached_frame is not None:
+            session_state.playback.current_frame_index = safe_idx
             return cached_frame
-        time.sleep(0.01)
-        attempts += 1
-```
-
-**From `service.py` (lines 57–117):**
-
-```python
-def detect_current_frame(self, s_id: SessionId) -> None:
-    """
-    Detect objects in the current frame of the ``Session`` specified by the ``SessionId``
-    using the currently set detection model. If no model is set, skip detection and
-    clear any existing detection layers.
-    """
-
-    # ============================================================================
-    # 1. FETCH SESSION INSTANCE
-    # ============================================================================
-    session = self._app.get_session_by_id(s_id)
-
-    # ============================================================================
-    # 2. CHECK MODEL NAME
-    # ============================================================================
-    if session.state.session_settings.model_name_is_null:
-        logger.info("Detect current frame skipped: model is None")
-        return
-
-    # ... (continues with steps 3–6)
-```
+        
+        # ====================================
+        # 2. Cache Miss
+        # ====================================
+        is_sequential_underrun = abs(safe_idx - session_state.playback.current_frame_index) <= 1
+        if not is_sequential_underrun:
+            decode_worker.request_seek(safe_idx)
+        
+        # ====================================
+        # 3. Wait for worker to catch up
+        # ====================================
+        attempts = 0
+        while attempts < 200:  # 2.0 second timeout
+            cached_frame = decode_worker.get_cached_frame_at_index(safe_idx)
+            if cached_frame is not None:
+                return cached_frame
+            time.sleep(0.01)
+            attempts += 1
+    ```
+    
+    **From `service.py` (lines 57–117):**
+    
+    ```python
+    def detect_current_frame(self, s_id: SessionId) -> None:
+        """
+        Detect objects in the current frame of the ``Session`` specified by the ``SessionId``
+        using the currently set detection model. If no model is set, skip detection and
+        clear any existing detection layers.
+        """
+    
+        # ============================================================================
+        # 1. FETCH SESSION INSTANCE
+        # ============================================================================
+        session = self._app.get_session_by_id(s_id)
+    
+        # ============================================================================
+        # 2. CHECK MODEL NAME
+        # ============================================================================
+        if session.state.session_settings.model_name_is_null:
+            logger.info("Detect current frame skipped: model is None")
+            return
+    
+        # ... (continues with steps 3–6)
+    ```
 
 ---
 
 ## 3. Inline Comments for Non-Obvious Logic
 
-### Rule: Explain *Why*, Not *What*
+!!! abstract "Rule: Explain *Why*, Not *What*"
 
-**The code shows WHAT happens; comments explain WHY.**
+    **The code shows WHAT happens; comments explain WHY.**
 
 #### Format
 
@@ -247,13 +247,13 @@ logger.info("Detection worker processed {}/{} frames.", processed_frames, total_
 
 Use these prefixes for special comments:
 
-| Tag | Usage | Example |
-|-----|-------|---------|
-| `[NOTE]` | Design decision, architectural rationale | `# [NOTE] Even though we start the worker here, it will only be active when session becomes active` |
-| `[FIXME]` | Known bug or incomplete feature | `# [FIXME] Currently, progress is merely logged, wire it into a progress indicator` |
-| `[TODO]` | Future enhancement or refactoring | `# [TODO] Extract timeout-loop into VideoDecodeWorker` |
-| `[NEW]` | Recently added or changed behavior | `# [NEW] Use the new method to bypass direct buffer access` |
-| `[DEPRECATED]` | Old code to be removed | `# [DEPRECATED] This approach is superseded by the streaming API` |
+| Tag            | Usage                                    | Example                                                                                             |
+|----------------|------------------------------------------|-----------------------------------------------------------------------------------------------------|
+| `[NOTE]`       | Design decision, architectural rationale | `# [NOTE] Even though we start the worker here, it will only be active when session becomes active` |
+| `[FIXME]`      | Known bug or incomplete feature          | `# [FIXME] Currently, progress is merely logged, wire it into a progress indicator`                 |
+| `[TODO]`       | Future enhancement or refactoring        | `# [TODO] Extract timeout-loop into VideoDecodeWorker`                                              |
+| `[NEW]`        | Recently added or changed behavior       | `# [NEW] Use the new method to bypass direct buffer access`                                         |
+| `[DEPRECATED]` | Old code to be removed                   | `# [DEPRECATED] This approach is superseded by the streaming API`                                   |
 
 ### 3.1 IMPORTANT: Critical Warnings Block
 
@@ -261,56 +261,58 @@ For **critical warnings** about thread safety, memory management, or other gotch
 
 ```python
 # ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
-# ┃                                  IMPORTANT                         ┃
+# ┃                                  IMPORTANT                       ┃
 # ┣━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┫
-# ┃ Because the worker is parentless (required by moveToThread()),     ┃
-# ┃ Qt will NOT automatically delete it when the main class is         ┃
-# ┃ destroyed. We must manually orchestrate a synchronized teardown    ┃
-# ┃ to prevent memory leaks and thread crashes.                        ┃
-# ┃                                                                    ┃
-# ┃ The mandatory shutdown sequence must always follow this order:     ┃
-# ┃ 1. Stop the worker: Signal it to finish its current loop.          ┃
-# ┃ 2. Quit the thread: Tell the QThread event loop to stop.           ┃
-# ┃ 3. Wait for exit: Block the main thread until OS closes thread.    ┃
-# ┃ 4. Delete the worker: Safely free the parentless worker memory.    ┃
+# ┃ Because the worker is parentless (required by moveToThread()),   ┃
+# ┃ Qt will NOT automatically delete it when the main class is       ┃
+# ┃ destroyed. We must manually orchestrate a synchronized teardown  ┃
+# ┃ to prevent memory leaks and thread crashes.                      ┃
+# ┃                                                                  ┃
+# ┃ The mandatory shutdown sequence must always follow this order:   ┃
+# ┃ 1. Stop the worker: Signal it to finish its current loop.        ┃
+# ┃ 2. Quit the thread: Tell the QThread event loop to stop.         ┃
+# ┃ 3. Wait for exit: Block the main thread until OS closes thread.  ┃
+# ┃ 4. Delete the worker: Safely free the parentless worker memory.  ┃
 # ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
 ```
 
-**Use IMPORTANT blocks for:**
-- Thread safety constraints
-- Memory management gotchas
-- Object lifetime issues
-- Strict ordering requirements
-- Cross-layer architectural rules
+!!! tip "**Use IMPORTANT blocks for:**"
 
-**Real example from `model_handler.py`:**
-```python
-@Slot()
-def _cleanup(self) -> None:
-    # ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
-    # ┃                                  IMPORTANT                    ┃
-    # ┣━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┫
-    # ┃ Do NOT call deleteLater() on active threads or workers.      ┃
-    # ┃ Must call quit() → wait() before deleting memory.            ┃
-    # ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
-    
-    # 1. Stop and join the thread
-    if self._model_load_thread is not None and self._model_load_thread.isRunning():
-        self._model_load_thread.quit()
-        self._model_load_thread.wait()
-    
-    # 2. Schedule worker deletion
-    if self._model_load_worker is not None:
-        self._model_load_worker.deleteLater()
-```
+    - Thread safety constraints
+    - Memory management gotchas
+    - Object lifetime issues
+    - Strict ordering requirements
+    - Cross-layer architectural rules
+
+???+ example "**Real example from `model_handler.py`:**"
+
+    ```python
+    @Slot()
+    def _cleanup(self) -> None:
+        # ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+        # ┃                                  IMPORTANT                 ┃
+        # ┣━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┫
+        # ┃ Do NOT call deleteLater() on active threads or workers.    ┃
+        # ┃ Must call quit() → wait() before deleting memory.          ┃
+        # ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+        
+        # 1. Stop and join the thread
+        if self._model_load_thread is not None and self._model_load_thread.isRunning():
+            self._model_load_thread.quit()
+            self._model_load_thread.wait()
+        
+        # 2. Schedule worker deletion
+        if self._model_load_worker is not None:
+            self._model_load_worker.deleteLater()
+    ```
 
 ---
 
 ## 4. Multi-Line Docstrings (For Complex Methods)
 
-### Rule: When a One-Liner Isn't Enough
+!!! abstract "Rule: When a One-Liner Isn't Enough"
 
-Use triple-quoted docstrings for methods that need more explanation (especially in infrastructure/application layers).
+    Use triple-quoted docstrings for methods that need more explanation (especially in infrastructure/application layers).
 
 #### Format (Google Style)
 
@@ -336,33 +338,33 @@ def complex_method(self, param1: str, param2: int) -> dict:
     """
 ```
 
-#### Example from Infrastructure
-
-```python
-def start_detection_worker_for_session_id(self, s_id: SessionId) -> None:
-    """
-    Starts a background ``DetectionWorker`` for the session specified by ``s_id``.
+???+ example "Example from Infrastructure"
     
-    This method initializes the detection engine, creates a worker thread,
-    and begins processing frames in the background. **DO NOT** call this
-    if a worker is already running; check ``session.has_running_detection_worker`` first.
-    
-    Args:
-        ``s_id``: The ``SessionId`` identifying the target session.
-    
-    Raises:
-        ``WorkerAlreadyRunningException``: If a detection worker is already active.
-        ``NullModelNameException``: If no detection model has been selected.
-    """
-```
+    ```python
+    def start_detection_worker_for_session_id(self, s_id: SessionId) -> None:
+        """
+        Starts a background ``DetectionWorker`` for the session specified by ``s_id``.
+        
+        This method initializes the detection engine, creates a worker thread,
+        and begins processing frames in the background. **DO NOT** call this
+        if a worker is already running; check ``session.has_running_detection_worker`` first.
+        
+        Args:
+            ``s_id``: The ``SessionId`` identifying the target session.
+        
+        Raises:
+            ``WorkerAlreadyRunningException``: If a detection worker is already active.
+            ``NullModelNameException``: If no detection model has been selected.
+        """
+    ```
 
 ---
 
 ## 5. Class-Level Documentation
 
-### Rule: Describe Purpose and Responsibilities
+!!! abstract "Rule: Describe Purpose and Responsibilities"
 
-Every class should have a docstring explaining its role in the architecture.
+    Every class should have a docstring explaining its role in the architecture.
 
 #### Format
 
@@ -381,41 +383,43 @@ class Session(QObject):
     """
 ```
 
-#### Example: Full Class Documentation
-
-```python
-@final
-class DetectionService:
-    """
-    Orchestrates model-based object detection across sessions.
+???+ example "Example: Full Class Documentation"
     
-    Responsibilities:
-    - Create and manage ``DetectionEngine`` instances per session
-    - Start background ``DetectionWorker`` threads
-    - Route detection batches back to session data stores
-    - Handle model switching and layer clearing
-    
-    Design Notes:
-    - Although ``Session`` holds the ``DetectionEngine``, this service
-      creates and manages it to keep ``Session`` decoupled from detection logic.
-    """
-```
+    ```python
+    @final
+    class DetectionService:
+        """
+        Orchestrates model-based object detection across sessions.
+        
+        Responsibilities:
+        - Create and manage ``DetectionEngine`` instances per session
+        - Start background ``DetectionWorker`` threads
+        - Route detection batches back to session data stores
+        - Handle model switching and layer clearing
+        
+        Design Notes:
+        - Although ``Session`` holds the ``DetectionEngine``, this service
+          creates and manages it to keep ``Session`` decoupled from detection logic.
+        """
+    ```
 
 ---
 
 ## 6. Documenting Signals and Slots in PySide6
 
-### Rule: Trace the Signal Cascade
+!!! abstract "Rule: Trace the Signal Cascade"
 
-Qt applications use **signals and slots** to communicate between objects. Documentation must clearly show:
-1. **Where the signal originates** (top-level event or emit)
-2. **Which slot receives it** (and where it lives)
-3. **What signal it emits next** (cascade/chain)
-4. **The overall flow** from user action to final state change
+    Qt applications use **signals and slots** to communicate between objects. Documentation must clearly show:
+    1. **Where the signal originates** (top-level event or emit)
+    2. **Which slot receives it** (and where it lives)
+    3. **What signal it emits next** (cascade/chain)
+    4. **The overall flow** from user action to final state change
 
 ### 6.1 Top-Level Slots (Entry Points)
 
-**Top-level slots** are triggered by built-in Qt events (button clicks, menu actions, etc.) and usually emit signals that cascade downstream. These should include **complete signal flow documentation**.
+!!! info
+
+    **Top-level slots** are triggered by built-in Qt events (button clicks, menu actions, etc.) and usually emit signals that cascade downstream. These should include **complete signal flow documentation**.
 
 #### Format
 
@@ -449,43 +453,43 @@ class MyWidget(QWidget):
         self.action_completed.emit(result)
 ```
 
-#### Real Example from Codebase
-
-```python
-class TopRow(QWidget):
-    # ════════════════════════════════════════════════════════════════════════
-    # SIGNALS
-    # ════════════════════════════════════════════════════════════════════════
-    open_videos_requested = pyqtSignal(list)  # Emits list[str] (file paths)
+???+ example "Real Example from Codebase"
     
-    @Slot()
-    def choose_video_files(self) -> None:
-        """
-        Open file browser and request video files to be opened.
+    ```python
+    class TopRow(QWidget):
+        # ════════════════════════════════════════════════════════════════════════
+        # SIGNALS
+        # ════════════════════════════════════════════════════════════════════════
+        open_videos_requested = pyqtSignal(list)  # Emits list[str] (file paths)
         
-        **Signal Cascade (Complete Flow):**
-        ```
-        TopRow.choose_button.clicked (Qt built-in)
-          └──> TopRow.choose_video_files() [this slot — entry point]
-                  ├── Launch QFileDialog.getOpenFileNames()
-                  └──> Emit TopRow.open_videos_requested(paths: list[str])
-                          └──> SessionHandler.on_open_videos(paths: list[str])
-                                  └──> SessionHandler processes and opens sessions
-                                          └──> Calls App.open_videos(paths)
-        ```
-        
-        Signal Flow: ``choose_button.clicked`` → ``choose_video_files()`` 
-        → ``open_videos_requested`` → ``SessionHandler.on_open_videos()``
-        """
-        paths, _ = QFileDialog.getOpenFileNames(
-            self._parent,
-            "Open Video Files",
-            "",
-            "Video Files (*.mp4 *.avi *.mov *.mkv *.wmv *.m4v);;All Files (*)",
-        )
-        if paths:
-            self.open_videos_requested.emit(paths)
-```
+        @Slot()
+        def choose_video_files(self) -> None:
+            """
+            Open file browser and request video files to be opened.
+            
+            **Signal Cascade (Complete Flow):**
+            ```
+            TopRow.choose_button.clicked (Qt built-in)
+              └──> TopRow.choose_video_files() [this slot — entry point]
+                      ├── Launch QFileDialog.getOpenFileNames()
+                      └──> Emit TopRow.open_videos_requested(paths: list[str])
+                              └──> SessionHandler.on_open_videos(paths: list[str])
+                                      └──> SessionHandler processes and opens sessions
+                                              └──> Calls App.open_videos(paths)
+            ```
+            
+            Signal Flow: ``choose_button.clicked`` → ``choose_video_files()`` 
+            → ``open_videos_requested`` → ``SessionHandler.on_open_videos()``
+            """
+            paths, _ = QFileDialog.getOpenFileNames(
+                self._parent,
+                "Open Video Files",
+                "",
+                "Video Files (*.mp4 *.avi *.mov *.mkv *.wmv *.m4v);;All Files (*)",
+            )
+            if paths:
+                self.open_videos_requested.emit(paths)
+    ```
 
 ### 6.2 Mid-Level Slots (Intermediate Handlers)
 
@@ -608,85 +612,85 @@ class SessionManager(QObject):
     """
 ```
 
-### 6.5 Complete Signal Chain Example
-
-Here's a **complete, documented signal chain** showing the entire flow from user action to state update:
-
-```python
-# ════════════════════════════════════════════════════════════════════════════════
-# FILE: src/app/ui/handlers/session_handler.py
-# ════════════════════════════════════════════════════════════════════════════════
-
-@Slot(list)
-def on_open_videos(self, paths: list[str]) -> None:
-    """
-    Receive file paths and create new sessions for each video.
+???+ example "6.5 Complete Signal Chain Example"
     
-    **Signal Cascade (Complete Flow):**
+    Here's a **complete, documented signal chain** showing the entire flow from user action to state update:
+    
+    ```python
+    # ════════════════════════════════════════════════════════════════════════════════
+    # FILE: src/app/ui/handlers/session_handler.py
+    # ════════════════════════════════════════════════════════════════════════════════
+    
+    @Slot(list)
+    def on_open_videos(self, paths: list[str]) -> None:
+        """
+        Receive file paths and create new sessions for each video.
+        
+        **Signal Cascade (Complete Flow):**
+        ```
+        TopRow.choose_button.clicked [Qt built-in event]
+          └──> TopRow.choose_video_files() [top-level slot]
+                  └──> Emit TopRow.open_videos_requested(paths)
+                          └──> SessionHandler.on_open_videos(paths) [this slot — mid-level]
+                                  └──> Call App.open_videos(paths)
+                                          └──> SessionManager.create_session_from_video_path(path)
+                                                  └──> Emit SessionManager.session_created(s_id)
+                                                          └──> UIController.on_session_created(s_id) [leaf slot]
+                                                                  └──> Update UI
+        ```
+        
+        **Triggered By:**
+                ``TopRow.open_videos_requested`` signal
+        
+        **Downstream:** Indirectly triggers ``SessionManager.session_created`` → ``UIController.on_session_created()``
+        """
+        # ====================================================================
+        # 1. VALIDATE PATHS
+        # ====================================================================
+        if not paths:
+            logger.warning("No video files selected")
+            return
+        
+        # ====================================================================
+        # 2. DELEGATE TO APP TO OPEN VIDEOS
+        # ====================================================================
+        # [NOTE] App.open_videos() cascades to SessionManager, which emits signals
+        try:
+            self._app.open_videos(paths)
+        except Exception as e:
+            logger.opt(exception=e).error("Failed to open videos")
+            self._show_error_dialog("Could not open video files", str(e))
+    
+    # ════════════════════════════════════════════════════════════════════════════════
+    # FILE: src/app/ui/uicontroller.py
+    # ════════════════════════════════════════════════════════════════════════════════
+    
+    @Slot(SessionId)
+    def on_session_created(self, s_id: SessionId) -> None:
+        """
+        Handle newly created session and update UI.
+        
+        **Triggered By:**
+                ``SessionManager.session_created`` signal
+        
+        **Downstream:** None (leaf node — final UI update)
+        """
+        # ====================================================================
+        # 1. SET ACTIVE SESSION
+        # ====================================================================
+        self.app.active_session_id = s_id
+        
+        # ====================================================================
+        # 2. INITIALIZE PLAYBACK
+        # ====================================================================
+        self.playback_handler.initialize_playback(s_id)
+        
+        # ====================================================================
+        # 3. REFRESH UI
+        # ====================================================================
+        self.ui_handler.render_frame(s_id)
+        logger.info("Session {} is now active", s_id)
     ```
-    TopRow.choose_button.clicked [Qt built-in event]
-      └──> TopRow.choose_video_files() [top-level slot]
-              └──> Emit TopRow.open_videos_requested(paths)
-                      └──> SessionHandler.on_open_videos(paths) [this slot — mid-level]
-                              └──> Call App.open_videos(paths)
-                                      └──> SessionManager.create_session_from_video_path(path)
-                                              └──> Emit SessionManager.session_created(s_id)
-                                                      └──> UIController.on_session_created(s_id) [leaf slot]
-                                                              └──> Update UI
-    ```
-    
-    **Triggered By:**
-			``TopRow.open_videos_requested`` signal
-    
-    **Downstream:** Indirectly triggers ``SessionManager.session_created`` → ``UIController.on_session_created()``
-    """
-    # ====================================================================
-    # 1. VALIDATE PATHS
-    # ====================================================================
-    if not paths:
-        logger.warning("No video files selected")
-        return
-    
-    # ====================================================================
-    # 2. DELEGATE TO APP TO OPEN VIDEOS
-    # ====================================================================
-    # [NOTE] App.open_videos() cascades to SessionManager, which emits signals
-    try:
-        self._app.open_videos(paths)
-    except Exception as e:
-        logger.opt(exception=e).error("Failed to open videos")
-        self._show_error_dialog("Could not open video files", str(e))
-
-# ════════════════════════════════════════════════════════════════════════════════
-# FILE: src/app/ui/uicontroller.py
-# ════════════════════════════════════════════════════════════════════════════════
-
-@Slot(SessionId)
-def on_session_created(self, s_id: SessionId) -> None:
-    """
-    Handle newly created session and update UI.
-    
-    **Triggered By:**
-			``SessionManager.session_created`` signal
-    
-    **Downstream:** None (leaf node — final UI update)
-    """
-    # ====================================================================
-    # 1. SET ACTIVE SESSION
-    # ====================================================================
-    self.app.active_session_id = s_id
-    
-    # ====================================================================
-    # 2. INITIALIZE PLAYBACK
-    # ====================================================================
-    self.playback_handler.initialize_playback(s_id)
-    
-    # ====================================================================
-    # 3. REFRESH UI
-    # ====================================================================
-    self.ui_handler.render_frame(s_id)
-    logger.info("Session {} is now active", s_id)
-```
 
 ### 6.6 Signal/Slot Documentation Checklist
 
@@ -804,15 +808,15 @@ def __init__(self, s_id: SessionId) -> None:
 
 #### ASCII Box Characters Reference
 
-| Character | Name | Usage |
-|-----------|------|-------|
-| `┌` | Box corner (top-left) | Start of a new attribute group |
-| `├` | Box junction (left-mid) | Sub-attribute or nested level |
-| `└` | Box corner (bottom-left) | Last item in a section |
-| `─` | Box horizontal line | Connects labels |
-| `┐` | Box corner (top-right) | End delimiter (optional) |
-| `┤` | Box junction (right-mid) | Right-side connection (optional) |
-| `┘` | Box corner (bottom-right) | End of section (optional) |
+| Character | Name                      | Usage                            |
+|-----------|---------------------------|----------------------------------|
+| `┌`       | Box corner (top-left)     | Start of a new attribute group   |
+| `├`       | Box junction (left-mid)   | Sub-attribute or nested level    |
+| `└`       | Box corner (bottom-left)  | Last item in a section           |
+| `─`       | Box horizontal line       | Connects labels                  |
+| `┐`       | Box corner (top-right)    | End delimiter (optional)         |
+| `┤`       | Box junction (right-mid)  | Right-side connection (optional) |
+| `┘`       | Box corner (bottom-right) | End of section (optional)        |
 
 **Typical patterns:**
 ```
@@ -854,69 +858,74 @@ When writing or reviewing code, verify:
 ## 9. Refactoring with Copilot: A Workflow
 
 ### Step 1: Load the File
-Ask Copilot:
-```
-Analyze this Python file for documentation coverage. 
-Identify methods without docstrings or with incomplete documentation.
-```
+!!! quote "Ask Copilot"
+
+    ```
+    Analyze this Python file for documentation coverage. 
+    Identify methods without docstrings or with incomplete documentation.
+    ```
 
 ### Step 2: Generate Docstrings
-Ask Copilot:
-```
-Generate one-liner docstrings for these methods using the Blurzy style guide:
-- Format variables in backticks
-- Use bold/italic for emphasis
-- Keep it to one line
+!!! quote "Ask Copilot"
 
-Here are the methods: [paste method signatures]
-```
+    ```
+    Generate one-liner docstrings for these methods using the Blurzy style guide:
+    - Format variables in backticks
+    - Use bold/italic for emphasis
+    - Keep it to one line
+    
+    Here are the methods: [paste method signatures]
+    ```
 
 ### Step 3: Add Flow Sections
-Ask Copilot:
-```
-This method has 5 logical steps. Reformat it with section blocks using the style:
-# ============================================================================
-# 1. STEP NAME — Description
-# ============================================================================
+!!! quote "Ask Copilot"
 
-Here's the method: [paste code]
-```
+    ```
+    This method has 5 logical steps. Reformat it with section blocks using the style:
+    # ============================================================================
+    # 1. STEP NAME — Description
+    # ============================================================================
+    
+    Here's the method: [paste code]
+    ```
 
 ### Step 4: Document Signals and Slots
-Ask Copilot:
-```
-This is a PySide6 UI file with signals and slots. Using the style guide, 
-document all signals and slots including:
-- Signal cascade for top-level slots (entry points)
-- Origin/downstream signals for mid-level slots
-- Signal declarations with payload documentation
-
-Here's the file: [paste code]
-```
+!!! quote "Ask Copilot"
+    
+    ```
+    This is a PySide6 UI file with signals and slots. Using the style guide, 
+    document all signals and slots including:
+    - Signal cascade for top-level slots (entry points)
+    - Origin/downstream signals for mid-level slots
+    - Signal declarations with payload documentation
+    
+    Here's the file: [paste code]
+    ```
 
 ### Step 5: Review and Iterate
-Ask Copilot:
-```
-Review this documentation against the Blurzy style guide.
-Are there any inconsistencies or areas that could be clearer?
-Suggest improvements.
-```
+!!! quote "Ask Copilot"
+
+    ```
+    Review this documentation against the Blurzy style guide.
+    Are there any inconsistencies or areas that could be clearer?
+    Suggest improvements.
+    ```
 
 ---
 
 ## 10. Quick Reference: Backtick Usage
 
-| Context | Example |
-|---------|---------|
-| Parameter | ``frame_index`` |
-| Variable | ``current_frame`` |
-| Enum/Layer | ``DataLayer.A`` |
-| Class | ``DetectionEngine`` |
-| Method | ``get_frame_by_index()`` |
-| Constant | ``MAX_BUFFER_SIZE`` |
-| Return type | Returns a ``dict`` of results |
-| Signal | `` `action_completed` `` signal |
-| Slot | `` `on_button_clicked()` `` slot |
+| Context     | Example                          |
+|-------------|----------------------------------|
+| Parameter   | ``frame_index``                  |
+| Variable    | ``current_frame``                |
+| Enum/Layer  | ``DataLayer.A``                  |
+| Class       | ``DetectionEngine``              |
+| Method      | ``get_frame_by_index()``         |
+| Constant    | ``MAX_BUFFER_SIZE``              |
+| Return type | Returns a ``dict`` of results    |
+| Signal      | `` `action_completed` `` signal  |
+| Slot        | `` `on_button_clicked()` `` slot |
 
 ---
 
@@ -937,13 +946,13 @@ Suggest improvements.
 
 The **modern Blurzy documentation style** emphasizes:
 
-1. ✅ **Clarity** — One-liner docstrings with backtick-formatted variables
-2. ✅ **Structure** — Numbered section blocks (`# 1. STEP NAME`) for multi-step methods
-3. ✅ **Context** — Inline tags (`[NOTE]`, `[FIXME]`, `[TODO]`) for design decisions
-4. ✅ **Critical Warnings** — Boxed IMPORTANT blocks for thread safety and memory management
-5. ✅ **Architecture** — Class-level docstrings explaining responsibilities
-6. ✅ **Signal Tracing** — Complete signal cascades showing data flow through slots
-7. ✅ **Initialization Clarity** — ASCII boxes in `__init__()` showing attribute grouping and dependencies
-8. ✅ **Consistency** — Uniform style across all layers (Domain, Application, Infrastructure, UI)
+1. !!! success " **Clarity** — One-liner docstrings with backtick-formatted variables
+2. !!! success " **Structure** — Numbered section blocks (`# 1. STEP NAME`) for multi-step methods
+3. !!! success " **Context** — Inline tags (`[NOTE]`, `[FIXME]`, `[TODO]`) for design decisions
+4. !!! success " **Critical Warnings** — Boxed IMPORTANT blocks for thread safety and memory management
+5. !!! success " **Architecture** — Class-level docstrings explaining responsibilities
+6. !!! success " **Signal Tracing** — Complete signal cascades showing data flow through slots
+7. !!! success " **Initialization Clarity** — ASCII boxes in `__init__()` showing attribute grouping and dependencies
+8. !!! success " **Consistency** — Uniform style across all layers (Domain, Application, Infrastructure, UI)
 
 This is *aspirational* — files like `session.py`, `model_handler.py`, `service.py`, `application.py`, and `session_handler.py` demonstrate this standard. Use this guide to bring the rest of the codebase in line incrementally.
