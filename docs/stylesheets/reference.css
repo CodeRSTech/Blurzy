@@ -34,3 +34,6 @@
 .doc-symbol-method.doc-symbol-toc::after {
     content: "f" !important;
 }
+.doc-symbol-attribute.doc-symbol-toc::after {
+    content: "a" !important;
+}
