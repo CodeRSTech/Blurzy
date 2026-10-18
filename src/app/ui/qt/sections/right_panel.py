@@ -59,6 +59,7 @@ class RightControlPanel(QScrollArea):
     model_changed = Signal(str)
     tracking_strategy_changed = Signal(str)
     tracking_source_changed = Signal(str)
+    reid_embedding_dim_changed = Signal(int)
     start_tracking_requested = Signal(str, str)
 
     def __init__(self, parent: QWidget | None = None) -> None:
@@ -184,14 +185,45 @@ class RightControlPanel(QScrollArea):
         for name, value in [
             ("Dummy Tracker (Copy)", TrackingStrategy.DUMMY),
             ("Hungarian IoU (Fast)", TrackingStrategy.HUNGARIAN),
+            ("BoT-SORT", TrackingStrategy.BOT_SORT),
             ("ByteTrack (High Perf)", TrackingStrategy.BYTRACK),
             ("DeepSORT", TrackingStrategy.DEEP_SORT),
             ("CSRT (Manual/Slow)", TrackingStrategy.CSRT),
         ]:
             self.tracking_strategy_combo_box.addItem(name, value)
             self.tracking_strategy_combo_box.setCurrentIndex(1)
-        self.strategy_selection = create_qhbox_with_widgets(
-            [QLabel("Strategy:"), self.tracking_strategy_combo_box]
+        self.strategy_tooltip = (
+            "Selects the Multi-Object Tracking (MOT) algorithm:\n"
+            "• Hungarian: Fast IoU/GIoU motion tracker.\n"
+            "• ByteTrack: Two-stage motion tracker that recovers low-confidence occluded boxes.\n"
+            "• DeepSORT: Combines motion cascade with a multi-view Re-ID appearance gallery.\n"
+            "• BoT-SORT: High-HOTA/MOTA tracker combining ByteTrack's two-stage association, "
+            "direct width/height Kalman filtering, and EMA Re-ID appearance fusion."
+        )
+        self.strategy_label = QLabel("Strategy:")
+        self.strategy_label.setToolTip(self.strategy_tooltip)
+        self.tracking_strategy_combo_box.setToolTip(self.strategy_tooltip)
+        self.strategy_selection = create_qhbox_with_widgets([self.strategy_label, self.tracking_strategy_combo_box])
+        self.reid_embedding_dim_label = QLabel("Re-ID Embedding Size")
+        self.reid_embedding_dim_combo_box = QComboBox()
+        for label, dimension in (
+            ("128 (Fast)", 128),
+            ("256 (Balanced)", 256),
+            ("512 (High Precision)", 512),
+        ):
+            self.reid_embedding_dim_combo_box.addItem(label, dimension)
+        self.reid_embedding_dim_combo_box.setCurrentIndex(1)
+        self.reid_embedding_dim_tooltip = (
+            "Selects the vector dimension (128, 256, or 512) of the Appearance Embedding "
+            "(Re-ID biometric/visual fingerprint) extracted from each bounding box crop. Used by "
+            "DeepSORT, BoT-SORT, and offline track stitching to keep track of individuals running "
+            "in zigzags, crossing paths, or reappearing after occlusion. 128 is fastest for 4K video; "
+            "256 is balanced; 512 captures finer color and texture detail in crowded scenes."
+        )
+        self.reid_embedding_dim_label.setToolTip(self.reid_embedding_dim_tooltip)
+        self.reid_embedding_dim_combo_box.setToolTip(self.reid_embedding_dim_tooltip)
+        self.reid_embedding_dim_selection = create_qhbox_with_widgets(
+            [self.reid_embedding_dim_label, self.reid_embedding_dim_combo_box]
         )
         #
         #               +----------------------------------------------------+
@@ -388,6 +420,7 @@ class RightControlPanel(QScrollArea):
 
         self.tracking_box.add_layout(self.source_selection)
         self.tracking_box.add_layout(self.strategy_selection)
+        self.tracking_box.add_layout(self.reid_embedding_dim_selection)
         self.tracking_box.add_layout(self.min_iou_selection)
         self.tracking_box.add_layout(self.min_tracker_conf_selection)
         self.tracking_box.add_layout(self.decay_selection)
@@ -446,6 +479,7 @@ class RightControlPanel(QScrollArea):
         self.track_btn.clicked.connect(self._emit_start_tracking)
         self.tracking_strategy_combo_box.currentIndexChanged.connect(self._emit_tracking_strategy_changed)
         self.tracking_source_combo_box.currentIndexChanged.connect(self._emit_tracking_source_changed)
+        self.reid_embedding_dim_combo_box.currentIndexChanged.connect(self._emit_reid_embedding_dim_changed)
 
     @Slot()
     def _emit_chosen_labels_changed(self) -> None:
@@ -473,6 +507,11 @@ class RightControlPanel(QScrollArea):
     def _emit_tracking_source_changed(self) -> None:
         source_id: str = cast(str, self.tracking_source_combo_box.currentData())
         self.tracking_source_changed.emit(source_id)
+
+    @Slot()
+    def _emit_reid_embedding_dim_changed(self) -> None:
+        dimension = cast(int, self.reid_embedding_dim_combo_box.currentData())
+        self.reid_embedding_dim_changed.emit(dimension)
 
     @Slot()
     def _emit_start_tracking(self) -> None:
@@ -515,6 +554,11 @@ class RightControlPanel(QScrollArea):
             idx: int = self.tracking_source_combo_box.findData(vm.tracking_source)
             if idx >= 0:
                 self.tracking_source_combo_box.setCurrentIndex(idx)
+
+        with QSignalBlocker(self.reid_embedding_dim_combo_box):
+            idx = self.reid_embedding_dim_combo_box.findData(vm.reid_embedding_dim)
+            if idx >= 0:
+                self.reid_embedding_dim_combo_box.setCurrentIndex(idx)
 
         with QSignalBlocker(self.chosen_labels_edit):
             self.chosen_labels_edit.setText(vm.chosen_labels)

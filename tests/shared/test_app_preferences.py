@@ -25,6 +25,7 @@ class TestAppPreferencesStore:
         assert preferences.startup_fullscreen is False
         assert preferences.default_detection_model_name == "None"
         assert preferences.default_chosen_labels == ["person", "cat", "dog"]
+        assert preferences.default_reid_embedding_dim == 256
         assert preferences.last_project_directory == ""
         assert preferences.default_export_suffix == "_exported"
 
@@ -36,6 +37,7 @@ class TestAppPreferencesStore:
                     "preferences/default_min_detection_confidence": "0.55",
                     "preferences/default_chosen_labels": "person, car , bike",
                     "preferences/default_blur_enabled": "1",
+                    "preferences/default_reid_embedding_dim": "512",
                     "preferences/default_export_directory": "/tmp/out",
                 }
             )
@@ -47,6 +49,7 @@ class TestAppPreferencesStore:
         assert preferences.default_min_detection_confidence == 0.55
         assert preferences.default_chosen_labels == ["person", "car", "bike"]
         assert preferences.default_blur_enabled is True
+        assert preferences.default_reid_embedding_dim == 512
         assert preferences.default_export_directory == "/tmp/out"
 
     def test_save_persists_round_trip_values(self) -> None:
@@ -58,6 +61,7 @@ class TestAppPreferencesStore:
             default_chosen_labels=["person", "face"],
             default_offline_stitching_enabled=False,
             default_max_stitch_gap=45,
+            default_reid_embedding_dim=128,
             default_gsi_smoothness=12.5,
             default_box_border_width=5,
             default_show_preview_mask=True,
@@ -77,11 +81,13 @@ class TestAppPreferencesStore:
         assert loaded.default_chosen_labels == ["person", "face"]
         assert loaded.default_offline_stitching_enabled is False
         assert loaded.default_max_stitch_gap == 45
+        assert loaded.default_reid_embedding_dim == 128
         assert loaded.default_gsi_smoothness == 12.5
         assert loaded.default_box_border_width == 5
         assert loaded.default_show_preview_mask is True
         assert loaded.default_preview_blur_enabled is True
         assert loaded.to_processing_settings_kwargs()["max_stitch_gap"] == 45
+        assert loaded.to_processing_settings_kwargs()["reid_embedding_dim"] == 128
         assert loaded.last_project_directory == "/projects"
         assert loaded.default_export_directory == "/exports"
         assert loaded.default_export_prefix == "final_"

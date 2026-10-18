@@ -138,3 +138,49 @@ def test_preferences_round_trip_new_tracking_and_preview_defaults(qtbot):
     assert restored.default_show_preview_mask is True
     assert restored.default_preview_blur_enabled is True
     assert dialog._preview_blur_enabled_checkbox.isEnabled() is True
+
+
+def test_reid_controls_restore_dimensions_and_emit_changes(qtbot):
+    panel = RightControlPanel()
+    qtbot.addWidget(panel)
+    emitted_dimensions = []
+    panel.reid_embedding_dim_changed.connect(emitted_dimensions.append)
+
+    panel.restore_session_settings(SessionSettingsViewModel(tracking_strategy="botsort", reid_embedding_dim=512))
+
+    assert panel.tracking_strategy_combo_box.currentData() == "botsort"
+    assert panel.reid_embedding_dim_combo_box.currentData() == 512
+    assert emitted_dimensions == []
+    assert panel.reid_embedding_dim_combo_box.count() == 3
+    assert panel.reid_embedding_dim_label.text() == "Re-ID Embedding Size"
+    assert [panel.reid_embedding_dim_combo_box.itemText(i) for i in range(3)] == [
+        "128 (Fast)",
+        "256 (Balanced)",
+        "512 (High Precision)",
+    ]
+    assert panel.reid_embedding_dim_combo_box.toolTip()
+    assert panel.reid_embedding_dim_label.toolTip()
+    assert panel.strategy_label.toolTip()
+    assert panel.reid_embedding_dim_combo_box.toolTip() == panel.reid_embedding_dim_tooltip
+    assert panel.tracking_strategy_combo_box.toolTip() == panel.strategy_tooltip
+    assert panel.tracking_strategy_combo_box.findData("botsort") >= 0
+
+    panel.reid_embedding_dim_combo_box.setCurrentIndex(0)
+    assert emitted_dimensions == [128]
+
+
+def test_preferences_include_botsort_and_restore_reid_dimension(qtbot):
+    dialog = PreferencesDialog(
+        AppPreferences(default_tracking_strategy="botsort", default_reid_embedding_dim=512),
+        available_models=[],
+    )
+    qtbot.addWidget(dialog)
+
+    assert dialog._tracking_strategy_combo_box.currentData() == "botsort"
+    assert dialog._tracking_strategy_combo_box.findData("botsort") >= 0
+    assert dialog._reid_embedding_dim_combo_box.currentData() == 512
+    assert dialog._reid_embedding_dim_label.toolTip()
+    assert dialog._reid_embedding_dim_combo_box.toolTip()
+
+    dialog._reid_embedding_dim_combo_box.setCurrentIndex(0)
+    assert dialog.get_preferences().default_reid_embedding_dim == 128

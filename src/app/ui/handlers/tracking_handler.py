@@ -84,6 +84,7 @@ class TrackingHandler(QObject):
         right_panel.start_tracking_requested.connect(self.on_start_tracking)
         right_panel.tracking_strategy_changed.connect(self.on_strategy_changed)
         right_panel.tracking_source_changed.connect(self.on_source_changed)
+        right_panel.reid_embedding_dim_changed.connect(self.on_reid_embedding_dim_changed)
         right_panel.min_iou_spinbox.valueChanged.connect(self.on_min_iou_changed)
         right_panel.min_tracker_confidence_spinbox.valueChanged.connect(
             self.on_min_tracker_confidence_changed
@@ -250,6 +251,24 @@ class TrackingHandler(QObject):
         """
         logger.trace("Tracking source changed to: {}", source)
         self._update_processing_settings_and_warn(tracking_source=source)
+
+    @Slot(int)
+    def on_reid_embedding_dim_changed(self, dimension: int) -> None:
+        """Update the Re-ID embedding dimension for the selected session.
+
+        Args:
+            dimension: Embedding vector size selected in the tracking panel.
+
+        Returns:
+            None.
+
+        Note:
+            The panel offers only the dimensions accepted by ProcessingSettings.
+
+        Example:
+            handler.on_reid_embedding_dim_changed(256)
+        """
+        self._update_processing_settings_and_warn(reid_embedding_dim=dimension)
 
     @Slot(float)
     def on_min_iou_changed(self, value: float) -> None:

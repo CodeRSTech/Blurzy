@@ -9,6 +9,7 @@ DEFAULT_MIN_DETECTION_CONFIDENCE = 0.25
 DEFAULT_CHOSEN_LABELS = ["person", "cat", "dog"]
 DEFAULT_TRACKING_STRATEGY = "hungarian"
 DEFAULT_TRACKING_SOURCE = "b"
+DEFAULT_REID_EMBEDDING_DIM = 256
 DEFAULT_MIN_IOU = 0.3
 DEFAULT_MIN_TRACKER_CONFIDENCE = 0.1
 DEFAULT_CONFIDENCE_DECAY = 0.05
@@ -78,6 +79,20 @@ def _coerce_int(value: object, default: int) -> int:
     return default
 
 
+def _coerce_reid_embedding_dim(value: object, default: int) -> int:
+    """Load a persisted embedding size or fall back to a supported default.
+
+    Args:
+        value: Raw preference value.
+        default: Supported fallback dimension.
+
+    Returns:
+        One of the supported embedding dimensions.
+    """
+    candidate = _coerce_int(value, default)
+    return candidate if candidate in (128, 256, 512) else default
+
+
 def _coerce_str(value: object, default: str) -> str:
     if value is None:
         return default
@@ -108,6 +123,7 @@ class AppPreferences:
     default_chosen_labels: list[str] = field(default_factory=lambda: list(DEFAULT_CHOSEN_LABELS))
     default_tracking_strategy: str = DEFAULT_TRACKING_STRATEGY
     default_tracking_source: str = DEFAULT_TRACKING_SOURCE
+    default_reid_embedding_dim: int = DEFAULT_REID_EMBEDDING_DIM
     default_min_iou: float = DEFAULT_MIN_IOU
     default_min_tracker_confidence: float = DEFAULT_MIN_TRACKER_CONFIDENCE
     default_confidence_decay: float = DEFAULT_CONFIDENCE_DECAY
@@ -149,6 +165,7 @@ class AppPreferences:
             "chosen_labels": list(self.default_chosen_labels),
             "tracking_strategy": self.default_tracking_strategy,
             "tracking_source": self.default_tracking_source,
+            "reid_embedding_dim": self.default_reid_embedding_dim,
             "min_iou": self.default_min_iou,
             "min_tracker_confidence": self.default_min_tracker_confidence,
             "confidence_decay": self.default_confidence_decay,
@@ -178,6 +195,7 @@ class AppPreferencesStore:
         "default_chosen_labels": "preferences/default_chosen_labels",
         "default_tracking_strategy": "preferences/default_tracking_strategy",
         "default_tracking_source": "preferences/default_tracking_source",
+        "default_reid_embedding_dim": "preferences/default_reid_embedding_dim",
         "default_min_iou": "preferences/default_min_iou",
         "default_min_tracker_confidence": "preferences/default_min_tracker_confidence",
         "default_confidence_decay": "preferences/default_confidence_decay",
@@ -265,6 +283,10 @@ class AppPreferencesStore:
             default_tracking_source=_coerce_str(
                 self._settings.value(self._KEYS["default_tracking_source"], defaults.default_tracking_source),
                 defaults.default_tracking_source,
+            ),
+            default_reid_embedding_dim=_coerce_reid_embedding_dim(
+                self._settings.value(self._KEYS["default_reid_embedding_dim"], defaults.default_reid_embedding_dim),
+                defaults.default_reid_embedding_dim,
             ),
             default_min_iou=_coerce_float(
                 self._settings.value(self._KEYS["default_min_iou"], defaults.default_min_iou),
@@ -371,6 +393,7 @@ class AppPreferencesStore:
         self._settings.setValue(self._KEYS["default_chosen_labels"], preferences.chosen_labels_text)
         self._settings.setValue(self._KEYS["default_tracking_strategy"], preferences.default_tracking_strategy)
         self._settings.setValue(self._KEYS["default_tracking_source"], preferences.default_tracking_source)
+        self._settings.setValue(self._KEYS["default_reid_embedding_dim"], preferences.default_reid_embedding_dim)
         self._settings.setValue(self._KEYS["default_min_iou"], preferences.default_min_iou)
         self._settings.setValue(
             self._KEYS["default_min_tracker_confidence"], preferences.default_min_tracker_confidence

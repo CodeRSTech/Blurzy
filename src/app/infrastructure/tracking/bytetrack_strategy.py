@@ -23,8 +23,10 @@ from app.domain.views import BBoxViewModel
 from app.infrastructure.tracking.tracking_strategy import uid_to_color
 from app.shared.logging_cfg import get_logger
 if TYPE_CHECKING:
+    from typing import Sequence
     from typing import Any
     from app.domain.base.dtypes import ListOfBoxesByFrameIndexAsDict
+    from app.infrastructure.dtypes import RGBFrame
 
 
 logger = get_logger("Infrastructure->Tracking->ByteTrackStrategy")
@@ -44,6 +46,8 @@ class ByteTrackStrategy:
     ``Boxes`` object per frame and parse ByteTrack's ndarray output rows back
     into ``BBoxViewModel`` objects.
     """
+
+    uses_appearance = False
 
     def __init__(
         self,
@@ -105,93 +109,91 @@ class ByteTrackStrategy:
             self._id_to_label[next_id] = label
         return self._label_to_id[label]
 
+    def update_frame(
+        self,
+        frame_idx: int,
+        frame_boxes: list[BBoxViewModel],
+        frame: RGBFrame | None = None,
+        embeddings: Sequence[np.ndarray | None] | None = None,
+    ) -> list[BBoxViewModel]:
+        """Update ByteTrack with one frame of detections.
+
+        Args:
+            frame_idx: Zero-based frame index.
+            frame_boxes: Detections to associate for this frame.
+            frame: Optional RGB frame; unused by this motion-only strategy.
+            embeddings: Optional box-aligned features; unused here.
+
+        Returns:
+            Detection-backed or coasted track boxes for this frame.
+        """
+        if frame_idx == 0:
+            self._label_to_id.clear()
+            self._id_to_label.clear()
+            self._last_seen_by_track: dict[int, int] = {}
+        det_rows = [
+            [
+                *item.bbox_xyxy,
+                float(item.confidence if item.confidence is not None else 1.0),
+                float(self._class_id_for_label(item.label)),
+            ]
+            for item in frame_boxes
+        ]
+        det_arr = np.asarray(det_rows, dtype=np.float32) if det_rows else np.empty((0, 6), dtype=np.float32)
+        boxes = self._boxes_cls(det_arr, (1, 1))
+        active_tracks = self._engine.update(boxes)
+        frame_output: list[BBoxViewModel] = []
+        for row in active_tracks if getattr(active_tracks, "size", 0) else []:
+            det_idx = int(row[7]) if len(row) > 7 else -1
+            uid = int(row[4])
+            detection_backed = 0 <= det_idx < len(frame_boxes)
+            if not detection_backed and uid not in self._last_seen_by_track:
+                continue
+            if detection_backed:
+                self._last_seen_by_track[uid] = frame_idx
+            time_since_update = (
+                0 if detection_backed else max(1, frame_idx - self._last_seen_by_track[uid])
+            )
+            bbox = _as_xyxy_int(row[:4])
+            cls_id = int(row[6]) if len(row) > 6 else -1
+            label = self._id_to_label.get(cls_id, f"class-{cls_id}")
+            confidence = float(row[5]) if len(row) > 5 else 1.0
+            if not detection_backed:
+                confidence = max(0.0, confidence - time_since_update * self._confidence_decay)
+            frame_output.append(
+                BBoxViewModel(
+                    id=f"track-{uid}",
+                    source=BoxSource.TRACKING_BYTETRACK,
+                    label=label,
+                    bbox_xyxy=bbox,
+                    color_hex=uid_to_color(uid),
+                    confidence=round(confidence, 4),
+                    key=f"track:{uid}",
+                    detection_backed=detection_backed,
+                    time_since_update=time_since_update,
+                )
+            )
+        return frame_output
+
     def track(
-            self,
-            source_data: ListOfBoxesByFrameIndexAsDict,
-            total_frames: int = 0,
+        self,
+        source_data: ListOfBoxesByFrameIndexAsDict,
+        total_frames: int = 0,
     ) -> ListOfBoxesByFrameIndexAsDict:
-        """Track detections and emit detection-backed or coasted frame boxes.
+        """Run the incremental strategy over a complete detection frame map.
 
         Args:
             source_data: Per-frame detections to associate.
             total_frames: Number of frames to process.
 
         Returns:
-            Tracking boxes keyed by frame index, tagged with observation age.
-
-        Raises:
-            Exception: Propagates failures from the ByteTrack engine.
-
-        Note:
-            Rows without a detection index are emitted as coasted only when that
-            track has a known prior detection.
-
-        Example:
-            tracked = strategy.track(detections, total_frames=120)
+            Tracking boxes keyed by frame index with observation-age metadata.
         """
-        tracked: ListOfBoxesByFrameIndexAsDict = {}
         if not source_data:
-            return tracked
-
-        last_seen_detection_index = max(source_data.keys())
-        last_seen_by_track: dict[int, int] = {}
-        frame_idx = 0
-        while frame_idx < total_frames:
-            frame_boxes = source_data.get(frame_idx, [])
-            det_rows = [
-                [
-                    *item.bbox_xyxy,
-                    float(item.confidence if item.confidence is not None else 1.0),
-                    float(self._class_id_for_label(item.label)),
-                ]
-                for item in frame_boxes
-            ]
-            det_arr = np.asarray(det_rows, dtype=np.float32) if det_rows else np.empty((0, 6), dtype=np.float32)
-
-            boxes = self._boxes_cls(det_arr, (1, 1))
-            active_tracks = self._engine.update(boxes)
-
-            frame_output: list[BBoxViewModel] = []
-            # Output row shape: [x1, y1, x2, y2, track_id, score, cls, det_idx]
-            for row in active_tracks if getattr(active_tracks, "size", 0) else []:
-                det_idx = int(row[7]) if len(row) > 7 else -1
-                uid = int(row[4])
-                detection_backed = 0 <= det_idx < len(frame_boxes)
-                if not detection_backed and uid not in last_seen_by_track:
-                    continue
-                if detection_backed:
-                    last_seen_by_track[uid] = frame_idx
-                time_since_update = (
-                    0
-                    if detection_backed
-                    else max(1, frame_idx - last_seen_by_track[uid])
-                )
-                bbox = _as_xyxy_int(row[:4])
-                cls_id = int(row[6]) if len(row) > 6 else -1
-                label = self._id_to_label.get(cls_id, f"class-{cls_id}")
-                confidence = float(row[5]) if len(row) > 5 else 1.0
-                if not detection_backed:
-                    confidence = max(0.0, confidence - time_since_update * self._confidence_decay)
-                frame_output.append(
-                    BBoxViewModel(
-                        id=f"track-{uid}",
-                        source=BoxSource.TRACKING_BYTETRACK,
-                        label=label,
-                        bbox_xyxy=bbox,
-                        color_hex=uid_to_color(uid),
-                        confidence=round(confidence, 4),
-                        key=f"track:{uid}",
-                        detection_backed=detection_backed,
-                        time_since_update=time_since_update,
-                    )
-                )
-
-            has_active = len(frame_output) > 0
-            if frame_idx > last_seen_detection_index and not has_active:
-                break
-
-            tracked[frame_idx] = frame_output
-            frame_idx += 1
-
+            return {}
+        tracked = {
+            frame_idx: self.update_frame(frame_idx, source_data.get(frame_idx, []))
+            for frame_idx in range(total_frames)
+        }
         logger.debug("ByteTrack strategy finished. Output frames: {}", len(tracked))
         return tracked

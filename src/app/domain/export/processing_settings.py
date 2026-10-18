@@ -18,6 +18,7 @@ class ProcessingSettings:
         chosen_labels (list[str]): Whitelist of class names to detect.
         tracking_strategy (str): Tracking algorithm name.
         tracking_source (str): Input layer used for tracking.
+        reid_embedding_dim (int): Embedding size used by Re-ID tracking.
         min_iou (float): IoU threshold for matching detections to tracks.
         min_tracker_confidence (float): Confidence floor before pruning a track.
         confidence_decay (float): Per-frame confidence decay for coasted tracks.
@@ -55,6 +56,7 @@ class ProcessingSettings:
     # --- Tracking ---
     tracking_strategy: str = "hungarian"
     tracking_source: str = "b"
+    reid_embedding_dim: int = 256
     min_iou: float = 0.3
     min_tracker_confidence: float = 0.1
     confidence_decay: float = 0.05
@@ -80,11 +82,12 @@ class ProcessingSettings:
             None.
 
         Raises:
-            ValueError: If a bounded setting is outside its documented range.
+            ValueError: If a bounded setting is outside its documented range or
+                ``reid_embedding_dim`` is not one of 128, 256, or 512.
 
         Note:
-            UI widgets use the same ranges; this protects settings restored from
-            preferences or constructed by non-UI callers.
+            UI widgets use the same ranges and embedding dimensions; this protects
+            settings restored from preferences or constructed by non-UI callers.
 
         Example:
             settings = ProcessingSettings(max_stitch_gap=25)
@@ -95,6 +98,8 @@ class ProcessingSettings:
             raise ValueError("gsi_smoothness must be between 1.0 and 30.0.")
         if not 1 <= self.box_border_width <= 10:
             raise ValueError("box_border_width must be between 1 and 10.")
+        if self.reid_embedding_dim not in (128, 256, 512):
+            raise ValueError("reid_embedding_dim must be one of 128, 256, or 512.")
 
     def as_view_model(self) -> SessionSettingsViewModel:
         """Create the widget-ready view of this session's processing settings.
@@ -116,6 +121,7 @@ class ProcessingSettings:
             chosen_labels=", ".join(s.chosen_labels),
             tracking_strategy=s.tracking_strategy,
             tracking_source=s.tracking_source,
+            reid_embedding_dim=s.reid_embedding_dim,
             min_iou=s.min_iou,
             min_tracker_confidence=s.min_tracker_confidence,
             confidence_decay=s.confidence_decay,

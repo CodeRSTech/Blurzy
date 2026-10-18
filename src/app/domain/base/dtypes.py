@@ -48,6 +48,7 @@ class ProcessingSettingsKwargs(TypedDict):
     # --- Tracking ---
     tracking_strategy: NotRequired[str]
     tracking_source: NotRequired[str]
+    reid_embedding_dim: NotRequired[int]
     min_iou: NotRequired[float]
     min_tracker_confidence: NotRequired[float]
     confidence_decay: NotRequired[float]

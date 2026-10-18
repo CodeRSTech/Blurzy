@@ -102,11 +102,33 @@ class PreferencesDialog(QDialog):
         for name, value in [
             ("Dummy Tracker (Copy)", TrackingStrategy.DUMMY),
             ("Hungarian IoU (Fast)", TrackingStrategy.HUNGARIAN),
+            ("BoT-SORT", TrackingStrategy.BOT_SORT),
             ("ByteTrack (High Perf)", TrackingStrategy.BYTRACK),
             ("DeepSORT", TrackingStrategy.DEEP_SORT),
             ("CSRT (Manual/Slow)", TrackingStrategy.CSRT),
         ]:
             self._tracking_strategy_combo_box.addItem(name, value)
+        self._tracking_strategy_tooltip = (
+            "Selects the Multi-Object Tracking (MOT) algorithm:\n"
+            "• Hungarian: Fast IoU/GIoU motion tracker.\n"
+            "• ByteTrack: Two-stage motion tracker that recovers low-confidence occluded boxes.\n"
+            "• DeepSORT: Combines motion cascade with a multi-view Re-ID appearance gallery.\n"
+            "• BoT-SORT: High-HOTA/MOTA tracker combining ByteTrack's two-stage association, "
+            "direct width/height Kalman filtering, and EMA Re-ID appearance fusion."
+        )
+        self._tracking_strategy_combo_box.setToolTip(self._tracking_strategy_tooltip)
+        self._reid_embedding_dim_combo_box = QComboBox()
+        for label, dimension in (
+            ("128 (Fast)", 128),
+            ("256 (Balanced)", 256),
+            ("512 (High Precision)", 512),
+        ):
+            self._reid_embedding_dim_combo_box.addItem(label, dimension)
+        self._reid_embedding_dim_tooltip = (
+            "Select the Re-ID embedding vector size used to compare object appearance across frames. "
+            "Larger sizes retain more appearance detail but require more memory and computation."
+        )
+        self._reid_embedding_dim_combo_box.setToolTip(self._reid_embedding_dim_tooltip)
 
         self._tracking_source_combo_box = QComboBox()
         for name, value in [("Raw Detections", VideoDataLayer.A), ("Reviewed Detections", VideoDataLayer.B)]:
@@ -225,8 +247,13 @@ class PreferencesDialog(QDialog):
 
         tracking_group = QGroupBox("Default Tracking Settings")
         tracking_form = QFormLayout(tracking_group)
-        tracking_form.addRow("Strategy:", self._tracking_strategy_combo_box)
+        self._tracking_strategy_label = QLabel("Strategy:")
+        self._tracking_strategy_label.setToolTip(self._tracking_strategy_tooltip)
+        tracking_form.addRow(self._tracking_strategy_label, self._tracking_strategy_combo_box)
         tracking_form.addRow("Source:", self._tracking_source_combo_box)
+        self._reid_embedding_dim_label = QLabel("Re-ID Embedding Size")
+        self._reid_embedding_dim_label.setToolTip(self._reid_embedding_dim_tooltip)
+        tracking_form.addRow(self._reid_embedding_dim_label, self._reid_embedding_dim_combo_box)
         tracking_form.addRow("Min IoU:", self._min_iou_spinbox)
         tracking_form.addRow("Min tracker confidence:", self._min_tracker_confidence_spinbox)
         tracking_form.addRow(self._confidence_decay_label, self._confidence_decay_spinbox)
@@ -319,6 +346,10 @@ class PreferencesDialog(QDialog):
         tracking_source_index = self._tracking_source_combo_box.findData(preferences.default_tracking_source)
         if tracking_source_index >= 0:
             self._tracking_source_combo_box.setCurrentIndex(tracking_source_index)
+
+        reid_embedding_dim_index = self._reid_embedding_dim_combo_box.findData(preferences.default_reid_embedding_dim)
+        if reid_embedding_dim_index >= 0:
+            self._reid_embedding_dim_combo_box.setCurrentIndex(reid_embedding_dim_index)
 
         self._min_confidence_spinbox.setValue(preferences.default_min_detection_confidence)
         self._labels_edit.setText(preferences.chosen_labels_text)
@@ -428,6 +459,7 @@ class PreferencesDialog(QDialog):
             ],
             default_tracking_strategy=cast(str, self._tracking_strategy_combo_box.currentData()),
             default_tracking_source=cast(str, self._tracking_source_combo_box.currentData()),
+            default_reid_embedding_dim=cast(int, self._reid_embedding_dim_combo_box.currentData()),
             default_min_iou=float(self._min_iou_spinbox.value()),
             default_min_tracker_confidence=float(self._min_tracker_confidence_spinbox.value()),
             default_confidence_decay=float(self._confidence_decay_spinbox.value()),

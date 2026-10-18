@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import numpy as np
+
 from app.domain.detection import BoxSource
 from app.domain.views import BBoxViewModel
 from app.infrastructure.tracking.post_processor import TrackingPostProcessor
@@ -172,3 +174,47 @@ def test_gsi_smoothness_changes_blended_gap_trajectory():
 
     assert tight[2][0].id == smooth[2][0].id == "track-1"
     assert tight[2][0].bbox_xyxy != smooth[2][0].bbox_xyxy
+
+
+def test_strong_appearance_stitches_tracklets_after_reversal():
+    tracked = {
+        0: [_box("track-1", (0, 0, 10, 10))],
+        1: [_box("track-1", (2, 0, 12, 10))],
+        4: [_box("track-2", (100, 0, 110, 10))],
+        5: [_box("track-2", (98, 0, 108, 10))],
+    }
+    appearance = {
+        frame: {track_id: np.asarray([1.0, 0.0], dtype=np.float32)}
+        for frame, track_id in ((0, "track-1"), (1, "track-1"), (4, "track-2"), (5, "track-2"))
+    }
+
+    result = TrackingPostProcessor().process(
+        tracked,
+        appearance_embeddings_by_frame=appearance,
+    )
+
+    assert result[4][0].id == "track-1"
+    assert result[2][0].detection_backed is False
+
+
+def test_appearance_disagreement_rejects_geometrically_linkable_tracklets():
+    tracked = {
+        0: [_box("track-1", (0, 0, 10, 10))],
+        1: [_box("track-1", (2, 0, 12, 10))],
+        4: [_box("track-2", (8, 0, 18, 10))],
+        5: [_box("track-2", (10, 0, 20, 10))],
+    }
+    appearance = {
+        0: {"track-1": np.asarray([1.0, 0.0], dtype=np.float32)},
+        1: {"track-1": np.asarray([1.0, 0.0], dtype=np.float32)},
+        4: {"track-2": np.asarray([0.0, 1.0], dtype=np.float32)},
+        5: {"track-2": np.asarray([0.0, 1.0], dtype=np.float32)},
+    }
+
+    result = TrackingPostProcessor().process(
+        tracked,
+        appearance_embeddings_by_frame=appearance,
+    )
+
+    assert result[0][0].id == "track-1"
+    assert result[4][0].id == "track-2"

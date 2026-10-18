@@ -1,4 +1,4 @@
-"""Tracking algorithm strategy enumeration (currently only Hungarian implemented)."""
+"""Tracking algorithm strategy enumeration."""
 
 from __future__ import annotations
 
@@ -11,13 +11,16 @@ class TrackingStrategy(str, Enum):
 
     Note:
         ``DUMMY`` is a pass-through strategy and ``HUNGARIAN`` is the primary
-        implemented tracker using IoU matching. ``BYTRACK``, ``DEEP_SORT``, and
-        ``CSRT`` are placeholders for future implementations. Selected from the
-        settings dropdown and used by ``TrackingService`` to instantiate the
-        appropriate worker. The current default is ``HUNGARIAN``.
+        motion-only tracker using IoU matching. ``DEEP_SORT`` uses an age
+        cascade with an appearance gallery, while ``BOT_SORT`` combines
+        ByteTrack's two-stage association with EMA Re-ID appearance features and
+        direct width/height Kalman state estimation. ``BYTRACK`` and ``CSRT``
+        remain additional strategy selections. The current default is
+        ``HUNGARIAN``.
     """
     DUMMY = "dummy"
     HUNGARIAN = "hungarian"
+    BOT_SORT = "botsort"
     BYTRACK = "bytetrack"
     DEEP_SORT = "deepsort"
     CSRT = "csrt"

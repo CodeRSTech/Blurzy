@@ -3,13 +3,16 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 import copy
+import numpy as np
 
 from app.domain.detection import BoxSource
 from app.domain.views import BBoxViewModel
 from app.infrastructure.tracking.hungarian_tracker import HungarianIoUTracker, TrackInput
 from app.shared.logging_cfg import get_logger
 if TYPE_CHECKING:
+    from typing import Sequence
     from app.domain.base.dtypes import ListOfBoxesByFrameIndexAsDict
+    from app.infrastructure.dtypes import RGBFrame
     from app.infrastructure.tracking.hungarian_tracker import TrackState
 
 
@@ -29,6 +32,8 @@ def uid_to_color(uid: int) -> str:
 
 class HungarianStrategy:
     """Tracking strategy using Hungarian algorithm with IoU matching (see ``HungarianIoUTracker``)."""
+
+    uses_appearance = False
 
     def __init__(
             self,
@@ -59,85 +64,107 @@ class HungarianStrategy:
             min_confidence=min_confidence,
         )
 
+    def update_frame(
+        self,
+        frame_idx: int,
+        frame_boxes: list[BBoxViewModel],
+        frame: RGBFrame | None = None,
+        embeddings: Sequence[np.ndarray | None] | None = None,
+    ) -> list[BBoxViewModel]:
+        """Update state with one frame and return active detection/coast boxes.
+
+        Args:
+            frame_idx: Zero-based frame index.
+            frame_boxes: Detection boxes for the current frame.
+            frame: Optional RGB frame, unused by this motion-only strategy.
+            embeddings: Optional box-aligned appearance features, unused here.
+
+        Returns:
+            Active tracker boxes for the current frame.
+        """
+        if frame_idx == 0:
+            self._engine.reset()
+        detections = [
+            TrackInput(
+                bbox_xyxy=item.bbox_xyxy,
+                confidence=item.confidence if item.confidence is not None else 1.0,
+                label=item.label,
+            )
+            for item in frame_boxes
+        ]
+        active: list[TrackState] = self._engine.update(detections)
+        return [
+            BBoxViewModel(
+                id=f"track-{track.uid}",
+                source=BoxSource.TRACKING_HUNGARIAN,
+                label=track.label,
+                bbox_xyxy=track.bbox_xyxy,
+                color_hex=uid_to_color(track.uid),
+                confidence=round(track.confidence, 4),
+                key=f"track:{track.uid}",
+                detection_backed=track.observed,
+                time_since_update=track.time_since_update,
+            )
+            for track in active
+        ]
+
     def track(
-            self,
-            source_data: ListOfBoxesByFrameIndexAsDict,
-            total_frames: int,
+        self,
+        source_data: ListOfBoxesByFrameIndexAsDict,
+        total_frames: int,
     ) -> ListOfBoxesByFrameIndexAsDict:
-        """Run Hungarian association and return observed plus coasted boxes.
+        """Run the incremental strategy over a complete frame map.
 
         Args:
             source_data: Per-frame detection input.
-            total_frames: Frame count used to process trailing missed frames.
+            total_frames: Number of frames to process.
 
         Returns:
             Boxes keyed by frame, with detection-backed and coast-age metadata.
-
-        Raises:
-            Exception: Propagates assignment or conversion failures.
-
-        Note:
-            Offline post-processing decides whether coasted estimates are replaced
-            by GSI interpolation or retained as causal predictions.
-
-        Example:
-            tracked = strategy.track(detections, total_frames=120)
         """
         logger.info("Hungarian Tracker engine starting for {} populated frames", len(source_data))
         self._engine.reset()
-        tracked: ListOfBoxesByFrameIndexAsDict = {}
-
         if not source_data:
             return {}
-
-        # Safely find the last known detection
-        last_seen_detection_index = max(source_data.keys())
-        frame_idx = 0
-
-        while frame_idx < total_frames:
-            # Use .get() to pull the frame. If it doesn't exist, it defaults to []
-            frame_boxes = source_data.get(frame_idx, [])
-
-            detections = [
-                TrackInput(
-                    bbox_xyxy=item.bbox_xyxy,
-                    confidence=item.confidence if item.confidence is not None else 1.0,
-                    label=item.label,
-                )
-                for item in frame_boxes
-            ]
-
-            active: list[TrackState] = self._engine.update(detections)
-
-            is_active = len(active) > 0
-
-            # Stop early to save CPU if we've passed the last detection AND all tracks have fully died/decayed
-            if frame_idx > last_seen_detection_index and not is_active:
-                break
-
-            tracked[frame_idx] = [
-                BBoxViewModel(
-                    id=f"track-{t.uid}",
-                    source= BoxSource.TRACKING_HUNGARIAN,
-                    label=t.label,
-                    bbox_xyxy=t.bbox_xyxy,
-                    color_hex=uid_to_color(t.uid),
-                    confidence=round(t.confidence, 4),
-                    key=f"track:{t.uid}",
-                    detection_backed=t.observed,
-                    time_since_update=t.time_since_update,
-                )
-                for t in active
-            ]
-
-            frame_idx += 1
-
+        tracked = {
+            frame_idx: self.update_frame(frame_idx, source_data.get(frame_idx, []))
+            for frame_idx in range(total_frames)
+        }
         logger.debug("Hungarian Tracker engine finished processing all sparse frames")
         return tracked
 
 
 class DummyTracker:
     """No-op tracker — passes through detections as-is, marks with magenta (#ff00ff)."""
+
+    uses_appearance = False
+
+    @staticmethod
+    def update_frame(
+        frame_idx: int,
+        frame_boxes: list[BBoxViewModel],
+        frame: RGBFrame | None = None,
+        embeddings: Sequence[np.ndarray | None] | None = None,
+    ) -> list[BBoxViewModel]:
+        """Copy and retag detections for one frame.
+
+        Args:
+            frame_idx: Zero-based frame index.
+            frame_boxes: Detection boxes to copy.
+            frame: Optional RGB frame, unused by this strategy.
+            embeddings: Optional appearance features, unused by this strategy.
+
+        Returns:
+            Copied boxes marked as dummy tracking output.
+        """
+        output: list[BBoxViewModel] = []
+        for item in frame_boxes:
+            new_item = copy.deepcopy(item)
+            new_item.source = BoxSource.TRACKING_DUMMY
+            new_item.color_hex = "#ff00ff"
+            new_item.key = f"track:{new_item.id}"
+            output.append(new_item)
+        return output
 
     @staticmethod
     def track(source_data: ListOfBoxesByFrameIndexAsDict, total_frames: int = 0) -> ListOfBoxesByFrameIndexAsDict:

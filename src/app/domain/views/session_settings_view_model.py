@@ -14,6 +14,7 @@ class SessionSettingsViewModel:
         chosen_labels (str): Comma-separated labels string for direct widget binding.
         tracking_strategy (str): Selected tracking strategy name.
         tracking_source (str): Layer used as tracker input.
+        reid_embedding_dim (int): Re-ID embedding size for tracking.
         min_iou (float): IoU threshold for track matching.
         min_tracker_confidence (float): Confidence floor for tracked boxes.
         confidence_decay (float): Per-frame confidence decay value.
@@ -44,6 +45,7 @@ class SessionSettingsViewModel:
     # --- Tracking ---
     tracking_strategy: str = "hungarian"
     tracking_source: str = "layer_b"
+    reid_embedding_dim: int = 256
     min_iou: float = 0.3
     min_tracker_confidence: float = 0.1
     confidence_decay: float = 0.05

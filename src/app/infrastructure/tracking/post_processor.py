@@ -10,6 +10,7 @@ import numpy as np
 from scipy.optimize import linear_sum_assignment
 
 from app.domain.views import BBoxViewModel
+from app.infrastructure.tracking.reid_extractor import cosine_similarity
 from app.shared.logging_cfg import get_logger
 
 if TYPE_CHECKING:
@@ -23,11 +24,22 @@ _MAX_LINK_COST = 0.35
 _AMBIGUITY_MARGIN = 0.05
 
 
+def _normalized_mean(vectors: list[np.ndarray]) -> np.ndarray | None:
+    """Return the normalized mean of available embedding vectors."""
+    if not vectors:
+        return None
+    mean = np.mean(np.stack(vectors).astype(np.float32), axis=0)
+    norm = float(np.linalg.norm(mean))
+    return mean / max(norm, 1e-8)
+
+
 @dataclass(slots=True)
 class _Tracklet:
     key: tuple[str, int]
     track_id: str
     boxes: dict[int, BBoxViewModel]
+    head_embedding: np.ndarray | None = None
+    tail_embedding: np.ndarray | None = None
 
     @property
     def frames(self) -> list[int]:
@@ -105,12 +117,15 @@ class TrackingPostProcessor:
         self,
         tracked_data: ListOfBoxesByFrameIndexAsDict,
         total_frames: int | None = None,
+        appearance_embeddings_by_frame: dict[int, dict[str, np.ndarray]] | None = None,
     ) -> ListOfBoxesByFrameIndexAsDict:
         """Post-process observations into stitched or causal tracking output.
 
         Args:
             tracked_data: Tracker output keyed by zero-based frame index.
             total_frames: Optional video frame count used to bound final coast tails.
+            appearance_embeddings_by_frame: Optional isolated appearance vectors keyed
+                by frame index and tracker box ID.
 
         Returns:
             A sorted frame-to-box mapping containing observations and accepted coasts.
@@ -134,7 +149,10 @@ class TrackingPostProcessor:
             ]
             for frame_index, boxes in tracked_data.items()
         }
-        tracklets, segment_by_observation = self._extract_tracklets(observations)
+        tracklets, segment_by_observation = self._extract_tracklets(
+            observations,
+            appearance_embeddings_by_frame=appearance_embeddings_by_frame,
+        )
         links = self._assign_links(tracklets) if self._offline_stitching_enabled else []
 
         predecessors = {target: source for source, target in links}
@@ -295,6 +313,7 @@ class TrackingPostProcessor:
     @staticmethod
     def _extract_tracklets(
         tracked_data: ListOfBoxesByFrameIndexAsDict,
+        appearance_embeddings_by_frame: dict[int, dict[str, np.ndarray]] | None = None,
     ) -> tuple[dict[tuple[str, int], _Tracklet], dict[tuple[int, str], tuple[str, int]]]:
         grouped: dict[str, dict[int, BBoxViewModel]] = {}
         for frame_index in sorted(tracked_data):
@@ -313,10 +332,20 @@ class TrackingPostProcessor:
 
             for segment_frames in segments:
                 key = (track_id, segment_frames[0])
+                vectors = [
+                    appearance_embeddings_by_frame[frame][track_id]
+                    for frame in segment_frames
+                    if appearance_embeddings_by_frame is not None
+                    and track_id in appearance_embeddings_by_frame.get(frame, {})
+                ]
+                head_embedding = _normalized_mean(vectors[:3])
+                tail_embedding = _normalized_mean(vectors[-3:])
                 tracklets[key] = _Tracklet(
                     key=key,
                     track_id=track_id,
                     boxes={frame: observations[frame] for frame in segment_frames},
+                    head_embedding=head_embedding,
+                    tail_embedding=tail_embedding,
                 )
                 for frame in segment_frames:
                     segment_by_observation[(frame, track_id)] = key
@@ -416,6 +445,12 @@ class TrackingPostProcessor:
         Example:
             cost = TrackingPostProcessor._link_cost(earlier, later)
         """
+        appearance_similarity: float | None = None
+        if source.tail_embedding is not None and target.head_embedding is not None:
+            appearance_similarity = cosine_similarity(source.tail_embedding, target.head_embedding)
+            if appearance_similarity < 0.45:
+                return None
+
         gap = target.start_frame - source.end_frame
         midpoint_offset = gap / 2.0
         source_end = np.asarray(source.boxes[source.end_frame].bbox_xyxy, dtype=np.float64)
@@ -426,7 +461,8 @@ class TrackingPostProcessor:
         source_mid = source_end + source.velocity(at_end=True) * midpoint_offset
         target_mid = target_start - target.velocity(at_end=False) * midpoint_offset
         giou = _generalized_iou(source_mid, target_mid)
-        if giou <= 0.0:
+        strong_appearance = appearance_similarity is not None and appearance_similarity >= 0.75
+        if giou <= 0.0 and not strong_appearance:
             return None
 
         area_source = _area(source_mid)
@@ -438,7 +474,7 @@ class TrackingPostProcessor:
         )
         # A clear midpoint match can tolerate a 3x box-area shift caused by partial
         # occlusion; without strong GIoU, constrain scale changes to avoid ID swaps.
-        if area_ratio > (3.0 if giou >= 0.5 else 2.0):
+        if area_ratio > (3.0 if giou >= 0.5 or strong_appearance else 2.0):
             return None
         area_similarity = (
             min(area_source, area_target) / max(area_source, area_target)
@@ -446,6 +482,20 @@ class TrackingPostProcessor:
             else 0.0
         )
         geometry_cost = (1.0 - giou) / 2.0
+        if strong_appearance:
+            # Strong appearance continuity can overcome a poor linear midpoint
+            # projection after a turn or reversal, while size consistency remains.
+            return (
+                0.10 * geometry_cost
+                + 0.50 * (1.0 - appearance_similarity)
+                + 0.15 * (1.0 - area_similarity)
+            )
+        if appearance_similarity is not None:
+            return (
+                0.65 * geometry_cost
+                + 0.20 * (1.0 - appearance_similarity)
+                + 0.15 * (1.0 - area_similarity)
+            )
         return 0.8 * geometry_cost + 0.2 * (1.0 - area_similarity)
 
     @staticmethod

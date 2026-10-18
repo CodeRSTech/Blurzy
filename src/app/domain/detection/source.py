@@ -11,7 +11,8 @@ class BoxSource(str, Enum):
 
     Note:
         ``DETECTION`` marks YOLO inference output in Layers A and B,
-        ``TRACKING`` marks tracker-generated boxes in Layers C and D, and
+        ``TRACKING`` marks tracker-generated boxes in Layers C and D, including
+        strategy-specific values such as ``TRACKING_BOTSORT``, and
         ``MANUAL`` marks user-created boxes that should be preserved during
         layer resets and filtering operations.
 
@@ -26,3 +27,4 @@ class BoxSource(str, Enum):
     TRACKING_HUNGARIAN = "Track (Hungarian)"
     TRACKING_BYTETRACK = "Track (ByteTrack)"
     TRACKING_DEEPSORT = "Track (DeepSORT)"
+    TRACKING_BOTSORT = "Track (BoT-SORT)"
