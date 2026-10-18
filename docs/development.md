@@ -5,7 +5,7 @@
 Install the development extra as described in [Getting started](getting-started.md).
 From the repository root, run:
 
-```bash
+```console
 python -m pytest -q
 ```
 
@@ -22,7 +22,7 @@ that PySide6 has no `QtGui` attribute.
 
 For focused iteration:
 
-```bash
+```console
 python -m pytest tests/domain tests/shared -q
 ```
 
@@ -34,7 +34,7 @@ require downloading model weights.
 
 ## Package builds
 
-```bash
+```console
 python -m pip install -e ".[dist]"
 python -m build
 ```
@@ -44,7 +44,7 @@ python -m build
 Documentation uses MkDocs with **Material**, including dark and light modes. Install the
 documentation tools separately; this does not install the desktop/ML stack:
 
-```bash
+```console
 python -m pip install -r requirements-docs.txt
 python -m mkdocs serve
 ```
@@ -52,7 +52,7 @@ python -m mkdocs serve
 Open the URL printed by MkDocs for the documentation preview. To build and
 preview the complete Pages artifact, including the project homepage:
 
-```bash
+```console
 python -m mkdocs build --strict
 cp website/index.html site/index.html
 cp docs/assets/icon.ico site/favicon.ico

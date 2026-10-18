@@ -22,14 +22,14 @@
 
 ### Clone the repository
 
-```bash
+```console
 git clone https://github.com/CodeRSTech/Blurzy.git
 cd Blurzy
 ```
 
 ### Create virtual environment
 
-```bash
+```console
 python -m venv .venv
 ```
 
@@ -41,14 +41,14 @@ python -m venv .venv
 
 ### Install dependencies
 
-```bash
+```console
 python -m pip install --upgrade pip
 python -m pip install -e ".[dev]"
 ```
 
 ### Run
 
-```bash
+```console
 blurzy
 ```
 
