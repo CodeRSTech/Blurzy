@@ -1,4 +1,5 @@
-"""DeepSORT strategy.
+"""
+# DeepSORT strategy.
 
 DeepSORT keeps object IDs stable by combining three signals:
 1) where the box moved,
@@ -35,7 +36,7 @@ def _as_xyxy_int(bbox: Any) -> tuple[int, int, int, int]:
 class DeepSortStrategy:
     """Track objects using DeepSORT while returning app-native view models.
 
-    ???+ Simple runtime note:
+    ???+ note "Simple runtime note"
         This app feeds tracking from box data only (no frame pixels in this layer).
         We run DeepSORT with ``embedder=None`` and supply lightweight embeddings per
         detection so the strategy works without optional embedder packages.
