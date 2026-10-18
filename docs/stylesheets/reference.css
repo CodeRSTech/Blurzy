@@ -26,14 +26,39 @@
     margin: 0.75rem auto;
 }
 
-/* Change the 'meth' badge text to 'func' */
-.doc-symbol-method.doc-symbol-heading::after {
-    content: "func" !important;
-
-}/* Change the 'meth' badge text to 'f' in TOC */
-.doc-symbol-method.doc-symbol-toc::after {
-    content: "f" !important;
-}
-.doc-symbol-attribute.doc-symbol-toc::after {
+/* Change the 'attr' badge text to 'a' in TOC */
+/* Used for attributes in the API reference TOC */
+code.doc-symbol.doc-symbol-attribute.doc-symbol-toc::after {
     content: "a" !important;
+}
+/* Change the 'class' badge text to 'cls' in TOC */
+/* Used for classes in the API reference TOC */
+code.doc-symbol.doc-symbol-toc.doc-symbol-class::after{
+    content: "cls" !important;
+}
+/* Change the 'meth' badge text to 'func' */
+/* Used for class methods in the API reference */
+code.doc-symbol.doc-symbol-method.doc-symbol-heading::after {
+    content: "cls.fn" !important;
+}
+/* Change the 'meth' badge text to 'f' in TOC */
+/* Used for class methods in the API reference TOC */
+code.doc-symbol.doc-symbol-method.doc-symbol-toc::after {
+    content: "c.f" !important;
+}
+/* Change the 'func' badge text to 'fn' in TOC */
+/* Used for functions in the API reference TOC */
+code.doc-symbol.doc-symbol-function.doc-symbol-toc::after {
+    content: "fn" !important;
+}
+/* Adds a subtle line separator after every mkdocstrings documentation block */
+.doc-object {
+    border-bottom: .05rem solid var(--md-code-hl-name-color);
+    padding-bottom: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+/* Optional: Removes the line from the very last object on the page */
+.doc-object:last-child {
+    border-bottom: none;
 }
