@@ -50,7 +50,14 @@ class RightControlPanel(QScrollArea):
         final export behavior and gate the optional live preview blur.
 
     Example:
+        ```python
         panel = RightControlPanel()
+        ```
+
+    ??? abstract "Sample Preview"
+        <img class="api-example-image"
+        src="api-asset:ui/right-panel/preview.png"
+        alt="Sample preview of the right panel, some components are not shown.">
     """
 
     # --- Signals ---
@@ -81,15 +88,13 @@ class RightControlPanel(QScrollArea):
         """Create every control and label before layout construction.
 
 
-        Returns:
-            None.
-
-
         Note:
             Tracking and preview numeric ranges match ProcessingSettings validation.
 
         Example:
+            ```python
             panel._init_widgets()
+            ```
         """
         # --- Detection Widgets ---
 
@@ -396,16 +401,13 @@ class RightControlPanel(QScrollArea):
     def _build_ui(self) -> None:
         """Arrange controls into independent collapsible sections.
 
-
-        Returns:
-            None.
-
-
         Note:
             Export actions remain in Render; editor-only controls are in Preview.
 
         Example:
+            ```python
             panel._build_ui()
+            ```
         """
         self.detection_box.add_layout(self.provider_selection)
         self.detection_box.add_layout(self.model_selection)
@@ -459,16 +461,13 @@ class RightControlPanel(QScrollArea):
     def _connect_signals(self) -> None:
         """Connect locally handled input signals to panel actions.
 
-
-        Returns:
-            None.
-
-
         Note:
             Session-setting updates are connected by TrackingHandler and ExportHandler.
 
         Example:
+            ```python
             panel._connect_signals()
+            ```
         """
         # Detection Panel
         self.provider_combo_box.currentIndexChanged.connect(self._on_provider_changed)
@@ -530,16 +529,14 @@ class RightControlPanel(QScrollArea):
         Args:
             vm: Settings view model for the active session.
 
-        Returns:
-            None.
-
-
         Note:
             Signal blockers prevent session writes while restoring; dependent
             controls are enabled explicitly after values have been assigned.
 
         Example:
+            ```python
             panel.restore_session_settings(session.settings.as_view_model())
+            ```
         """
         self.set_selected_detection_model(vm.detection_model_name)
 
@@ -616,10 +613,6 @@ class RightControlPanel(QScrollArea):
         Args:
             enabled: Whether the stitching checkbox is checked.
 
-        Returns:
-            None.
-
-
         Note:
             The checkbox remains enabled so users can turn stitching back on.
 
@@ -636,10 +629,6 @@ class RightControlPanel(QScrollArea):
 
         Args:
             enabled: Whether export blur is enabled.
-
-        Returns:
-            None.
-
 
         Note:
             Disabling the master does not alter ``preview_blur_enabled``; it only
@@ -776,10 +765,6 @@ class RightControlPanel(QScrollArea):
 
         Args:
             export_handler: Handler updating session settings and starting exports.
-
-        Returns:
-            None.
-
 
         Note:
             Preview-only changes re-render the editor but do not affect export pixels.
