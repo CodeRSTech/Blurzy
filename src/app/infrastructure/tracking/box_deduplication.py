@@ -87,16 +87,16 @@ def suppress_nested_same_class_boxes(
         | --- | --- | --- | --- |
         | Full body $B$ | $(682, 447, 1573, 2137)$ | $891 \times 1690$ | $1{,}505{,}790$ |
         | Torso $T$ | $(676, 458, 1539, 1322)$ | $863 \times 864$ | $745{,}632$ |
+        | Intersection $I$ or $B \cap T$ | $(682, 458, 1539, 1322)$ | $857 \times 864$ | $740{,}448$ |
 
         **Intersection and union.** The intersection is
         $(682, 458, 1539, 1322)$:
 
         $$
         \begin{aligned}
-        w_I &= \min(1573,1539)-\max(682,676)=857,\\
-        h_I &= \min(2137,1322)-\max(447,458)=864,\\
-        A_I &= 857 \times 864 = 740{,}448,\\
-        A_U &= A_B + A_T - A_I\\
+        Area_I &= 857 \times 864 = 740{,}448,\\
+        \since \quad X \cup Y &= X + Y - X \cap Y,\\
+        \therefore Area_U &= Area_B + Area_T - Area_I\\_I\\
             &= 1{,}505{,}790 + 745{,}632 - 740{,}448\\
             &= 1{,}510{,}974.
         \end{aligned}
@@ -108,11 +108,11 @@ def suppress_nested_same_class_boxes(
         $$
         \begin{aligned}
         \operatorname{IoMin}
-            &= \frac{A_I}{\min(A_B,A_T)}
+            &= \frac{Area_I}{\min(Area_B,Area_T)}
              = \frac{740{,}448}{745{,}632}
              \approx 0.993048,\\
         \operatorname{IoU}
-            &= \frac{A_I}{A_U}
+            &= \frac{Area_I}{Area_U}
              = \frac{740{,}448}{1{,}510{,}974}
              \approx 0.490047.
         \end{aligned}
