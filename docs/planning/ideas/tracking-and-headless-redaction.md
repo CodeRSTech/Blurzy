@@ -12,6 +12,7 @@
 - ByteTrack adapts its high/low association thresholds to session settings and per-frame confidence, emits detector-qualified births immediately, and uses GIoU plus predicted-center distance to recover plausible fast-motion matches.
 - Layer D machine boxes are refreshed from filtered Layer C output across the full video frame range after tracking, preserving manual boxes while removing stale machine tracks.
 - Preview-only controls (box outlines, border width, blur-mask overlay, and optional live blur) are independent of Render controls. Export blur remains controlled by the Render panel, and disabling it gates live preview blur.
+- Draw Boxes hides preview outlines only. Current-frame data tables and shared box selection remain intact, and final renders are unaffected.
 
 ## Safety and limitations
 

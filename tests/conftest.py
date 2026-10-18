@@ -59,5 +59,5 @@ def _install_stubs(packages: list) -> None:
 _install_stubs(_OPTIONAL_PACKAGES)
 
 qtcore = sys.modules.get("PySide6.QtCore")
-if qtcore is not None:
+if isinstance(qtcore, MagicMock):
     qtcore.Slot = lambda *args, **kwargs: (lambda func: func)

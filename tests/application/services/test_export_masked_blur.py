@@ -120,8 +120,9 @@ def test_blurs_one_padded_roi_instead_of_each_box(monkeypatch):
 
 
 @pytest.mark.parametrize("enabled,has_boxes", [(True, True), (False, True), (True, False)])
+@pytest.mark.parametrize("draw_boxes", [False, True])
 def test_render_loop_calls_masked_blur_once_and_preserves_writer_lifecycle(
-    monkeypatch, enabled, has_boxes
+    monkeypatch, enabled, has_boxes, draw_boxes
 ):
     frame = _frame()
     boxes = [_box((35, 25, 50, 40)), _box((40, 30, 55, 45))] if has_boxes else []
@@ -132,6 +133,7 @@ def test_render_loop_calls_masked_blur_once_and_preserves_writer_lifecycle(
     session.state.metadata.fps = 30.0
     session.state.settings.blur_enabled = enabled
     session.state.settings.blur_strength = 101.0
+    session.state.settings.draw_boxes = draw_boxes
     session.video_reader.read_frame_at_index.return_value = frame
     session.data.get_boxes_for_layer_at_frame_index_as_list.return_value = boxes
     writer = MagicMock()

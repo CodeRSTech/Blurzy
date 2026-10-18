@@ -2,10 +2,11 @@ from __future__ import annotations
 
 import importlib.util
 from pathlib import Path
-import sys
 from dataclasses import dataclass
 from types import SimpleNamespace
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
+
+from PySide6 import QtCore
 
 
 class _QObjectStub:
@@ -16,17 +17,14 @@ class _QObjectStub:
         self.parent = parent
 
 
-_qtcore_module = sys.modules.get("PySide6.QtCore")
-if _qtcore_module is not None:
-    _qtcore_module.QObject = _QObjectStub
-
 from app.shared.app_preferences import AppPreferences
 
 _MODULE_PATH = Path(__file__).resolve().parents[3] / "src" / "app" / "ui" / "handlers" / "project_handler.py"
 _spec = importlib.util.spec_from_file_location("project_handler_under_test", _MODULE_PATH)
 assert _spec is not None and _spec.loader is not None
 project_handler_module = importlib.util.module_from_spec(_spec)
-_spec.loader.exec_module(project_handler_module)
+with patch.object(QtCore, "QObject", _QObjectStub):
+    _spec.loader.exec_module(project_handler_module)
 ProjectHandler = project_handler_module.ProjectHandler
 
 

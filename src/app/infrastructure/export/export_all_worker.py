@@ -52,6 +52,8 @@ class ExportAllWorker(QThread):
             4. Repeat sequentially for the next session.
 
         Cancellation stops current workers but does not abort an in-progress export.
+        Session identifiers use Python-object signal payloads to preserve ``SessionId``
+        across queued Qt connections without QString conversion.
 
     Example:
         s_ids = [SessionId(...), SessionId(...)]
@@ -61,11 +63,11 @@ class ExportAllWorker(QThread):
         worker.stop()
     """
 
-    session_started = Signal(str)  # s_id
-    session_finished = Signal(str)  # s_id
-    session_failed = Signal(str, str)  # s_id, error_message
+    session_started = Signal(object)  # s_id
+    session_finished = Signal(object)  # s_id
+    session_failed = Signal(object, str)  # s_id, error_message
     progress_updated = Signal(int, int)  # (sessions_done, total_sessions)
-    session_export_progress_updated = Signal(str, int, int)  # s_id, current_frame, total_frames
+    session_export_progress_updated = Signal(object, int, int)  # s_id, current_frame, total_frames
     finished_processing = Signal()
     cancelled = Signal()
 

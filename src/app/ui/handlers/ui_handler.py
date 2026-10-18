@@ -202,7 +202,8 @@ class UIHandler:
                   ├── Determine which boxes to display (based on active tab)
                   └──> Call _update_frame_with_bboxes() to render
     
-            Only displays boxes if ``draw_boxes_enabled`` is True.
+            Only draws preview outlines if ``draw_boxes`` is True; table data is
+            always populated independently of outline visibility.
             Displays detection boxes if Detection tab active, tracking boxes if Tracking tab active.
 
         Args:
@@ -230,11 +231,7 @@ class UIHandler:
         # 2. DETERMINE WHICH BOXES TO DISPLAY
         # ====================================================================
         active_tab = self._window.active_tab_index
-        display = (
-            self._app.get_tab_frame_boxes_for_session_id(s_id, active_tab).frame_data_boxes
-            if session.state.settings.draw_boxes
-            else None
-        )
+        frame_boxes = self._app.get_tab_frame_boxes_for_session_id(s_id, active_tab).frame_data_boxes
 
         settings = session.state.settings
         render_layer = (
@@ -257,8 +254,9 @@ class UIHandler:
         self._update_frame_with_bboxes(
             frame,
             tab_index=active_tab,
-            boxes_to_draw=display,
+            boxes=frame_boxes,
             border_width=settings.box_border_width,
+            draw_boxes=settings.draw_boxes,
         )
 
     def _set_ui_state(
@@ -300,15 +298,17 @@ class UIHandler:
         self,
         frame: RGBFrame,
         tab_index: VideoDataLayerGroup,
-        boxes_to_draw: ListOfBoxes | None = None,
+        boxes: ListOfBoxes,
         border_width: int = 2,
+        *,
+        draw_boxes: bool = True,
     ) -> None:
         """
         Draw bounding boxes on frame and update UI preview.
     
         Note:
             Flow:
-                ``_update_frame_with_bboxes(frame, detections, trackers, boxes_to_draw)``
+                ``_update_frame_with_bboxes(frame, tab_index, boxes, draw_boxes=True)``
                   ├── Set active bboxes for overlay highlighting
                   ├── Draw boxes_to_draw onto frame
                   ├── Convert RGB frame to QImage
@@ -318,13 +318,14 @@ class UIHandler:
             Handles:
                 Box drawing with color/label overlays.
                 RGB to QImage conversion for Qt display.
-                Data tab population (may be called without drawing if ``boxes_to_draw`` is None).
+                Data tab population independent of preview outline visibility.
 
         Args:
             frame: RGB image to display.
             tab_index: Active Detection or Tracking table.
-            boxes_to_draw: Active-tab boxes, or ``None`` to hide outlines.
+            boxes: Current-frame active-tab boxes, including when outlines are hidden.
             border_width: Preview border width in pixels.
+            draw_boxes: Whether to draw preview outlines; never filters table data.
         Raises:
             Exception: Logs UI rendering failures and keeps the event loop alive.
 
@@ -335,6 +336,11 @@ class UIHandler:
             handler._update_frame_with_bboxes(frame, tab_index, boxes, border_width=2)
         """
         try:
+            boxes_to_draw = boxes if draw_boxes else None
+            logger.trace(
+                "Rendering {} frame boxes for tab {}; preview outlines enabled={}",
+                len(boxes), tab_index, draw_boxes,
+            )
             # ================================================================
             # 1. SET ACTIVE BBOXES FOR OVERLAY HIGHLIGHTING
             # ================================================================
@@ -366,7 +372,7 @@ class UIHandler:
             # ================================================================
             # 4. POPULATE DATA TABS WITH BOXES
             # ================================================================
-            self.set_boxes_for_tab(boxes_to_draw, tab_index)
+            self.set_boxes_for_tab(boxes, tab_index)
         except Exception:
             logger.opt(exception=True).error(
                 "Error updating UI view_state with boxes",
