@@ -12,9 +12,17 @@ experiments can be refined without putting all of that complexity in the UI.
 ## What it can do
 
 - Open and review video, with playback and frame-level controls.
-- Run detection with supported model providers and track detections.
-- Review and edit bounding-box annotations.
-- Import and export annotation data, and export blurred video.
+- Run detection with supported model providers, then review and edit bounding-box annotations.
+- Track subjects with Hungarian, ByteTrack, DeepSORT, or BoT-SORT; appearance-aware tracking uses
+  configurable 128-, 256-, or 512-dimensional Re-ID embeddings.
+- Stitch compatible tracklets bidirectionally and use Gaussian Smoothed Interpolation (GSI) to fill
+  accepted gaps.
+- Enable the optional Privacy Shield for anti-shrink boxes, pre-detection backfill, post-detection
+  holds, and safety-margin padding.
+- Use separate Preview and Render panels for box outlines, border width, mask preview, live blur,
+  and export blur.
+- Save and load `.blurzy` or JSON projects; import and export annotation and tracking layers as JSON
+  or CSV.
 - Keep long-running work off the UI thread and surface progress in the app.
 
 Blurzy is actively evolving. Model availability depends on the installed
@@ -110,21 +118,34 @@ worker. Worker signals carry progress and results back to the UI. See
 
 ## Planned features
 
-| Feature                                                                         | Priority | Status         |
-|---------------------------------------------------------------------------------|----------|----------------|
-| Preserve source audio in exported videos (audio is currently stripped)          | High     | 🟡 Planned     |
-| Resume background detection for heavy models without rerunning completed work   | High     | 🟡 Planned     |
-| Identify detections using appearance features (Re-ID)                           | Medium   | 🟡 Planned     |
-| Implement offline StrongSORT + GSI                                              | High     | 🟠 In Progress |
-| Add RetinaFace ResNet50                                                         | Medium   | 🟡 Planned     |
-| Add option to enable/disable supression of nested detections (default: enabled) | Medium   | 🟡 Planned     |
+| Feature                                                          | Priority | Status  |
+|------------------------------------------------------------------|----------|---------|
+| Preserve source audio in exported videos                         | High     | Planned |
+| Resume background detection without rerunning completed work     | High     | Planned |
+| Add RetinaFace ResNet50                                          | Medium   | Planned |
+| Add an option to enable or disable nested-detection suppression  | Medium   | Planned |
+
+## Implemented tracking and privacy features
+
+| Capability               | Current implementation                                                                 |
+|--------------------------|-----------------------------------------------------------------------------------------|
+| Multi-object tracking    | Hungarian, ByteTrack, DeepSORT with Re-ID, and BoT-SORT with Re-ID                      |
+| Frame-aware tracking     | `TrackingWorker` decodes frames for configurable 128/256/512-D appearance embeddings   |
+| Offline gap recovery     | Bidirectional tracklet stitching and Gaussian Smoothed Interpolation (GSI)             |
+| Privacy Shield           | Anti-shrink sizing, pre-detection backfill, post-detection hold, and safety padding     |
+| Preview and render       | Separate panels for Show Mask, Blur Preview, Box Border Width, and export blur          |
+| Project and layer files  | `.blurzy`/JSON project persistence and JSON/CSV layer import/export                     |
 ## Bugs
 
-| Bug                                                                                                                                                     | Priority | Status |
-|---------------------------------------------------------------------------------------------------------------------------------------------------------|----------|--------|
-| "Start Tracking" button does NOT ask user to run detections first                                                                                       | Medium   | �      |
-| Timeout waiting for worker to supply frame n-1 when at frame n (backward seek problem) in app.infrastructure.session.frame_access:get_frame_by_index:83 | Low      | �      |
-| If a subject appears at frame $n$ but is detected at frame $n+x$ then $x-1$ frames expose the subject (missed-redaction)                                | Low      | �      |
+| Bug                                                                                                     | Priority | Status   |
+|---------------------------------------------------------------------------------------------------------|----------|----------|
+| Frame 0 unblurred or stale layer seeding during tracking                                                | Medium   | Resolved |
+| Nested same-class detections fragment tracks instead of being containment-suppressed                    | Medium   | Resolved |
+| Short occlusions cause unblurred flashes when no coast is emitted                                       | Medium   | Resolved |
+| ByteTrack's fixed confidence thresholds starve track initialization                                     | Medium   | Resolved |
+| Late first detection leaves earlier subject frames unredacted                                           | Medium   | Mitigated when Privacy Shield is enabled |
+| "Start Tracking" does not prompt the user to run detections first                                       | Medium   | Open     |
+| Backward seek times out waiting for frame `n-1` in `get_frame_by_index`                                | Low      | Open     |
 
 ## Future additions: beyond detection and tracking
 
