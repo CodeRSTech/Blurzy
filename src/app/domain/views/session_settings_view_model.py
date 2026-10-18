@@ -21,6 +21,12 @@ class SessionSettingsViewModel:
         offline_stitching_enabled (bool): Whether broken tracks are bridged offline.
         max_stitch_gap (int): Maximum number of missed frames to bridge.
         gsi_smoothness (float): Gaussian interpolation lengthscale.
+        privacy_features_enabled (bool): Whether conservative privacy rules are active.
+        resist_box_shrinking (bool): Whether track boxes resist sudden contractions.
+        shrink_resistance (float): Damping factor for shrinking box dimensions.
+        pre_detection_padding_sec (float): Backfill duration before the first detection.
+        post_detection_padding_sec (float): Hold duration after the last detection.
+        box_safety_padding_pct (float): Proportional outward privacy-box inflation.
         draw_boxes (bool): Whether detection outlines should be rendered.
         box_border_width (int): Preview box outline width in pixels.
         show_preview_mask (bool): Whether the export mask is overlaid in preview.
@@ -52,6 +58,14 @@ class SessionSettingsViewModel:
     offline_stitching_enabled: bool = True
     max_stitch_gap: int = 25
     gsi_smoothness: float = 10.0
+
+    # --- Privacy Features ---
+    privacy_features_enabled: bool = False
+    resist_box_shrinking: bool = True
+    shrink_resistance: float = 0.85
+    pre_detection_padding_sec: float = 0.5
+    post_detection_padding_sec: float = 0.5
+    box_safety_padding_pct: float = 0.10
 
     # --- Preview ---
     draw_boxes: bool = True

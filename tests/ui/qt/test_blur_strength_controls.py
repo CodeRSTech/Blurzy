@@ -184,3 +184,87 @@ def test_preferences_include_botsort_and_restore_reid_dimension(qtbot):
 
     dialog._reid_embedding_dim_combo_box.setCurrentIndex(0)
     assert dialog.get_preferences().default_reid_embedding_dim == 128
+
+
+def test_privacy_features_controls_restore_tooltips_ranges_and_enablement(qtbot):
+    panel = RightControlPanel()
+    qtbot.addWidget(panel)
+    emitted_master = []
+    emitted_safety_margin = []
+    panel.privacy_features_enabled_changed.connect(emitted_master.append)
+    panel.box_safety_padding_pct_changed.connect(emitted_safety_margin.append)
+
+    panel.restore_session_settings(
+        SessionSettingsViewModel(
+            privacy_features_enabled=True,
+            resist_box_shrinking=False,
+            shrink_resistance=0.65,
+            pre_detection_padding_sec=1.2,
+            post_detection_padding_sec=2.3,
+            box_safety_padding_pct=0.2,
+        )
+    )
+
+    assert panel.privacy_features_box.toggle_button.text().endswith("Privacy Features")
+    assert panel.privacy_features_checkbox.isChecked()
+    assert panel.resist_box_shrinking_checkbox.isChecked() is False
+    assert panel.resist_box_shrinking_checkbox.isEnabled()
+    assert panel.shrink_resistance_spinbox.value() == 0.65
+    assert panel.pre_detection_padding_sec_spinbox.value() == 1.2
+    assert panel.post_detection_padding_sec_spinbox.value() == 2.3
+    assert panel.box_safety_padding_pct_spinbox.value() == 20.0
+    assert panel.box_safety_padding_pct_spinbox.maximum() == 50.0
+    assert panel.shrink_resistance_spinbox.isEnabled() is False
+    assert panel.pre_detection_padding_sec_spinbox.isEnabled()
+    assert panel.post_detection_padding_sec_spinbox.isEnabled()
+    assert panel.box_safety_padding_pct_spinbox.isEnabled()
+
+    controls = (
+        panel.privacy_features_checkbox,
+        panel.resist_box_shrinking_checkbox,
+        panel.shrink_resistance_label,
+        panel.shrink_resistance_spinbox,
+        panel.pre_detection_padding_sec_label,
+        panel.pre_detection_padding_sec_spinbox,
+        panel.post_detection_padding_sec_label,
+        panel.post_detection_padding_sec_spinbox,
+        panel.box_safety_padding_pct_label,
+        panel.box_safety_padding_pct_spinbox,
+    )
+    assert all(control.toolTip() for control in controls)
+    assert panel.min_tracker_confidence_spinbox.minimum() == 0.1
+    assert panel.min_tracker_confidence_spinbox.maximum() == 0.5
+    assert panel.min_tracker_confidence_spinbox.value() == 0.1
+    panel.box_safety_padding_pct_spinbox.setValue(25.0)
+    assert emitted_safety_margin == [0.25]
+
+    panel.resist_box_shrinking_checkbox.setChecked(True)
+    assert panel.shrink_resistance_spinbox.isEnabled()
+    panel.privacy_features_checkbox.setChecked(False)
+    assert emitted_master == [False]
+    assert not panel.resist_box_shrinking_checkbox.isEnabled()
+    assert not panel.shrink_resistance_spinbox.isEnabled()
+    assert not panel.pre_detection_padding_sec_spinbox.isEnabled()
+    assert not panel.post_detection_padding_sec_spinbox.isEnabled()
+    assert not panel.box_safety_padding_pct_spinbox.isEnabled()
+
+
+def test_privacy_settings_round_trip_through_processing_settings():
+    from app.domain.export import ProcessingSettings
+
+    settings = ProcessingSettings(
+        privacy_features_enabled=True,
+        resist_box_shrinking=False,
+        shrink_resistance=0.7,
+        pre_detection_padding_sec=1.0,
+        post_detection_padding_sec=2.0,
+        box_safety_padding_pct=0.25,
+    )
+    view_model = settings.as_view_model()
+
+    assert view_model.privacy_features_enabled is True
+    assert view_model.resist_box_shrinking is False
+    assert view_model.shrink_resistance == 0.7
+    assert view_model.pre_detection_padding_sec == 1.0
+    assert view_model.post_detection_padding_sec == 2.0
+    assert view_model.box_safety_padding_pct == 0.25

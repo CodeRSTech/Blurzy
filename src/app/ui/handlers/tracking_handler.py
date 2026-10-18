@@ -95,6 +95,22 @@ class TrackingHandler(QObject):
         right_panel.gsi_smoothness_spinbox.valueChanged.connect(
             self.on_gsi_smoothness_changed
         )
+        right_panel.privacy_features_enabled_changed.connect(
+            self.on_privacy_features_enabled_changed
+        )
+        right_panel.resist_box_shrinking_changed.connect(
+            self.on_resist_box_shrinking_changed
+        )
+        right_panel.shrink_resistance_changed.connect(self.on_shrink_resistance_changed)
+        right_panel.pre_detection_padding_sec_changed.connect(
+            self.on_pre_detection_padding_sec_changed
+        )
+        right_panel.post_detection_padding_sec_changed.connect(
+            self.on_post_detection_padding_sec_changed
+        )
+        right_panel.box_safety_padding_pct_changed.connect(
+            self.on_box_safety_padding_pct_changed
+        )
 
     def _update_processing_settings_and_warn(self, **kwargs: Unpack[ProcessingSettingsKwargs]) -> None:
         # [AUDIT] SRP VIOLATION: Method does 4 distinct things
@@ -346,6 +362,78 @@ class TrackingHandler(QObject):
             handler.on_gsi_smoothness_changed(10.0)
         """
         self._update_processing_settings_and_warn(gsi_smoothness=value)
+
+    @Slot(bool)
+    def on_privacy_features_enabled_changed(self, enabled: bool) -> None:
+        """Update the Privacy Shield master setting for the selected session.
+
+        Args:
+            enabled: Whether conservative privacy post-processing is active.
+
+        Example:
+            handler.on_privacy_features_enabled_changed(True)
+        """
+        self._update_processing_settings_and_warn(privacy_features_enabled=enabled)
+
+    @Slot(bool)
+    def on_resist_box_shrinking_changed(self, enabled: bool) -> None:
+        """Update whether track boxes resist sudden size contractions.
+
+        Args:
+            enabled: Whether the anti-shrink size envelope is active.
+
+        Example:
+            handler.on_resist_box_shrinking_changed(True)
+        """
+        self._update_processing_settings_and_warn(resist_box_shrinking=enabled)
+
+    @Slot(float)
+    def on_shrink_resistance_changed(self, value: float) -> None:
+        """Update the damping factor used by anti-shrink box processing.
+
+        Args:
+            value: Contraction damping factor between 0.0 and 0.99.
+
+        Example:
+            handler.on_shrink_resistance_changed(0.85)
+        """
+        self._update_processing_settings_and_warn(shrink_resistance=value)
+
+    @Slot(float)
+    def on_pre_detection_padding_sec_changed(self, value: float) -> None:
+        """Update the backward pre-detection padding duration.
+
+        Args:
+            value: Backfill duration in seconds, from 0.0 to 5.0.
+
+        Example:
+            handler.on_pre_detection_padding_sec_changed(0.5)
+        """
+        self._update_processing_settings_and_warn(pre_detection_padding_sec=value)
+
+    @Slot(float)
+    def on_post_detection_padding_sec_changed(self, value: float) -> None:
+        """Update the forward post-detection hold duration.
+
+        Args:
+            value: Hold duration in seconds, from 0.0 to 5.0.
+
+        Example:
+            handler.on_post_detection_padding_sec_changed(0.5)
+        """
+        self._update_processing_settings_and_warn(post_detection_padding_sec=value)
+
+    @Slot(float)
+    def on_box_safety_padding_pct_changed(self, value: float) -> None:
+        """Update outward safety-margin inflation for privacy boxes.
+
+        Args:
+            value: Proportional inflation between 0.0 and 0.50.
+
+        Example:
+            handler.on_box_safety_padding_pct_changed(0.10)
+        """
+        self._update_processing_settings_and_warn(box_safety_padding_pct=value)
 
     @Slot(str)
     def _on_tracking_finished(self, s_id: SessionId) -> None:

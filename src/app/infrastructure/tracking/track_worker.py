@@ -150,6 +150,7 @@ class TrackingWorker(QThread):
             self._tracker = ByteTrackStrategy(
                 min_iou=session_state.settings.min_iou,
                 min_confidence=session_state.settings.min_tracker_confidence,
+                min_detection_confidence=session_state.settings.min_detection_confidence,
                 confidence_decay=session_state.settings.confidence_decay,
             )
         elif strategy_cls is DeepSortStrategy:
@@ -275,12 +276,28 @@ class TrackingWorker(QThread):
                 return
 
             settings = self._processing_settings
+            metadata = self._session_state.metadata
+            metadata_fps = metadata.fps
+            fps = metadata_fps if isinstance(metadata_fps, (int, float)) and metadata_fps > 0 else 30.0
+            metadata_width = metadata.width
+            frame_width = metadata_width if isinstance(metadata_width, int) and metadata_width > 0 else 0
+            metadata_height = metadata.height
+            frame_height = metadata_height if isinstance(metadata_height, int) and metadata_height > 0 else 0
             result = TrackingPostProcessor(
                 max_gap=settings.max_stitch_gap,
                 gsi_smoothness=settings.gsi_smoothness,
                 confidence_decay=settings.confidence_decay,
                 min_confidence=settings.min_tracker_confidence,
                 offline_stitching_enabled=settings.offline_stitching_enabled,
+                privacy_features_enabled=settings.privacy_features_enabled,
+                resist_box_shrinking=settings.resist_box_shrinking,
+                shrink_resistance=settings.shrink_resistance,
+                pre_detection_padding_sec=settings.pre_detection_padding_sec,
+                post_detection_padding_sec=settings.post_detection_padding_sec,
+                box_safety_padding_pct=settings.box_safety_padding_pct,
+                fps=fps,
+                frame_width=frame_width,
+                frame_height=frame_height,
             ).process(
                 result,
                 total_frames=self._total_frames,

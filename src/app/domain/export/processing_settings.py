@@ -25,6 +25,12 @@ class ProcessingSettings:
         offline_stitching_enabled (bool): Whether post-processing bridges fragmented tracks.
         max_stitch_gap (int): Maximum number of missed frames to bridge.
         gsi_smoothness (float): Gaussian interpolation lengthscale.
+        privacy_features_enabled (bool): Whether conservative privacy redaction rules are active.
+        resist_box_shrinking (bool): Whether track boxes resist sudden size contractions.
+        shrink_resistance (float): Damping factor for shrinking track boxes.
+        pre_detection_padding_sec (float): Backfill duration before the first detection.
+        post_detection_padding_sec (float): Hold duration after the last detection.
+        box_safety_padding_pct (float): Proportional outward inflation of privacy boxes.
         draw_boxes (bool): Whether box outlines are shown in the editor preview.
         box_border_width (int): Preview outline width in pixels.
         show_preview_mask (bool): Whether to show the export blur mask in preview.
@@ -64,6 +70,14 @@ class ProcessingSettings:
     max_stitch_gap: int = 25
     gsi_smoothness: float = 10.0
 
+    # --- Privacy Features ---
+    privacy_features_enabled: bool = False
+    resist_box_shrinking: bool = True
+    shrink_resistance: float = 0.85
+    pre_detection_padding_sec: float = 0.5
+    post_detection_padding_sec: float = 0.5
+    box_safety_padding_pct: float = 0.10
+
     # --- Preview ---
     draw_boxes: bool = True
     box_border_width: int = 2
@@ -96,6 +110,14 @@ class ProcessingSettings:
             raise ValueError("box_border_width must be between 1 and 10.")
         if self.reid_embedding_dim not in (128, 256, 512):
             raise ValueError("reid_embedding_dim must be one of 128, 256, or 512.")
+        if not 0.0 <= self.shrink_resistance <= 0.99:
+            raise ValueError("shrink_resistance must be between 0.0 and 0.99.")
+        if not 0.0 <= self.pre_detection_padding_sec <= 5.0:
+            raise ValueError("pre_detection_padding_sec must be between 0.0 and 5.0 seconds.")
+        if not 0.0 <= self.post_detection_padding_sec <= 5.0:
+            raise ValueError("post_detection_padding_sec must be between 0.0 and 5.0 seconds.")
+        if not 0.0 <= self.box_safety_padding_pct <= 0.50:
+            raise ValueError("box_safety_padding_pct must be between 0.0 and 0.50.")
 
     def as_view_model(self) -> SessionSettingsViewModel:
         """Create the widget-ready view of this session's processing settings.
@@ -124,6 +146,12 @@ class ProcessingSettings:
             offline_stitching_enabled=s.offline_stitching_enabled,
             max_stitch_gap=s.max_stitch_gap,
             gsi_smoothness=s.gsi_smoothness,
+            privacy_features_enabled=s.privacy_features_enabled,
+            resist_box_shrinking=s.resist_box_shrinking,
+            shrink_resistance=s.shrink_resistance,
+            pre_detection_padding_sec=s.pre_detection_padding_sec,
+            post_detection_padding_sec=s.post_detection_padding_sec,
+            box_safety_padding_pct=s.box_safety_padding_pct,
             draw_boxes=s.draw_boxes,
             box_border_width=s.box_border_width,
             show_preview_mask=s.show_preview_mask,

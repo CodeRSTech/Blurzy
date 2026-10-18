@@ -56,6 +56,14 @@ class ProcessingSettingsKwargs(TypedDict):
     max_stitch_gap: NotRequired[int]
     gsi_smoothness: NotRequired[float]
 
+    # --- Privacy Features ---
+    privacy_features_enabled: NotRequired[bool]
+    resist_box_shrinking: NotRequired[bool]
+    shrink_resistance: NotRequired[float]
+    pre_detection_padding_sec: NotRequired[float]
+    post_detection_padding_sec: NotRequired[float]
+    box_safety_padding_pct: NotRequired[float]
+
     # --- Preview ---
     draw_boxes: NotRequired[bool]
     box_border_width: NotRequired[int]

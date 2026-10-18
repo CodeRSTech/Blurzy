@@ -68,6 +68,12 @@ class RightControlPanel(QScrollArea):
     tracking_source_changed = Signal(str)
     reid_embedding_dim_changed = Signal(int)
     start_tracking_requested = Signal(str, str)
+    privacy_features_enabled_changed = Signal(bool)
+    resist_box_shrinking_changed = Signal(bool)
+    shrink_resistance_changed = Signal(float)
+    pre_detection_padding_sec_changed = Signal(float)
+    post_detection_padding_sec_changed = Signal(float)
+    box_safety_padding_pct_changed = Signal(float)
 
     def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
@@ -171,6 +177,13 @@ class RightControlPanel(QScrollArea):
         #   v Tracking                                                                                             #
         ############################################################################################################
         self.tracking_box = CollapsiblePanel("Tracking")
+        self.privacy_features_box = CollapsiblePanel("Privacy Features")
+        self.privacy_features_box_tooltip = (
+            "Configure optional privacy-first box protection and temporal padding. "
+            "These settings affect tracking results only when Enable Privacy Shield is checked."
+        )
+        self.privacy_features_box.setToolTip(self.privacy_features_box_tooltip)
+        self.privacy_features_box.toggle_button.setToolTip(self.privacy_features_box_tooltip)
         self.tracking_config_warning_label = QLabel("⚠️ Settings changed. Re-run tracking.")
         #
         #               +----------------------------------------------------+
@@ -242,10 +255,18 @@ class RightControlPanel(QScrollArea):
         #   Min Conf:   | 0.40                                     [ ^ | v ] |
         #               +----------------------------------------------------+
         self.min_tracker_confidence_spinbox = create_spinbox(
-            min_val=0.0, max_val=1.0, step=0.05, default=0.4
+            min_val=0.1, max_val=0.5, step=0.05, default=0.1
         )
+        self.min_tracker_confidence_label = QLabel("Min Conf:")
+        self.min_tracker_confidence_tooltip = (
+            "Sets the minimum confidence retained for tracked boxes (0.10–0.50). "
+            "Lower values preserve weaker coasting predictions; this floor is separate "
+            "from ByteTrack's adaptive Stage 1 and Stage 2 association thresholds."
+        )
+        self.min_tracker_confidence_label.setToolTip(self.min_tracker_confidence_tooltip)
+        self.min_tracker_confidence_spinbox.setToolTip(self.min_tracker_confidence_tooltip)
         self.min_tracker_conf_selection = create_qhbox_with_widgets(
-            [QLabel("Min Conf:"), self.min_tracker_confidence_spinbox]
+            [self.min_tracker_confidence_label, self.min_tracker_confidence_spinbox]
         )
         #
         #               +----------------------------------------------------+
@@ -324,6 +345,68 @@ class RightControlPanel(QScrollArea):
 
         self.imp_exp_tracks_button = QPushButton("Import / Export")
         self.tracking_progress_bar = create_progress_bar(0, 0, text_visible=True, visible=False)
+        self.privacy_features_checkbox = QCheckBox("Enable Privacy Shield")
+        self.privacy_features_tooltip = (
+            "Activates conservative, privacy-first tracking rules designed to eliminate missed redactions. "
+            "Prevents sudden bounding-box shrinkage, backfills boxes before a subject is first detected, "
+            "holds boxes after the last detection, and adds a safety border."
+        )
+        self.privacy_features_checkbox.setToolTip(self.privacy_features_tooltip)
+        self.resist_box_shrinking_checkbox = QCheckBox("Resist Box Shrinking")
+        self.resist_box_shrinking_tooltip = (
+            "Prevents tracked bounding boxes from shrinking abruptly when a detector temporarily sees only "
+            "part of a subject, such as a torso or head instead of the full body. Boxes still expand "
+            "immediately when the subject grows larger."
+        )
+        self.resist_box_shrinking_checkbox.setToolTip(self.resist_box_shrinking_tooltip)
+        self.shrink_resistance_label = QLabel("Shrink Resistance:")
+        self.shrink_resistance_spinbox = create_spinbox(0.0, 0.99, 0.05, 0.85)
+        self.shrink_resistance_tooltip = (
+            "Controls how strongly bounding boxes resist contracting over short intervals "
+            "(0.00 = allow normal shrinking, 0.85 = strong damping, 0.99 = lock to maximum observed size). "
+            "Top/head anchors are preserved when lower-body detections drop out."
+        )
+        self.shrink_resistance_label.setToolTip(self.shrink_resistance_tooltip)
+        self.shrink_resistance_spinbox.setToolTip(self.shrink_resistance_tooltip)
+        self.shrink_resistance_selection = create_qhbox_with_widgets(
+            [self.shrink_resistance_label, self.shrink_resistance_spinbox]
+        )
+        self.pre_detection_padding_sec_label = QLabel("Pre-Detection Buffer (s):")
+        self.pre_detection_padding_sec_spinbox = create_spinbox(0.0, 5.0, 0.1, 0.5)
+        self.pre_detection_padding_sec_tooltip = (
+            "Time in seconds (0.0–5.0 s) to display and backfill a tracked bounding box before the "
+            "subject's first confirmed detection. Protects subjects who were partially visible or "
+            "occluded for a few frames before the detector first recognized them."
+        )
+        self.pre_detection_padding_sec_label.setToolTip(self.pre_detection_padding_sec_tooltip)
+        self.pre_detection_padding_sec_spinbox.setToolTip(self.pre_detection_padding_sec_tooltip)
+        self.pre_detection_padding_sec_selection = create_qhbox_with_widgets(
+            [self.pre_detection_padding_sec_label, self.pre_detection_padding_sec_spinbox]
+        )
+        self.post_detection_padding_sec_label = QLabel("Post-Detection Hold (s):")
+        self.post_detection_padding_sec_spinbox = create_spinbox(0.0, 5.0, 0.1, 0.5)
+        self.post_detection_padding_sec_tooltip = (
+            "Time in seconds (0.0–5.0 s) to keep displaying a tracked bounding box after the subject's "
+            "last confirmed detection. Ensures subjects remain blurred while lingering in partial "
+            "occlusion or exiting the scene."
+        )
+        self.post_detection_padding_sec_label.setToolTip(self.post_detection_padding_sec_tooltip)
+        self.post_detection_padding_sec_spinbox.setToolTip(self.post_detection_padding_sec_tooltip)
+        self.post_detection_padding_sec_selection = create_qhbox_with_widgets(
+            [self.post_detection_padding_sec_label, self.post_detection_padding_sec_spinbox]
+        )
+        self.box_safety_padding_pct_label = QLabel("Safety Margin (%):")
+        self.box_safety_padding_pct_spinbox = create_spinbox(0.0, 50.0, 1.0, 10.0)
+        self.box_safety_padding_pct_tooltip = (
+            "Expands tracked bounding boxes outward by a safety percentage (0–50%) so fast-moving faces, "
+            "hair, or limbs near the edge of a detector box never poke outside the blur mask."
+        )
+        self.box_safety_padding_pct_label.setToolTip(self.box_safety_padding_pct_tooltip)
+        self.box_safety_padding_pct_spinbox.setToolTip(self.box_safety_padding_pct_tooltip)
+        self.box_safety_padding_pct_selection = create_qhbox_with_widgets(
+            [self.box_safety_padding_pct_label, self.box_safety_padding_pct_spinbox]
+        )
+
         # --- Render Widgets ---
 
         ############################################################################################################
@@ -434,6 +517,14 @@ class RightControlPanel(QScrollArea):
         self._reset_tracking_progress_bar()
         self.tracking_box.add_widget(self.tracking_progress_bar)
 
+        self.privacy_features_box.add_widget(self.privacy_features_checkbox)
+        self.privacy_features_box.add_widget(self.resist_box_shrinking_checkbox)
+        self.privacy_features_box.add_layout(self.shrink_resistance_selection)
+        self.privacy_features_box.add_layout(self.pre_detection_padding_sec_selection)
+        self.privacy_features_box.add_layout(self.post_detection_padding_sec_selection)
+        self.privacy_features_box.add_layout(self.box_safety_padding_pct_selection)
+        self.set_privacy_controls_enabled(False, False)
+
         self.tracking_config_warning_label.setStyleSheet("color: #d9534f; font-weight: bold;")
         self.tracking_config_warning_label.setVisible(False)
         self.tracking_config_warning_label.setWordWrap(True)
@@ -454,6 +545,7 @@ class RightControlPanel(QScrollArea):
         # --- Final Assembly ---
         self._layout.addWidget(self.detection_box)
         self._layout.addWidget(self.tracking_box)
+        self._layout.addWidget(self.privacy_features_box)
         self._layout.addWidget(self.preview_box)
         self._layout.addWidget(self.render_box)
         self._layout.addStretch()
@@ -479,6 +571,18 @@ class RightControlPanel(QScrollArea):
         self.tracking_strategy_combo_box.currentIndexChanged.connect(self._emit_tracking_strategy_changed)
         self.tracking_source_combo_box.currentIndexChanged.connect(self._emit_tracking_source_changed)
         self.reid_embedding_dim_combo_box.currentIndexChanged.connect(self._emit_reid_embedding_dim_changed)
+        self.privacy_features_checkbox.toggled.connect(self._on_privacy_features_toggled)
+        self.resist_box_shrinking_checkbox.toggled.connect(self._on_resist_box_shrinking_toggled)
+        self.shrink_resistance_spinbox.valueChanged.connect(self.shrink_resistance_changed.emit)
+        self.pre_detection_padding_sec_spinbox.valueChanged.connect(
+            self.pre_detection_padding_sec_changed.emit
+        )
+        self.post_detection_padding_sec_spinbox.valueChanged.connect(
+            self.post_detection_padding_sec_changed.emit
+        )
+        self.box_safety_padding_pct_spinbox.valueChanged.connect(
+            self._emit_box_safety_padding_pct_changed
+        )
 
     @Slot()
     def _emit_chosen_labels_changed(self) -> None:
@@ -579,6 +683,19 @@ class RightControlPanel(QScrollArea):
         with QSignalBlocker(self.gsi_smoothness_spinbox):
             self.gsi_smoothness_spinbox.setValue(vm.gsi_smoothness)
 
+        with QSignalBlocker(self.privacy_features_checkbox):
+            self.privacy_features_checkbox.setChecked(vm.privacy_features_enabled)
+        with QSignalBlocker(self.resist_box_shrinking_checkbox):
+            self.resist_box_shrinking_checkbox.setChecked(vm.resist_box_shrinking)
+        with QSignalBlocker(self.shrink_resistance_spinbox):
+            self.shrink_resistance_spinbox.setValue(vm.shrink_resistance)
+        with QSignalBlocker(self.pre_detection_padding_sec_spinbox):
+            self.pre_detection_padding_sec_spinbox.setValue(vm.pre_detection_padding_sec)
+        with QSignalBlocker(self.post_detection_padding_sec_spinbox):
+            self.post_detection_padding_sec_spinbox.setValue(vm.post_detection_padding_sec)
+        with QSignalBlocker(self.box_safety_padding_pct_spinbox):
+            self.box_safety_padding_pct_spinbox.setValue(vm.box_safety_padding_pct * 100.0)
+
         with QSignalBlocker(self.blur_strength_spinbox):
             self.blur_strength_spinbox.setValue(vm.blur_strength)
 
@@ -595,6 +712,10 @@ class RightControlPanel(QScrollArea):
             self.blur_checkbox.setChecked(vm.blur_enabled)
 
         self.set_stitching_controls_enabled(vm.offline_stitching_enabled)
+        self.set_privacy_controls_enabled(
+            vm.privacy_features_enabled,
+            vm.resist_box_shrinking,
+        )
         self.set_blur_strength_visible(vm.blur_enabled)
         self.set_preview_blur_enabled(vm.blur_enabled)
         self.set_tracking_config_warning_visible(False)
@@ -623,6 +744,81 @@ class RightControlPanel(QScrollArea):
         self.max_stitch_gap_spinbox.setEnabled(enabled)
         self.gsi_smoothness_label.setEnabled(enabled)
         self.gsi_smoothness_spinbox.setEnabled(enabled)
+
+    def set_privacy_controls_enabled(
+        self,
+        privacy_enabled: bool,
+        resist_shrinking: bool,
+    ) -> None:
+        """Enable privacy options according to the master and anti-shrink toggles.
+
+        Args:
+            privacy_enabled: Whether the Privacy Shield is active.
+            resist_shrinking: Whether anti-shrink behavior is selected.
+
+        Note:
+            The master checkbox remains interactive. Shrink resistance requires
+            both toggles, while temporal padding and safety margin require only
+            the master toggle.
+
+        Example:
+            panel.set_privacy_controls_enabled(True, True)
+        """
+        self.resist_box_shrinking_checkbox.setEnabled(privacy_enabled)
+        shrink_enabled = privacy_enabled and resist_shrinking
+        self.shrink_resistance_label.setEnabled(shrink_enabled)
+        self.shrink_resistance_spinbox.setEnabled(shrink_enabled)
+        for label, spinbox in (
+            (self.pre_detection_padding_sec_label, self.pre_detection_padding_sec_spinbox),
+            (self.post_detection_padding_sec_label, self.post_detection_padding_sec_spinbox),
+            (self.box_safety_padding_pct_label, self.box_safety_padding_pct_spinbox),
+        ):
+            label.setEnabled(privacy_enabled)
+            spinbox.setEnabled(privacy_enabled)
+
+    @Slot(bool)
+    def _on_privacy_features_toggled(self, enabled: bool) -> None:
+        """Update child-control enablement and emit the master setting change.
+
+        Args:
+            enabled: New Privacy Shield state.
+
+        Example:
+            panel._on_privacy_features_toggled(True)
+        """
+        self.set_privacy_controls_enabled(
+            enabled,
+            self.resist_box_shrinking_checkbox.isChecked(),
+        )
+        self.privacy_features_enabled_changed.emit(enabled)
+
+    @Slot(bool)
+    def _on_resist_box_shrinking_toggled(self, enabled: bool) -> None:
+        """Update shrink-control enablement and emit the anti-shrink setting.
+
+        Args:
+            enabled: New anti-shrink state.
+
+        Example:
+            panel._on_resist_box_shrinking_toggled(True)
+        """
+        self.set_privacy_controls_enabled(
+            self.privacy_features_checkbox.isChecked(),
+            enabled,
+        )
+        self.resist_box_shrinking_changed.emit(enabled)
+
+    @Slot(float)
+    def _emit_box_safety_padding_pct_changed(self, value: float) -> None:
+        """Emit the UI percentage as a proportional setting value.
+
+        Args:
+            value: Percentage displayed in the 0–50 range.
+
+        Example:
+            panel._emit_box_safety_padding_pct_changed(10.0)
+        """
+        self.box_safety_padding_pct_changed.emit(value / 100.0)
 
     def set_preview_blur_enabled(self, enabled: bool) -> None:
         """Gate live preview blur on the Render panel's master blur setting.

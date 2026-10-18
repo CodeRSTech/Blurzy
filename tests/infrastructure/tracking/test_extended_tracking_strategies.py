@@ -216,7 +216,7 @@ def test_bytetrack_strategy_handles_empty_frame(monkeypatch):
     assert result == {0: []}
 
 
-def test_bytetrack_strategy_omits_rows_without_a_prior_observation(monkeypatch):
+def test_bytetrack_strategy_emits_unmatched_detection_on_birth_frame(monkeypatch):
     fake_mod = types.ModuleType("ultralytics.trackers.byte_tracker")
     fake_results_mod = types.ModuleType("ultralytics.engine.results")
 
@@ -255,11 +255,201 @@ def test_bytetrack_strategy_omits_rows_without_a_prior_observation(monkeypatch):
 
     strategy = ByteTrackStrategy()
     result = strategy.track(
-        source_data={0: [_mk_box(box_id="d-1", bbox=(10, 20, 30, 40), conf=0.8, label="person")]},
+        source_data={0: [_mk_box(box_id="d-1", bbox=(10, 20, 30, 40), conf=0.25, label="person")]},
         total_frames=1,
     )
 
-    assert result == {0: []}
+    assert len(result[0]) == 1
+    assert result[0][0].detection_backed is True
+    assert result[0][0].time_since_update == 0
+    assert result[0][0].confidence == 0.25
+
+
+def test_bytetrack_adapts_thresholds_and_births_prefiltered_detections(monkeypatch):
+    fake_mod = types.ModuleType("ultralytics.trackers.byte_tracker")
+    fake_results_mod = types.ModuleType("ultralytics.engine.results")
+
+    class FakeBoxes:
+        def __init__(self, data, shape):
+            self.data = data
+            self.orig_shape = shape
+
+        @property
+        def conf(self):
+            return self.data[:, 4]
+
+        @property
+        def cls(self):
+            return self.data[:, 5]
+
+        @property
+        def xywh(self):
+            return np.asarray(
+                [
+                    [(row[0] + row[2]) / 2, (row[1] + row[3]) / 2, row[2] - row[0], row[3] - row[1]]
+                    for row in self.data
+                ],
+                dtype=np.float32,
+            )
+
+        def __len__(self):
+            return int(self.data.shape[0])
+
+    class FakeByteTracker:
+        def __init__(self, args, *unused):
+            self.args = args
+
+        @staticmethod
+        def update(results):
+            return np.asarray([], dtype=np.float32)
+
+    fake_mod.BYTETracker = FakeByteTracker
+    fake_results_mod.Boxes = FakeBoxes
+    monkeypatch.setitem(sys.modules, "ultralytics.trackers.byte_tracker", fake_mod)
+    monkeypatch.setitem(sys.modules, "ultralytics.engine.results", fake_results_mod)
+
+    strategy = ByteTrackStrategy(min_confidence=0.1, min_detection_confidence=0.25)
+    result = strategy.track(
+        source_data={
+            0: [
+                _mk_box(box_id="d-1", bbox=(10, 10, 30, 30), conf=0.25, label="person"),
+                _mk_box(box_id="d-2", bbox=(50, 10, 70, 30), conf=0.45, label="person"),
+            ]
+        },
+        total_frames=1,
+    )
+
+    assert strategy._tracker_args.track_low_thresh == 0.1
+    assert strategy._tracker_args.track_high_thresh == 0.3
+    assert len(result[0]) == 2
+    assert all(box.detection_backed and box.time_since_update == 0 for box in result[0])
+
+
+def test_bytetrack_routes_low_confidence_box_through_second_stage(monkeypatch):
+    fake_mod = types.ModuleType("ultralytics.trackers.byte_tracker")
+    fake_results_mod = types.ModuleType("ultralytics.engine.results")
+
+    class FakeBoxes:
+        def __init__(self, data, shape):
+            self.data = data
+            self.orig_shape = shape
+
+        @property
+        def conf(self):
+            return self.data[:, 4]
+
+        @property
+        def cls(self):
+            return self.data[:, 5]
+
+        @property
+        def xywh(self):
+            return np.asarray(
+                [
+                    [(row[0] + row[2]) / 2, (row[1] + row[3]) / 2, row[2] - row[0], row[3] - row[1]]
+                    for row in self.data
+                ],
+                dtype=np.float32,
+            )
+
+        def __len__(self):
+            return int(self.data.shape[0])
+
+    class FakeByteTracker:
+        def __init__(self, args, *unused):
+            self.args = args
+            self.frame_idx = 0
+            self.thresholds = []
+
+        def update(self, results):
+            self.thresholds.append(
+                (self.args.track_low_thresh, self.args.track_high_thresh)
+            )
+            self.frame_idx += 1
+            if self.frame_idx == 1:
+                return np.asarray([[10, 10, 30, 30, 7, 0.4, 0, 0]], dtype=np.float32)
+            return np.asarray([[11, 10, 31, 30, 7, 0.15, 0, 0]], dtype=np.float32)
+
+    fake_mod.BYTETracker = FakeByteTracker
+    fake_results_mod.Boxes = FakeBoxes
+    monkeypatch.setitem(sys.modules, "ultralytics.trackers.byte_tracker", fake_mod)
+    monkeypatch.setitem(sys.modules, "ultralytics.engine.results", fake_results_mod)
+
+    strategy = ByteTrackStrategy(min_confidence=0.1, min_detection_confidence=0.25)
+    result = strategy.track(
+        source_data={
+            0: [_mk_box(box_id="d-1", bbox=(10, 10, 30, 30), conf=0.4, label="person")],
+            1: [
+                _mk_box(box_id="d-2", bbox=(11, 10, 31, 30), conf=0.15, label="person"),
+                _mk_box(box_id="d-3", bbox=(40, 10, 60, 30), conf=0.4, label="person"),
+            ],
+        },
+        total_frames=2,
+    )
+
+    engine = strategy._engine
+    assert engine.thresholds == [(0.1, 0.35), (0.1, 0.225)]
+    assert result[1][0].id == "track-7"
+    assert result[1][0].detection_backed is True
+    assert result[1][0].time_since_update == 0
+
+
+def test_bytetrack_uses_predicted_center_fallback_when_iou_drops(monkeypatch):
+    fake_mod = types.ModuleType("ultralytics.trackers.byte_tracker")
+    fake_results_mod = types.ModuleType("ultralytics.engine.results")
+
+    class FakeBoxes:
+        def __init__(self, data, shape):
+            self.data = data
+            self.orig_shape = shape
+
+        @property
+        def conf(self):
+            return self.data[:, 4]
+
+        @property
+        def cls(self):
+            return self.data[:, 5]
+
+        @property
+        def xywh(self):
+            return np.asarray(
+                [
+                    [(row[0] + row[2]) / 2, (row[1] + row[3]) / 2, row[2] - row[0], row[3] - row[1]]
+                    for row in self.data
+                ],
+                dtype=np.float32,
+            )
+
+        def __len__(self):
+            return int(self.data.shape[0])
+
+    class FakeByteTracker:
+        def __init__(self, args, *unused):
+            self.frame_idx = 0
+
+        def update(self, results):
+            self.frame_idx += 1
+            if self.frame_idx == 1:
+                return np.asarray([[0, 0, 20, 40, 7, 0.9, 0, 0]], dtype=np.float32)
+            return np.asarray([[25, 0, 45, 40, 8, 0.9, 0, 0]], dtype=np.float32)
+
+    fake_mod.BYTETracker = FakeByteTracker
+    fake_results_mod.Boxes = FakeBoxes
+    monkeypatch.setitem(sys.modules, "ultralytics.trackers.byte_tracker", fake_mod)
+    monkeypatch.setitem(sys.modules, "ultralytics.engine.results", fake_results_mod)
+
+    result = ByteTrackStrategy().track(
+        source_data={
+            0: [_mk_box(box_id="d-1", bbox=(0, 0, 20, 40), conf=0.9, label="person")],
+            1: [_mk_box(box_id="d-2", bbox=(25, 0, 45, 40), conf=0.9, label="person")],
+        },
+        total_frames=2,
+    )
+
+    assert result[0][0].id == "track-7"
+    assert result[1][0].id == "track-7"
+    assert result[1][0].bbox_xyxy == (25, 0, 45, 40)
 
 
 def test_deepsort_strategy_handles_empty_frame(monkeypatch):

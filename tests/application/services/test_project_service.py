@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 import importlib
+import json
 from pathlib import Path
 import sys
 import types
@@ -175,12 +176,28 @@ class TestProjectService:
         existing_video_path.write_text("stub", encoding="utf-8")
         project_path = tmp_path / "partial.blurzy"
         project_path.write_text(
-            (
-                '{"format_version":"1.0","active_session_path":"/nope/video.mp4","directories":{},'
-                '"sessions":[{"video_path":"/nope/video.mp4","current_frame_index":0,"next_annotation_id":1,'
-                '"settings":{},"layers":{}},{"video_path":"'
-                f'{existing_video_path}'
-                '","current_frame_index":0,"next_annotation_id":1,"settings":{},"layers":{}}]}'
+            json.dumps(
+                {
+                    "format_version": "1.0",
+                    "active_session_path": "/nope/video.mp4",
+                    "directories": {},
+                    "sessions": [
+                        {
+                            "video_path": "/nope/video.mp4",
+                            "current_frame_index": 0,
+                            "next_annotation_id": 1,
+                            "settings": {},
+                            "layers": {},
+                        },
+                        {
+                            "video_path": str(existing_video_path),
+                            "current_frame_index": 0,
+                            "next_annotation_id": 1,
+                            "settings": {},
+                            "layers": {},
+                        },
+                    ],
+                }
             ),
             encoding="utf-8",
         )
@@ -198,12 +215,24 @@ class TestProjectService:
         video_path.write_text("stub", encoding="utf-8")
         project_path = tmp_path / "future.blurzy"
         project_path.write_text(
-            (
-                '{"format_version":"1.0","active_session_path":"","directories":{},'
-                '"sessions":[{"video_path":"'
-                f'{video_path}'
-                '","current_frame_index":0,"next_annotation_id":1,'
-                '"settings":{"detection_model_name":"demo","future_toggle":true},"layers":{}}]}'
+            json.dumps(
+                {
+                    "format_version": "1.0",
+                    "active_session_path": "",
+                    "directories": {},
+                    "sessions": [
+                        {
+                            "video_path": str(video_path),
+                            "current_frame_index": 0,
+                            "next_annotation_id": 1,
+                            "settings": {
+                                "detection_model_name": "demo",
+                                "future_toggle": True,
+                            },
+                            "layers": {},
+                        }
+                    ],
+                }
             ),
             encoding="utf-8",
         )
@@ -222,11 +251,21 @@ class TestProjectService:
         video_path.write_text("stub", encoding="utf-8")
         project_path = tmp_path / "broken.blurzy"
         project_path.write_text(
-            (
-                '{"format_version":"1.0","active_session_path":"","directories":{},'
-                '"sessions":[{"video_path":"'
-                f'{video_path}'
-                '","current_frame_index":0,"next_annotation_id":1,"settings":{},"layers":{"b":{"0":[{"bad":true}]}}}]}'
+            json.dumps(
+                {
+                    "format_version": "1.0",
+                    "active_session_path": "",
+                    "directories": {},
+                    "sessions": [
+                        {
+                            "video_path": str(video_path),
+                            "current_frame_index": 0,
+                            "next_annotation_id": 1,
+                            "settings": {},
+                            "layers": {"b": {"0": [{"bad": True}]}},
+                        }
+                    ],
+                }
             ),
             encoding="utf-8",
         )

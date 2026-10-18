@@ -41,16 +41,15 @@ class DetectionEngine:
         - Decoupling: delegates model loading to ``load_detection_model()``.
         - Immutability: ``detect()`` returns a new list and does not mutate view_state.
 
-    ???+ example "Example usage"
+    Example:
 
-        ```python
-        engine = DetectionEngine("YOLOv8n")
-        detections: list[DetectionResult] = engine.detect(frame)
+    ```python title="example.py"
+    engine = DetectionEngine("YOLOv8n")
+    detections: list[DetectionResult] = engine.detect(frame)
 
-        # Switch to a different model at runtime
-        engine.set_model("YOLOv8s")
-        detections = engine.detect(frame)
-        ```
+    engine.set_model("YOLOv8s")  # Switch to a different model at runtime
+    detections = engine.detect(frame)
+    ```
     """
     def __init__(self, model_name: str) -> None:
         """Load a detection model by ``model_name`` (e.g., "YOLOv8n")."""

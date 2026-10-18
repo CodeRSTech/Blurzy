@@ -218,3 +218,122 @@ def test_appearance_disagreement_rejects_geometrically_linkable_tracklets():
 
     assert result[0][0].id == "track-1"
     assert result[4][0].id == "track-2"
+
+
+def test_privacy_antishrink_preserves_top_anchor_for_torso_detections():
+    tracked = {
+        frame: [_box("track-1", (100, 100, 220, 400))]
+        for frame in range(6)
+    }
+    tracked.update(
+        {
+            frame: [_box("track-1", (105, 102, 215, 230))]
+            for frame in range(6, 11)
+        }
+    )
+    tracked[11] = [_box("track-1", (100, 100, 220, 400))]
+
+    result = TrackingPostProcessor(
+        privacy_features_enabled=True,
+        resist_box_shrinking=True,
+        shrink_resistance=0.85,
+        pre_detection_padding_sec=0.0,
+        post_detection_padding_sec=0.0,
+        box_safety_padding_pct=0.0,
+    ).process(tracked, total_frames=12)
+
+    for frame_index in range(6, 11):
+        x1, y1, x2, y2 = result[frame_index][0].bbox_xyxy
+        assert y1 == 102
+        assert y2 > 300
+        assert x2 - x1 > 110
+    assert result[11][0].bbox_xyxy == (100, 100, 220, 400)
+
+
+def test_privacy_pre_detection_padding_backfills_configured_frames():
+    tracked = {15: [_box("track-1", (100, 100, 140, 180))]}
+
+    result = TrackingPostProcessor(
+        privacy_features_enabled=True,
+        pre_detection_padding_sec=0.4,
+        post_detection_padding_sec=0.0,
+        box_safety_padding_pct=0.0,
+        fps=25.0,
+    ).process(tracked, total_frames=40)
+
+    assert all(result[frame][0].id == "track-1" for frame in range(5, 15))
+    assert all(result[frame][0].detection_backed is False for frame in range(5, 15))
+    assert all(result[frame][0].time_since_update == 15 - frame for frame in range(5, 15))
+    assert result[4] == []
+
+
+def test_privacy_pre_detection_velocity_is_clamped_before_backward_projection():
+    tracked = {
+        2: [_box("track-1", (100, 100, 140, 180))],
+        3: [_box("track-1", (1000, 1000, 1040, 1080))],
+    }
+
+    result = TrackingPostProcessor(
+        privacy_features_enabled=True,
+        pre_detection_padding_sec=0.04,
+        post_detection_padding_sec=0.0,
+        box_safety_padding_pct=0.0,
+        fps=25.0,
+    ).process(tracked, total_frames=4)
+
+    x1, y1, x2, y2 = result[1][0].bbox_xyxy
+    assert 90 <= x1 < 100
+    assert 80 <= y1 < 100
+    assert x2 - x1 == 40
+    assert y2 - y1 == 80
+
+
+def test_privacy_post_detection_hold_keeps_padding_above_confidence_floor():
+    tracked = {20: [_box("track-1", (100, 100, 140, 180))]}
+
+    result = TrackingPostProcessor(
+        privacy_features_enabled=True,
+        pre_detection_padding_sec=0.0,
+        post_detection_padding_sec=0.4,
+        box_safety_padding_pct=0.0,
+        fps=25.0,
+        min_confidence=0.1,
+    ).process(tracked, total_frames=40)
+
+    assert all(result[frame][0].id == "track-1" for frame in range(21, 31))
+    assert all(result[frame][0].detection_backed is False for frame in range(21, 31))
+    assert all(result[frame][0].confidence >= 0.1 for frame in range(21, 31))
+    assert result[31] == []
+
+
+def test_privacy_safety_margin_expands_box_around_its_center():
+    tracked = {0: [_box("track-1", (10, 20, 30, 60))]}
+
+    result = TrackingPostProcessor(
+        privacy_features_enabled=True,
+        pre_detection_padding_sec=0.0,
+        post_detection_padding_sec=0.0,
+        box_safety_padding_pct=0.1,
+    ).process(tracked, total_frames=1)
+
+    assert result[0][0].bbox_xyxy == (9, 18, 31, 62)
+    assert tracked[0][0].bbox_xyxy == (10, 20, 30, 60)
+
+
+def test_privacy_padding_uses_maximum_observed_envelope_without_antishrink():
+    tracked = {
+        0: [_box("track-1", (10, 10, 110, 110))],
+        1: [_box("track-1", (30, 40, 90, 80))],
+    }
+
+    result = TrackingPostProcessor(
+        privacy_features_enabled=True,
+        resist_box_shrinking=False,
+        pre_detection_padding_sec=0.0,
+        post_detection_padding_sec=0.5,
+        box_safety_padding_pct=0.0,
+        fps=2.0,
+    ).process(tracked, total_frames=3)
+
+    assert result[1][0].bbox_xyxy == (30, 40, 90, 80)
+    assert result[2][0].bbox_xyxy == (10, 10, 110, 110)

@@ -73,6 +73,15 @@ class TrackingPostProcessor:
         min_confidence: Minimum confidence retained in tracking output.
         offline_stitching_enabled: Whether to link tracklets and use GSI.
         max_unbridged_coast: Maximum coast frames for unbridged offline tails.
+        privacy_features_enabled: Whether conservative privacy post-processing is active.
+        resist_box_shrinking: Whether output boxes resist sudden contractions.
+        shrink_resistance: Damping factor for decreasing the box envelope.
+        pre_detection_padding_sec: Duration of backward box extrapolation.
+        post_detection_padding_sec: Duration of forward box holding.
+        box_safety_padding_pct: Proportional outward box inflation.
+        fps: Video frame rate used to convert padding durations to frames.
+        frame_width: Optional frame width used to clamp projected boxes.
+        frame_height: Optional frame height used to clamp projected boxes.
 
     Raises:
         ValueError: If any numeric setting is outside its supported range.
@@ -95,6 +104,15 @@ class TrackingPostProcessor:
         min_confidence: float = 0.1,
         offline_stitching_enabled: bool = True,
         max_unbridged_coast: int = 6,
+        privacy_features_enabled: bool = False,
+        resist_box_shrinking: bool = True,
+        shrink_resistance: float = 0.85,
+        pre_detection_padding_sec: float = 0.5,
+        post_detection_padding_sec: float = 0.5,
+        box_safety_padding_pct: float = 0.10,
+        fps: float = 30.0,
+        frame_width: int = 0,
+        frame_height: int = 0,
     ) -> None:
         if not 1 <= max_gap <= 60:
             raise ValueError("max_gap must be between 1 and 60 frames.")
@@ -112,6 +130,25 @@ class TrackingPostProcessor:
         self._min_confidence = min_confidence
         self._offline_stitching_enabled = offline_stitching_enabled
         self._max_unbridged_coast = max_unbridged_coast
+        if not 0.0 <= shrink_resistance <= 0.99:
+            raise ValueError("shrink_resistance must be between 0.0 and 0.99.")
+        if not 0.0 <= pre_detection_padding_sec <= 5.0:
+            raise ValueError("pre_detection_padding_sec must be between 0.0 and 5.0 seconds.")
+        if not 0.0 <= post_detection_padding_sec <= 5.0:
+            raise ValueError("post_detection_padding_sec must be between 0.0 and 5.0 seconds.")
+        if not 0.0 <= box_safety_padding_pct <= 0.50:
+            raise ValueError("box_safety_padding_pct must be between 0.0 and 0.50.")
+        if frame_width < 0 or frame_height < 0:
+            raise ValueError("frame dimensions must be non-negative.")
+        self._privacy_features_enabled = privacy_features_enabled
+        self._resist_box_shrinking = resist_box_shrinking
+        self._shrink_resistance = shrink_resistance
+        self._pre_detection_padding_sec = pre_detection_padding_sec
+        self._post_detection_padding_sec = post_detection_padding_sec
+        self._box_safety_padding_pct = box_safety_padding_pct
+        self._fps = fps if math.isfinite(fps) and fps > 0 else 30.0
+        self._frame_width = frame_width
+        self._frame_height = frame_height
 
     def process(
         self,
@@ -217,6 +254,8 @@ class TrackingPostProcessor:
             {key: canonical_boxes[root_key(key)] for key in tracklets},
             total_frames=final_frame_count,
         )
+        if self._privacy_features_enabled:
+            output = self._apply_privacy_features(output, final_frame_count)
 
         logger.debug(
             "Offline tracking post-processing linked {} tracklet pair(s) across {} frame(s)",
@@ -224,6 +263,342 @@ class TrackingPostProcessor:
             interpolated_count,
         )
         return dict(sorted(output.items()))
+
+    def _apply_privacy_features(
+        self,
+        output: ListOfBoxesByFrameIndexAsDict,
+        total_frames: int,
+    ) -> ListOfBoxesByFrameIndexAsDict:
+        """Apply size protection, temporal padding, and safety inflation.
+
+        Args:
+            output: Stitched boxes keyed by zero-based frame index.
+            total_frames: Exclusive end of the available frame range.
+
+        Returns:
+            A privacy-adjusted frame mapping with cloned boxes.
+
+        Note:
+            The size envelope expands immediately and contracts only by
+            ``rho * envelope + (1 - rho) * observation`` when resistance is on.
+            Pre/post motion is estimated from at most five observed box centers,
+            clamped to one quarter of the envelope per frame, and damped by
+            $0.85^k$ for each projected step.
+
+        Example:
+            safe_tracks = processor._apply_privacy_features(tracks, 300)
+        """
+        output = {
+            frame_index: [box.clone() for box in boxes]
+            for frame_index, boxes in output.items()
+        }
+        by_track: dict[str, list[tuple[int, BBoxViewModel]]] = {}
+        for frame_index, boxes in output.items():
+            for box in boxes:
+                by_track.setdefault(box.id, []).append((frame_index, box))
+
+        envelopes: dict[str, tuple[float, float]] = {}
+        observations_by_track: dict[str, list[tuple[int, BBoxViewModel]]] = {}
+        for track_id, entries in by_track.items():
+            entries.sort(key=lambda entry: entry[0])
+            detections = [
+                (frame_index, box)
+                for frame_index, box in entries
+                if box.detection_backed and box.time_since_update == 0
+            ]
+            if not detections:
+                continue
+            observations_by_track[track_id] = detections
+            first_box = detections[0][1]
+            envelope_width = float(max(1, first_box.bbox_xyxy[2] - first_box.bbox_xyxy[0]))
+            envelope_height = float(max(1, first_box.bbox_xyxy[3] - first_box.bbox_xyxy[1]))
+            previous_box: BBoxViewModel | None = None
+
+            for _, box in entries:
+                x1, y1, x2, y2 = box.bbox_xyxy
+                current_width = float(max(1, x2 - x1))
+                current_height = float(max(1, y2 - y1))
+                # Expand immediately when a detection grows; otherwise blend
+                # only the observed shrink fraction into the running envelope.
+                if current_width > envelope_width:
+                    envelope_width = current_width
+                elif self._resist_box_shrinking:
+                    envelope_width = (
+                        self._shrink_resistance * envelope_width
+                        + (1.0 - self._shrink_resistance) * current_width
+                    )
+
+                if current_height > envelope_height:
+                    envelope_height = current_height
+                elif self._resist_box_shrinking:
+                    envelope_height = (
+                        self._shrink_resistance * envelope_height
+                        + (1.0 - self._shrink_resistance) * current_height
+                    )
+
+                if self._resist_box_shrinking:
+                    center_x = (x1 + x2) / 2.0
+                    target_width = max(current_width, envelope_width)
+                    x1 = int(round(center_x - target_width / 2.0))
+                    x2 = int(round(center_x + target_width / 2.0))
+
+                    if previous_box is None:
+                        center_y = (y1 + y2) / 2.0
+                        y1 = int(round(center_y - envelope_height / 2.0))
+                        y2 = int(round(center_y + envelope_height / 2.0))
+                    else:
+                        _, previous_y1, _, previous_y2 = previous_box.bbox_xyxy
+                        top_shift = y1 - previous_y1
+                        bottom_shift = y2 - previous_y2
+                        current_height = y2 - y1
+                        # When the bottom edge moves upward farther than the
+                        # head/top edge, keep the top fixed and extend downward;
+                        # reverse the anchor when only the top edge drops.
+                        if bottom_shift < 0 and abs(bottom_shift) > abs(top_shift):
+                            y2 = int(round(y1 + envelope_height))
+                        elif top_shift > 0 and abs(top_shift) > abs(bottom_shift):
+                            y1 = int(round(y2 - envelope_height))
+                        else:
+                            center_y = (y1 + y2) / 2.0
+                            y1 = int(round(center_y - envelope_height / 2.0))
+                            y2 = int(round(center_y + envelope_height / 2.0))
+                    box.bbox_xyxy = self._clamp_box((x1, y1, x2, y2))
+                previous_box = box
+            envelopes[track_id] = (envelope_width, envelope_height)
+
+        # Convert seconds to nearest frames using the resolved positive FPS.
+        pre_frames = int(round(self._pre_detection_padding_sec * self._fps))
+        post_frames = int(round(self._post_detection_padding_sec * self._fps))
+        for track_id, detections in observations_by_track.items():
+            envelope_width, envelope_height = envelopes[track_id]
+            first_frame, first_box = detections[0]
+            first_velocity = self._privacy_velocity(detections, at_end=False)
+            x1, y1, x2, y2 = first_box.bbox_xyxy
+            center_x = (x1 + x2) / 2.0
+            center_y = (y1 + y2) / 2.0
+            for age in range(1, min(pre_frames, first_frame) + 1):
+                # Reverse velocity is damped per step; summing these increments
+                # avoids extending a noisy entry velocity at constant speed.
+                damping = 0.85**age
+                center_x -= first_velocity[0] * damping
+                center_y -= first_velocity[1] * damping
+                if self._center_outside_frame(center_x, center_y):
+                    break
+                # Use the track envelope, not a small partial-body endpoint box.
+                projected = self._clamp_box(
+                    (
+                        int(round(center_x - envelope_width / 2.0)),
+                        int(round(center_y - envelope_height / 2.0)),
+                        int(round(center_x + envelope_width / 2.0)),
+                        int(round(center_y + envelope_height / 2.0)),
+                    )
+                )
+                frame_index = first_frame - age
+                confidence = self._padding_confidence(first_box, age, pre_frames)
+                self._insert_padding_box(
+                    output, frame_index, first_box, projected, confidence, age
+                )
+
+            last_frame, last_box = detections[-1]
+            terminal_velocity = self._privacy_velocity(detections, at_end=True)
+            x1, y1, x2, y2 = last_box.bbox_xyxy
+            center_x = (x1 + x2) / 2.0
+            center_y = (y1 + y2) / 2.0
+            for age in range(1, min(post_frames, max(0, total_frames - last_frame - 1)) + 1):
+                # Forward displacement also decays by $0.85^k$, so a stopped
+                # subject cannot drift indefinitely along its last velocity.
+                damping = 0.85**age
+                center_x += terminal_velocity[0] * damping
+                center_y += terminal_velocity[1] * damping
+                if self._center_outside_frame(center_x, center_y):
+                    break
+                # Hold the envelope dimensions while the damped center advances.
+                projected = self._clamp_box(
+                    (
+                        int(round(center_x - envelope_width / 2.0)),
+                        int(round(center_y - envelope_height / 2.0)),
+                        int(round(center_x + envelope_width / 2.0)),
+                        int(round(center_y + envelope_height / 2.0)),
+                    )
+                )
+                frame_index = last_frame + age
+                confidence = self._padding_confidence(last_box, age, post_frames)
+                self._insert_padding_box(
+                    output, frame_index, last_box, projected, confidence, age
+                )
+
+        if self._box_safety_padding_pct > 0.0:
+            for boxes in output.values():
+                for box in boxes:
+                    x1, y1, x2, y2 = box.bbox_xyxy
+                    width = max(1, x2 - x1)
+                    height = max(1, y2 - y1)
+                    # Split the proportional width/height increase evenly around
+                    # the center before clipping to frame edges.
+                    pad_x = width * self._box_safety_padding_pct / 2.0
+                    pad_y = height * self._box_safety_padding_pct / 2.0
+                    center_x = (x1 + x2) / 2.0
+                    center_y = (y1 + y2) / 2.0
+                    box.bbox_xyxy = self._clamp_box(
+                        (
+                            int(round(center_x - width / 2.0 - pad_x)),
+                            int(round(center_y - height / 2.0 - pad_y)),
+                            int(round(center_x + width / 2.0 + pad_x)),
+                            int(round(center_y + height / 2.0 + pad_y)),
+                        )
+                    )
+        return output
+
+    def _privacy_velocity(
+        self,
+        detections: list[tuple[int, BBoxViewModel]],
+        *,
+        at_end: bool,
+    ) -> tuple[float, float]:
+        """Estimate and clamp center velocity from up to five detections.
+
+        Args:
+            detections: Ordered detection-backed observations for one track.
+            at_end: Whether to use the terminal rather than initial observations.
+
+        Returns:
+            Median per-frame center displacement, clamped to one quarter of the
+            corresponding envelope dimension.
+
+        Example:
+            vx, vy = processor._privacy_velocity(detections, at_end=True)
+        """
+        sample = detections[-5:] if at_end else detections[:5]
+        if len(sample) < 2:
+            return 0.0, 0.0
+        velocities: list[tuple[float, float]] = []
+        for (frame_a, box_a), (frame_b, box_b) in zip(sample, sample[1:]):
+            elapsed = frame_b - frame_a
+            if elapsed <= 0:
+                continue
+            ax1, ay1, ax2, ay2 = box_a.bbox_xyxy
+            bx1, by1, bx2, by2 = box_b.bbox_xyxy
+            velocities.append(
+                (
+                    ((bx1 + bx2 - ax1 - ax2) / 2.0) / elapsed,
+                    ((by1 + by2 - ay1 - ay2) / 2.0) / elapsed,
+                )
+            )
+        if not velocities:
+            return 0.0, 0.0
+        velocity = np.median(np.asarray(velocities, dtype=np.float64), axis=0)
+        ref_box = sample[-1 if at_end else 0][1]
+        x1, y1, x2, y2 = ref_box.bbox_xyxy
+        max_x = max(1.0, (x2 - x1) * 0.25)
+        max_y = max(1.0, (y2 - y1) * 0.25)
+        return (
+            float(np.clip(velocity[0], -max_x, max_x)),
+            float(np.clip(velocity[1], -max_y, max_y)),
+        )
+
+    def _padding_confidence(
+        self,
+        source: BBoxViewModel,
+        age: int,
+        total_padding: int,
+    ) -> float:
+        """Return a gradual padding confidence no lower than the configured floor.
+
+        Args:
+            source: Endpoint observation used to seed the padding box.
+            age: Distance from the detection endpoint in frames.
+            total_padding: Configured pre/post padding length in frames.
+
+        Returns:
+            A confidence that remains eligible for the tracking output floor.
+
+        Example:
+            confidence = processor._padding_confidence(box, age=2, total_padding=10)
+        """
+        base = source.confidence if source.confidence is not None else 1.0
+        floor = min(1.0, self._min_confidence + 0.001)
+        decay = 0.25 * age / max(1, total_padding)
+        return round(max(floor, base * (1.0 - decay)), 4)
+
+    def _insert_padding_box(
+        self,
+        output: ListOfBoxesByFrameIndexAsDict,
+        frame_index: int,
+        source: BBoxViewModel,
+        bbox: tuple[int, int, int, int],
+        confidence: float,
+        age: int,
+    ) -> None:
+        """Insert a cloned temporal padding box unless that track already exists.
+
+        Args:
+            output: Mutable output frame mapping.
+            frame_index: Destination video frame.
+            source: Track identity and style template.
+            bbox: Projected and clamped rectangle.
+            confidence: Confidence assigned to the synthetic box.
+            age: Number of frames from the nearest observed endpoint.
+
+        Example:
+            processor._insert_padding_box(output, 14, box, rect, 0.8, 1)
+        """
+        boxes = output.setdefault(frame_index, [])
+        padded = source.clone()
+        padded.bbox_xyxy = bbox
+        padded.confidence = confidence
+        padded.detection_backed = False
+        padded.time_since_update = age
+        for index, existing in enumerate(boxes):
+            if existing.id != source.id:
+                continue
+            if existing.detection_backed and existing.time_since_update == 0:
+                return
+            # Replace a generic coast with the privacy projection so it retains
+            # the track's conservative envelope and damped terminal velocity.
+            boxes[index] = padded
+            return
+        boxes.append(padded)
+
+    def _clamp_box(
+        self,
+        bbox: tuple[int, int, int, int],
+    ) -> tuple[int, int, int, int]:
+        """Clamp a rectangle to non-negative coordinates and known frame bounds.
+
+        Args:
+            bbox: Candidate rectangle in xyxy pixel coordinates.
+
+        Returns:
+            A non-negative rectangle clipped to available frame dimensions.
+
+        Example:
+            safe_box = processor._clamp_box((-2, 1, 12, 14))
+        """
+        x1, y1, x2, y2 = bbox
+        x1, y1 = max(0, x1), max(0, y1)
+        if self._frame_width > 0:
+            x1, x2 = min(x1, self._frame_width), min(x2, self._frame_width)
+        if self._frame_height > 0:
+            y1, y2 = min(y1, self._frame_height), min(y2, self._frame_height)
+        return x1, y1, max(x1, x2), max(y1, y2)
+
+    def _center_outside_frame(self, center_x: float, center_y: float) -> bool:
+        """Return whether a projected center lies outside known frame bounds.
+
+        Args:
+            center_x: Projected horizontal center in pixels.
+            center_y: Projected vertical center in pixels.
+
+        Returns:
+            True only when a known frame boundary is crossed.
+
+        Example:
+            outside = processor._center_outside_frame(500.0, 20.0)
+        """
+        return (
+            (self._frame_width > 0 and not 0 <= center_x <= self._frame_width)
+            or (self._frame_height > 0 and not 0 <= center_y <= self._frame_height)
+        )
 
     def _fill_unbridged_coasts(
         self,
@@ -421,8 +796,7 @@ class TrackingPostProcessor:
             links.append((ordered[row].key, ordered[column].key))
         return links
 
-    @staticmethod
-    def _link_cost(source: _Tracklet, target: _Tracklet) -> float | None:
+    def _link_cost(self, source: _Tracklet, target: _Tracklet) -> float | None:
         """Compute a geometry and scale cost for temporally ordered tracklets.
 
         Args:
@@ -435,11 +809,12 @@ class TrackingPostProcessor:
 
         Note:
             Endpoint motion is projected in both directions to the shared temporal
-            midpoint before GIoU is measured. Strong overlap allows scale ratios up
-            to 3x for partial occlusion; weaker overlap is limited to 2x.
+            midpoint before GIoU is measured. Strong overlap allows scale ratios
+            up to 3x normally; privacy or anti-shrink mode relaxes the area gate
+            to 6x so full-body and partial-body fragments can reconnect.
 
         Example:
-            cost = TrackingPostProcessor._link_cost(earlier, later)
+            cost = processor._link_cost(earlier, later)
         """
         appearance_similarity: float | None = None
         if source.tail_embedding is not None and target.head_embedding is not None:
@@ -470,7 +845,12 @@ class TrackingPostProcessor:
         )
         # A clear midpoint match can tolerate a 3x box-area shift caused by partial
         # occlusion; without strong GIoU, constrain scale changes to avoid ID swaps.
-        if area_ratio > (3.0 if giou >= 0.5 or strong_appearance else 2.0):
+        max_area_ratio = (
+            6.0
+            if self._privacy_features_enabled or self._resist_box_shrinking
+            else (3.0 if giou >= 0.5 or strong_appearance else 2.0)
+        )
+        if area_ratio > max_area_ratio:
             return None
         area_similarity = (
             min(area_source, area_target) / max(area_source, area_target)
