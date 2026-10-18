@@ -27,6 +27,10 @@
 }
 
 /* Change the 'meth' badge text to 'func' */
-.doc-symbol-method::after {
+.doc-symbol-method.doc-symbol-heading::after {
     content: "func" !important;
+
+}/* Change the 'meth' badge text to 'f' in TOC */
+.doc-symbol-method.doc-symbol-toc::after {
+    content: "f" !important;
 }
