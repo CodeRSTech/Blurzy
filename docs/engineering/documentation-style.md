@@ -855,63 +855,65 @@ When writing or reviewing code, verify:
 
 ---
 
-## 9. Refactoring with Copilot: A Workflow
+## 9. Refactoring with Copilot
 
-### Step 1: Load the File
-!!! quote "Ask Copilot"
-
-    ```
-    Analyze this Python file for documentation coverage. 
-    Identify methods without docstrings or with incomplete documentation.
-    ```
-
-### Step 2: Generate Docstrings
-!!! quote "Ask Copilot"
-
-    ```
-    Generate one-liner docstrings for these methods using the Blurzy style guide:
-    - Format variables in backticks
-    - Use bold/italic for emphasis
-    - Keep it to one line
-    
-    Here are the methods: [paste method signatures]
-    ```
-
-### Step 3: Add Flow Sections
-!!! quote "Ask Copilot"
-
-    ```
-    This method has 5 logical steps. Reformat it with section blocks using the style:
-    # ============================================================================
-    # 1. STEP NAME — Description
-    # ============================================================================
-    
-    Here's the method: [paste code]
-    ```
-
-### Step 4: Document Signals and Slots
-!!! quote "Ask Copilot"
-    
-    ```
-    This is a PySide6 UI file with signals and slots. Using the style guide, 
-    document all signals and slots including:
-    - Signal cascade for top-level slots (entry points)
-    - Origin/downstream signals for mid-level slots
-    - Signal declarations with payload documentation
-    
-    Here's the file: [paste code]
-    ```
-
-### Step 5: Review and Iterate
-!!! quote "Ask Copilot"
-
-    ```
-    Review this documentation against the Blurzy style guide.
-    Are there any inconsistencies or areas that could be clearer?
-    Suggest improvements.
-    ```
-
----
+!!! example "Workflow"
+	
+	### Step 1: Load the File
+	!!! quote "Ask Copilot"
+	
+	    ```
+	    Analyze this Python file for documentation coverage. 
+	    Identify methods without docstrings or with incomplete documentation.
+	    ```
+	
+	### Step 2: Generate Docstrings
+	!!! quote "Ask Copilot"
+	
+	    ```
+	    Generate one-liner docstrings for these methods using the Blurzy style guide:
+	    - Format variables in backticks
+	    - Use bold/italic for emphasis
+	    - Keep it to one line
+	    
+	    Here are the methods: [paste method signatures]
+	    ```
+	
+	### Step 3: Add Flow Sections
+	!!! quote "Ask Copilot"
+	
+	    ```
+	    This method has 5 logical steps. Reformat it with section blocks using the style:
+	    # ============================================================================
+	    # 1. STEP NAME — Description
+	    # ============================================================================
+	    
+	    Here's the method: [paste code]
+	    ```
+	
+	### Step 4: Document Signals and Slots
+	!!! quote "Ask Copilot"
+	    
+	    ```
+	    This is a PySide6 UI file with signals and slots. Using the style guide, 
+	    document all signals and slots including:
+	    - Signal cascade for top-level slots (entry points)
+	    - Origin/downstream signals for mid-level slots
+	    - Signal declarations with payload documentation
+	    
+	    Here's the file: [paste code]
+	    ```
+	
+	### Step 5: Review and Iterate
+	!!! quote "Ask Copilot"
+	
+	    ```
+	    Review this documentation against the Blurzy style guide.
+	    Are there any inconsistencies or areas that could be clearer?
+	    Suggest improvements.
+	    ```
+	
+	---
 
 ## 10. Quick Reference: Backtick Usage
 
