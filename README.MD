@@ -137,16 +137,16 @@ worker. Worker signals carry progress and results back to the UI. See
 | Project and layer files  | `.blurzy`/JSON project persistence and JSON/CSV layer import/export                     |
 ## Bugs
 
-| Bug                                                                                                     | Priority | Status   |
-|---------------------------------------------------------------------------------------------------------|----------|----------|
-| Frame 0 unblurred or stale layer seeding during tracking                                                | Medium   | Resolved |
-| Nested same-class detections fragment tracks instead of being containment-suppressed                    | Medium   | Resolved |
-| Short occlusions cause unblurred flashes when no coast is emitted                                       | Medium   | Resolved |
-| ByteTrack's fixed confidence thresholds starve track initialization                                     | Medium   | Resolved |
-| Late first detection leaves earlier subject frames unredacted                                           | Medium   | Mitigated when Privacy Shield is enabled |
-| "Start Tracking" does not prompt the user to run detections first                                       | Medium   | Open     |
-| Backward seek times out waiting for frame `n-1` in `get_frame_by_index`                                | Low      | Open     |
-
+| Bug                                                                                                                                     | Priority | Status                                   |
+|-----------------------------------------------------------------------------------------------------------------------------------------|----------|------------------------------------------|
+| Frame 0 unblurred or stale layer seeding during tracking                                                                                | Medium   | Resolved                                 |
+| Nested same-class detections fragment tracks instead of being containment-suppressed                                                    | Medium   | Resolved                                 |
+| Short occlusions cause unblurred flashes when no coast is emitted                                                                       | Medium   | Resolved                                 |
+| ByteTrack's fixed confidence thresholds starve track initialization                                                                     | Medium   | Resolved                                 |
+| Late first detection leaves earlier subject frames unredacted                                                                           | Medium   | Mitigated when Privacy Shield is enabled |
+| "Start Tracking" does not prompt the user to run detections first                                                                       | Medium   | Open                                     |
+| Backward seek times out waiting for frame `n-1` in `get_frame_by_index`                                                                 | Low      | Open                                     |
+| `app.ui.handlers.annotation_handler.AnnotationHandler._delete_occurrences` does not remove all occurrences of a track from the timeline | Low      | Open                                     |
 ## Future additions: beyond detection and tracking
 
 > This section is not a list of implemented features or promised
