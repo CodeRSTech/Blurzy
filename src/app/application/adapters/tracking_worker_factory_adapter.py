@@ -4,7 +4,7 @@ Infrastructure-backed factory adapter for tracking workers.
 Based on the
 [`TrackingWorkerFactoryInterface`][app.application.interfaces.tracking.worker_factory_interface.TrackingWorkerFactoryInterface]
 interface contract, this adapter creates concrete
-[`TrackingWorker`][app.infrastructure.tracking.worker.TrackingWorker]
+[`TrackingWorker`][app.infrastructure.tracking.track_worker.TrackingWorker]
 instances behind an interface seam.
 """
 
