@@ -19,6 +19,43 @@ flowchart TD
     Sections --> HTML["HTML presented by Material"]
 ```
 
+## Reading the hook
+
+This file is a **MkDocs build hook**, not a standalone script that writes
+Markdown files. `mkdocs.yml` registers it under `hooks`; MkDocs loads it as
+part of the build and calls its hook functions at specific points. The hook
+uses the directory containing `mkdocs.yml` as the project root.
+
+The important lifecycle is:
+
+1. **Collect files and shape the menus (`on_files`)**: scan `src/app`, parse
+   Python declarations with `ast`, add virtual Markdown pages to MkDocs' in-memory
+   file collection, and replace the two reference navigation trees. It also
+   validates package-note `Source:` mappings, adds their generated API links to
+   the build-time page copy, and reserves `reference/api` for generated pages.
+2. **Render each API page**: MkDocs processes the generated `::: app...`
+   directives with mkdocstrings. Its Python handler uses Griffe to statically
+   read source and docstrings; the hook itself does not render the API HTML.
+3. **Finish and preview**: `on_page_context` removes edit links from virtual
+   pages; `on_post_page` turns `api-asset:` references into depth-correct URLs
+   and checks the asset exists. During `mkdocs serve`, `on_serve` watches
+   `src/app` so source changes trigger rebuilds.
+
+The script's helpers separate those steps:
+
+| Code | Responsibility |
+| --- | --- |
+| `discover_modules`, `children`, `api_navigation`, `note_navigation` | Map source files and editorial notes into stable page paths and menus |
+| `local_members`, `is_api_assignment` | Select module-level API names using syntax and naming conventions, without evaluating code |
+| `module_page`, `detection_model_catalog`, `resolve_export` | Compose virtual page Markdown, include the model catalog, and link package re-exports to their definitions |
+| `on_files` | Connect discovery to MkDocs: validate notes, inject generated files, set navigation, and hide the app wrapper from the menu |
+| `on_page_context`, `on_post_page`, `on_serve` | Apply generated-page edit-link, asset-URL, and live-reload behavior |
+
+To change API descriptions, edit Python docstrings. To change package
+responsibility notes, edit the authored Markdown under `docs/reference/`. Edit
+the hook only when generation, selection, links, assets, or navigation logic
+needs to change; never add authored Markdown under `docs/reference/api/`.
+
 ### 1. Discover modules and choose members
 
 The hook in `scripts/docs_reference.py` scans `src/app` deterministically.
