@@ -4,13 +4,10 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-
 from app.application.interfaces import TrackingWorkerFactoryInterface
 if TYPE_CHECKING:
     from app.application.interfaces import TrackingWorkerInterface
     from app.domain import ListOfBoxesByFrameIndexAsDict, SessionState
-
-
 
 
 class TrackingWorkerFactoryAdapter(TrackingWorkerFactoryInterface):
