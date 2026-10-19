@@ -176,13 +176,13 @@ class VideoDecodeWorker(QThread):
         """
         Toggle worker on/off (thread-safe via ``_mutex``).
 
-        **When False:** Clears ring buffer (frees ~2.2GB RAM immediately).
+        **When False:** Clears ring buffer (frees large chunk of RAM immediately).
         **When True:** Schedules seek to ``resume_idx`` to refill buffer from playhead.
         """
         with QMutexLocker(self._mutex):
             self._is_active = active
             if not active:
-                self.ring_buffer.clear()  # Dump the 2.2GB of RAM immediately
+                self.ring_buffer.clear()  # Dump buffer from of RAM immediately
             else:
                 self._seek_request = resume_idx  # Force a refill from the playhead
 
