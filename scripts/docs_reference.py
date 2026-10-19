@@ -224,10 +224,10 @@ def resolve_export(
 def module_page(module: Module, modules: list[Module], root: Path, repo_url: str) -> str:
     """Compose a virtual Markdown page for one module or package."""
     source = module.source.relative_to(root).as_posix()
-    title = module.name.rsplit(".", 1)[-1].replace("_", " ").capitalize()
+    title = module.name.rsplit(".", 1)[-1].replace("_", " ").title()
     text = (
-        f'# {title}\n\n<div class="api-module-path"><code>{module.name}</code></div>\n\n'
-        f"[View source]({repo_url}/blob/master/{source})\n\n"
+        f'# {title}\n\n<div class="api-module-path"><code>{module.name}</code></div>\n'
+        f"[View source code]({repo_url}/blob/master/{source})\n"
     )
     members = local_members(module)
     text += f"::: {module.name}\n    options:\n        members: {members!r}\n"
