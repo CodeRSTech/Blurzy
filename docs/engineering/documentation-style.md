@@ -260,20 +260,21 @@ Use these prefixes for special comments:
 For **critical warnings** about thread safety, memory management, or other gotchas that **MUST** be understood before modifying code, use the boxed IMPORTANT template:
 
 ```python
-# ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
-# ┃                                  IMPORTANT                       ┃
-# ┣━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┫
-# ┃ Because the worker is parentless (required by moveToThread()),   ┃
-# ┃ Qt will NOT automatically delete it when the main class is       ┃
-# ┃ destroyed. We must manually orchestrate a synchronized teardown  ┃
-# ┃ to prevent memory leaks and thread crashes.                      ┃
-# ┃                                                                  ┃
-# ┃ The mandatory shutdown sequence must always follow this order:   ┃
-# ┃ 1. Stop the worker: Signal it to finish its current loop.        ┃
-# ┃ 2. Quit the thread: Tell the QThread event loop to stop.         ┃
-# ┃ 3. Wait for exit: Block the main thread until OS closes thread.  ┃
-# ┃ 4. Delete the worker: Safely free the parentless worker memory.  ┃
-# ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+# ┏━ IMPORTANT ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# 
+#  The worker is parentless (required by moveToThread()), so
+#  Qt will NOT automatically delete it with the main class.
+#  Explicit, synchronized teardown is required to prevent
+#  memory leaks and thread crashes.
+# 
+#  REQUIRED SHUTDOWN ORDER
+# 
+#   1. Stop    Signal the worker to finish its current loop.
+#   2. Quit    Tell the QThread event loop to stop.
+#   3. Wait    Wait for the thread to finish.
+#   4. Delete  Safely release the parentless worker.
+# 
+# ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
 !!! tip "**Use IMPORTANT blocks for:**"

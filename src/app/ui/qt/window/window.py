@@ -3,8 +3,6 @@ from __future__ import annotations
 import os
 from typing import TYPE_CHECKING
 
-
-
 from typing import final, override
 
 from PySide6 import QtWidgets

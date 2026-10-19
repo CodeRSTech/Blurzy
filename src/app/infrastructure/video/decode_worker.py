@@ -4,13 +4,10 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-
 import time
 from typing import final
 
 from PySide6.QtCore import QMutex, QMutexLocker, QThread, QObject, Signal
-
-
 
 from app.domain.video.ring_buffer import VideoRingBuffer
 from app.infrastructure.video.reader import VideoReader
@@ -50,18 +47,18 @@ class VideoDecodeWorker(QThread):
         _mutex (QMutex): Guards mutable cross-thread view_state.
 
     Notes:
-        Core loop behavior:
+        !!! info "Core loop behavior"
             1. If inactive, sleep briefly.
             2. If a seek is requested, perform a hard seek and emit completion.
             3. If the buffer is sufficiently ahead, throttle decode rate.
-            4. Otherwise decode the next frame and push to the ring buffer.
+            4. Otherwise, decode the next frame and push to the ring buffer.
 
-        Memory behavior:
+        !!! info "Memory behavior"
             - Buffer capacity is 90 frames.
             - Buffer is cleared on seek and when deactivated.
             - Deactivation is used to aggressively release cached frame memory.
 
-        Thread lifecycle (caller responsibility):
+        !!! info "Thread lifecycle (caller responsibility)"
             Call in this order: ``stop()`` -> ``quit()`` -> ``wait()`` -> ``deleteLater()``.
 
     Example:
@@ -191,7 +188,7 @@ class VideoDecodeWorker(QThread):
 
     def stop(self) -> None:
         """
-        Safely shutdown QThread with proper cleanup sequence.
+        Safely shutdown `QThread` with proper cleanup sequence.
 
         **Sequence:**
 
@@ -201,7 +198,9 @@ class VideoDecodeWorker(QThread):
         4. If stuck, ``terminate()`` then ``wait()`` (fallback for deadlock)
         5. Close ``VideoReader``
 
-        [IMPORTANT] Always call this before thread deletion to avoid zombie threads.
+        !!! warning "IMPORTANT"
+
+            Always call this before thread deletion to avoid zombie threads.
         """
         logger.debug("Stopping decode worker for video {}", self._reader.basename)
         self._running = False

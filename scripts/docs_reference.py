@@ -16,7 +16,7 @@ API_ROOT = PurePosixPath("reference/api")
 API_ASSET_ROOT = PurePosixPath("assets/api")
 API_ASSET_REFERENCE = re.compile(r'(?P<prefix>(?<![\w:-])src=["\'])api-asset:(?P<path>[^"\']+)(?P<quote>["\'])')
 SOURCE_PATTERN = re.compile(r"^Source: `(?P<path>src/app/[^`]*)`", re.MULTILINE)
-# Exceptions are keyed by defining module; keep private APIs opt-in.
+# [NOTE] Key overrides by defining module so private APIs stay opt-in and ownership is clear.
 MEMBER_EXCEPTIONS: dict[str, tuple[str, ...]] = {}
 MEMBER_EXCLUSIONS: dict[str, tuple[str, ...]] = {}
 
@@ -47,6 +47,7 @@ def is_type_expression(value: ast.expr | None) -> bool:
 
 
 def is_api_assignment(name: str, value: ast.expr | None, annotation: ast.expr | None = None) -> bool:
+    """Decide whether a module-level assignment is part of the documented API."""
     if name.startswith("_") or name in {"logger", "log"}:
         return False
     if name.isupper():
@@ -60,6 +61,8 @@ def is_api_assignment(name: str, value: ast.expr | None, annotation: ast.expr | 
 
 @dataclass(frozen=True)
 class Module:
+    """Describe a Python source module and its generated API page."""
+
     name: str
     source: Path
     page: PurePosixPath
@@ -67,6 +70,7 @@ class Module:
 
 
 def discover_modules(root: Path) -> list[Module]:
+    """Map each Python file under `src/app` to a stable virtual page."""
     modules = []
     pages: set[PurePosixPath] = set()
     for source in sorted((root / "src" / "app").rglob("*.py")):
@@ -75,7 +79,7 @@ def discover_modules(root: Path) -> list[Module]:
         parts = source.relative_to(root / "src").with_suffix("").parts
         is_package = parts[-1] == "__init__"
         name_parts = parts[:-1] if is_package else parts
-        # Each module gets its own directory, so index.py cannot collide with __init__.py.
+        # [NOTE] A module directory keeps index.py separate from its package's __init__.py page.
         page = API_ROOT.joinpath(*name_parts, "index.md")
         if page in pages:
             raise PluginError(f"API page collision: {page} ({source})")
@@ -92,6 +96,7 @@ def local_members(module: Module) -> list[str]:
     names: list[str] = []
 
     def collect(statements: list[ast.stmt]) -> None:
+        """Collect declarations in module scope, including conditional declarations."""
         for node in statements:
             candidates: list[str] = []
             if isinstance(node, (ast.ClassDef, ast.FunctionDef, ast.AsyncFunctionDef)):
@@ -107,6 +112,7 @@ def local_members(module: Module) -> list[str]:
                     if isinstance(target, ast.Name) and is_api_assignment(target.id, node.value)
                 ]
             elif isinstance(node, ast.If):
+                # [NOTE] Public declarations may be guarded by platform or optional-dependency branches.
                 collect(node.body)
                 collect(node.orelse)
             elif isinstance(node, (ast.Try, ast.TryStar)):
@@ -124,10 +130,12 @@ def local_members(module: Module) -> list[str]:
 
 
 def relative_link(origin: PurePosixPath, target: PurePosixPath) -> str:
+    """Build a relative URL from one generated page to another."""
     return posixpath.relpath(str(target), str(origin.parent))
 
 
 def registry_assignment(tree: ast.Module, name: str):
+    """Read a literal model registry without importing its defining module."""
     for node in tree.body:
         if isinstance(node, ast.AnnAssign) and isinstance(node.target, ast.Name) and node.target.id == name:
             value = node.value
@@ -145,6 +153,7 @@ def registry_assignment(tree: ast.Module, name: str):
 
 
 def detection_model_catalog(root: Path) -> str:
+    """Render supported detection models from the source registries."""
     source = root / "src" / "app" / "infrastructure" / "detection" / "model" / "names.py"
     tree = ast.parse(source.read_text(encoding="utf-8"), filename=str(source))
     registries = (
@@ -166,12 +175,13 @@ def detection_model_catalog(root: Path) -> str:
         sections.append(f"### {title}\n\n" + "".join(f"- `{model_name}`\n" for model_name in names))
     return (
         "\n## Supported models\n\n"
-        "This catalog is generated from `app.infrastructure.detection.model.names`.\n\n"
+        "This catalog is auto-generated from `app.infrastructure.detection.model.names`.\n\n"
         + "\n".join(sections)
     )
 
 
 def children(module: Module, modules: list[Module]) -> list[Module]:
+    """Return modules nested immediately under the given package."""
     return [child for child in modules if child.name.rpartition(".")[0] == module.name]
 
 
@@ -183,6 +193,7 @@ def resolve_export(
 ) -> Module | None:
     """Follow internal re-export chains to the defining module, without imports."""
     key = (module.name, symbol)
+    # [NOTE] Stop cycles in static package re-exports instead of resolving imports at runtime.
     if key in seen:
         return None
     seen.add(key)
@@ -211,8 +222,9 @@ def resolve_export(
 
 
 def module_page(module: Module, modules: list[Module], root: Path, repo_url: str) -> str:
+    """Compose a virtual Markdown page for one module or package."""
     source = module.source.relative_to(root).as_posix()
-    title = module.name.rsplit(".", 1)[-1].replace("_", " ")
+    title = module.name.rsplit(".", 1)[-1].replace("_", " ").capitalize()
     text = (
         f'# {title}\n\n<div class="api-module-path"><code>{module.name}</code></div>\n\n'
         f"[View source]({repo_url}/blob/master/{source})\n\n"
@@ -225,7 +237,7 @@ def module_page(module: Module, modules: list[Module], root: Path, repo_url: str
         text += "\n## Modules and packages\n\n"
         for child in children(module, modules):
             text += f"- [`{child.name}`]({relative_link(module.page, child.page)})\n"
-        # Re-exports link to defining modules; rendering aliases would duplicate anchors.
+        # [NOTE] Link aliases to their defining page; rendering them here would duplicate symbol anchors.
         tree = ast.parse(module.source.read_text(encoding="utf-8"))
         exports = next(
             (
@@ -249,6 +261,7 @@ def module_page(module: Module, modules: list[Module], root: Path, repo_url: str
 
 
 def api_navigation(modules: list[Module], parent: str = "app") -> list:
+    """Build API navigation while keeping the top-level `app` wrapper out of the menu."""
     module = next(item for item in modules if item.name == parent)
     result: list = [] if parent == "app" else [str(module.page)]
     for child in children(module, modules):
@@ -264,6 +277,7 @@ def note_navigation(pages: dict[PurePosixPath, str]) -> list:
     """Build the editorial navigation from page titles and directory structure."""
 
     def branch(directory: PurePosixPath) -> list:
+        """Group note pages beneath their directory, using titles as labels."""
         result: list = []
         index = directory / "index.md"
         if index in pages:
@@ -291,6 +305,11 @@ def note_navigation(pages: dict[PurePosixPath, str]) -> list:
 
 
 def on_files(files, config):
+    """Prepare MkDocs files and navigation for the generated reference.
+
+    API Markdown stays in the build's file collection; authored package notes
+    are amended only in their in-memory copies.
+    """
     root = Path(config.config_file_path).resolve().parent
     modules = discover_modules(root)
     targets = {item.source.parent.resolve(): item for item in modules if item.is_package}
@@ -330,7 +349,7 @@ def on_files(files, config):
     for module in children(app, modules):
         landing += f"- [{module.name.rsplit('.', 1)[-1]}]({relative_link(API_ROOT / 'index.md', module.page)})\n"
     files.append(File.generated(config, str(API_ROOT / "index.md"), content=landing))
-    # Replace rather than append on rebuild; the same config object can be reused by serve.
+    # [NOTE] Replace navigation on every rebuild because `mkdocs serve` reuses this config object.
     reference = next((entry for entry in config.nav if "Reference" in entry), None)
     if reference is None:
         raise PluginError("mkdocs.yml must contain a Reference navigation entry")
@@ -339,12 +358,13 @@ def on_files(files, config):
     if api is None:
         raise PluginError("mkdocs.yml must contain an API reference navigation entry")
     api["API reference"] = [str(API_ROOT / "index.md"), *api_navigation(modules)]
-    # The app wrapper is intentionally absent from the menu, but reachable from the landing page.
+    # [NOTE] Keep the wrapper reachable from the landing page without adding it to the menu.
     files.get_file_from_path(str(app.page)).inclusion = InclusionLevel.NOT_IN_NAV
     return files
 
 
 def on_page_context(context, page, config, nav):
+    """Remove edit links from generated pages that have no source Markdown file."""
     if PurePosixPath(page.file.src_uri).is_relative_to(API_ROOT):
         page.edit_url = None
     return context
@@ -360,8 +380,10 @@ def on_post_page(output, page, config):
     asset_root = (docs_dir / Path(*API_ASSET_ROOT.parts)).resolve()
 
     def resolve_asset(match: re.Match[str]) -> str:
+        """Validate an asset reference and replace it with a page-relative URL."""
         raw_path = match.group("path")
         asset = PurePosixPath(raw_path)
+        # [NOTE] Reject traversal and absolute paths before resolving under the dedicated asset root.
         if "\\" in raw_path or asset.is_absolute() or not asset.parts or ".." in asset.parts:
             raise PluginError(f"Invalid API asset reference: {raw_path}")
 
@@ -376,6 +398,7 @@ def on_post_page(output, page, config):
 
 
 def on_serve(server, config, builder):
+    """Watch application sources so API pages rebuild during live preview."""
     root = Path(config.config_file_path).resolve().parent
     server.watch(str(root / "src" / "app"), builder)
     return server
