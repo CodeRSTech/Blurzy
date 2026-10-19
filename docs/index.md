@@ -1,6 +1,6 @@
 # Blurzy documentation
 
-Blurzy is an early-stage PySide6 desktop application for detecting and tracking
+Blurzy is an under-development desktop application for detecting and tracking
 subjects in video, reviewing annotations, and exporting video with selected
 subjects blurred.
 
