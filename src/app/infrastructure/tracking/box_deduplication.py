@@ -95,7 +95,7 @@ def suppress_nested_same_class_boxes(
         $$
         \begin{aligned}
         Area_I &= 857 \times 864 = 740{,}448,\\
-        \since \quad X \cup Y &= X + Y - X \cap Y,\\
+        \because \quad X \cup Y &= X + Y - X \cap Y,\\
         \therefore Area_U &= Area_B + Area_T - Area_I\\_I\\
             &= 1{,}505{,}790 + 745{,}632 - 740{,}448\\
             &= 1{,}510{,}974.
