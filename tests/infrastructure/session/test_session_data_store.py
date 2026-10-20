@@ -13,7 +13,7 @@ class _QObjectStub:
 
 
 _qtcore_module = sys.modules.get("PySide6.QtCore")
-if _qtcore_module is not None:
+if isinstance(_qtcore_module, MagicMock):
     _qtcore_module.QObject = _QObjectStub
 
 for _module_name in (

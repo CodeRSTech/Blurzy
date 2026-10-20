@@ -22,7 +22,7 @@ class _QObjectStub:
 
 
 _qtcore_module = sys.modules.get("PySide6.QtCore")
-if _qtcore_module is not None:
+if isinstance(_qtcore_module, MagicMock):
     _qtcore_module.QObject = _QObjectStub
 
 for _module_name in (
@@ -82,4 +82,3 @@ def test_create_session_from_video_path_does_not_store_partial_session_on_failur
             manager.create_session_from_video_path("/videos/demo.mp4")
 
     assert list(manager.all_session_ids) == []
-

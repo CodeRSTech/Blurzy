@@ -20,7 +20,7 @@ class _QObjectStub:
 
 
 _qtcore_module = sys.modules.get("PySide6.QtCore")
-if _qtcore_module is not None:
+if isinstance(_qtcore_module, MagicMock):
     _qtcore_module.QObject = _QObjectStub
 
 for _module_name in (
@@ -124,5 +124,4 @@ def test_frame_navigation_helpers_delegate_to_frame_accessor():
         session_state=fake_state,
         decode_worker=fake_worker,
     )
-
 

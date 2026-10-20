@@ -18,7 +18,7 @@ class _QObjectStub:
 
 
 _qtcore_module = sys.modules.get("PySide6.QtCore")
-if _qtcore_module is not None:
+if isinstance(_qtcore_module, MagicMock):
     _qtcore_module.QObject = _QObjectStub
 
 for _module_name in (
@@ -69,4 +69,3 @@ def test_initialize_attaches_reader_state_and_worker():
     assert session.video_reader is fake_reader
     assert session.state is fake_state
     assert session.video_decode_worker is fake_worker
-

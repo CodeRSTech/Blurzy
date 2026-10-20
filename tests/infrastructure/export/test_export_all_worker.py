@@ -56,7 +56,14 @@ def test_export_all_does_not_fall_back_when_layer_b_has_initialized_empty_frames
     )
 
 
-@pytest.mark.skipif(not isinstance(QObject, type), reason="Requires a real PySide6 installation")
+@pytest.mark.skipif(not isinstance(QThread, type), reason="Requires a real PySide6 installation")
+def test_qobject_retains_qt_thread_affinity():
+    assert QObject is QThread.__mro__[1]
+    receiver = QObject()
+    assert receiver.thread() == QThread.currentThread()
+
+
+@pytest.mark.skipif(not isinstance(QThread, type), reason="Requires a real PySide6 installation")
 def test_batch_signals_preserve_session_ids_through_queued_adapter_connections(qtbot, tmp_path):
     first = SessionId(str(tmp_path / "first" / "sample.mp4"))
     second = SessionId(str(tmp_path / "second" / "sample.mp4"))
