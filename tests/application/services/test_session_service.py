@@ -7,9 +7,8 @@ Note on test setup:
     entire class into a MagicMock, preventing real method execution.
 
     To avoid this, we override ``PySide6.QtCore.QObject`` with a lightweight
-    real class **before** ``session_service`` is imported.  The override is
-    scoped to the ``sys.modules`` entry already created by conftest — it does
-    not change any other module behaviour.
+    real class while ``session_service`` is imported.  The scoped patch is
+    restored before other test modules are collected.
 """
 
 from __future__ import annotations
@@ -21,6 +20,7 @@ from __future__ import annotations
 # ---------------------------------------------------------------------------
 import importlib
 import sys
+from unittest.mock import MagicMock, patch
 
 
 class _QObjectStub:
@@ -45,21 +45,16 @@ class _QObjectStub:
 
 
 _qtcore_module = sys.modules.get("PySide6.QtCore")
-if _qtcore_module is not None:
-    _qtcore_module.QObject = _QObjectStub
-
-# Reload session_service so it picks up our QObject stub if it was already
-# imported (importlib.reload is safer than deleting the sys.modules entry).
-_SESSION_SVC_KEY = "app.application.services.session_service"
-_session_svc_module = sys.modules.get(_SESSION_SVC_KEY)
-if _session_svc_module is not None:
+with patch.object(_qtcore_module, "QObject", _QObjectStub):
+    # Reload session_service so it picks up our QObject stub if it was already imported.
+    _SESSION_SVC_KEY = "app.application.services.session_service"
+    _session_svc_module = importlib.import_module(_SESSION_SVC_KEY)
     importlib.reload(_session_svc_module)
 
 # ---------------------------------------------------------------------------
 # Normal imports (SessionService is imported with the real QObject stub above)
 # ---------------------------------------------------------------------------
 import types
-from unittest.mock import MagicMock
 
 import pytest
 
