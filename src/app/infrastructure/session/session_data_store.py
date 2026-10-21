@@ -27,8 +27,6 @@ logger = get_logger("Infrastructure->SessionDataStore")
 @final
 class SessionDataStore(QObject):
     """
-    Thread-safe CRUD store for bounding boxes organized by layer and frame.
-
     Attributes:
         _s_id (SessionId): Session ID that owns this store.
         _lock (threading.RLock): Reentrant lock protecting all store mutations.
