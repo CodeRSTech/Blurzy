@@ -101,7 +101,8 @@ python -m build
 
 ## Architecture
 
-The source follows four broad layers:
+The source is organized into four Clean Architecture layers, supported by a
+cross-cutting `shared` package:
 
 | Layer                    | Responsibility                                             |
 |--------------------------|------------------------------------------------------------|
@@ -115,6 +116,13 @@ application facade and detection service, then runs in an infrastructure
 worker. Worker signals carry progress and results back to the UI. See
 [`docs/architecture.md`](docs/architecture.md) for a guided code map and
 [`tests/README.md`](tests/README.md) for the test layout.
+
+The annotation pipeline keeps raw detections in Layer A, editable detections
+in B, raw tracked output in C, and editable tracks in D. Tracking normally uses
+reviewed detections from B; users can inspect and edit the final output in D.
+Project Save/Load preserves session state, while JSON/CSV import/export
+exchanges detection and tracking layers. Preview controls affect the editor;
+Render controls affect exported video.
 
 ## Planned features
 
