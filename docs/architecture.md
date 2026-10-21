@@ -1,8 +1,12 @@
 # Architecture
 
-Blurzy is a Qt desktop application organized into five broad layers under
-`src/app`: **UI**, **Application**, **Domain**, **Infrastructure**, and
-**Shared**. 
+**Blurzy** is a Qt desktop application organized into five broad layers under
+`src/app`: 
+  - **UI**, 
+  - **Application**, 
+  - **Domain**, 
+  - **Infrastructure**, *and*
+  - **Shared**. 
 
 The layers separate user interaction and workflow coordination
 from video/model integrations and core data types. They describe the current
@@ -42,12 +46,12 @@ flowchart TB
     class SHARED shared;
 ```
 
-| Principal dependency | Boundary |
-| --- | --- |
-| UI → Application | Delegates user actions through the UI adapter |
-| Application → Domain | Uses core types, state, and rules |
-| Infrastructure → Application | Conforms to Application-owned contracts |
-| Infrastructure → Domain | Uses core types, state, and rules |
+| Principal dependency         | Boundary                                      |
+|------------------------------|-----------------------------------------------|
+| UI → Application             | Delegates user actions through the UI adapter |
+| Application → Domain         | Uses core types, state, and rules             |
+| Infrastructure → Application | Conforms to Application-owned contracts       |
+| Infrastructure → Domain      | Uses core types, state, and rules             |
 
 The stack shows code organization; vertical order does not imply a dependency
 chain. **Arrows in the key point toward the types or contracts a layer depends
