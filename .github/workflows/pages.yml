@@ -28,7 +28,7 @@ jobs:
         run: python -m unittest discover -s tests -p "test_docs_reference.py"
       - name: Build documentation and homepage
         run: |
-          python -m mkdocs build 
+          python -m mkdocs build --dirty
           cp website/index.html site/index.html
           cp docs/assets/icon.ico site/favicon.ico
           touch site/.nojekyll
