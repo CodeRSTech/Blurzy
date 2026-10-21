@@ -62,3 +62,32 @@ code.doc-symbol.doc-symbol-function.doc-symbol-toc::after {
 .doc-object:last-child {
     border-bottom: none;
 }
+
+/* 1. Reclaim the large blank gutters on the far left and right.
+      Default is ~61rem (976px). Increasing this gives the content room to breathe. */
+.md-grid {
+  max-width: 88rem; /* ~1400px. Adjust higher (e.g. 95rem) or use 92% for fluid width */
+}
+
+/* 2. Widen the Table of Contents (TOC) on the right.
+      Default is 12.1rem. */
+@media screen and (min-width: 60em) {
+  .md-sidebar--secondary {
+    width: 16rem; /* Adjust to 15rem - 18rem depending on your heading lengths */
+  }
+
+  .md-sidebar--secondary .md-sidebar__scrollwrap {
+    width: 100%;
+  }
+}
+
+/* 3. (Optional) Widen the left API navigation sidebar if deep module paths wrap */
+@media screen and (min-width: 76.25em) {
+  .md-sidebar--primary {
+    width: 14.5rem; /* Default is 12.1rem */
+  }
+
+  .md-sidebar--primary .md-sidebar__scrollwrap {
+    width: 100%;
+  }
+}
