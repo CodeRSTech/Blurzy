@@ -118,96 +118,35 @@ worker. Worker signals carry progress and results back to the UI. See
 
 ## Planned features
 
-| Feature                                                          | Priority | Status  |
-|------------------------------------------------------------------|----------|---------|
-| Preserve source audio in exported videos                         | High     | Planned |
-| Resume background detection without rerunning completed work     | High     | Planned |
-| Add RetinaFace ResNet50                                          | Medium   | Planned |
-| Add an option to enable or disable nested-detection suppression  | Medium   | Planned |
-
+| Feature                                                                                             | Priority  | Status  |
+|-----------------------------------------------------------------------------------------------------|-----------|---------|
+| Add RetinaFace ResNet50                                                                             | Very High | Planned |
+| Preserve source audio in exported videos                                                            | High      | Planned |
+| Resume background detection without rerunning completed work                                        | High      | Planned |
+| Bottom status bar should show Exporting 50% instead of Exporting 100/200                            | Medium    | Planned |
+| Top bar (file edit) should have height reduced by 50-75% to allow more vertical space for the video | Medium    | Planned |
+| Add an option to enable or disable nested-detection suppression                                     | Low       | Planned |
 ## Implemented tracking and privacy features
 
-| Capability               | Current implementation                                                                 |
-|--------------------------|-----------------------------------------------------------------------------------------|
-| Multi-object tracking    | Hungarian, ByteTrack, DeepSORT with Re-ID, and BoT-SORT with Re-ID                      |
-| Frame-aware tracking     | `TrackingWorker` decodes frames for configurable 128/256/512-D appearance embeddings   |
-| Offline gap recovery     | Bidirectional tracklet stitching and Gaussian Smoothed Interpolation (GSI)             |
-| Privacy Shield           | Anti-shrink sizing, pre-detection backfill, post-detection hold, and safety padding     |
-| Preview and render       | Separate panels for Show Mask, Blur Preview, Box Border Width, and export blur          |
-| Project and layer files  | `.blurzy`/JSON project persistence and JSON/CSV layer import/export                     |
+| Capability              | Current implementation                                                               |
+|-------------------------|--------------------------------------------------------------------------------------|
+| Multi-object tracking   | Hungarian, ByteTrack, DeepSORT with Re-ID, and BoT-SORT with Re-ID                   |
+| Frame-aware tracking    | `TrackingWorker` decodes frames for configurable 128/256/512-D appearance embeddings |
+| Offline gap recovery    | Bidirectional tracklet stitching and Gaussian Smoothed Interpolation (GSI)           |
+| Privacy Shield          | Anti-shrink sizing, pre-detection backfill, post-detection hold, and safety padding  |
+| Preview and render      | Separate panels for Show Mask, Blur Preview, Box Border Width, and export blur       |
+| Project and layer files | `.blurzy`/JSON project persistence and JSON/CSV layer import/export                  |
 ## Bugs
 
 | Bug                                                                                                                                     | Priority | Status                                   |
 |-----------------------------------------------------------------------------------------------------------------------------------------|----------|------------------------------------------|
+| Settings window is not scrollable and goes out of bounds vertically on FHD display                                                      | High     | Open                                     | 
+| "Start Tracking" does not prompt the user to run detections first                                                                       | Medium   | Open                                     |
+| Video export closes the app upon completion                                                                                             | Medium   | Open                                     |
+| Backward seek times out waiting for frame `n-1` in `get_frame_by_index`                                                                 | Low      | Open                                     |
+| `app.ui.handlers.annotation_handler.AnnotationHandler._delete_occurrences` does not remove all occurrences of a track from the timeline | Low      | Open                                     |
 | Frame 0 unblurred or stale layer seeding during tracking                                                                                | Medium   | Resolved                                 |
 | Nested same-class detections fragment tracks instead of being containment-suppressed                                                    | Medium   | Resolved                                 |
 | Short occlusions cause unblurred flashes when no coast is emitted                                                                       | Medium   | Resolved                                 |
 | ByteTrack's fixed confidence thresholds starve track initialization                                                                     | Medium   | Resolved                                 |
 | Late first detection leaves earlier subject frames unredacted                                                                           | Medium   | Mitigated when Privacy Shield is enabled |
-| "Start Tracking" does not prompt the user to run detections first                                                                       | Medium   | Open                                     |
-| Backward seek times out waiting for frame `n-1` in `get_frame_by_index`                                                                 | Low      | Open                                     |
-| `app.ui.handlers.annotation_handler.AnnotationHandler._delete_occurrences` does not remove all occurrences of a track from the timeline | Low      | Open                                     |
-## Future additions: beyond detection and tracking
-
-> This section is not a list of implemented features or promised
-releases. 
-
-- **Improve coverage:** Re-detect when tracks become uncertain or scenes change;
-  smooth boxes, add margins, and fill only short gaps. Mark predictions clearly
-  and flag uncertain intervals for review.
-- **Make corrections easier:** Add a review timeline, keyframe and range-based
-  editing, and track split/merge tools. Appearance-aware tracking could help
-  with identity switches, but a track ID is not a verified identity.
-- **Expand redaction options:** Explore shapes, pixelation, solid fill,
-  segmentation, and specialized face, plate, or text detection. Incomplete
-  masks and model errors can still expose sensitive content.
-- **Consider audio separately:** Manual muting or tones could be followed by
-  optional transcription, with explicit privacy choices and synchronization
-  checks.
-- **Support longer workflows:** Presets, resumable jobs, checkpoints, and
-  hardware-aware processing could save time, but require care with sensitive
-  data and reduced-resolution results.
-- **Improve export controls:** Offer quality and audio options, metadata
-  handling, and a pre-export review. Keep outputs separate from originals and
-  explain unresolved issues.
-
-Start with coverage, review, and correction; evaluate larger model and audio
-features before investing in them. Test against manually reviewed footage with
-small subjects, motion, occlusion, low light, scene cuts, and varied frame
-rates. Measure missed-redaction intervals, coverage, excess masking, track
-errors, review effort, and processing cost. No detector, tracker, or setting
-guarantees anonymization.
-
-### Suggested priorities and evaluation
-
-The most useful first investment is likely **coverage and correction**:
-padding, bounded gap handling, uncertainty navigation, and range-based edits.
-These improve the existing workflow before introducing expensive new models.
-Next, explore masking choices, presets, and export controls. Appearance-aware
-tracking, segmentation, OCR, and audio processing are larger experiments whose
-value should be demonstrated on representative footage.
-
-Evaluate proposed changes against a manually reviewed reference set containing
-small subjects, fast motion, crossings, occlusions, low light, camera cuts, and
-different frame rates. Compare against the existing pipeline, not just a
-successful demonstration clip.
-
-| Measure                                                   | What it tells us                                                       |
-|-----------------------------------------------------------|------------------------------------------------------------------------|
-| Missed-redaction frames and longest uncovered interval    | How often, and for how long, a sensitive region is exposed             |
-| Sensitive-region coverage and excess masked area          | Whether masks cover the target without unnecessarily hiding the scene  |
-| Identity switches and fragmented tracks                   | Whether track-based redaction remains attached to the intended subject |
-| Mask jitter and drift                                     | Whether masks stay stable and aligned during movement                  |
-| Review time, correction count, and warning usefulness     | Whether automation actually reduces the user's workload                |
-| Processing speed, peak memory, and output synchronization | Whether the workflow is practical on supported hardware                |
-
-Keep observed detections, automated predictions, manual corrections, and
-review status distinguishable. No detector, tracker, or redaction setting
-should be presented as a guarantee of anonymization.
-
-## Contributing
-
-Start with the development setup above, run the tests relevant to your change,
-and include a concise description of user-visible behavior in your pull
-request. The focused notes in [`docs/engineering`](docs/engineering/) describe
-the existing documentation and exception-handling conventions.
