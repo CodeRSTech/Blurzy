@@ -9,9 +9,23 @@ from app.shared.exceptions import ProjectFormatException
 
 
 class ProjectStore:
+    """Read and write versioned project documents as JSON.
+
+    Layer: Infrastructure.
+    Context: Encodes domain project data at the filesystem boundary and
+    validates the persisted structure before constructing domain objects.
+    """
+
     _SUPPORTED_VERSION = "1.0"
 
     def save(self, file_path: str, project: ProjectDocument) -> None:
+        """Serialize a project document to the specified path.
+
+        Args:
+            file_path: Destination JSON file; its parent directory is created
+                when necessary.
+            project: Domain document to serialize.
+        """
         parent = os.path.dirname(file_path)
         if parent:
             os.makedirs(parent, exist_ok=True)
@@ -19,6 +33,18 @@ class ProjectStore:
             json.dump(asdict(project), fh, indent=2)
 
     def load(self, file_path: str) -> ProjectDocument:
+        """Read JSON from disk and validate it as a supported project.
+
+        Args:
+            file_path: Source project JSON file.
+
+        Returns:
+            The decoded domain project document.
+
+        Raises:
+            ProjectFormatException: If the payload has an unsupported version
+                or an invalid required structure.
+        """
         with open(file_path, "r", encoding="utf-8") as fh:
             payload = json.load(fh)
         return self._to_document(payload)
