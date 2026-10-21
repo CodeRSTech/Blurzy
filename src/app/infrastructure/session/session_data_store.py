@@ -328,7 +328,10 @@ class SessionDataStore(QObject):
     def overwrite_layer_with_dict_of_boxes(
             self, layer: VideoDataLayer, boxes_dict: dict[int, ListOfBoxes]
     ) -> None:
-        """Replaces the entire layer with a new dictionary of boxes."""
+        """
+        Replaces the entire layer with a new dictionary of [boxes][app.domain.dtypes.ListOfBoxes],
+        indexed by frame.
+        """
         with self.data_lock:
             self.clear_layer_by_name(layer)
             for frame_index, boxes in boxes_dict.items():
@@ -339,7 +342,8 @@ class SessionDataStore(QObject):
             self, layer: VideoDataLayer, frame_index: int, boxes: ListOfBoxes
     ) -> None:
         """
-        Replaces the boxes at the given index with a new [list of boxes][`app.domain.dtypes.ListOfBoxes`].
+        Replaces the boxes at the given index with a new
+        [list of boxes][app.domain.dtypes.ListOfBoxes].
         """
         with self.data_lock:
             self._data[layer][frame_index] = boxes
