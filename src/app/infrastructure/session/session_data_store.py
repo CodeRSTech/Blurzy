@@ -1,14 +1,12 @@
-"""Thread-safe CRUD store for bounding boxes with four-layer architecture support."""
+"""
+Thread-safe CRUD store for bounding boxes with four-layer architecture support.
+"""
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
-
+from typing import TYPE_CHECKING, final
 import threading
 from collections import defaultdict
-
-from typing import final
 
 from PySide6.QtCore import QObject
 
@@ -18,9 +16,6 @@ from app.shared.box_io import box_to_dict, dict_to_box
 if TYPE_CHECKING:
     from collections.abc import Callable
     from typing import Iterable
-
-
-if TYPE_CHECKING:
     from app.domain.base.dtypes import ListOfBoxes
     from app.domain.export.processing_settings import ProcessingSettings
     from app.domain.session.session_id import SessionId
@@ -40,29 +35,29 @@ class SessionDataStore(QObject):
         _data (dict[VideoDataLayer, dict[int, ListOfBoxes]]): Layer and frame indexed
             detection storage.
 
-    Note:
-        Architecture:
-            - Structure: ``dict[DataLayer, dict[int, ListOfBoxes]]`` for O(1)
-              access.
-            - Layers: A (raw detections), B (user-edited detections), C (raw tracks),
-              and D (user-edited tracks).
-            - Threading: protected by ``threading.RLock()`` for UI and worker access.
+    ???+ abstract "Architecture"
+        - Structure: ``dict[DataLayer, dict[int, ListOfBoxes]]`` for O(1)
+          access.
+        - Layers: A (raw detections), B (user-edited detections), C (raw tracks),
+          and D (user-edited tracks).
+        - Threading: protected by ``threading.RLock()`` for UI and worker access.
 
-        Usage patterns:
-            - Read: ``get_boxes_for_layer_at_frame_index_as_list(A, 100)``.
-            - Write: ``add_boxes_to_layer_at_frame_index(B, 100, boxes)``.
-            - Filter: ``apply_filters_to_layer_b(settings)`` preserves manual boxes while
-              re-filtering AI boxes.
-            - Clear: ``clear_layer_by_name(B)`` clears all boxes or preserves manual
-              ones.
-            - Copy: ``overwrite_source_layer_to_target_layer(A, B)`` deep-clones data.
+    ???+ info "Usage patterns"
+        - Read: ``get_boxes_for_layer_at_frame_index_as_list(A, 100)``.
+        - Write: ``add_boxes_to_layer_at_frame_index(B, 100, boxes)``.
+        - Filter: ``apply_filters_to_layer_b(settings)`` preserves manual boxes while
+          re-filtering AI boxes.
+        - Clear: ``clear_layer_by_name(B)`` clears all boxes or preserves manual
+          ones.
+        - Copy: ``overwrite_source_layer_to_target_layer(A, B)`` deep-clones data.
 
-        Thread safety: all methods use the RLock context manager, and manual boxes with
+    ???+ success "Thread safety"
+        all methods use the RLock context manager, and manual boxes with
         ``source = AnnotationBoxSource.MANUAL`` are preserved across filters and selective clears.
 
-        Design notes:
-            - ``defaultdict(list)`` provides automatic empty frame allocation.
-            - Box mutation occurs in place after the lock is acquired.
+    ???+ info "Design notes"
+        - ``defaultdict(list)`` provides automatic empty frame allocation.
+        - Box mutation occurs in place after the lock is acquired.
     """
 
     def __init__(self, s_id: SessionId, parent: QObject | None = None) -> None:
