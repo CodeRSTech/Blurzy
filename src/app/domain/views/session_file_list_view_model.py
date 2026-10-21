@@ -1,3 +1,9 @@
+"""Module for session file list view model; defines application concepts without UI or infrastructure dependencies.
+
+Layer: Domain.
+Context: Defines application concepts without ui or infrastructure dependencies at this architectural boundary.
+"""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -18,12 +24,16 @@ class SessionFileListViewModel:
 
     Attributes:
         s_id (SessionId): Session identifier for the file.
-        title (str): Filename, such as ``"video.mp4"``.
+        title (str): Filename, such as `"video.mp4"`.
         subtitle (str): Metadata summary, such as resolution, FPS, and frame count.
 
     Note:
-        Populated by the ``list_of_session_list_view_models()`` factory.
-    """
+        Populated by the `list_of_session_list_view_models()` factory.
+
+
+Layer: Domain.
+Context: Represents application concepts without UI or infrastructure dependencies.
+"""
 
     s_id: SessionId
     title: str

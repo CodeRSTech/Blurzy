@@ -1,3 +1,9 @@
+"""Module for qt class patches; implements the Qt presentation components.
+
+Layer: Presentation.
+Context: Implements the qt presentation components at this architectural boundary.
+"""
+
 from __future__ import annotations
 
 from PySide6 import QtWidgets

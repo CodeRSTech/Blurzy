@@ -10,15 +10,20 @@ A complete and reliable box-editing workflow where selection, deletion, relabeli
 
 This includes:
 
-Replace the bullet list with this table. The current content doesn’t document implementation progress, so the progress and issue columns are marked as not yet documented or to be validated.
+The table records areas for continued workflow review. The application already
+provides canvas/table selection and annotation actions; the entries identify
+consistency and edge-case validation rather than implying those workflows are
+entirely absent. See [UI handlers](../../reference/ui/handlers.md) and
+[preview widgets](../../reference/ui/qt/widgets/preview.md) for the current
+interaction boundaries.
 
 | Area                     | Goal                                                               | Progress so far                                     | Key issues so far                                                                                |
 |--------------------------|--------------------------------------------------------------------|-----------------------------------------------------|--------------------------------------------------------------------------------------------------|
-| Canvas and table sync    | Keep selections and edits consistent between the canvas and table. | Not documented                                      | Neither the canvas nor the tab (detection/tracking) reflects changes when switching across tabs. |
-| Selection-driven actions | Make actions behave consistently based on the current selection.   | Not documented                                      | N/A                                                                                              |
-| Context menu actions     | Ensure context menu actions perform the expected operation.        | Nearly all perform as expected, needs verification. | N/A                                                                                              |
-| Delete and relabel       | Make deletion and relabeling predictable.                          | Not documented                                      | Will require further assessment for feasibility analysis                                         |
-| Batch operations         | Make batch actions safe and obvious.                               | Not documented                                      | N/A                                                                                              |
+| Canvas and table sync    | Keep selections and edits consistent between the canvas and table. | Selection and table handlers are implemented; verify cross-layer edge cases. | Confirm behavior when switching between detection and tracking tabs. |
+| Selection-driven actions | Make actions behave consistently based on the current selection.   | Selection state and actions are implemented.         | Validate mixed and stale selections. |
+| Context menu actions     | Ensure context menu actions perform the expected operation.        | Context-menu actions are implemented.                | Continue regression testing. |
+| Delete and relabel       | Make deletion and relabeling predictable.                          | Delete and relabel flows are implemented.            | Track-specific occurrence deletion remains a known edge case. |
+| Batch operations         | Make batch actions safe and obvious.                               | Multi-selection actions are available.               | Validate behavior on empty and mixed selections. |
 
 ## Why this is a must
 

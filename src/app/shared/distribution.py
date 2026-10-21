@@ -1,5 +1,9 @@
 """
 Module for handling application distribution paths and Qt application metadata configuration.
+
+
+Layer: Shared utilities.
+Context: Provides reusable cross-layer helpers without owning application workflow state.
 """
 
 from __future__ import annotations
@@ -19,9 +23,10 @@ _RESOURCE_ROOT_PARTS = ("app", "ui", "qt", "resources")
 
 
 def _distribution_root() -> Path:
-    """
-    Get the root path of the application's distribution.
-    :return: The root path of the application's distribution.
+    """Return the root path of the application's distribution.
+
+    Returns:
+        Root path used to locate bundled resources.
     """
     bundled_root = getattr(sys, "_MEIPASS", None)
     if bundled_root:
@@ -30,19 +35,22 @@ def _distribution_root() -> Path:
 
 
 def bundled_resource_path(*relative_parts: str) -> Path:
-    """
-    Get the absolute path to a resource file bundled with the application.
-    :param relative_parts: The relative path parts to the resource file.
-    :return: The absolute path to the resource file.
+    """Return the absolute path to a bundled application resource.
+
+    Args:
+        *relative_parts: Path components appended beneath the resource root.
+
+    Returns:
+        Absolute path to the requested resource.
     """
     return _distribution_root().joinpath(*_RESOURCE_ROOT_PARTS, *relative_parts)
 
 
 def configure_qt_application_metadata(q_app: QApplication) -> None:
-    """
-    Configure the metadata (name, version, organization) for the Qt application.
-    :param q_app: The Qt application instance.
-    :return: None
+    """Set the Qt application name, version, organization, and optional icon.
+
+    Args:
+        q_app: Qt application instance to configure.
     """
     from PySide6.QtGui import QIcon
 

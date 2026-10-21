@@ -1,3 +1,9 @@
+"""Module for layout shortcuts; implements the Qt presentation components.
+
+Layer: Presentation.
+Context: Implements the qt presentation components at this architectural boundary.
+"""
+
 from __future__ import annotations
 
 from typing import TypeVar
@@ -41,6 +47,17 @@ def create_hbox_layout(
     spacing: int | None = None,
     widgets: OrderedWidgets | None = None,
 ) -> QtWidgets.QHBoxLayout:
+    """Create a horizontal layout with optional margins, spacing, and widgets.
+
+    Args:
+        parent: Widget that owns the layout, if any.
+        margins: Optional left, top, right, and bottom content margins.
+        spacing: Optional spacing between child widgets.
+        widgets: Optional ordered list or tuple of widgets to add.
+
+    Returns:
+        Configured horizontal layout.
+    """
     layout = _apply_layout_config(QtWidgets.QHBoxLayout(parent), margins=margins, spacing=spacing)
     if widgets is not None:
         _add_widgets(layout, widgets)
@@ -54,6 +71,17 @@ def create_vbox_layout(
     spacing: int | None = None,
     widgets: OrderedWidgets | None = None,
 ) -> QtWidgets.QVBoxLayout:
+    """Create a vertical layout with optional margins, spacing, and widgets.
+
+    Args:
+        parent: Widget that owns the layout, if any.
+        margins: Optional left, top, right, and bottom content margins.
+        spacing: Optional spacing between child widgets.
+        widgets: Optional ordered list or tuple of widgets to add.
+
+    Returns:
+        Configured vertical layout.
+    """
     layout = _apply_layout_config(QtWidgets.QVBoxLayout(parent), margins=margins, spacing=spacing)
     if widgets is not None:
         _add_widgets(layout, widgets)

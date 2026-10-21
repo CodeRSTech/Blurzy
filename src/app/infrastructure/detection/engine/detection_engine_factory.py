@@ -1,3 +1,9 @@
+"""Module for detection engine factory; implements concrete processing and I/O behind application-facing contracts.
+
+Layer: Infrastructure.
+Context: Implements concrete processing and i/o behind application-facing contracts at this architectural boundary.
+"""
+
 
 from __future__ import annotations
 
@@ -17,6 +23,19 @@ if TYPE_CHECKING:
 #   src/app/infrastructure/detection/__init__.py
 #   src/app/infrastructure/detection/engine/__init__.py
 class DetectionEngineAdapterFactory(DetectionEngineFactoryInterface):
+    """Represent detection engine adapter factory.
+
+Layer: Infrastructure.
+Context: Implements concrete processing or I/O behind application-facing contracts.
+"""
     def create(self, model_name: str) -> DetectionEngineInterface:
+        """Load a detection engine and expose it through the application interface.
+
+        Args:
+            model_name: Registered name of the model to load.
+
+        Returns:
+            Adapter delegating detection-engine operations to the loaded engine.
+        """
         engine = DetectionEngine(model_name)
         return DetectionEngineAdapter(engine)

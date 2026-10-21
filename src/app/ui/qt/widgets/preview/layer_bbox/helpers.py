@@ -2,6 +2,10 @@
 
 These helpers are intentionally primitive operations reused by higher-level
 interaction and widget facade logic.
+
+
+Layer: Presentation.
+Context: Contains concrete Qt presentation components and supporting utilities.
 """
 
 from __future__ import annotations
@@ -13,6 +17,15 @@ from app.ui.qt.widgets.preview.layer_bbox.constants import _HANDLE_RADIUS
 
 
 def get_drag_mode_for_rect_at_pos(rect: QRect, pos: QPoint) -> DragMode:
+    """Identify the resize handle nearest to a pointer position.
+
+    Args:
+        rect: Bounding rectangle whose handles are hit-tested.
+        pos: Pointer position in the same widget coordinate space.
+
+    Returns:
+        Matching handle mode, or `DragMode.NONE` when no handle is hit.
+    """
     x1, y1 = rect.left(), rect.top()
     x2, y2 = rect.right(), rect.bottom()
     mx, my = (x1 + x2) // 2, (y1 + y2) // 2
@@ -35,6 +48,15 @@ def get_drag_mode_for_rect_at_pos(rect: QRect, pos: QPoint) -> DragMode:
 
 
 def clamp_rect_to_pixmap(rect: QRect, pixmap_rect: QRect) -> QRect:
+    """Clamp a rectangle to the pixmap bounds.
+
+    Args:
+        rect: Rectangle to keep inside the displayed image area.
+        pixmap_rect: Bounds of the displayed image.
+
+    Returns:
+        Normalized rectangle shifted back within the image bounds.
+    """
     if rect.isNull():
         return rect
 
@@ -66,10 +88,41 @@ def clamp_rect_to_pixmap(rect: QRect, pixmap_rect: QRect) -> QRect:
 
 
 def apply_clamped_drag_deltas(mode: DragMode, pr: QRect, x1: int, x2: int, y1: int, y2: int, dx: int, dy: int) -> QRect:
+    """Apply clamped drag deltas.
+
+    Args:
+        mode: Active handle being dragged.
+        pr: Rectangle limiting the resulting coordinates.
+        x1: Starting left coordinate.
+        x2: Starting right coordinate.
+        y1: Starting top coordinate.
+        y2: Starting bottom coordinate.
+        dx: Horizontal pointer displacement from drag start.
+        dy: Vertical pointer displacement from drag start.
+
+    Returns:
+        Normalized rectangle after moving the selected edge or corner, clamped to `pr`.
+    """
     def clamp_x(v: int) -> int:
+        """Clamp a horizontal coordinate to the preview rectangle.
+
+        Args:
+            v: Horizontal coordinate to clamp.
+
+        Returns:
+            Coordinate between `pr.left()` and `pr.right()`.
+        """
         return max(pr.left(), min(v, pr.right()))
 
     def clamp_y(v: int) -> int:
+        """Clamp a vertical coordinate to the preview rectangle.
+
+        Args:
+            v: Vertical coordinate to clamp.
+
+        Returns:
+            Coordinate between `pr.top()` and `pr.bottom()`.
+        """
         return max(pr.top(), min(v, pr.bottom()))
 
     if mode == DragMode.TOP_LEFT:
@@ -93,6 +146,15 @@ def apply_clamped_drag_deltas(mode: DragMode, pr: QRect, x1: int, x2: int, y1: i
 
 
 def clamp_point_to_rect(point: QPoint, r: QRect) -> QPoint:
+    """Clamp a point to the rectangle bounds.
+
+    Args:
+        point: Point to constrain.
+        r: Rectangle defining the allowed coordinate range.
+
+    Returns:
+        Point with x and y independently clamped to `r`.
+    """
     return QPoint(
         max(r.left(), min(point.x(), r.right())),
         max(r.top(), min(point.y(), r.bottom())),

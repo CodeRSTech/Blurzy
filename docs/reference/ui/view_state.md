@@ -2,10 +2,13 @@
 
 Source: `src/app/ui/view_state/`
 
-Presentation-specific state tracks selections, preview interaction,
-annotation history, and table key filtering. This state is distinct from the
-domain session state.
+This package holds transient interaction state rather than persisted session
+data: selected bounding boxes, preview tool mode, box-mutation/selection
+history, and key filtering for the frame table. Annotation actions update the
+active editable layer through Application workflows; the UI state tracks which
+items and interactions are active, not the canonical box data.
 
-**Expand this stub with:** what state is transient, what is undoable, and what
-belongs in domain/session data instead.
-
+The distinction matters when saving and restoring projects: domain settings,
+playback, and layer contents belong to [session/project data](../domain/session.md),
+while the window's current interaction belongs here. [Handlers](handlers.md)
+coordinate these states with [preview widgets](qt/widgets.md).

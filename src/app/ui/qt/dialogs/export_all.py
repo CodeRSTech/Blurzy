@@ -1,3 +1,9 @@
+"""Module for export all; implements the Qt presentation components.
+
+Layer: Presentation.
+Context: Implements the qt presentation components at this architectural boundary.
+"""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -13,7 +19,18 @@ class ExportAllDialog(QDialog):
     """
     Dialog to collect configuration for the batch export operation.
     Requires an output directory and allows optional prefix/suffix.
-    """
+
+
+Layer: Presentation.
+Context: Supports user interaction and delegates application work through presentation contracts.
+
+
+    Args:
+        parent: Optional Qt parent object.
+        initial_directory: Directory initially shown by the dialog.
+        initial_prefix: Initial output filename prefix.
+        initial_suffix: Initial output filename suffix.
+"""
 
     def __init__(
         self,
@@ -85,7 +102,11 @@ class ExportAllDialog(QDialog):
             ok_btn.setEnabled(bool(self.dir_edit.text()))
 
     def get_export_config(self) -> tuple[str, str, str]:
-        """Returns: (output_directory, prefix, suffix)"""
+        """Return the trimmed output directory, filename prefix, and suffix.
+
+Returns:
+    Export configuration as `(output_directory, prefix, suffix)`.
+"""
         return (
             self.dir_edit.text().strip(),
             self.prefix_edit.text().strip(),

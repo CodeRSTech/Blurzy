@@ -12,3 +12,8 @@ annotations are retained, including on frames with no current machine track.
 `TrackingHandler` synchronizes the worker cache before rendering the active
 frame and tracking table. The tracking tab is selected after completion so the
 new output is immediately visible.
+
+See [Tracking interfaces](../interfaces/tracking.md) for the worker boundary,
+[tracking infrastructure](../../infrastructure/tracking.md) for algorithms
+and post-processing, and [tracking domain types](../../domain/tracking.md) for
+strategy selection.

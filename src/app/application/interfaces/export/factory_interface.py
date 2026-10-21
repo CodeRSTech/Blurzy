@@ -1,4 +1,8 @@
-"""Interface contract for creating export worker instances."""
+"""Interface contract for creating export worker instances.
+
+Layer: Application.
+Context: Defines protocol boundaries consumed by application orchestration.
+"""
 
 from __future__ import annotations
 
@@ -16,7 +20,11 @@ if TYPE_CHECKING:
 
 
 class ExportWorkerFactoryInterface(Protocol):
-    """Create start-ready export workers behind an interface seam."""
+    """Create start-ready export workers behind an interface seam.
+
+Layer: Application.
+Context: Coordinates use-case behavior through domain services and application contracts.
+"""
 
     def create(
         self,
@@ -25,5 +33,15 @@ class ExportWorkerFactoryInterface(Protocol):
         output_path: str,
         parent: QObject | None = None,
     ) -> ExportWorkerInterface:
-        """Build and return an export worker instance."""
+        """Create a worker that exports one session to a video file.
+
+        Args:
+            export_service: Service that renders the session's frames and annotations.
+            s_id: Identifier of the session to export.
+            output_path: Destination path for the exported video.
+            parent: Optional Qt parent that owns the worker.
+
+        Returns:
+            Export worker implementing the application contract.
+        """
         ...

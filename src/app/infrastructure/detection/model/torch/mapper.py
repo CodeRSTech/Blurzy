@@ -1,4 +1,8 @@
-"""Mapper for converting TorchVision model output to DetectionPayload."""
+"""Mapper for converting TorchVision model output to DetectionPayload.
+
+Layer: Infrastructure.
+Context: Implements concrete processing and I/O behind application-facing contracts.
+"""
 
 from __future__ import annotations
 
@@ -10,7 +14,11 @@ logger = get_logger("Infrastructure->Detection->Models->TorchModelMapper")
 
 
 class TorchDetectionMapper:
-    """Maps raw TorchVision detection results to DetectionPayload format."""
+    """Maps raw TorchVision detection results to DetectionPayload format.
+
+Layer: Infrastructure.
+Context: Implements concrete processing or I/O behind application-facing contracts.
+"""
 
     @staticmethod
     def map(

@@ -1,4 +1,8 @@
-"""Incremental DeepSORT-style tracking with conservative appearance memory."""
+"""Incremental DeepSORT-style tracking with conservative appearance memory.
+
+Layer: Infrastructure.
+Context: Implements concrete processing and I/O behind application-facing contracts.
+"""
 
 from __future__ import annotations
 
@@ -92,6 +96,16 @@ class _Track:
 
     @classmethod
     def create(cls, uid: int, box: BBoxViewModel, frame_idx: int) -> _Track:
+        """Create a track initialized from a detected box.
+
+        Args:
+            uid: Unique track identifier.
+            box: Detection providing the initial label, position, and confidence.
+            frame_idx: Frame index at which the track first appears.
+
+        Returns:
+            New track with zero initial velocity and the detection's position.
+        """
         position = _xywh(box)
         return cls(
             uid=uid,
@@ -104,10 +118,22 @@ class _Track:
         )
 
     def predict(self, elapsed: int) -> None:
+        """Advance the predicted center by the stored velocity for elapsed frames.
+
+        Args:
+            elapsed: Number of frames since the track's last prediction.
+        """
         self.position[:2] += self.velocity * elapsed
         self.position[2:] = np.maximum(self.position[2:], 1.0)
 
     def correct(self, box: BBoxViewModel, frame_idx: int, *, relocated: bool = False) -> None:
+        """Update track geometry, velocity, confidence, and observation age from a detection.
+
+        Args:
+            box: Detection matched to this track.
+            frame_idx: Frame index containing the matched detection.
+            relocated: Whether the match represents relocation and should reset velocity.
+        """
         observed = _xywh(box)
         elapsed = max(frame_idx - self.last_seen, 1)
         if relocated:
@@ -123,6 +149,11 @@ class _Track:
         self.confirmed = self.confirmed or self.hits >= 2
 
     def remember(self, vector: np.ndarray) -> None:
+        """Store an appearance vector and update the normalized exponential moving average.
+
+        Args:
+            vector: Normalized appearance embedding to add to the track gallery.
+        """
         copied = vector.copy()
         self.gallery.append(copied)
         if self.ema is None:
@@ -138,7 +169,7 @@ class DeepSortStrategy:
     Attributes:
         uses_appearance: Whether the strategy consumes appearance vectors.
 
-    Embeddings align with ``frame_boxes`` and may be ``None``. If omitted while
+    Embeddings align with `frame_boxes` and may be `None`. If omitted while
     an RGB frame is supplied, the configured appearance extractor is used. Track
     memory is learned only from matched detections isolated by pairwise IoU <.25.
 
@@ -148,7 +179,11 @@ class DeepSortStrategy:
 
     Example:
         strategy = DeepSortStrategy(min_iou=0.3)
-    """
+
+
+Layer: Infrastructure.
+Context: Implements concrete processing or I/O behind application-facing contracts.
+"""
 
     uses_appearance = True
 
@@ -168,7 +203,7 @@ class DeepSortStrategy:
             min_confidence: Minimum score to start a track and retain a coast.
             confidence_decay: Confidence loss per missed frame.
             max_age: Maximum missed frames; defaults to the decay-derived limit.
-            appearance_extractor: Optional extractor used when ``frame`` is passed.
+            appearance_extractor: Optional extractor used when `frame` is passed.
 
         Raises:
             ValueError: If thresholds are outside their valid ranges.
@@ -277,7 +312,7 @@ class DeepSortStrategy:
             frame_idx: Nonnegative, strictly increasing frame number.
             frame_boxes: Current detections in input order.
             frame: Optional RGB image for appearance extraction.
-            embeddings: Optional vectors aligned with ``frame_boxes``.
+            embeddings: Optional vectors aligned with `frame_boxes`.
 
         Returns:
             Active tracking boxes for this frame.
@@ -404,7 +439,7 @@ class DeepSortStrategy:
 
         Args:
             source_data: Sparse per-frame detections.
-            total_frames: Number of frames; zero infers it from ``source_data``.
+            total_frames: Number of frames; zero infers it from `source_data`.
             frames: Optional RGB frames keyed by index or supplied as a sequence.
             embeddings_by_frame: Optional aligned appearance vectors by frame.
 
@@ -423,7 +458,7 @@ class DeepSortStrategy:
         Example:
             tracked = strategy.track(detections, total_frames=120)
 
-        When the optional historical ``deep_sort_realtime`` backend is available,
+        When the optional historical `deep_sort_realtime` backend is available,
         this wrapper preserves its prior public behavior. Otherwise, it runs the
         native tracker over frames in order.
         """

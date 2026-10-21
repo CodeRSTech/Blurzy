@@ -1,4 +1,8 @@
-"""Factory for loading Ultralytics YOLO detection model."""
+"""Factory for loading Ultralytics YOLO detection model.
+
+Layer: Infrastructure.
+Context: Implements concrete processing and I/O behind application-facing contracts.
+"""
 
 from __future__ import annotations
 
@@ -14,12 +18,16 @@ logger = get_logger("Infrastructure->Detection->Models->YoloModelLoaderFactory")
 
 
 class YoloModelLoaderFactory:
-    """Factory for loading Ultralytics YOLO detection model."""
+    """Factory for loading Ultralytics YOLO detection model.
+
+Layer: Infrastructure.
+Context: Implements concrete processing or I/O behind application-facing contracts.
+"""
 
     @staticmethod
     def create(model_file_name: str) -> YOLO:
         """
-        Load YOLO model by ``model_file_name`` (e.g., "yolov8n.pt").
+        Load YOLO model by `model_file_name` (e.g., "yolov8n.pt").
 
         Returns:
             Loaded YOLO model instance.

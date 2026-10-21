@@ -1,4 +1,8 @@
-"""Detection layer export service — serialises layers A or B to JSON / CSV."""
+"""Detection layer export service — serialises layers A or B to JSON / CSV.
+
+Layer: Application.
+Context: Coordinates domain state and infrastructure to complete application use cases.
+"""
 
 from __future__ import annotations
 
@@ -33,20 +37,28 @@ class DetectionExportService(QObject):
 
     Responsibilities:
         - Retrieve all bounding boxes from the requested layer.
-        - Write them as JSON or CSV (determined by ``file_path`` extension).
+        - Write them as JSON or CSV (determined by `file_path` extension).
         - Return the number of boxes exported for status reporting.
 
     Note:
-        This service satisfies the :class:`~app.application.interfaces.IDataExporter`
+        This service satisfies the `IDataExporter` interface
         Protocol via structural subtyping.
 
-        The output file can be re-imported by :class:`DetectionImportService`
-        (or even :class:`TrackingImportService`) — the wire format is layer-agnostic.
+        The output file can be re-imported by `DetectionImportService`
+        (or even `TrackingImportService`) — the wire format is layer-agnostic.
 
         Consider future improvement: add an optional frame-range filter
-        ``(start_frame, end_frame)`` so users can export only a subset of frames,
+        `(start_frame, end_frame)` so users can export only a subset of frames,
         which is useful for long videos.
-    """
+
+
+Layer: Application.
+Context: Coordinates use-case behavior through domain services and application contracts.
+
+
+    Args:
+        app: Application adapted for session lookup and reading detection-layer boxes for export.
+"""
 
     def __init__(self, app: Application) -> None:
         super().__init__(parent=app)
@@ -63,21 +75,21 @@ class DetectionExportService(QObject):
             file_path: str,
     ) -> int:
         """
-        Export all boxes in ``layer`` for ``s_id`` to ``file_path``.
+        Export all boxes in `layer` for `s_id` to `file_path`.
 
         Args:
             s_id:      Source session.
-            layer:     Source layer — should be ``A`` or ``B`` (or their string equivalents).
-            file_path: Absolute destination path with ``.json`` or ``.csv`` extension.
+            layer:     Source layer — should be `A` or `B` (or their string equivalents).
+            file_path: Absolute destination path with `.json` or `.csv` extension.
 
         Returns:
             int: Number of boxes written.
 
         Raises:
-            ValueError: If the extension is not ``.json`` or ``.csv``.
+            ValueError: If the extension is not `.json` or `.csv`.
 
         Note:
-            Accepts both ``VideoDataLayer`` enums and string layer names (``"a"``, ``"A"``, etc.)
+            Accepts both `VideoDataLayer` enums and string layer names (`"a"`, `"A"`, etc.)
             to handle Qt signal/slot type coercion.  Internally coerces to enum.
         """
         # ====================================================================

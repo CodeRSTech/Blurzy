@@ -1,3 +1,9 @@
+"""Serializes project documents to JSON and validates them when reading.
+
+Layer: Infrastructure.
+Context: Implements concrete processing and i/o behind application-facing contracts at this architectural boundary.
+"""
+
 from __future__ import annotations
 
 import json
@@ -25,6 +31,13 @@ class ProjectStore:
             file_path: Destination JSON file; its parent directory is created
                 when necessary.
             project: Domain document to serialize.
+
+        Raises:
+            OSError: If the destination directory cannot be created or the file
+                cannot be written.
+            TypeError: If the destination path or a project value has an
+                unsupported type.
+            ValueError: If serialization encounters a circular reference.
         """
         parent = os.path.dirname(file_path)
         if parent:
@@ -42,8 +55,13 @@ class ProjectStore:
             The decoded domain project document.
 
         Raises:
+            OSError: If the file cannot be opened or read.
+            UnicodeDecodeError: If the file is not valid UTF-8.
+            json.JSONDecodeError: If the file does not contain valid JSON.
             ProjectFormatException: If the payload has an unsupported version
                 or an invalid required structure.
+            TypeError: If a numeric field has an incompatible type.
+            ValueError: If a numeric field cannot be converted to an integer.
         """
         with open(file_path, "r", encoding="utf-8") as fh:
             payload = json.load(fh)

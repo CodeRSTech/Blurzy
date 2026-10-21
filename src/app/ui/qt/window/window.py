@@ -1,3 +1,9 @@
+"""Module for window; implements the Qt presentation components.
+
+Layer: Presentation.
+Context: Implements the qt presentation components at this architectural boundary.
+"""
+
 from __future__ import annotations
 
 import os
@@ -34,7 +40,11 @@ def _reset_qt_progress_bar(progress_bar: QtWidgets.QProgressBar, label: str) -> 
 
 @final
 class Window(QtWidgets.QMainWindow):
-    """Alternative window shell that preserves the current UI API while using a cleaner layout assembly."""
+    """Alternative window shell that preserves the current UI API while using a cleaner layout assembly.
+
+Layer: Presentation.
+Context: Supports user interaction and delegates application work through presentation contracts.
+"""
 
     open_videos_requested = Signal(list)
     tool_mode_changed = Signal(ToolMode)
@@ -306,24 +316,47 @@ class Window(QtWidgets.QMainWindow):
 
     @property
     def bbox_selection_state(self) -> BBoxSelectionState:
-        """Return the current bbox selection state."""
+        """Return the current bbox selection state.
+
+        Returns:
+            Shared preview-selection state containing the selected bounding-box keys.
+        """
         return self._bbox_selection_state
 
     @property
     def selection_history_state(self) -> SelectionHistoryState:
-        """Return selection history and clipboard state."""
+        """Return selection history and clipboard state.
+
+        Returns:
+            State object containing selection undo/redo history and copied boxes.
+        """
         return self._selection_history_state
 
     @property
     def active_tab_index(self) -> VideoDataLayerGroup:
+        """Return the index of the active data tab.
+
+        Returns:
+            Active tab as a `VideoDataLayerGroup` enum.
+        """
         return VideoDataLayerGroup(self.bottom_panel.active_tab_index)
 
     @property
     def selected_s_id(self) -> SessionId:
+        """Return the selected session identifier.
+
+        Returns:
+            Identifier of the session selected in the bottom panel.
+        """
         return self.bottom_panel.selected_s_id
 
     @property
     def selected_frame_box_keys(self) -> list[str]:
+        """Return keys of boxes selected on the current frame.
+
+        Returns:
+            Keys in the shared bounding-box selection state.
+        """
         return self.bbox_selection_state.get_selected_keys()
 
     # ========
@@ -332,12 +365,22 @@ class Window(QtWidgets.QMainWindow):
 
     @override
     def closeEvent(self, event: QCloseEvent) -> None:
+        """Handle window close and any pending-export confirmation.
+
+        Args:
+            event: Close event to accept unless the registered handler rejects it.
+        """
         if self._close_request_handler is not None and not self._close_request_handler():
             event.ignore()
             return
         super().closeEvent(event)
 
     def confirm_export_in_progress_exit(self) -> bool:
+        """Ask whether to exit while an export is running.
+
+        Returns:
+            `True` when the user chooses Yes.
+        """
         result = QtWidgets.QMessageBox.question(
             self,
             "Export in Progress",
@@ -348,9 +391,20 @@ class Window(QtWidgets.QMainWindow):
         return result == QtWidgets.QMessageBox.StandardButton.Yes
 
     def set_export_enabled(self, enabled: bool) -> None:
+        """Enable or disable the single-session export button.
+
+        Args:
+            enabled: Whether the export button should be enabled.
+        """
         self.right_panel.export_btn.setEnabled(enabled)
 
     def set_export_busy(self, is_busy: bool, status_text: str | None = None) -> None:
+        """Update single-session export controls and progress visibility.
+
+        Args:
+            is_busy: Whether an export is currently in progress.
+            status_text: Optional status-bar text to display.
+        """
         self._set_export_controls_enabled(not is_busy)
         self.export_progress_bar.setVisible(is_busy)
         self._reset_export_progress_bar()
@@ -361,65 +415,171 @@ class Window(QtWidgets.QMainWindow):
             self.set_status_text(status_text)
 
     def set_export_progress(self, current: int, total: int, label: str = "Exporting") -> None:
+        """Display progress for the current export.
+
+        Args:
+            current: Number of completed units.
+            total: Total number of units.
+            label: Text prefix shown beside the progress fraction.
+        """
         self._set_fraction_progress(self.export_progress_bar, current, total, label)
 
     def set_export_progress_status(self, label: str) -> None:
+        """Set the export progress-bar label and reset its value.
+
+        Args:
+            label: Status text to show in the progress bar.
+        """
         self.export_progress_bar.setValue(0)
         self.export_progress_bar.setFormat(label)
 
     def set_export_overall_busy(self, is_busy: bool) -> None:
+        """Show or hide the all-session export progress bar and reset it.
+
+        Args:
+            is_busy: Whether an all-session export is in progress.
+        """
         self.export_overall_progress_bar.setVisible(is_busy)
         self._reset_export_overall_progress_bar()
 
     def set_export_overall_progress(self, current: int, total: int, label: str = "Batch") -> None:
+        """Display overall progress for a batch export.
+
+        Args:
+            current: Number of completed sessions or units.
+            total: Total number of sessions or units.
+            label: Text prefix shown beside the progress fraction.
+        """
         self._set_fraction_progress(self.export_overall_progress_bar, current, total, label)
 
     def set_close_request_handler(self, handler: Callable[[], bool]) -> None:
+        """Register a callback that decides whether the window may close.
+
+        Args:
+            handler: Callback returning `True` to allow close, or `False` to cancel it.
+        """
         self._close_request_handler = handler
 
     def set_tracking_config_warning_visible(self, visible: bool) -> None:
+        """Show or hide the tracking-configuration warning.
+
+        Args:
+            visible: Whether the warning should be visible.
+        """
         self.right_panel.set_tracking_config_warning_visible(visible)
 
     def set_iou_widgets_visible(self, visible: bool) -> None:
+        """Show or hide the IoU threshold controls.
+
+        Args:
+            visible: Whether the controls should be visible.
+        """
         self.right_panel.set_iou_widgets_visible(visible)
 
     def set_blur_strength_visible(self, visible: bool) -> None:
+        """Show or hide the export blur-strength control.
+
+        Args:
+            visible: Whether the control should be visible.
+        """
         self.right_panel.set_blur_strength_visible(visible)
 
     def set_detection_loading_state(self, is_loading: bool, model_name: str | None = None) -> None:
+        """Update detection-loading controls and optionally show the model name.
+
+        Args:
+            is_loading: Whether a detection model is loading.
+            model_name: Name of the model being loaded, when available.
+        """
         self.right_panel.set_detection_loading_state(is_loading)
         if is_loading and model_name:
             self.set_status_text(f"Loading model: {model_name}")
 
     def set_tracking_loading_state(self, is_loading: bool) -> None:
+        """Enable or disable controls affected by tracker loading.
+
+        Args:
+            is_loading: Whether a tracking model is loading.
+        """
         self.right_panel.set_tracking_loading_state(is_loading)
 
     def set_detection_progress_busy(self, is_busy: bool) -> None:
+        """Set the detection-progress bar's busy state.
+
+        Args:
+            is_busy: Whether detection is active.
+        """
         self.right_panel.set_detection_progress_busy(is_busy)
 
     def set_detection_progress(self, current: int, total: int, label: str = "Detection",
                                eta_msecs: float | None = None) -> None:
+        """Set detection progress.
+
+        Args:
+            current: Number of frames processed.
+            total: Total number of frames to process.
+            label: Text prefix shown beside the progress fraction.
+            eta_msecs: Estimated remaining time in milliseconds, if known.
+        """
         self.right_panel.set_detection_progress(current, total, label, eta_msecs)
 
     def set_tracking_progress_busy(self, is_busy: bool, indeterminate: bool = False) -> None:
+        """Set the tracking-progress bar's visibility and indeterminate mode.
+
+        Args:
+            is_busy: Whether tracking is active.
+            indeterminate: Whether to show progress without a numeric range.
+        """
         self.right_panel.set_tracking_progress_busy(is_busy, indeterminate)
 
     def set_tracking_progress(self, current: int, total: int, label: str = "Tracking") -> None:
+        """Display tracking progress.
+
+        Args:
+            current: Number of frames processed.
+            total: Total number of frames to process.
+            label: Text prefix shown beside the progress fraction.
+        """
         self.right_panel.set_tracking_progress(current, total, label)
 
     def set_detection_model_boxes(self, boxes: list[ModelSelectionViewModel]) -> None:
+        """Populate the detection-model selector.
+
+        Args:
+            boxes: Model choices to display in the selector.
+        """
         self.right_panel.set_detection_model_boxes(boxes)
 
     def set_selected_detection_model(self, model_id: str) -> None:
+        """Select a detection model in the right panel.
+
+        Args:
+            model_id: Identifier of the model to select.
+        """
         self.right_panel.set_selected_detection_model(model_id)
 
     def set_frame_label_text(self, text: str) -> None:
+        """Set the transport panel's frame label.
+
+        Args:
+            text: Formatted frame information to display.
+        """
         self.transport_panel.set_frame_label_text(text)
 
     def set_status_text(self, text: str) -> None:
+        """Set the status-bar message.
+
+        Args:
+            text: Message to display in the window's status label.
+        """
         self.info_label.setText(text)
 
     def set_current_project_path(self, project_path: str) -> None:
+        """Update the project label, tooltip, and window title for the active project.
+
+        Args:
+            project_path: Project file path, or an empty string when no project is active.
+        """
         self._current_project_path = project_path
         if project_path:
             project_name = os.path.basename(project_path)
@@ -432,13 +592,36 @@ class Window(QtWidgets.QMainWindow):
         self.setWindowTitle(self._base_window_title)
 
     def show_info(self, title: str, msg: str) -> None:
+        """Show an informational message dialog.
+
+        Args:
+            title: Dialog title.
+            msg: Informational message.
+        """
         QtWidgets.QMessageBox.information(self, title, msg)
 
     def show_warning(self, title: str, msg: str) -> None:
+        """Show a warning message dialog.
+
+        Args:
+            title: Dialog title.
+            msg: Warning message.
+        """
         QtWidgets.QMessageBox.warning(self, title, msg)
 
     def show_error(self, title: str, msg: str) -> None:
+        """Show an error message dialog.
+
+        Args:
+            title: Dialog title.
+            msg: Error message.
+        """
         QtWidgets.QMessageBox.critical(self, title, msg)
 
     def restore_session_settings(self, vm: SessionSettingsViewModel) -> None:
+        """Restore session settings in the window controls.
+
+        Args:
+            vm: Settings values to apply to the controls.
+        """
         self.right_panel.restore_session_settings(vm)

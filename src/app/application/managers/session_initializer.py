@@ -1,8 +1,12 @@
 """Session runtime bootstrapper.
 
-This helper keeps ``Session`` construction side-effect free by moving the
-expensive runtime setup out of ``Session.__init__`` and into the application
+This helper keeps `Session` construction side-effect free by moving the
+expensive runtime setup out of `Session.__init__` and into the application
 layer.
+
+
+Layer: Application.
+Context: Coordinates session-scoped lifecycles for application workers and resources.
 """
 
 from __future__ import annotations
@@ -22,17 +26,21 @@ logger = get_logger("Application->SessionInitializer")
 
 @final
 class SessionInitializer:
-    """Build and attach the runtime collaborators for a ``Session``.
+    """Build and attach the runtime collaborators for a `Session`.
 
     Responsibilities:
         - Open the video reader for the session path.
-        - Build ``SessionState`` from the reader metadata.
+        - Build `SessionState` from the reader metadata.
         - Create and start the session's decode worker.
 
     The initializer intentionally keeps object construction separate from
-    lifetime management so tests can instantiate ``Session`` without opening
+    lifetime management so tests can instantiate `Session` without opening
     files or starting threads.
-    """
+
+
+Layer: Application.
+Context: Coordinates use-case behavior through domain services and application contracts.
+"""
 
     def __repr__(self) -> str:
         return f"<{self.__class__.__name__}>"
@@ -41,7 +49,7 @@ class SessionInitializer:
         """Attach the video reader, runtime view_state, and decode worker.
 
         Args:
-            session: The bare ``Session`` shell created by ``SessionManager``.
+            session: The bare `Session` shell created by `SessionManager`.
 
         Returns:
             The same session instance after its runtime collaborators have been

@@ -2,9 +2,12 @@
 
 Source: `src/app/ui/qt/shared/`
 
-Shared Qt helpers provide widget factories, icons, geometry/layout helpers,
-debug representations, and UI shortcuts.
+Shared Qt utilities provide widget and layout factories, icon tinting,
+geometry helpers, reusable layout shortcuts, and debug representations for
+Qt objects. They centralize small construction and presentation conventions
+used by multiple windows, sections, and widgets; they are not workflow
+controllers.
 
-**Expand this stub with:** which helpers are broadly reusable and conventions
-for adding Qt-specific utilities.
-
+Keep Qt-dependent helpers here only when they are genuinely shared. Widget
+behavior belongs in [widgets](widgets.md), top-level composition in the
+[window](window.md), and non-Qt helpers in [Shared utilities](../../shared/index.md).

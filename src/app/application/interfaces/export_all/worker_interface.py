@@ -1,4 +1,8 @@
-"""Interface contract for background batch export worker implementations."""
+"""Interface contract for background batch export worker implementations.
+
+Layer: Application.
+Context: Defines protocol boundaries consumed by application orchestration.
+"""
 
 from __future__ import annotations
 
@@ -8,7 +12,11 @@ from PySide6.QtCore import SignalInstance
 
 
 class ExportAllWorkerInterface(Protocol):
-    """Abstraction boundary for batch export workers."""
+    """Abstraction boundary for batch export workers.
+
+Layer: Application.
+Context: Coordinates use-case behavior through domain services and application contracts.
+"""
 
     session_started = SignalInstance
     session_finished = SignalInstance
@@ -27,7 +35,11 @@ class ExportAllWorkerInterface(Protocol):
         ...
 
     def isRunning(self) -> bool:
-        """Return ``True`` while the worker thread is active."""
+        """Return `True` while the worker thread is active.
+
+        Returns:
+            `True` while the batch-export worker thread is running.
+        """
         ...
 
     def deleteLater(self) -> None:

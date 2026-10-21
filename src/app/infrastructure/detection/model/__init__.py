@@ -1,3 +1,9 @@
+"""Package for model; implements concrete processing and I/O behind application-facing contracts.
+
+Layer: Infrastructure.
+Context: Implements concrete processing and i/o behind application-facing contracts at this architectural boundary.
+"""
+
 from .torch import TorchDetectionModel
 from .yolo import YoloDetectionModel
 from .base import BaseDetectionModel

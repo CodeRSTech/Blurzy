@@ -45,13 +45,18 @@ class SessionDataStoreInterface(Protocol):
         ...
 
     def get_all_boxes_for_layer_as_dict_of_lists(self, layer: VideoDataLayer) -> dict[int, ListOfBoxes]:
-        """Return all populated frames for a layer as frame-indexed box lists.
+        """Return a layer's frame-indexed box lists.
 
         Args:
             layer: Domain layer to read.
 
         Returns:
-            A mapping from frame index to boxes stored on that frame.
+            The store's frame-indexed mapping for that layer, including any
+            initialized empty frames.
+
+        Note:
+            Implementations may expose the backing mapping rather than a copy;
+            callers should use the mutation methods in this protocol.
         """
         ...
 
@@ -62,7 +67,7 @@ class SessionDataStoreInterface(Protocol):
             layer: Domain layer to inspect.
 
         Returns:
-            ``True`` when at least one box is stored.
+            `True` when at least one box is stored.
         """
         ...
 
@@ -74,7 +79,7 @@ class SessionDataStoreInterface(Protocol):
             frame_index: Zero-based frame index.
 
         Returns:
-            ``True`` when the frame contains at least one box.
+            `True` when the frame contains at least one box.
         """
         ...
 
@@ -86,7 +91,7 @@ class SessionDataStoreInterface(Protocol):
             frame_index: Zero-based frame index.
 
         Returns:
-            ``True`` when storage has an entry for that layer and frame.
+            `True` when storage has an entry for that layer and frame.
         """
         ...
 
@@ -119,11 +124,12 @@ class SessionDataStoreInterface(Protocol):
     def purge_boxes_in_layer_by_minimum_confidence_at_frame_index(
         self, layer: VideoDataLayer, min_conf: float, frame_index: int
     ) -> None:
-        """Remove boxes below a confidence threshold from one frame.
+        """Remove low-confidence machine boxes from one frame.
 
         Args:
             layer: Layer whose frame data is filtered.
-            min_conf: Minimum confidence retained.
+            min_conf: Minimum confidence retained; manual boxes and boxes with
+                no confidence value are preserved.
             frame_index: Zero-based frame index to filter.
         """
         ...
@@ -165,18 +171,19 @@ class SessionDataStoreInterface(Protocol):
     # ============================== DELETE ==============================
 
     def purge_boxes_in_layer_by_minimum_confidence(self, layer: VideoDataLayer, min_conf: float) -> None:
-        """Remove boxes below a confidence threshold from every frame.
+        """Remove low-confidence machine boxes from every frame.
 
         Args:
             layer: Layer whose data is filtered.
-            min_conf: Minimum confidence retained.
+            min_conf: Minimum confidence retained; manual boxes and boxes with
+                no confidence value are preserved.
         """
         ...
 
     def apply_filters_to_layers(
         self, source_layer_name: VideoDataLayer, target_layer_name: VideoDataLayer, session_settings: ProcessingSettings
     ) -> int:
-        """Apply session filtering settings while transferring boxes between layers.
+        """Apply session filters from a source layer to its target layer.
 
         Args:
             source_layer_name: Layer providing boxes for filtering.
@@ -184,15 +191,16 @@ class SessionDataStoreInterface(Protocol):
             session_settings: Confidence and processing settings to apply.
 
         Returns:
-            Number of boxes written to the target layer.
+            Number of frames whose target-layer box count changed.
         """
         ...
 
     def clear_all_layers(self, keep_manual: bool = False) -> None:
-        """Clear all layer data, optionally retaining manual annotations.
+        """Clear all layers, optionally retaining editable manual annotations.
 
         Args:
-            keep_manual: Preserve manually created boxes when ``True``.
+            keep_manual: When true, retain manual boxes in editable layers B/D.
+                Raw layers A/C are cleared.
         """
         ...
 
@@ -201,7 +209,7 @@ class SessionDataStoreInterface(Protocol):
 
         Args:
             layer: Layer to clear.
-            keep_manual: Preserve manually created boxes when ``True``.
+            keep_manual: When true, retain manual boxes in the selected layer.
         """
         ...
 
@@ -294,7 +302,14 @@ class SessionDataStoreInterface(Protocol):
         boxes: Iterable[BBoxViewModel],
         filter_fn: Callable[[BBoxViewModel], bool] | None = None,
     ) -> None:
-        """Replace machine output for one frame while preserving manual boxes."""
+        """Replace machine output for one frame while preserving manual boxes.
+
+Args:
+    layer: Target layer whose machine boxes are refreshed.
+    frame_index: Zero-based frame index.
+    boxes: Candidate machine-produced boxes for the frame.
+    filter_fn: Optional predicate applied before boxes are cloned.
+"""
         ...
 
     def replace_machine_boxes_for_frames(
@@ -304,5 +319,13 @@ class SessionDataStoreInterface(Protocol):
         frame_count: int,
         filter_fn: Callable[[BBoxViewModel], bool] | None = None,
     ) -> None:
-        """Refresh machine output over a frame range under one storage lock."""
+        """Refresh machine output over a frame range under one storage lock.
+
+        Args:
+            layer: Target layer whose machine boxes are refreshed.
+            boxes_by_frame: Candidate machine boxes keyed by frame index.
+            frame_count: Number of frames to refresh, from 0 up to but excluding
+                this value.
+            filter_fn: Optional predicate applied before boxes are cloned.
+        """
         ...

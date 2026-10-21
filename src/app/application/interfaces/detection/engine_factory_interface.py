@@ -1,3 +1,9 @@
+"""Module for engine factory interface; defines contracts independent of concrete adapters.
+
+Layer: Application.
+Context: Defines contracts independent of concrete adapters at this architectural boundary.
+"""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -13,8 +19,21 @@ class DetectionEngineFactoryInterface(Protocol):
     """
     The `DetectionEngineFactoryInterface`
 
-    ``DetectionEngineFactory`` in `Infrastructure/detection` is instantiated from it,
+    `DetectionEngineFactory` in `Infrastructure/detection` is instantiated from it,
 
-    which is then used by the ``DetectionEngineManager``.
-    """
-    def create(self, model_name: str) -> DetectionEngineInterface: ...
+    which is then used by the `DetectionEngineManager`.
+
+
+Layer: Application.
+Context: Coordinates use-case behavior through domain services and application contracts.
+"""
+    def create(self, model_name: str) -> DetectionEngineInterface:
+        """Create a detection engine configured for the requested model.
+
+        Args:
+            model_name: Registry name of the detection model.
+
+        Returns:
+            Engine implementing `DetectionEngineInterface`.
+        """
+        ...

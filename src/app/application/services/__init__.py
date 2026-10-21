@@ -1,4 +1,8 @@
-"""Application services layer — business logic and orchestration between domain and infrastructure."""
+"""Application services layer — business logic and orchestration between domain and infrastructure.
+
+Layer: Application.
+Context: Coordinates domain state and infrastructure to complete application use cases.
+"""
 
 from app.application.services.detection import (
     DetectionLayerService,

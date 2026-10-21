@@ -1,4 +1,8 @@
-"""Import merge-strategy enum shared by all layer import services."""
+"""Import merge-strategy enum shared by all layer import services.
+
+Layer: Application.
+Context: Coordinates domain state and infrastructure to complete application use cases.
+"""
 
 from __future__ import annotations
 
@@ -18,14 +22,18 @@ class ImportMode(str, Enum):
         MERGE_IGNORE: Only populate frames that currently have *no* boxes.  Any frame
             that already contains data is skipped silently.
         MERGE_RENAME: Add every box from the file to the target layer.  If an imported
-            box has a ``key`` that already exists in the target frame, the box is added
-            with a ``"imp-"`` prefix on both ``key`` and ``id`` to avoid collision.
+            box has a `key` that already exists in the target frame, the box is added
+            with a `"imp-"` prefix on both `key` and `id` to avoid collision.
 
     Note:
         The dialog offers all four modes with human-readable labels.
         The services receive the enum value and apply the corresponding strategy
-        via ``_layer_io.apply_import_to_layer()``.
-    """
+        via `_layer_io.apply_import_to_layer()`.
+
+
+Layer: Application.
+Context: Coordinates use-case behavior through domain services and application contracts.
+"""
 
     OVERWRITE = "overwrite"
     MERGE_REPLACE = "merge_replace"
@@ -37,10 +45,14 @@ class ImportMode(str, Enum):
     # ---------------------------------------------------------------------------
     @property
     def display_label(self) -> str:
+        """Return the user-facing label for this import mode.
+
+        Returns:
+            Label describing the import mode's merge or overwrite behavior.
+        """
         return {
             ImportMode.OVERWRITE: "Overwrite (replace entire layer)",
             ImportMode.MERGE_REPLACE: "Merge – Replace existing frames",
             ImportMode.MERGE_IGNORE: "Merge – Ignore existing frames",
             ImportMode.MERGE_RENAME: "Merge – Rename conflicting keys",
         }[self]
-

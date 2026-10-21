@@ -4,6 +4,10 @@ Detection result — output from YOLO object detection model.
 See Also:
     - [`Box`][app.domain.detection.box.Box] — base bounding-detection domain dataclass
     - [`BBoxViewModel`][app.domain.views.bounding_box_view_model.BBoxViewModel] — view model for UI display of bounding boxes
+
+
+Layer: Domain.
+Context: Defines application concepts independently of UI and infrastructure implementations.
 """
 
 from __future__ import annotations
@@ -26,15 +30,15 @@ class DetectionResult(Box):
     """
     Single object detection result from YOLO model inference.
 
-    All bounding-detection fields (``item_id``, ``label``, ``bbox_xyxy``, ``confidence``,
-    ``color_hex``) are inherited from :class:`BaseBox`.  See that class for field
+    All bounding-detection fields (`item_id`, `label`, `bbox_xyxy`, `confidence`,
+    `color_hex`) are inherited from `BaseBox`. See that class for field
     documentation.
 
     Note:
         Created from raw YOLO output, stored in Layer A as immutable machine
         data, then filtered into Layer B for user review and export. Use
-        ``to_frame_box_view_model()`` to convert the detection into a
-        ``BBoxViewModel`` for UI display.
+        `to_frame_box_view_model()` to convert the detection into a
+        `BBoxViewModel` for UI display.
 
     Example:
         ```python
@@ -48,9 +52,19 @@ class DetectionResult(Box):
 
         box_view = detection.to_frame_box_view_model()
         ```
-    """
+
+
+Layer: Domain.
+Context: Represents application concepts without UI or infrastructure dependencies.
+"""
 
     def to_frame_box_view_model(self) -> BBoxViewModel:
+        """Convert this detection result into a frame-box view model.
+
+        Returns:
+            View model preserving the detection's identity, geometry, label,
+            confidence, and display color.
+        """
         from app.domain.views.bounding_box_view_model import BBoxViewModel  # lazy — avoids circular import
         return BBoxViewModel(
             id=self.item_id,

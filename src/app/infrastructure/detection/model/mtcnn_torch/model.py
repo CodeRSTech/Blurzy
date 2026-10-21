@@ -1,3 +1,9 @@
+"""Module for model; implements concrete processing and I/O behind application-facing contracts.
+
+Layer: Infrastructure.
+Context: Implements concrete processing and i/o behind application-facing contracts at this architectural boundary.
+"""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -27,19 +33,37 @@ class MTCNNTorchDetectionModel(BaseDetectionModel):
     Attributes:
         _model: Loaded MTCNN instance (facenet_pytorch.MTCNN).
         _loader (MTCNNTorchModelLoaderFactory): Factory for loading the model.
-        _mapper (MTCNNTorchDetectionMapper): Mapper for converting raw output to DetectionResult.
+        _mapper (MTCNNTorchDetectionMapper): Applies the face confidence threshold and maps boxes to person detections.
 
     Note:
         Confidence threshold: 0.90 (default).
-        Input frames must be RGB ``numpy.ndarray`` (uint8, shape HxWx3).
-        Returns detections with label ``"person"``.
-    """
+        Input frames must be RGB `numpy.ndarray` (uint8, shape HxWx3).
+        Returns detections with label `"person"`.
+
+
+Layer: Infrastructure.
+Context: Implements concrete processing or I/O behind application-facing contracts.
+
+
+    Args:
+        loader: Backend-specific model loader.
+        mapper: MTCNN mapper that filters face scores and converts boxes to person detections.
+"""
     def __init__(
         self,
         loader: MTCNNTorchModelLoaderFactory | None = None,
         mapper: MTCNNTorchDetectionMapper | None = None,
     ) -> None:
-        """Initialize MTCNN model."""
+        """Load the facenet-pytorch MTCNN model and prepare its result mapper.
+
+        Args:
+            loader: Optional MTCNN loader override.
+            mapper: Optional `MTCNNTorchDetectionMapper` override for face boxes and confidence scores.
+
+        Note:
+            Default loader and mapper instances are created when these arguments
+            are omitted; model loading occurs during initialization.
+        """
         self._loader = loader or MTCNNTorchModelLoaderFactory()
         self._mapper = mapper or MTCNNTorchDetectionMapper()
         self._model = self._load_model()
@@ -58,7 +82,7 @@ class MTCNNTorchDetectionModel(BaseDetectionModel):
 
         Args:
             frame: RGB numpy array (uint8, HxWx3).
-            chosen_labels: Optional label filter; only ``"person"`` detections
+            chosen_labels: Optional label filter; only `"person"` detections
                 are produced by this model.
 
         Returns:

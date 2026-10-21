@@ -1,4 +1,8 @@
-"""Annotation layer enumeration for managing bounding detection data."""
+"""Annotation layer enumeration for managing bounding detection data.
+
+Layer: Domain.
+Context: Defines application concepts independently of UI and infrastructure implementations.
+"""
 
 from __future__ import annotations
 
@@ -20,7 +24,11 @@ class VideoDataLayer(str, Enum):
     Example:
         boxes = session.get_layer_by_name(VideoDataLayer.B)
         original = session.get_layer_by_name(VideoDataLayer.A)
-    """
+
+
+Layer: Domain.
+Context: Represents application concepts without UI or infrastructure dependencies.
+"""
     A = "a"
     B = "b"
     C = "c"

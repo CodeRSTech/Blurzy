@@ -1,4 +1,8 @@
-"""Background YOLO detection worker — thread-safe batch frame inference."""
+"""Background YOLO detection worker — thread-safe batch frame inference.
+
+Layer: Infrastructure.
+Context: Implements concrete processing and I/O behind application-facing contracts.
+"""
 
 from __future__ import annotations
 
@@ -33,10 +37,10 @@ class DetectionWorker(QThread):
 
     Attributes:
         _s_id (SessionId): Session ID for batch routing.
-        _video_path (str): Video path extracted from ``s_id``.
+        _video_path (str): Video path extracted from `s_id`.
         _detection_engine (DetectionEngine): YOLO model wrapper used for inference.
         _detections_by_frame_index (dict[int, list[DetectionResult]]): Thread-safe cache
-            protected by ``_mutex``.
+            protected by `_mutex`.
         _mutex (QMutex): Guards base detection view_state.
         _stop_requested (bool): True when shutdown is requested.
         _is_complete (bool): True after the full stream is processed.
@@ -48,18 +52,18 @@ class DetectionWorker(QThread):
             finished_processing(): Emitted when the thread exits.
             error_occurred(msg): Emitted on exception.
 
-        Thread lifecycle: ``start()`` triggers the native QThread lifecycle,
-        ``run()`` loops and emits, ``stop()`` sets ``_stop_requested``, and
-        ``finished_processing()`` is emitted when the thread exits.
+        Thread lifecycle: `start()` triggers the native QThread lifecycle,
+        `run()` loops and emits, `stop()` sets `_stop_requested`, and
+        `finished_processing()` is emitted when the thread exits.
 
-        Batch emission: accumulate detections in ``current_batch`` until it reaches 30
-        frames, emit ``batch_ready()``, then reset. Remaining frames are flushed at
+        Batch emission: accumulate detections in `current_batch` until it reaches 30
+        frames, emit `batch_ready()`, then reset. Remaining frames are flushed at
         stream end.
 
-        Thread affinity: do not access UI from ``run()``. Only emit signals.
-        Callers must use ``moveToThread(worker)`` before starting.
-        Shutdown sequence: ``worker.stop()`` -> ``worker.quit()`` -> ``worker.wait()``
-        -> ``deleteLater()``.
+        Thread affinity: do not access UI from `run()`. Only emit signals.
+        Callers must use `moveToThread(worker)` before starting.
+        Shutdown sequence: `worker.stop()` -> `worker.quit()` -> `worker.wait()`
+        -> `deleteLater()`.
 
     Example:
         worker = DetectionWorker(s_id, engine)
@@ -69,7 +73,17 @@ class DetectionWorker(QThread):
         worker.finished_processing.connect(thread.quit)
         thread.start()
         worker.start()
-    """
+
+
+Layer: Infrastructure.
+Context: Implements concrete processing or I/O behind application-facing contracts.
+
+
+    Args:
+        s_id: Identifier of the session associated with this object.
+        detection_engine: Detection engine used to process video frames.
+        parent: Optional Qt parent object.
+"""
     # Added signals to match Qt paradigms while keeping your original methods intact
     progress_updated = Signal(int, int, float)  # current_frame, total_frames, eta_msecs
     finished_processing = Signal()
@@ -81,7 +95,7 @@ class DetectionWorker(QThread):
     def __init__(
         self, s_id: SessionId, detection_engine: DetectionEngineInterface, parent: QObject | None = None
     ) -> None:
-        """Initialize worker for ``s_id`` using the given ``detection_engine``."""
+        """Initialize worker for `s_id` using the given `detection_engine`."""
         super().__init__(parent)
         self._s_id = s_id  # Store the SessionId object
         self._video_path = s_id.path  # Extract path for the reader
@@ -104,7 +118,11 @@ class DetectionWorker(QThread):
 
     @override
     def start(self, priority: QThread.Priority = QThread.Priority.InheritPriority) -> None:
-        """Start the detection thread (calls ``run()`` in background)."""
+        """Start the detection thread (calls `run()` in background).
+
+        Args:
+            priority: Qt thread scheduling priority passed to `QThread.start`.
+        """
         logger.info("Starting detection worker for {}", self._video_path)
 
         # Check both our custom flag and the native QThread view_state
@@ -120,22 +138,37 @@ class DetectionWorker(QThread):
         logger.info("Detection worker started for {}", self._video_path)
 
     def stop(self) -> None:
-        """Request thread to stop (sets ``_stop_requested`` flag)."""
+        """Request thread to stop (sets `_stop_requested` flag)."""
         self._stop_requested = True
         logger.info("Detection worker stop requested for {}", self._video_path)
 
     def isRunning(self) -> bool:
-        """Return True if thread is currently processing frames."""
+        """Return True if thread is currently processing frames.
+
+        Returns:
+            `True` while the underlying `QThread` is running.
+        """
         logger.trace("Detection worker isRunning() called")
         return super().isRunning()
 
     def is_complete(self) -> bool:
-        """Return True if stream reached end (all frames processed)."""
+        """Return True if stream reached end (all frames processed).
+
+        Returns:
+            `True` after the worker reaches the end of the video stream.
+        """
         logger.trace("Detection worker is_complete() called")
         return self._is_complete
 
     def get_detections(self, frame_index: int) -> list[DetectionResult] | None:
-        """Retrieve cached detections for ``frame_index``, or None if not yet processed."""
+        """Retrieve cached detections for `frame_index`, or None if not yet processed.
+
+        Args:
+            frame_index: Zero-based index of the frame to query.
+
+        Returns:
+            A new list of detections for the frame, or `None` if it has no cached result.
+        """
         logger.trace("Detection worker get_detections() called for frame {}", frame_index)
         with QMutexLocker(self._mutex):
             detections = self._detections_by_frame_index.get(frame_index)
@@ -144,7 +177,11 @@ class DetectionWorker(QThread):
             return list(detections)
 
     def get_all_detections(self) -> dict[int, list[DetectionResult]]:
-        """Return copy of all cached detections (thread-safe via ``_mutex``)."""
+        """Return copy of all cached detections (thread-safe via `_mutex`).
+
+        Returns:
+            New mapping of frame indices to new detection lists.
+        """
         logger.trace("Detection worker get_all_detections() called")
         with QMutexLocker(self._mutex):
             return {
@@ -159,19 +196,19 @@ class DetectionWorker(QThread):
 
         Note:
             Workflow:
-                1. Open ``VideoReader`` for ``_video_path``.
-                2. The first sequential read is index zero; loop: read frame, call ``_detection_engine.detect()``, and store the
+                1. Open `VideoReader` for `_video_path`.
+                2. The first sequential read is index zero; loop: read frame, call `_detection_engine.detect()`, and store the
                    result in the cache and current batch.
-                3. Every 30 frames, emit ``batch_ready(s_id, batch)`` and reset the batch.
+                3. Every 30 frames, emit `batch_ready(s_id, batch)` and reset the batch.
                 4. On stream end, flush any remaining batch.
-                5. On exception, emit ``error_occurred(msg)``.
-                6. Finally, close the reader and emit ``finished_processing()``.
+                5. On exception, emit `error_occurred(msg)`.
+                6. Finally, close the reader and emit `finished_processing()`.
 
             Do not access UI from this thread. Only emit signals.
-            ``progress_updated()`` is used to synchronize UI progress.
+            `progress_updated()` is used to synchronize UI progress.
 
         Raises:
-            None: Worker failures are reported through ``error_occurred``.
+            None: Worker failures are reported through `error_occurred`.
 
         Example:
             worker.start()

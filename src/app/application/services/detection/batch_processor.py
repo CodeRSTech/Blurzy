@@ -1,4 +1,8 @@
-"""Batch processing collaborator for worker-produced detection results."""
+"""Batch processing collaborator for worker-produced detection results.
+
+Layer: Application.
+Context: Coordinates domain state and infrastructure to complete application use cases.
+"""
 
 from __future__ import annotations
 
@@ -20,7 +24,11 @@ logger = get_logger("Application->DetectionBatchProcessor")
 
 @dataclass(slots=True)
 class DetectionBatchProcessReport:
-    """Batch counts; ``written_boxes`` counts filtered boxes retained in Layer A."""
+    """Batch counts; `written_boxes` counts filtered boxes retained in Layer A.
+
+Layer: Application.
+Context: Coordinates use-case behavior through domain services and application contracts.
+"""
 
     total_frames: int
     skipped_existing_frames: int
@@ -32,19 +40,28 @@ class DetectionBatchProcessor:
     """Store selected detections in Layer A and editable clones in Layer B.
 
     Working principle
-        .. code-block:: python
+        ```python
+        session = get_session(s_id)
+        for frame_index, raw_detections in batch:
+            if session.has_boxes(Layer.A, frame_index):
+                skip_frame()
+                continue
+            raw_boxes = map_detections_to_bbox(raw_detections)
+            settings = get_session_settings(session)
+            filtered_boxes = filter(raw_boxes, new_passes_filter, Layer.B, settings)
+            session.add_boxes(Layer.A, frame_index, filtered_boxes)
+            session.replace_machine_boxes(Layer.B, frame_index, filtered_boxes)
+        return DetectionBatchProcessReport(...)
+        ```
 
-            session = get_session(s_id)
-            for frame_index, raw_detections in batch:
-                if session.has_boxes(Layer.A, frame_index):
-                    skip_frame(); continue
-                raw_boxes = map_detections_to_bbox(raw_detections)
-                settings = get_session_settings(session)
-                filtered_boxes = filter(raw_boxes, new_passes_filter, Layer.B, settings)
-                session.add_boxes(Layer.A, frame_index, filtered_boxes)
-                session.replace_machine_boxes(Layer.B, frame_index, filtered_boxes)
-            return DetectionBatchProcessReport(...)
-    """
+
+Layer: Application.
+Context: Coordinates use-case behavior through domain services and application contracts.
+
+
+    Args:
+        session_repo: Interface used to retrieve a session and write its frame-indexed detections.
+"""
 
     def __init__(self, session_repo: UIApplicationInterface) -> None:
         self._app_adapter = session_repo
@@ -52,6 +69,15 @@ class DetectionBatchProcessor:
     def process_batch(
             self, s_id: SessionId, batch: dict[int, list[DetectionResult]]
     ) -> DetectionBatchProcessReport:
+        """Process batch.
+
+        Args:
+            s_id: Identifier of the session receiving the detection results.
+            batch: Detection results keyed by zero-based frame index.
+
+        Returns:
+            Counts of frames received, frames written, skipped frames, and boxes written.
+        """
         session = self._app_adapter.get_session_by_id(s_id)
         skipped_existing_frames = 0
         written_frames = 0
@@ -93,7 +119,7 @@ class DetectionBatchProcessor:
             raw_detections: Raw model output for this frame.
 
         Returns:
-            The number of filtered boxes written, or ``None`` when A already has boxes.
+            The number of filtered boxes written, or `None` when A already has boxes.
 
         Raises:
             AttributeError: If session settings are unavailable.

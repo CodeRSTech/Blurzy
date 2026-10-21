@@ -1,4 +1,8 @@
-"""Tracking layer (Layer C/D) CRUD operations and track management."""
+"""Tracking layer (Layer C/D) CRUD operations and track management.
+
+Layer: Application.
+Context: Coordinates domain state and infrastructure to complete application use cases.
+"""
 
 from __future__ import annotations
 
@@ -24,26 +28,34 @@ logger = get_logger("Application->TrackingLayerService")
 @final
 class TrackingLayerService(QObject):
     """
-    Manages user-editable tracking layer (``DataLayer.D``) operations.
+    Manages user-editable tracking layer (`DataLayer.D`) operations.
 
     Responsibilities:
-        - CRUD operations for ``DataLayer.D`` tracked objects.
+        - CRUD operations for `DataLayer.D` tracked objects.
         - Copy tracks to adjacent frames.
         - Delete tracks by ID (removes across all frames matching ID).
-        - Reset tracks (revert to ``DataLayer.C`` raw tracking output).
+        - Reset tracks (revert to `DataLayer.C` raw tracking output).
         - Track lifecycle management.
 
     Note:
-        ``DataLayer.C`` — Post-processed immutable tracking output (machine-written).
-        ``DataLayer.D`` — User-editable tracks seeded from C, allowing corrections.
+        `DataLayer.C` — Post-processed immutable tracking output (machine-written).
+        `DataLayer.D` — User-editable tracks seeded from C, allowing corrections.
         Tracks persist across frames (track ID unites multiple frame detections).
-        User edits don't affect ``DataLayer.C`` (can always revert).
+        User edits don't affect `DataLayer.C` (can always revert).
 
         Design pattern:
             New tracking output eagerly seeds Layer D; older sessions retain JIT seeding.
             User edits to Layer D are persistent (survives re-rendering).
             Layer C is immutable reference point.
-    """
+
+
+Layer: Application.
+Context: Coordinates use-case behavior through domain services and application contracts.
+
+
+    Args:
+        app: Application adapted for session lookup and tracking-layer reads and mutations.
+"""
 
     def __init__(self, app: Application) -> None:
         super().__init__(parent=app)
@@ -70,6 +82,13 @@ class TrackingLayerService(QObject):
         # ============================================================
         # Get session
         # ============================================================
+        """Delete tracks by id and direction.
+
+        Args:
+            s_id: Identifier of the session whose tracks are edited.
+            t_id: Track identifier to delete from subsequent or preceding frames.
+            direction: Whether to delete forward from or backward before the current frame.
+        """
         session = self._app_adapter.get_session_by_id(s_id)
 
         if direction == Direction.NEXT:

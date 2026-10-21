@@ -1,4 +1,8 @@
-"""Video file metadata — dimensions, FPS, frame count, and timing."""
+"""Video file metadata — dimensions, FPS, frame count, and timing.
+
+Layer: Domain.
+Context: Defines application concepts independently of UI and infrastructure implementations.
+"""
 
 from dataclasses import dataclass
 from typing import override
@@ -17,7 +21,7 @@ class VideoMetadata:
         _frame_count (int): Total number of frames in the video.
 
     Note:
-        Extracted once when a video opens, typically from ``VideoReader``.
+        Extracted once when a video opens, typically from `VideoReader`.
         Used to validate frame indices, calculate playback timing, and display
         resolution, FPS, and frame count in the UI. Immutable after creation.
 
@@ -33,7 +37,11 @@ class VideoMetadata:
         interval_ms = metadata.calculate_interval_in_mas()  # 33ms (30fps)
         max_idx = metadata.frame_count - 1  # 899
         safe_idx = min(requested_idx, max_idx)  # Clamp to valid range
-    """
+
+
+Layer: Domain.
+Context: Represents application concepts without UI or infrastructure dependencies.
+"""
     _path: str
     _width: int
     _height: int
@@ -46,24 +54,54 @@ class VideoMetadata:
 
     @property
     def path(self) -> str:
+        """Return the path of the video source.
+
+        Returns:
+            Path used to open the video.
+        """
         return self._path
 
     @property
     def width(self) -> int:
+        """Return the decoded video width in pixels.
+
+        Returns:
+            Frame width in pixels.
+        """
         return self._width
 
     @property
     def height(self) -> int:
+        """Return the decoded video height in pixels.
+
+        Returns:
+            Frame height in pixels.
+        """
         return self._height
 
     @property
     def fps(self) -> float:
+        """Return the video frame rate.
+
+        Returns:
+            Frames per second reported by the video metadata.
+        """
         return self._fps
 
     @property
     def frame_count(self) -> int:
+        """Return the number of frames reported by the video metadata.
+
+        Returns:
+            Total frame count reported by the video metadata.
+        """
         return self._frame_count
 
     def calculate_interval_in_mas(self):
+        """Calculate the approximate frame interval in milliseconds.
+
+        Returns:
+            Frame interval rounded to the nearest millisecond, with a minimum of 1.
+        """
         fps = self.fps if self.fps > 1e-6 else 30.0
         return max(1, int(round(1000.0 / fps)))

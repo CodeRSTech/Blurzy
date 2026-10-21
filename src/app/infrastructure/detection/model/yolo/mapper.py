@@ -1,4 +1,8 @@
-"""Mapper for converting Ultralytics YOLO model output to DetectionPayload."""
+"""Mapper for converting Ultralytics YOLO model output to DetectionPayload.
+
+Layer: Infrastructure.
+Context: Implements concrete processing and I/O behind application-facing contracts.
+"""
 
 from __future__ import annotations
 
@@ -10,7 +14,11 @@ logger = get_logger("Infrastructure->Detection->Models->YoloModelMapper")
 
 
 class YoloDetectionMapper:
-    """Maps raw YOLO detection results to DetectionPayload format."""
+    """Maps raw YOLO detection results to DetectionPayload format.
+
+Layer: Infrastructure.
+Context: Implements concrete processing or I/O behind application-facing contracts.
+"""
 
     @staticmethod
     def map(

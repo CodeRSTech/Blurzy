@@ -46,6 +46,10 @@ Communication
 - **Talks upward to:** [UI layer][app.ui] through returned data/results
 - **Talks downward to:** [Domain layer][app.domain] and [Infrastructure layer][app.infrastructure] through method calls and data manipulation
 - **Must not depend on:** concrete widget behavior or layout details
+
+
+Layer: Application.
+Context: Coordinates application workflows.
 """
 
 # from .editor_app_service import EditorAppService

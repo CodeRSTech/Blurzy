@@ -1,3 +1,9 @@
+"""Module for preview container; implements the Qt presentation components.
+
+Layer: Presentation.
+Context: Implements the qt presentation components at this architectural boundary.
+"""
+
 # app/ui/qt/preview/preview_container.py
 from __future__ import annotations
 
@@ -37,7 +43,15 @@ class PreviewContainer(QWidget):
      TL;DR VERSION:
      Separate aforementioned responsibilities into separate classes.
 
-    """
+
+
+Layer: Presentation.
+Context: Supports user interaction and delegates application work through presentation contracts.
+
+
+    Args:
+        parent: Optional Qt parent object.
+"""
 
     # --- Signals echoed up to the Controller ---
     bbox_drawn = Signal(int, int, int, int)
@@ -95,7 +109,11 @@ class PreviewContainer(QWidget):
     
 
     def set_image(self, image: QImage) -> None:
-        """Passes the raw video frame down to the display layer."""
+        """Passes the raw video frame down to the display layer.
+
+Args:
+    image: RGB image to display in the preview.
+"""
         self.video_layer.set_image(image)
 
     def set_box_border_width(self, width: int) -> None:
@@ -115,7 +133,11 @@ class PreviewContainer(QWidget):
         self.bbox_layer.set_box_border_width(width)
 
     def set_message(self, message: str) -> None:
-        """Passes placeholder text down to the display layer."""
+        """Passes placeholder text down to the display layer.
+
+Args:
+    message: Text to show when no frame is displayed; also cancels box editing.
+"""
         self.video_layer.set_message(message)
         self.bbox_layer.cancel_edit()
 
@@ -128,11 +150,19 @@ class PreviewContainer(QWidget):
         self.bbox_layer.set_tool_mode(mode)
 
     def set_active_bboxes(self, bboxes: dict[str, BBoxXYXYTuple]) -> None:
-        """Injects the live bounding boxes from the current data tab into the overlay."""
+        """Injects the live bounding boxes from the current data tab into the overlay.
+
+Args:
+    bboxes: Mapping from box key to `(x1, y1, x2, y2)` coordinates.
+"""
         self.bbox_layer.set_active_bboxes(bboxes)
 
     def set_selected_bbox_keys(self, box_keys: list[str]) -> None:
-        """Mirror the shared selection state into the overlay renderer."""
+        """Mirror the shared selection state into the overlay renderer.
+
+Args:
+    box_keys: Keys of boxes to render as selected.
+"""
         self.bbox_layer.set_selected_bbox_keys(box_keys)
 
     def set_tracker_actions_enabled(self, enabled: bool) -> None:
@@ -143,9 +173,11 @@ class PreviewContainer(QWidget):
         self.bbox_layer.set_tracker_actions_enabled(enabled)
 
     def cancel_active_edits(self) -> None:
+        """Cancel active edits."""
         self.bbox_layer.cancel_edit()
 
     def reset_viewport(self) -> None:
+        """Reset viewport."""
         self._current_zoom = 1.0
         self._current_pan = QPointF(0.0, 0.0)
         self.video_layer.reset_viewport()

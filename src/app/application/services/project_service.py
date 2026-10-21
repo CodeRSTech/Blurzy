@@ -1,3 +1,9 @@
+"""Captures and restores project state through the application and project store.
+
+Layer: Application.
+Context: Implements use cases by coordinating domain and infrastructure operations at this architectural boundary.
+"""
+
 from __future__ import annotations
 
 import os
@@ -39,8 +45,12 @@ class ProjectService:
 
     Layer: Application.
     Context: Captures serializable session state through the application,
-    delegates file encoding to ``ProjectStore``, and restores sessions while
+    delegates file encoding to `ProjectStore`, and restores sessions while
     reporting per-video failures.
+
+    Args:
+        app: Application facade whose session manager and video operations are
+            used to capture and restore project sessions.
     """
 
     def __init__(self, app: Application) -> None:
@@ -63,7 +73,7 @@ class ProjectService:
         """Return the mutable project-specific import/export directory settings.
 
         Returns:
-            The current ``ProjectDirectories`` value object.
+            The current `ProjectDirectories` value object.
         """
         return self._directories
 

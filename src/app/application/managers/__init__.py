@@ -2,6 +2,10 @@
 
 Managers centralise infrastructure lifecycle operations (engine creation,
 worker activation) that previously lived inline inside service methods.
+
+
+Layer: Application.
+Context: Coordinates session-scoped lifecycles for application workers and resources.
 """
 
 from app.application.managers.detection_engine import DetectionEngineManager

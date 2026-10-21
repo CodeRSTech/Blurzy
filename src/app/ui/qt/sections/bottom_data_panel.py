@@ -1,3 +1,9 @@
+"""Module for bottom data panel; implements the Qt presentation components.
+
+Layer: Presentation.
+Context: Implements the qt presentation components at this architectural boundary.
+"""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, final, cast
@@ -22,6 +28,15 @@ logger = get_logger("UI->Bottom Data Panel")
 class BottomDataPanelContainer(QWidget):
 
     # --- Signals echoed up to the Controller and MainWindow ---
+    """Represent bottom data panel container.
+
+Layer: Presentation.
+Context: Supports user interaction and delegates application work through presentation contracts.
+
+
+    Args:
+        parent: Optional Qt parent object.
+"""
     session_selected = Signal(object)  # Connected to SessionHandler.on_session_selected() method via Controller.
     tab_changed = Signal(int)       # Connected to MainWindow._on_tab_changed() method via MainWindow itself.
 
@@ -116,10 +131,20 @@ class BottomDataPanelContainer(QWidget):
 
     @property
     def active_tab_index(self) -> VideoDataLayerGroup:
+        """Return the index of the active data tab.
+
+        Returns:
+            Active detection or tracking tab identifier.
+        """
         return cast(VideoDataLayerGroup, self.data_tab.currentIndex())
 
     @property
     def active_data_table_for_current_frame(self) -> QTableWidget:
+        """Return the data table for the active layer and frame.
+
+        Returns:
+            Table for the selected detection or tracking layer; raises for an unsupported tab.
+        """
         idx = self.active_tab_index
         if idx == VideoDataLayerGroup.TRACKING:
             return self.tracker_tab_frame_data_table
@@ -142,6 +167,11 @@ class BottomDataPanelContainer(QWidget):
 
     @selected_s_id.setter
     def selected_s_id(self, s_id: SessionId) -> None:
+        """Select the session-list entry matching the supplied identifier.
+
+        Args:
+            s_id: Session identifier to select; empty identifiers are ignored.
+        """
         if not s_id:
             logger.warning("Session ID cannot be empty.")
             return
@@ -155,6 +185,11 @@ class BottomDataPanelContainer(QWidget):
 
     @property
     def get_selected_box_keys_from_active_tab(self) -> list[str]:
+        """Return unique box keys from the selected rows of the active table.
+
+        Returns:
+            Selected box keys in table-row order, or an empty list if no selection model exists.
+        """
         table = self.active_data_table_for_current_frame    # <- Fetch active data table (Detection/Tracking)
         selection_model = table.selectionModel()
         if selection_model is None:
@@ -251,6 +286,10 @@ class BottomDataPanelContainer(QWidget):
             self._sync_selection_to_active_table(selected_keys)
 
     def select_session(self, s_id: SessionId) -> None:
+        """Select session.
+
+        Args:
+            s_id: Identifier of the target session. (SessionId)."""
         for index in range(self.session_file_list.count()):
             item = self.session_file_list.item(index)
             if item.data(Qt.ItemDataRole.UserRole) == s_id:
@@ -258,7 +297,11 @@ class BottomDataPanelContainer(QWidget):
                 break
 
     def update_session_file_list(self, session_list: list[SessionFileListViewModel]) -> None:
-        """Updates the list of opened sessions (videos) onto the `session_list` ``QListWidget``."""
+        """Replace the session list contents with the supplied session entries.
+
+Args:
+    session_list: Session entries to display, including title and subtitle.
+"""
         # NEW: Using signal blocker to avoid issues
         with QSignalBlocker(self.session_file_list):
             self.session_file_list.clear()
@@ -266,6 +309,11 @@ class BottomDataPanelContainer(QWidget):
             self.add_session_file_to_list(session_file)
 
     def add_session_file_to_list(self, session_file: SessionFileListViewModel) -> None:
+        """Append one session entry with its subtitle tooltip and ID data.
+
+        Args:
+            session_file: Session details used to populate the list item.
+        """
         logger.trace(
             "Adding session file to list: {}",
             session_file.title
@@ -277,6 +325,11 @@ class BottomDataPanelContainer(QWidget):
             self.session_file_list.addItem(item)
 
     def set_tracker_data_boxes(self, boxes: ListOfBoxes) -> None:
+        """Populate the tracking table while preserving shared selection and focus.
+
+        Args:
+            boxes: Tracking boxes to display.
+        """
         data_table = self.tracker_tab_frame_data_table
         # Read selection from shared state instead of current table
         from app.ui.qt.window.window import Window
@@ -323,7 +376,11 @@ class BottomDataPanelContainer(QWidget):
         self._update_frame_box_buttons_state(prefer_shared_selection=True)
 
     def get_all_box_keys_from_active_tab(self) -> list[str]:
-        """Return all box keys visible in the active data table."""
+        """Return all box keys visible in the active data table.
+
+Returns:
+    Unique box keys in the order of their table rows.
+"""
         table = self.active_data_table_for_current_frame
         box_keys: list[str] = []
         seen_keys: set[str] = set()
@@ -367,6 +424,13 @@ class BottomDataPanelContainer(QWidget):
 
     @staticmethod
     def set_data_table_boxes(boxes: ListOfBoxes, data_table: QTableWidget, selected_box_keys: set[str]):
+        """Replace table rows with box fields and select rows matching the supplied keys.
+
+        Args:
+            boxes: Boxes whose ID, source, label, confidence, coordinates, and color are displayed.
+            data_table: Table to repopulate.
+            selected_box_keys: Box keys whose rows should remain selected.
+        """
         with QSignalBlocker(data_table):
             data_table.setRowCount(len(boxes))
 
@@ -399,4 +463,9 @@ class BottomDataPanelContainer(QWidget):
                 data_table.setCurrentCell(rows_to_select[0], 0)
 
     def update_video_related_widgets_state(self, is_enabled: bool = False) -> None:
+        """Compatibility hook for video-control state; currently performs no updates.
+
+        Args:
+            is_enabled: Requested enabled state (currently unused).
+        """
         pass

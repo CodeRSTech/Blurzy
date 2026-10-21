@@ -1,4 +1,8 @@
-"""Infrastructure-backed factory adapter for single-session export workers."""
+"""Infrastructure-backed factory adapter for single-session export workers.
+
+Layer: Application.
+Context: Adapts infrastructure implementations to application contracts.
+"""
 
 from __future__ import annotations
 
@@ -17,7 +21,11 @@ if TYPE_CHECKING:
 
 
 class ExportWorkerFactoryAdapter(ExportWorkerFactoryInterface):
-    """Create concrete ``ExportWorker`` instances behind an interface seam."""
+    """Create concrete `ExportWorker` instances behind an interface seam.
+
+Layer: Application.
+Context: Coordinates use-case behavior through domain services and application contracts.
+"""
 
     def create(
         self,
@@ -26,6 +34,17 @@ class ExportWorkerFactoryAdapter(ExportWorkerFactoryInterface):
         output_path: str,
         parent: QObject | None = None,
     ) -> ExportWorkerInterface:
+        """Create a single-session export worker behind its interface.
+
+        Args:
+            export_service: Service that renders the session export.
+            s_id: Session to export.
+            output_path: Destination video path.
+            parent: Optional Qt parent for the worker thread.
+
+        Returns:
+            Worker adapter implementing `ExportWorkerInterface`.
+        """
         from app.infrastructure.export import ExportWorker  # lazy import
 
         worker = ExportWorker(

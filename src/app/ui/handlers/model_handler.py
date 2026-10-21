@@ -1,4 +1,8 @@
-"""Detection model management handler for asynchronous model loading."""
+"""Detection model management handler for asynchronous model loading.
+
+Layer: Presentation.
+Context: Converts user actions and worker signals into application calls and UI feedback.
+"""
 
 from __future__ import annotations
 
@@ -31,16 +35,24 @@ class ModelHandler(QObject):
         - Orchestrate proper thread cleanup to prevent memory leaks.
 
     Note:
-        Uses ``ModelLoadWorker`` in separate ``QThread`` to prevent UI blocking.
+        Uses `ModelLoadWorker` in separate `QThread` to prevent UI blocking.
         Must follow strict thread teardown sequence (quit → wait → deleteLater).
-        Worker is parentless (required by ``moveToThread()`` in Qt).
+        Worker is parentless (required by `moveToThread()` in Qt).
         Cannot modify objects across thread boundaries.
 
         Signal flow:
-            Receives ``model_changed`` signal from right panel dropdown.
+            Receives `model_changed` signal from right panel dropdown.
             Emits worker finished/failed signals to update UI.
             Triggers frame re-render after successful model load.
-    """
+
+
+Layer: Presentation.
+Context: Supports user interaction and delegates application work through presentation contracts.
+
+
+    Args:
+        controller supplying model-selection actions, the active window, and worker completion callbacks.
+"""
 
     def __init__(self, controller: UIController) -> None:
         super().__init__()
@@ -66,6 +78,7 @@ class ModelHandler(QObject):
         self._controller.window.right_panel.model_changed.connect(self.on_model_changed)
 
     def close(self) -> None:
+        """Close close."""
         if self._model_load_thread is not None and self._model_load_thread.isRunning():
             self._model_load_thread.quit()
             self._model_load_thread.wait()
@@ -74,22 +87,22 @@ class ModelHandler(QObject):
     def on_model_changed(self, model_name: str) -> None:
         """
         Handle detection model change from UI dropdown.
-    
+
         Note:
-            Triggered by right panel ``model_changed`` signal with model name.
-    
+            Triggered by right panel `model_changed` signal with model name.
+
             Flow:
                 on_model_changed(model_name) [this slot]
                   ├── Validate session is selected
                   ├── Show confirmation dialog (unless dismissed via checkbox)
                   ├── Update session settings with new model name
                   └──> Start asynchronous model load worker
-    
+
             Key Behaviors:
                 Validates that a session is active (model can only load with active session).
                 Shows warning dialog unless user checks "Don't ask again".
                 Reverts dropdown if user cancels dialog.
-                Starts ``ModelLoadWorker`` in separate thread (non-blocking).
+                Starts `ModelLoadWorker` in separate thread (non-blocking).
         """
         # ====================================================================
         # 1. GET SELECTED SESSION ID
@@ -145,16 +158,16 @@ class ModelHandler(QObject):
     def on_model_load_finished(self, s_id: SessionId, model_name: str) -> None:
         """
         Handle successful completion of model load in worker thread.
-    
+
         Note:
-            Triggered by ``ModelLoadWorker.finished`` signal.
-    
+            Triggered by `ModelLoadWorker.finished` signal.
+
             Flow:
                 on_model_load_finished(s_id, model_name) [this slot]
                   ├── Clear detection boxes from UI tab
                   ├── Update status bar with model info
                   └──> Render frame (ready for new detections)
-    
+
             Downstream: None (leaf node — updates UI only).
         """
         logger.debug("Model load finished for session '{}' with model {}", s_id, model_name)
@@ -179,12 +192,12 @@ class ModelHandler(QObject):
     def on_model_load_failed(self, s_id: SessionId, model_name: str, err: str) -> None:
         """
         Handle model load failure from worker thread.
-    
+
         Note:
-            Triggered by ``ModelLoadWorker.failed`` signal.
-    
+            Triggered by `ModelLoadWorker.failed` signal.
+
             Action: Display error dialog to user and update status bar.
-    
+
             Downstream: None (leaf node — error display only).
         """
         logger.error(
@@ -208,17 +221,17 @@ class ModelHandler(QObject):
     def _cleanup(self) -> None:
         """
         Clean up model load worker and thread after load completes.
-    
+
         Note:
-            Triggered by ``ModelLoadWorker.finished`` or ``failed`` signals.
-    
-            Why this is critical: The ``ModelLoadWorker`` is parentless (required by ``moveToThread()``) so Qt cannot automatically delete it when the handler is destroyed. We must manually orchestrate a synchronized teardown following a strict sequence to prevent memory leaks and thread crashes.
-    
+            Triggered by `ModelLoadWorker.finished` or `failed` signals.
+
+            Why this is critical: The `ModelLoadWorker` is parentless (required by `moveToThread()`) so Qt cannot automatically delete it when the handler is destroyed. We must manually orchestrate a synchronized teardown following a strict sequence to prevent memory leaks and thread crashes.
+
             Mandatory Shutdown Sequence (MUST follow this order):
                 Stop the worker — signal it to finish its task.
                 Quit the thread — tell the QThread event loop to stop accepting events.
                 Wait for exit — block main thread until OS closes the thread completely.
-                Delete the worker — safely free parentless worker via ``deleteLater()``.
+                Delete the worker — safely free parentless worker via `deleteLater()`.
                 Delete the thread — schedule QThread itself for deletion.
         """
         # ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
@@ -262,7 +275,7 @@ class ModelHandler(QObject):
     def _start_model_load(self, s_id: SessionId, model_name: str, keep_manual: bool) -> None:
         """
         Create and start model load worker in separate thread (non-blocking).
-    
+
         Note:
             Flow:
                 _start_model_load(s_id, model_name, keep_manual)
@@ -271,9 +284,9 @@ class ModelHandler(QObject):
                   ├── Move worker to new QThread
                   ├── Connect signals to slots
                   └──> Start QThread (triggers ModelLoadWorker.run())
-    
+
             Critical Notes:
-                Worker MUST be parentless before ``moveToThread()`` (Qt thread affinity rule).
+                Worker MUST be parentless before `moveToThread()` (Qt thread affinity rule).
                 Parentless objects cannot have child objects and cannot span threads.
                 Signal cascade: thread.started → worker.run() → worker.finished → cleanup.
         """

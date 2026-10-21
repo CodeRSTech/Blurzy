@@ -1,4 +1,8 @@
-"""Detection operations handler for model-based object detection."""
+"""Detection operations handler for model-based object detection.
+
+Layer: Presentation.
+Context: Converts user actions and worker signals into application calls and UI feedback.
+"""
 
 from __future__ import annotations
 
@@ -36,9 +40,17 @@ class DetectionHandler(QObject):
     **Signal Flow**:
 
     - Receives signals from right panel (model selection, detect buttons, confidence changes)
-    - Delegates to ``Application`` for detection execution
+    - Delegates to `Application` for detection execution
     - Renders frames after detection completion
-    """
+
+
+Layer: Presentation.
+Context: Supports user interaction and delegates application work through presentation contracts.
+
+
+    Args:
+        controller supplying detection actions, worker signals, the active window, and frame rendering.
+"""
 
     def __init__(self, controller: UIController) -> None:
         super().__init__()
@@ -69,16 +81,16 @@ class DetectionHandler(QObject):
         Run detection on the current frame of the selected session.
 
         **Triggered By:**
-            Right panel ``detect_btn.clicked`` signal
+            Right panel `detect_btn.clicked` signal
 
         **Flow:**
 
-        ``on_detect_current_frame()`` `[this slot]`:
+        `on_detect_current_frame()` `[this slot]`:
           |
           | ├──> Set active session
           | ├──> Call App.detect_current_frame(s_id)
           | └──> Render updated frame with detection results
-              
+
         """
         s_id = self._window.selected_s_id
         if not s_id:
@@ -111,15 +123,16 @@ class DetectionHandler(QObject):
         Start background detection worker for the selected session.
 
         **Triggered By:**
-            Right panel ``detect_all_btn.clicked`` signal
+            Right panel `detect_all_btn.clicked` signal
 
         **Flow:**
-            ``on_start_background_detection()`` [this slot]::
-            
+            ```text
+            on_start_background_detection() [this slot]
               ├── Set active session
               ├── Start DetectionWorker via App (catches WorkerAlreadyRunningException, NullModelNameException)
               └──> Update UI status bar
-        
+            ```
+
 
         **Error Handling:**
             - Displays error if worker already running for this session
@@ -190,16 +203,16 @@ class DetectionHandler(QObject):
 
         **Triggered By:**
 
-        Right panel ``min_confidence_spinbox.valueChanged`` signal
+        Right panel `min_confidence_spinbox.valueChanged` signal
 
         **Flow:**
 
-        ``on_min_confidence_changed(value)`` `[this slot]`:
+        `on_min_confidence_changed(value)` `[this slot]`:
           |
-          | ├── Update session settings with new ``min_detection_confidence``
+          | ├── Update session settings with new `min_detection_confidence`
           | ├── Reapply filtering logic to Layer B (detections)
           | └──> Render frame with filtered boxes
-            
+
         """
         s_id = self._window.selected_s_id
         if not s_id:
@@ -223,18 +236,18 @@ class DetectionHandler(QObject):
 
         **Triggered By:**
 
-        ``RightControlPanel.chosen_labels_changed`` signal
+        `RightControlPanel.chosen_labels_changed` signal
 
         **Flow:**
 
-        ``on_chosen_labels_changed(raw)`` `[this slot]`:
+        `on_chosen_labels_changed(raw)` `[this slot]`:
           |
           | ├── Parse comma-separated label string
-          | ├── Update session settings with new ``chosen_labels``
+          | ├── Update session settings with new `chosen_labels`
           | ├── Reapply filtering logic to Layer B
           | ├── Render frame with filtered boxes
           | └──> Show tracking warning if tracking data exists
-            
+
         """
         s_id = self._window.selected_s_id
         if not s_id:

@@ -1,5 +1,13 @@
 # Video Transform Controls
 
+!!! info "Current status"
+
+    Video rotation is implemented: the reader applies source metadata rotation
+    and user-requested rotation from the transport controls. Further fit-to-screen,
+    zoom/pan, and view-state polish remain possible product improvements. See
+    [video infrastructure](../../reference/infrastructure/video.md) and the
+    [UI handlers](../../reference/ui/handlers.md).
+
 ## What this is
 
 Reliable controls for how the user views the video, especially when the source media is rotated or awkward to inspect.
@@ -23,4 +31,5 @@ If a phone video opens sideways, the user should be able to rotate it immediatel
 
 ## Why it matters for Blurzy
 
-The transport controls already expose rotation buttons, but the current implementation is still placeholder-only. That makes this a visible gap in the user experience.
+The existing controls address rotation, while reliable fit, zoom, and pan
+behavior still merits evaluation against common annotation workflows.

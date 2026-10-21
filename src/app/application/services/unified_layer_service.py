@@ -1,4 +1,8 @@
-"""Unified layer service facade for cross-layer operations."""
+"""Unified layer service facade for cross-layer operations.
+
+Layer: Application.
+Context: Coordinates domain state and infrastructure to complete application use cases.
+"""
 
 from __future__ import annotations
 
@@ -43,23 +47,31 @@ class UnifiedLayerService:
     - Seed editable layers eagerly for new results and lazily for older sessions.
 
     Note:
-        - Delegates to ``DetectionLayerService`` for ``DataLayer.B``/``DataLayer.A`` operations.
-        - Delegates to ``TrackingLayerService`` for ``DataLayer.D``/``DataLayer.C`` operations.
+        - Delegates to `DetectionLayerService` for `DataLayer.B`/`DataLayer.A` operations.
+        - Delegates to `TrackingLayerService` for `DataLayer.D`/`DataLayer.C` operations.
         - Does operations by itself for redundant tasks (e.g., copying boxes between frames).
         - Retains JIT seeding as a compatibility path for sessions with older data.
         - Protects immutable layers from user modifications.
 
         Layer Seeding:
 
-        - Older sessions seed missing ``DataLayer.B`` frames from ``DataLayer.A`` on-demand.
-        - Older sessions seed missing ``DataLayer.D`` frames from ``DataLayer.C`` on-demand.
+        - Older sessions seed missing `DataLayer.B` frames from `DataLayer.A` on-demand.
+        - Older sessions seed missing `DataLayer.D` frames from `DataLayer.C` on-demand.
         - User edits to B/D are persistent (don't re-seed on next access).
 
         Layer Mapping:
 
-        - `Detection` Tab ↔ ``DataLayer.B`` (editable, seeded from ``DataLayer.A``).
-        - `Tracking` Tab ↔ ``DataLayer.D`` (editable, seeded from ``DataLayer.C``).
-    """
+        - `Detection` Tab ↔ `DataLayer.B` (editable, seeded from `DataLayer.A`).
+        - `Tracking` Tab ↔ `DataLayer.D` (editable, seeded from `DataLayer.C`).
+
+
+Layer: Application.
+Context: Coordinates use-case behavior through domain services and application contracts.
+
+
+    Args:
+        app: Application providing detection/tracking layer services and session access for this facade.
+"""
 
     def __init__(self, app: Application):
         # self._app = app
@@ -105,10 +117,10 @@ class UnifiedLayerService:
 
     def apply_filters_to_layer_by_layer(self, layer_name: VideoDataLayer, s_id: SessionId) -> int:
         """
-        Refilter layer ``DataLayer.B`` or ``DataLayer.D`` based on current session settings.
+        Refilter layer `DataLayer.B` or `DataLayer.D` based on current session settings.
 
         Args:
-            layer_name (VideoDataLayer): Layer to apply filters to (``DataLayer.B`` or ``DataLayer.D``).
+            layer_name (VideoDataLayer): Layer to apply filters to (`DataLayer.B` or `DataLayer.D`).
             s_id (SessionId): Session ID.
 
         Returns:
@@ -138,12 +150,12 @@ class UnifiedLayerService:
     ) -> None:
         """
         Copy boxes to the adjacent frame (next or previous).
-    
+
         Args:
             s_id (SessionId): Session ID.
-            layer_name (VideoDataLayer): Layer to copy from (``DataLayer.B`` or ``DataLayer.D``).
+            layer_name (VideoDataLayer): Layer to copy from (`DataLayer.B` or `DataLayer.D`).
             item_keys (Iterable[str]): Iterable of detection keys to copy.
-            direction (Direction): ``Direction.NEXT`` or ``Direction.PREV``.
+            direction (Direction): `Direction.NEXT` or `Direction.PREV`.
 
         Raises:
             ValueError: If the layer is immutable (A or C) or direction is unsupported.
@@ -212,11 +224,11 @@ class UnifiedLayerService:
     ) -> None:
         """
         Delete boxes from the current frame in the active tab (Detection or Tracking).
-    
+
         Args:
             s_id (SessionId): Session ID.
             keys (list[str]): List of detection keys to delete.
-            tab (VideoDataLayerGroup): ``DataBox.DETECTION`` or ``DataBox.TRACKING``.
+            tab (VideoDataLayerGroup): `DataBox.DETECTION` or `DataBox.TRACKING`.
 
         """
         if tab == VideoDataLayerGroup.TRACKING:
@@ -240,7 +252,16 @@ class UnifiedLayerService:
             tab: VideoDataLayerGroup,
             boxes: Iterable[tuple[str, BBoxXYXYTuple, str]],
     ) -> list[str]:
-        """Create clipboard boxes as manual boxes in Detection or Tracking editable layers."""
+        """Create clipboard boxes as manual boxes in Detection or Tracking editable layers.
+
+        Args:
+            s_id: Identifier of the session receiving the boxes.
+            tab: Detection or tracking tab, selecting editable layer B or D.
+            boxes: Tuples of `(label, coordinates, color_hex)` for new boxes.
+
+        Returns:
+            Keys assigned to the newly created manual boxes.
+        """
         layer_name = VideoDataLayer.B if tab == VideoDataLayerGroup.DETECTION else VideoDataLayer.D
         session = self._app_adapter.get_session_by_id(s_id)
         frame_index = session.state.playback.current_frame_index
@@ -273,7 +294,14 @@ class UnifiedLayerService:
             frame_index: int,
             boxes: list[BBoxViewModel],
     ) -> None:
-        """Replace one editable frame with cloned history snapshot boxes."""
+        """Replace one editable frame with cloned history snapshot boxes.
+
+        Args:
+            s_id: Identifier of the session whose frame is being restored.
+            tab: Detection or tracking tab selecting editable layer B or D.
+            frame_index: Zero-based frame index to replace.
+            boxes: Snapshot boxes to clone into that frame.
+        """
         layer_name = VideoDataLayer.B if tab == VideoDataLayerGroup.DETECTION else VideoDataLayer.D
         session = self._app_adapter.get_session_by_id(s_id)
         session.data.overwrite_layer_at_index_with_boxes(layer_name, frame_index, [box.clone() for box in boxes])
@@ -282,7 +310,16 @@ class UnifiedLayerService:
     def get_tab_frame_boxes_at_frame_index(
             self, s_id: SessionId, tab: VideoDataLayerGroup, frame_index: int
     ) -> list[BBoxViewModel]:
-        """Return cloned editable-layer boxes without changing playback state."""
+        """Return cloned editable-layer boxes without changing playback state.
+
+        Args:
+            s_id: Identifier of the session to query.
+            tab: Detection or tracking tab selecting editable layer B or D.
+            frame_index: Zero-based frame index to query.
+
+        Returns:
+            Clones of the boxes stored in the selected editable layer and frame.
+        """
         layer_name = VideoDataLayer.B if tab == VideoDataLayerGroup.DETECTION else VideoDataLayer.D
         session = self._app_adapter.get_session_by_id(s_id)
         return [
@@ -291,6 +328,22 @@ class UnifiedLayerService:
         ]
 
     def get_tab_frame_boxes_for_session_id(self, s_id: SessionId, tab: VideoDataLayerGroup) -> FrameBoxesViewModel:
+        """Return boxes for the session's current frame in the selected tab.
+
+        Args:
+            s_id: Identifier of the session to query.
+            tab: Detection or tracking tab to read.
+
+        Returns:
+            View model containing boxes from editable layer B or D.
+
+        Raises:
+            UnsupportedTabException: If `tab` is not a supported data tab.
+
+        Note:
+            When an editable-layer frame has not yet been initialized, it may
+            be seeded from its corresponding source layer (A or C).
+        """
         session = self._app_adapter.get_session_by_id(s_id)
         frame_index = session.state.playback.current_frame_index
 
@@ -314,6 +367,19 @@ class UnifiedLayerService:
     def get_layer_box_by_key(
             self, s_id: SessionId, layer_name: VideoDataLayer, key: str
     ) -> BBoxViewModel | None:
+        """Find a box by key in the specified layer at the current frame.
+
+        Args:
+            s_id: Identifier of the session to query.
+            layer_name: Editable layer B or D to search.
+            key: Unique key of the box to find.
+
+        Returns:
+            Matching box view model, or `None` when no box has that key.
+
+        Raises:
+            UnsupportedLayerOperationException: If `layer_name` is immutable or unsupported.
+        """
         if layer_name == VideoDataLayer.B or layer_name == VideoDataLayer.D:
             # ============================================================
             # Get session
@@ -328,6 +394,16 @@ class UnifiedLayerService:
             raise UnsupportedLayerOperationException("get_layer_box_by_key", layer_name)
 
     def reset_all_for_layer(self, s_id: SessionId, layer_name: VideoDataLayer) -> None:
+        """Rebuild an editable layer from its source layer across all frames.
+
+        Args:
+            s_id: Identifier of the session to update.
+            layer_name: Editable layer B or D to rebuild from A or C.
+
+        Raises:
+            ImmutableLayerOperationException: If the requested layer is immutable.
+            UnsupportedLayerOperationException: If the layer is unsupported.
+        """
         if layer_name == VideoDataLayer.A or layer_name == VideoDataLayer.C:
             raise ImmutableLayerOperationException("reset_all_for_layer", layer_name)
         elif layer_name == VideoDataLayer.B or layer_name == VideoDataLayer.D:
@@ -356,6 +432,17 @@ class UnifiedLayerService:
             raise UnsupportedLayerOperationException("reset_all_for_layer", layer_name)
 
     def reset_frame_for_layer(self, s_id: SessionId, layer_name: VideoDataLayer, frame_index: int) -> None:
+        """Rebuild one editable-layer frame from its corresponding source frame.
+
+        Args:
+            s_id: Identifier of the session to update.
+            layer_name: Editable layer B or D to rebuild.
+            frame_index: Zero-based frame index to reset.
+
+        Raises:
+            ImmutableLayerOperationException: If the requested layer is immutable.
+            UnsupportedLayerOperationException: If the layer is unsupported.
+        """
         if layer_name == VideoDataLayer.A or layer_name == VideoDataLayer.C:
             raise ImmutableLayerOperationException("reset_frame_for_layer", layer_name)
         elif layer_name == VideoDataLayer.B or layer_name == VideoDataLayer.D:
@@ -398,6 +485,18 @@ class UnifiedLayerService:
         # ============================================================
         # Get session
         # ============================================================
+        """Translate selected boxes on the current frame by a pixel offset.
+
+        Args:
+            s_id: Identifier of the session to update.
+            layer_name: Editable layer containing the boxes.
+            item_keys: Keys of the boxes to move.
+            dx: Horizontal translation in pixels.
+            dy: Vertical translation in pixels.
+
+        Returns:
+            Number of boxes moved.
+        """
         session = self._app_adapter.get_session_by_id(s_id)
 
         keys = str_iterable_as_set_without_null_values(item_keys)
@@ -419,6 +518,18 @@ class UnifiedLayerService:
                                       label: str,
                                       bbox_xyxy: BBoxXYXYTuple,
                                       ) -> None:
+        """Update a box's label and coordinates on the current frame.
+
+        Args:
+            s_id: Identifier of the session containing the box.
+            layer_name: Layer containing the box.
+            item_key: Unique key identifying the box.
+            label: Replacement classification label.
+            bbox_xyxy: Replacement `(x1, y1, x2, y2)` coordinates.
+
+        Raises:
+            UnknownFrameItemException: If no box with `item_key` exists on the current frame.
+        """
         session = self._app_adapter.get_session_by_id(s_id)
 
         frame_index = session.state.playback.current_frame_index

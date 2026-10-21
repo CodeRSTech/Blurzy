@@ -1,4 +1,8 @@
-"""Single-frame detection execution collaborator."""
+"""Single-frame detection execution collaborator.
+
+Layer: Application.
+Context: Coordinates domain state and infrastructure to complete application use cases.
+"""
 
 from __future__ import annotations
 
@@ -21,7 +25,16 @@ logger = get_logger("Application->DetectionExecutionService")
 
 
 class DetectionExecutionService:
-    """Run current-frame detection while delegating engine lifecycle to the manager."""
+    """Run current-frame detection while delegating engine lifecycle to the manager.
+
+Layer: Application.
+Context: Coordinates use-case behavior through domain services and application contracts.
+
+
+    Args:
+        session_repo: Interface used to retrieve the session and its current frame for inference.
+        engine_manager: Manager responsible for detection-engine lifecycle.
+"""
 
     def __init__(
             self, session_repo: UIApplicationInterface, engine_manager: DetectionEngineManager

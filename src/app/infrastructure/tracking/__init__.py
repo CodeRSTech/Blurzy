@@ -1,4 +1,8 @@
-"""Multi-object tracking infrastructure — tracker strategies and background worker."""
+"""Multi-object tracking infrastructure — tracker strategies and background worker.
+
+Layer: Infrastructure.
+Context: Implements concrete processing and I/O behind application-facing contracts.
+"""
 
 from app.infrastructure.tracking.bytetrack_strategy import ByteTrackStrategy
 from app.infrastructure.tracking.botsort_strategy import BotSortStrategy

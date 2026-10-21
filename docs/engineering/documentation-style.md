@@ -9,10 +9,12 @@
     `docs/reference/`; see [Reference authoring](../development.md#reference-authoring).
     The [Reference documentation](reference-documentation.md) article explains
     generation, member selection, fenced examples, and contributor guidelines.
-    The renderer uses Google-style sections and Markdown, so prefer single
-    backticks for new inline-code text (rather than reStructuredText double
-    backticks). Existing docstrings can be modernized incrementally; automation
-    does not verify their behavioral claims.
+    The renderer uses Google-style sections and MkDocs Markdown. Public API
+    docstrings should explain architectural ownership, behavior, side effects,
+    and contracts rather than merely repeat signatures. Use single backticks
+    for inline code and mkdocstrings cross-reference syntax for linked symbols.
+    Existing docstrings can be modernized incrementally; automation does not
+    verify their behavioral claims.
 
 ---
 
@@ -62,10 +64,15 @@ UI handlers must:
 
 ### 4. Docstring Standard
 
-- Keep simple methods to one-line docstrings.
-- Use multi-line docstrings for lifecycle/flow-heavy methods.
+- Give every public module, class, method, and function a useful docstring.
+- Use imperative summary lines; expand behavioral details and Google-style
+  sections (`Args:`, `Returns:`, `Raises:`, `Attributes:`) when relevant.
+- Keep a docstring to one line only when the behavior and contract are truly
+  self-evident.
 - Document trigger/source signal for slots and emitted side effects where useful.
 - Prefer describing **why** and lifecycle guarantees over repeating obvious code.
+- Keep Python docstrings compatible with static Griffe parsing; documentation
+  builds must not need to import Qt or optional model providers.
 
 ---
 
@@ -73,7 +80,10 @@ UI handlers must:
 
 !!! abstract "Rule: Simple, Direct Purpose"
 
-    Every method should at least have a **single-line docstring** that gives a concise description of its what it does.
+    Every public method needs a useful docstring. A concise summary is sufficient
+    only when the method's behavior, side effects, and contract are obvious.
+    Methods with parameters, meaningful return values, state changes, locking,
+    or failure modes should document those details in Google-style sections.
 
 #### Format
 ```python
@@ -100,11 +110,11 @@ Use **formatting directives** for emphasis:
     !!! success " **GOOD:**"
         ```python
         def get_layer_by_name(self, layer_name: DataLayer) -> BoxesByFrameIndex:
-            """Fetch all bounding boxes grouped by frame index for the specified ``layer_name``."""
+            """Fetch bounding boxes grouped by frame index for the specified `layer_name`."""
             return self.data.get_all_boxes_for_layer_as_dict_of_lists(layer_name)
         
         def has_boxes_for_layer(self, layer_name: DataLayer) -> bool:
-            """Check if ``layer_name`` contains **any** bounding boxes."""
+            """Check whether `layer_name` contains any bounding boxes."""
             return self.data.has_boxes_for_layer(layer_name)
     
     ```
@@ -328,14 +338,14 @@ def complex_method(self, param1: str, param2: int) -> dict:
     - Unusual return values
     
     Args:
-        ``param1``: Description with ``backticks`` for variables.
-        ``param2``: Another parameter description.
+        param1: Description of the input value.
+        param2: Another parameter description.
     
     Returns:
-        A ``dict`` mapping frame indices to detection results.
+        A dictionary mapping frame indices to detection results.
     
     Raises:
-        ``ValueError``: If ``param2`` is negative.
+        ValueError: If `param2` is negative.
     """
 ```
 
@@ -713,7 +723,7 @@ When documenting signals and slots, verify:
 Every `.py` file should have this structure, with careful attention to `__init__()` methods:
 
 ```python
-"""One-line module docstring explaining the file's purpose."""
+"""Summarize purpose, architectural layer, responsibilities, and related APIs."""
 
 from __future__ import annotations
 
@@ -837,7 +847,7 @@ def __init__(self, s_id: SessionId) -> None:
 
 When writing or reviewing code, verify:
 
-- [ ] **Every public method has a one-liner docstring**
+- [ ] **Every public method has an accurate docstring with behavioral detail**
 - [ ] **Variables in docstrings use backticks:** `` `variable` ``
 - [ ] **Complex methods use section blocks** with `# ====` dividers
 - [ ] **Section blocks are numbered and ALL CAPS:** `# 1. STEP NAME`
@@ -845,8 +855,8 @@ When writing or reviewing code, verify:
 - [ ] **Critical warnings use IMPORTANT blocks** (for thread safety, memory management, etc.)
 - [ ] **Non-obvious logic has a "why" comment**, not just a "what" comment
 - [ ] **Classes have docstrings** describing responsibilities
-- [ ] **Method docstrings are concise** (fit in one line when possible)
-- [ ] **Multi-line docstrings follow Google Style** (Args, Returns, Raises)
+- [ ] **Docstrings use an imperative summary and Google-style sections where useful**
+- [ ] **Public class docs describe responsibilities and public attributes**
 - [ ] **All signals have docstrings** (payload, emission point, downstream handlers)
 - [ ] **Top-level slots include signal cascade diagram**
 - [ ] **Mid-level slots document origin and downstream signals**
@@ -872,10 +882,10 @@ When writing or reviewing code, verify:
 	!!! quote "Ask Copilot"
 	
 	    ```
-	    Generate one-liner docstrings for these methods using the Blurzy style guide:
-	    - Format variables in backticks
-	    - Use bold/italic for emphasis
-	    - Keep it to one line
+	    Generate useful docstrings for these methods using the Blurzy style guide:
+	    - Explain behavior, side effects, and guarantees
+	    - Use Google-style Args, Returns, Raises, and Attributes sections where useful
+	    - Use MkDocs Markdown and single backticks for inline code
 	    
 	    Here are the methods: [paste method signatures]
 	    ```

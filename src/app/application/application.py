@@ -1,3 +1,9 @@
+"""Module for application; coordinates application workflows.
+
+Layer: Application.
+Context: Coordinates application workflows at this architectural boundary.
+"""
+
 from __future__ import annotations
 
 from typing import final, override, TYPE_CHECKING
@@ -27,14 +33,18 @@ class Application(QObject):
         - Owns all service instances (Detection, Tracking, Export, Session, Layer management).
         - Delegates all calls to the appropriate service without adding business logic.
         - Provides a single entry point for the UI Controller to interact with the application.
-        - Manages the ``SessionManager`` for session lifecycle and view_state tracking.
+        - Manages the `SessionManager` for session lifecycle and view_state tracking.
 
     Note:
         Design pattern:
             This class acts as a Façade — every method is a direct pass-through to a service.
             No logic should live here; all decisions belong in services.
             The UI Controller imports and calls only this class (not individual services).
-    """
+
+
+Layer: Application.
+Context: Coordinates use-case behavior through domain services and application contracts.
+"""
 
     def __init__(self) -> None:
         """Initialize the application with all service instances."""
@@ -174,7 +184,8 @@ class Application(QObject):
             file_path (str): The file path of the project to load.
 
         Returns:
-            ProjectLoadReport: A report detailing the results and status of the load operation.
+            `ProjectLoadReport` with the restored-session count and video paths
+            skipped because their sessions could not be restored.
         """
         return self.project_svc.load_project(file_path)
 
@@ -220,10 +231,10 @@ class Application(QObject):
         """Retrieve the SessionSettingsViewModel for the specified session.
 
         Note:
-            ``ProcessingSettings`` and ``SessionSettingsViewModel`` intentionally differ:
-                - ``ProcessingSettings.chosen_labels`` -> ``list[str]``
-                - ``SessionSettingsViewModel.chosen_labels`` -> ``str`` (comma-separated, UI-ready)
-            These are converted via ``ProcessingSettings.as_view_model()``.
+            `ProcessingSettings` and `SessionSettingsViewModel` intentionally differ:
+                - `ProcessingSettings.chosen_labels` -> `list[str]`
+                - `SessionSettingsViewModel.chosen_labels` -> `str` (comma-separated, UI-ready)
+            These are converted via `ProcessingSettings.as_view_model()`.
 
         Args:
             s_id (SessionId): The target session identifier.
@@ -251,7 +262,7 @@ class Application(QObject):
     def get_session_by_id(self, s_id: SessionId) -> Session:
         """Fetch the Session instance identified by the given session ID.
 
-        Delegates to the ``SessionManager`` to retrieve the session. It is recommended
+        Delegates to the `SessionManager` to retrieve the session. It is recommended
         to use this method rather than calling the SessionManager directly.
 
         Args:
@@ -360,7 +371,7 @@ class Application(QObject):
     def apply_filters_to_layer(self, layer_name: VideoDataLayer, s_id: SessionId) -> None:
         """Apply confidence and size filters to the specified layer.
 
-        Operates on ``DataLayer.B`` (reviewed detections) or ``DataLayer.D`` (reviewed tracks)
+        Operates on `DataLayer.B` (reviewed detections) or `DataLayer.D` (reviewed tracks)
         for the given session ID.
 
         Args:
@@ -800,8 +811,8 @@ class Application(QObject):
     ) -> int:
         """Import bounding-box data from a file into a specified layer.
 
-        Dispatches to :class:`DetectionImportService` for layers A/B and
-        :class:`TrackingImportService` for layers C/D.
+        Dispatches to `DetectionImportService` for layers A/B and
+        `TrackingImportService` for layers C/D.
 
         Note:
             Accepts string layer names to handle Qt signal/slot type coercion.
@@ -831,8 +842,8 @@ class Application(QObject):
     ) -> int:
         """Export bounding-box data from a specified layer to a file.
 
-        Dispatches to :class:`DetectionExportService` for layers A/B and
-        :class:`TrackingExportService` for layers C/D.
+        Dispatches to `DetectionExportService` for layers A/B and
+        `TrackingExportService` for layers C/D.
 
         Note:
             Accepts string layer names to handle Qt signal/slot type coercion.

@@ -2,10 +2,14 @@
 
 Source: `src/app/infrastructure/session/`
 
-The runtime `Session`, `SessionDataStore`, and frame-access helpers hold
-per-video collaborators and annotation layers. The store protects mutable box
-data and supports project serialization.
+`Session` is the runtime container around a video, domain `SessionState`, and
+the four-layer `SessionDataStore`. `SessionInitializer` attaches the reader,
+decode worker, and state when a video opens; closing a session stops its
+detection, tracking, and decode workers and closes the reader. The data store
+uses a reentrant lock for its layer operations and offers snapshots and
+machine-box replacement that retains manual annotations. `SessionFrameAccessor`
+provides frame retrieval through the session's reader/buffer boundary.
 
-**Expand this stub with:** thread-safety guarantees, layer ownership, and
-session shutdown.
-
+Project payload conversion is supported by the store, but file persistence is
+owned by [ProjectStore](project.md). See [Session domain](../domain/session.md),
+[Application managers](../application/managers.md), and [video infrastructure](video.md).

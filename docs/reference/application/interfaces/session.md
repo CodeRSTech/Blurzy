@@ -2,8 +2,13 @@
 
 Source: `src/app/application/interfaces/session/`
 
-Session persistence contracts abstract storage of session data from services
-that coordinate session workflows.
+`SessionDataStoreInterface` abstracts CRUD and bulk operations on a session's
+four annotation layers. It covers frame-level and whole-layer reads/writes,
+filtering, clearing, and replacing machine-generated boxes while retaining
+manual boxes. It is a live session-data contract, not the project-file
+persistence API.
 
-**Expand this stub with:** persisted data boundaries and store implementations.
-
+The concrete store and its ownership are documented in
+[session infrastructure](../../infrastructure/session.md); project JSON is
+handled separately by [project persistence](../../infrastructure/project.md).
+Services access layer data through the active session.

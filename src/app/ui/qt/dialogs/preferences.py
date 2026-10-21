@@ -1,3 +1,9 @@
+"""Module for preferences; implements the Qt presentation components.
+
+Layer: Presentation.
+Context: Implements the qt presentation components at this architectural boundary.
+"""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, final, cast
@@ -32,7 +38,11 @@ if TYPE_CHECKING:
 
 @final
 class PreferencesDialog(QDialog):
-    """Collect persistent app preferences and default per-session settings."""
+    """Collect persistent app preferences and default per-session settings.
+
+Layer: Presentation.
+Context: Supports user interaction and delegates application work through presentation contracts.
+"""
 
     def __init__(
         self,

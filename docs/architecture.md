@@ -192,13 +192,22 @@ behavior when it cannot open a local video path.
 
 When enabled, offline post-processing matches compatible tracklets in forward
 and backward temporal directions, fills accepted gaps with Gaussian Smoothed
-Interpolation (GSI), and applies confidence-decayed coast tails. GSI uses a
-Gaussian temporal weight, so interpolated boxes are influenced most strongly
-by nearby observations:
+Interpolation (GSI), and applies confidence-decayed coast tails. For a missing
+frame $t$, GSI combines the left and right endpoint box predictions, with each
+weighted by its temporal distance from the corresponding observation:
 
 $$
-w(\Delta t) = \exp\left(-\frac{(\Delta t)^2}{2\sigma^2}\right)
+w_L = \exp\left(-\frac{d_L^2}{2\sigma^2}\right), \qquad
+w_R = \exp\left(-\frac{d_R^2}{2\sigma^2}\right)
 $$
+
+$$
+B_t = \frac{w_L \widehat{B}_{L,t} + w_R \widehat{B}_{R,t}}{w_L + w_R}
+$$
+
+Here, $\widehat{B}_{L,t}$ and $\widehat{B}_{R,t}$ are endpoint box
+coordinates projected to frame $t$, and $\sigma$ is the configured smoothness
+length. Nearby observations therefore exert more influence on the interpolation.
 
 Privacy Shield (Paranoid Mode) can resist sudden box shrinkage, backfill a
 configurable interval before the first detection, hold coverage after the last
@@ -209,8 +218,6 @@ Preview-only box outlines, border width, mask display, and live blur are
 separate from Render settings, which govern blur in exported video. Annotation
 handlers update the selected editable layer and request the preview/table to
 render again.
-Annotation handlers update the selected layer and request the preview/table
-to render again.
 
 For blurred-video export, the export service reads the selected session and
 uses Layer D when it contains boxes, otherwise Layer C. The export worker runs

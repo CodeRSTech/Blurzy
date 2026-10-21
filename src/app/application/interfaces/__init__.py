@@ -1,8 +1,12 @@
 """Application-layer interface contracts (Phase 1 abstraction seams).
 
-These ``Protocol``-based interfaces decouple services and managers from
+These `Protocol`-based interfaces decouple services and managers from
 concrete infrastructure implementations.  Concrete classes satisfy them
-via structural subtyping — no explicit ``implements`` declaration is required.
+via structural subtyping — no explicit `implements` declaration is required.
+
+
+Layer: Application.
+Context: Defines protocol boundaries consumed by application orchestration.
 """
 
 from app.application.interfaces.detection.engine_factory_interface import DetectionEngineFactoryInterface

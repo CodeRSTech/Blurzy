@@ -1,4 +1,8 @@
-"""Factory for loading TorchVision detection model with pretrained weights."""
+"""Factory for loading TorchVision detection model with pretrained weights.
+
+Layer: Infrastructure.
+Context: Implements concrete processing and I/O behind application-facing contracts.
+"""
 
 from __future__ import annotations
 
@@ -14,7 +18,11 @@ if TYPE_CHECKING:
 
 
 class MTCNNModelLoaderFactory:
-    """Factory for loading MTCNN detection model."""
+    """Factory for loading MTCNN detection model.
+
+Layer: Infrastructure.
+Context: Implements concrete processing or I/O behind application-facing contracts.
+"""
 
     @staticmethod
     def create() -> MTCNN:

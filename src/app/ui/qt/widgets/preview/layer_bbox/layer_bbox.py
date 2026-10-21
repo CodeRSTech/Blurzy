@@ -3,9 +3,13 @@
 Design notes for maintainers:
 - This class intentionally keeps Qt event handlers and signal emission.
 - Heavy logic is delegated to concern modules under the same package.
-- ``context_action_triggered`` emits ``str`` payloads by design for Qt interoperability.
+- `context_action_triggered` emits `str` payloads by design for Qt interoperability.
 - Placeholder selection menu actions are intentionally routed to a no-op action until
   full multi-selection behavior is implemented.
+
+
+Layer: Presentation.
+Context: Contains concrete Qt presentation components and supporting utilities.
 """
 
 # app/ui/qt/preview/layer_bbox.py
@@ -81,11 +85,19 @@ class AnnotationOverlayWidget(QWidget):
      handling zoom offsets, aspect ratio letterboxing calculations).
 
     Current split:
-     - Event-time state transition helpers live in ``interaction.py``.
-     - Context menu assembly/mapping lives in ``menu.py``.
-     - Coordinate conversion and bbox lookup live in ``geometry.py``.
-     - Paint primitives live in ``rendering.py``.
-    """
+     - Event-time state transition helpers live in `interaction.py`.
+     - Context menu assembly/mapping lives in `menu.py`.
+     - Coordinate conversion and bbox lookup live in `geometry.py`.
+     - Paint primitives live in `rendering.py`.
+
+
+Layer: Presentation.
+Context: Supports user interaction and delegates application work through presentation contracts.
+
+
+    Args:
+        parent: Optional Qt parent object.
+"""
 
     # --- Signals ---
     bbox_drawn = Signal(int, int, int, int)  # x1, y1, x2, y2
@@ -146,7 +158,14 @@ class AnnotationOverlayWidget(QWidget):
         self.update()
 
     def set_pixmap_rect(self, rect: QRect) -> None:
-        """Called by the App when the underlying video resizes."""
+        """Update the displayed image rectangle used for coordinate conversion.
+
+        Args:
+            rect: New image rectangle in widget coordinates.
+
+        Side Effects:
+            Repositions an active edit rectangle to preserve its image-space coordinates.
+        """
         if self._state.has_valid_rect and self._image_size is not None and not self._pixmap_rect.isNull():
             old_rect = self._state.rect.normalized()
             image_coords = widget_rect_to_image_space(old_rect, self._pixmap_rect, self._image_size)
@@ -156,11 +175,22 @@ class AnnotationOverlayWidget(QWidget):
         self.update()
 
     def set_image_size(self, size: QSize) -> None:
-        """Called by the App to supply raw video dimensions for coordinate math."""
+        """Called by the App to supply raw video dimensions for coordinate math.
+
+        Args:
+            size: Original video frame size in pixels.
+        """
         self._image_size = size
 
     def set_active_bboxes(self, bboxes: dict[str, BBoxXYXYTuple]) -> None:
-        """Update the set of active bounding boxes and cancel editing if the current bbox was removed."""
+        """Update the set of active bounding boxes and cancel editing if the current bbox was removed.
+
+        Args:
+            bboxes: Mapping from box keys to image-space `(x1, y1, x2, y2)` coordinates.
+
+        Side Effects:
+            Keeps only selected keys still present and cancels editing if the edited box disappeared.
+        """
         self._active_bboxes = bboxes
         self._selected_bbox_keys.intersection_update(bboxes)
         if self._editing_bbox_id and self._editing_bbox_id not in bboxes:
@@ -168,7 +198,14 @@ class AnnotationOverlayWidget(QWidget):
         self.update()
 
     def set_selected_bbox_keys(self, box_keys: list[str]) -> None:
-        """Render shared selection state without taking ownership of that state."""
+        """Render shared selection state without taking ownership of that state.
+
+        Args:
+            box_keys: Box keys selected by the shared application selection state.
+
+        Side Effects:
+            Drops keys absent from the active boxes and clears stale edit state.
+        """
         self._selected_bbox_keys = set(box_keys).intersection(self._active_bboxes)
         if self._editing_bbox_id and self._editing_bbox_id not in self._selected_bbox_keys:
             logger.debug("Clearing stale edit handles for deselected bbox {}.", self._editing_bbox_id)
@@ -184,7 +221,7 @@ class AnnotationOverlayWidget(QWidget):
         Args:
             width: Outline width in pixels, from 1 to 10.
         Raises:
-            ValueError: If ``width`` is outside the inclusive range 1..10.
+            ValueError: If `width` is outside the inclusive range 1..10.
 
         Note:
             The right-panel spin box uses the same range; validation also protects
@@ -200,7 +237,14 @@ class AnnotationOverlayWidget(QWidget):
             self.update()
 
     def set_tool_mode(self, mode: ToolMode) -> None:
-        """Change the active tool mode and update the cursor accordingly."""
+        """Change the active tool mode and update the cursor accordingly.
+
+        Args:
+            mode: Tool mode to activate.
+
+        Side Effects:
+            Cancels the current edit and updates the cursor for add or edit mode.
+        """
         self._tool_mode = mode
         self.cancel_edit()
 
@@ -210,25 +254,42 @@ class AnnotationOverlayWidget(QWidget):
             self.setCursor(QCursor(Qt.CursorShape.ArrowCursor))
 
     def set_zoom(self, zoom: float) -> None:
-        """Update the zoom level for coordinate transforms."""
+        """Update the zoom level for coordinate transforms.
+
+        Args:
+            zoom: Current zoom factor supplied by the preview container.
+        """
         self._zoom = zoom
         self.update()
 
     def set_pan(self, pan_x: float, pan_y: float) -> None:
-        """Update the pan offset for coordinate transforms."""
+        """Update the pan offset for coordinate transforms.
+
+        Args:
+            pan_x: Horizontal viewport offset.
+            pan_y: Vertical viewport offset.
+        """
         self._pan_x = pan_x
         self._pan_y = pan_y
         self.update()
 
     def set_tracker_actions_enabled(self, enabled: bool) -> None:
-        """Enables tracker-specific context menu options like 'Delete Next Occurrences'."""
+        """Enables tracker-specific context menu options like 'Delete Next Occurrences'.
+
+        Args:
+            enabled: Whether tracker-only context actions should be included in menus.
+        """
         self._tracker_actions_enabled = enabled
 
     # --- Mouse Event Handlers ---
 
     @override
     def contextMenuEvent(self, event: QContextMenuEvent) -> None:
-        """Constructs and routes right-click actions dynamically."""
+        """Constructs and routes right-click actions dynamically.
+
+        Args:
+            event: Context-menu event providing local and global pointer positions.
+        """
         if self._tool_mode != ToolMode.EDIT:
             return
 
@@ -248,7 +309,7 @@ class AnnotationOverlayWidget(QWidget):
         self._emit_context_menu_action(chosen, action_names, hit_box_id)
 
     def _emit_context_menu_action(self, chosen: QAction | None, action_names: dict[QAction, str], hit_box_id: str | None) -> None:
-        """Emit the selected context action as a ``str`` payload for downstream handlers."""
+        """Emit the selected context action as a `str` payload for downstream handlers."""
         action_name = resolve_selected_action(chosen, action_names)
         if action_name is None:
             return
@@ -256,7 +317,11 @@ class AnnotationOverlayWidget(QWidget):
 
     @override
     def mouseMoveEvent(self, event: QMouseEvent) -> None:
-        """Handle mouse movement and delegate drag/pan calculations to ``interaction.py``."""
+        """Handle mouse movement and delegate drag/pan calculations to `interaction.py`.
+
+Args:
+    event: Qt event being handled.
+"""
         pos = event.position().toPoint()
 
         # 2. Process Panning continuously while mouse moves!
@@ -289,7 +354,11 @@ class AnnotationOverlayWidget(QWidget):
 
     @override
     def mousePressEvent(self, event: QMouseEvent) -> None:
-        """Handle mouse press to start drawing, panning, or selecting bounding boxes."""
+        """Handle mouse press to start drawing, panning, or selecting bounding boxes.
+
+Args:
+    event: Qt event being handled.
+"""
         # 1. Catch Alt + Left Click to START panning
         pos = event.position().toPoint()
         panning_started, pan_origin = try_start_panning(
@@ -388,7 +457,11 @@ class AnnotationOverlayWidget(QWidget):
 
     @override
     def mouseReleaseEvent(self, event: QMouseEvent) -> None:
-        """Finalize draw/edit outcomes and emit overlay signals when release completes."""
+        """Finalize draw/edit outcomes and emit overlay signals when release completes.
+
+Args:
+    event: Qt event being handled.
+"""
         # 3. Stop panning safely without clearing the active selection state.
         if stop_panning(self._is_panning):
             self._is_panning = False
@@ -462,7 +535,11 @@ class AnnotationOverlayWidget(QWidget):
 
     @override
     def paintEvent(self, event: QPaintEvent) -> None:
-        """Render the current bounding detection with selection handles and center point."""
+        """Render the current bounding detection with selection handles and center point.
+
+Args:
+    event: Qt event being handled.
+"""
         if not self._state.has_valid_rect and self._marquee_rect.isNull() and not self._selected_bbox_keys:
             return
 
@@ -494,7 +571,11 @@ class AnnotationOverlayWidget(QWidget):
 
     @override
     def wheelEvent(self, event: QWheelEvent) -> None:
-        """Captures scroll wheel to broadcast zoom requests."""
+        """Captures scroll wheel to broadcast zoom requests.
+
+Args:
+    event: Qt event being handled.
+"""
         # NEW: Require Ctrl modifier for zoom
         if event.modifiers() != Qt.KeyboardModifier.ControlModifier:
             return

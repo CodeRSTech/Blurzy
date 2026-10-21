@@ -2,9 +2,11 @@
 
 Source: `src/app/ui/qt/window/`
 
-The window package builds the main application window and its top-level
-layout, hosts the preview and panels, and coordinates close requests.
+`Window` builds the main Qt window, places the preview, side panels, transport
+controls, and data panel, and exposes UI events to the controller/handlers.
+Close handling coordinates the UI shutdown path; session and worker cleanup
+are performed through Application/session lifecycle operations rather than by
+individual child widgets.
 
-**Expand this stub with:** window composition, shutdown confirmation, and
-top-level signal ownership.
-
+See [Qt sections](sections.md), [preview widgets](widgets.md), and
+[UI handlers](../handlers.md) for the components the window composes.

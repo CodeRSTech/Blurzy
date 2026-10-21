@@ -1,3 +1,9 @@
+"""Module for model loader; implements the Qt presentation components.
+
+Layer: Presentation.
+Context: Implements the qt presentation components at this architectural boundary.
+"""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -25,7 +31,19 @@ logger = get_logger("UI->ModelLoader")
 class ModelLoadWorker(QThread):
     """
     Background worker to load a detection model without freezing the UI.
-    """
+
+
+Layer: Presentation.
+Context: Supports user interaction and delegates application work through presentation contracts.
+
+
+    Args:
+        app: Application used to apply the loaded model and update affected session layers.
+        s_id: Identifier of the session associated with this object.
+        model_name: Registered name of the detection model.
+        keep_manual: Preserve existing manual annotations when changing the model and refreshing model-generated boxes.
+        parent: Optional Qt parent object.
+"""
 
     finished = Signal(object, str)  # s_id, model_name
     failed = Signal(object, str, str)  # s_id, model_name, error_message
@@ -45,6 +63,7 @@ class ModelLoadWorker(QThread):
         self._keep_manual: bool = keep_manual
 
     def run(self) -> None:
+        """Load the requested model in the worker thread."""
         try:
             logger.info(
                 "Starting `ModelLoadWorker(QThread)` for session: '{}' with model: '{}'",

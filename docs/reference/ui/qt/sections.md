@@ -2,9 +2,11 @@
 
 Source: `src/app/ui/qt/sections/`
 
-Sections compose major window areas, including the side panels, transport
-controls, and bottom data panel.
+The sections package composes the major window regions: the right-side
+controls, bottom data panel, and transport controls. The main window owns the
+overall layout and places these sections around the preview; handlers connect
+their user actions to application workflows and refreshes.
 
-**Expand this stub with:** widget responsibilities, signals emitted, and
-layout ownership.
-
+See [Main window](window.md), [preview and custom widgets](widgets.md), and
+[UI handlers](../handlers.md). Section widgets present state; they do not own
+session or worker lifecycle.

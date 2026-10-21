@@ -2,10 +2,14 @@
 
 Source: `src/app/ui/qt/widgets/preview/`
 
-Preview widgets compose video rendering and annotation overlays. The
-`PreviewContainer` and video layer connect the displayed frame to the
-interactive bounding-box layer.
+`PreviewContainer` composes the video display with the interactive
+annotation-overlay widget. The video widget presents the current frame; the
+overlay maps image coordinates into widget space for drawing and hit testing,
+then emits user actions for handlers to apply through Application workflows.
+Preview-only mask and blur presentation is separate from exported-video
+render settings.
 
-**Expand this stub with:** coordinate mapping, viewport transforms, render
-ordering, and interaction events.
-
+The overlay's geometry and edit state are described in
+[Bounding-box preview layer](preview/layer_bbox.md); its presentation state is
+in [UI view state](../../view_state.md). The [main window](../window.md) owns
+the surrounding layout.

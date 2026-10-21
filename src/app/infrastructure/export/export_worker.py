@@ -1,4 +1,8 @@
-"""Background video export worker with progress callbacks and cancellation support."""
+"""Background video export worker with progress callbacks and cancellation support.
+
+Layer: Infrastructure.
+Context: Implements concrete processing and I/O behind application-facing contracts.
+"""
 
 from __future__ import annotations
 
@@ -18,7 +22,11 @@ logger = get_logger("Infrastructure->ExportWorker")
 
 
 class ExportCancelled(Exception):
-    """Raised inside the export callback when the user cancels export (via ``stop()``)."""
+    """Raised inside the export callback when the user cancels export (via `stop()`).
+
+Layer: Infrastructure.
+Context: Implements concrete processing or I/O behind application-facing contracts.
+"""
 
 
 class ExportWorker(QThread):
@@ -29,7 +37,7 @@ class ExportWorker(QThread):
         _export_service (ExportService): Application service that renders the video.
         _s_id (SessionId): Session identifier being exported.
         _output_path (str): Destination file path for the exported video.
-        _stop_requested (bool): True after ``stop()`` requests cancellation.
+        _stop_requested (bool): True after `stop()` requests cancellation.
 
     Note:
         Signals emitted by this worker:
@@ -40,20 +48,31 @@ class ExportWorker(QThread):
             error_occurred(msg): Emitted on exception.
 
         Workflow:
-            1. ``run()`` calls ``export_service.export_session()``.
-            2. The progress callback emits ``progress_updated()`` for each frame.
-            3. If ``stop()`` is called, the callback raises ``ExportCancelled`` and the
-               thread emits ``cancelled()``.
-            4. On success, emit ``succeeded()``.
-            5. On error, emit ``error_occurred()``.
-            6. Always emit ``finished_processing()`` before exit.
+            1. `run()` calls `export_service.export_session()`.
+            2. The progress callback emits `progress_updated()` for each frame.
+            3. If `stop()` is called, the callback raises `ExportCancelled` and the
+               thread emits `cancelled()`.
+            4. On success, emit `succeeded()`.
+            5. On error, emit `error_occurred()`.
+            6. Always emit `finished_processing()` before exit.
 
     Example:
         worker = ExportWorker(export_service, s_id, "output.mp4")
         worker.finished_processing.connect(on_finished)
         worker.start()
         worker.stop()
-    """
+
+
+Layer: Infrastructure.
+Context: Implements concrete processing or I/O behind application-facing contracts.
+
+
+    Args:
+        export_service: Service that renders the session export.
+        s_id: Identifier of the session associated with this object.
+        output_path: Destination path for the exported video.
+        parent: Optional Qt parent object.
+"""
 
     progress_updated = Signal(int, int)   # (current_frame, total_frames)
     succeeded = Signal()
@@ -68,7 +87,7 @@ class ExportWorker(QThread):
         output_path: str,
         parent: QObject | None = None,
     ) -> None:
-        """Initialize export worker for ``s_id`` to ``output_path``."""
+        """Initialize export worker for `s_id` to `output_path`."""
         super().__init__(parent)
         self._export_service = export_service
         self._s_id = s_id
@@ -76,7 +95,7 @@ class ExportWorker(QThread):
         self._stop_requested = False
 
     def stop(self) -> None:
-        """Request early stop (next progress callback will raise ``ExportCancelled``)."""
+        """Request early stop (next progress callback will raise `ExportCancelled`)."""
         self._stop_requested = True
 
     def run(self) -> None:
@@ -85,12 +104,12 @@ class ExportWorker(QThread):
 
         Note:
             Workflow:
-                1. Call ``export_service.export_session(s_id, output_path, callback)``.
-                2. The callback emits progress signals and checks ``_stop_requested``.
-                3. If cancelled, catch ``ExportCancelled`` and emit ``cancelled()``.
-                4. On success, emit ``succeeded()``.
-                5. On error, emit ``error_occurred(msg)``.
-                6. Finally, emit ``finished_processing()``.
+                1. Call `export_service.export_session(s_id, output_path, callback)`.
+                2. The callback emits progress signals and checks `_stop_requested`.
+                3. If cancelled, catch `ExportCancelled` and emit `cancelled()`.
+                4. On success, emit `succeeded()`.
+                5. On error, emit `error_occurred(msg)`.
+                6. Finally, emit `finished_processing()`.
         """
         logger.info("ExportWorker started: session={}, output={}", self._s_id, self._output_path)
         try:
@@ -110,7 +129,7 @@ class ExportWorker(QThread):
             self.finished_processing.emit()
 
     def _emit_progress_or_cancel(self, current_frame: int, total_frames: int) -> None:
-        """Progress callback for export service — raise ``ExportCancelled`` if stop requested."""
+        """Progress callback for export service — raise `ExportCancelled` if stop requested."""
         if self._stop_requested:
             raise ExportCancelled
         self.progress_updated.emit(current_frame, total_frames)

@@ -1,4 +1,8 @@
-"""Video export service for rendering blurred videos and detection exports."""
+"""Video export service for rendering blurred videos and detection exports.
+
+Layer: Application.
+Context: Coordinates domain state and infrastructure to complete application use cases.
+"""
 
 from __future__ import annotations
 
@@ -35,7 +39,7 @@ class ExportService(QObject):
     Orchestrates video export.
 
     Responsibilities:
-        - Render blurred video with bounding boxes from ``DataLayer.D``.
+        - Render blurred video with bounding boxes from `DataLayer.D`.
         - Export annotations as JSON (structured metadata).
         - Export annotations as CSV (spreadsheet format).
         - Report progress during multi-frame export.
@@ -49,15 +53,23 @@ class ExportService(QObject):
             JSON — Metadata per frame: frame_index, timestamp, boxes with labels/confidence.
             CSV — Tab-separated: frame_index, box_id, label, coords, confidence, source.
 
-        Designed to run in background thread (``ExportWorker``) via progress callbacks.
+        Designed to run in background thread (`ExportWorker`) via progress callbacks.
         Processes entire video frame-by-frame (can be slow).
         Blur strength controlled via session settings.
-        Exports ``DataLayer.D`` (user-edited tracking/detection final results).
+        Exports `DataLayer.D` (user-edited tracking/detection final results).
 
         Blurs the union of bounding boxes once with a 10-pixel outward feather.
-        Kernel size is configurable via ``ProcessingSettings.blur_strength``.
+        Kernel size is configurable via `ProcessingSettings.blur_strength`.
         Selected box interiors remain fully blurred; editor preview is unchanged.
-    """
+
+
+Layer: Application.
+Context: Coordinates use-case behavior through domain services and application contracts.
+
+
+    Args:
+        app: Application used to resolve the session, read its frames, and coordinate video export.
+"""
 
     def __init__(self, app: Application) -> None:
         super().__init__(parent=app)
@@ -71,13 +83,13 @@ class ExportService(QObject):
     def session_is_ready_for_export(self, s_id: SessionId) -> bool:
         """
         Check if a session has data ready to export.
-    
+
         Args:
             s_id (SessionId): Session ID.
-    
+
         Returns:
-            bool: ``True`` if session can be exported, ``False`` if no valid data.
-    
+            bool: `True` if session can be exported, `False` if no valid data.
+
         Note:
             Export favors editable tracking output (Layer D). For sessions where
             Layer D has not been seeded yet, raw tracking output (Layer C) is
@@ -91,26 +103,25 @@ class ExportService(QObject):
     ) -> None:
         """
         Export session to a blurred MP4 video file.
-    
+
         Args:
             s_id (SessionId): Session ID to export.
             output_path (str): File path for output video (e.g., "/path/video_exported.mp4").
-            progress_callback (ExportProgressCallback | None): Optional callback ``fn(current_frame, total_frames)`` for progress updates.
-    
-        Example:
-            ::
+            progress_callback (ExportProgressCallback | None): Optional callback `fn(current_frame, total_frames)` for progress updates.
 
-                export_service.export_session(
-                    s_id=session_id,
-                    output_path="/home/user/videos/output.mp4",
-                    progress_callback=lambda cur, total: print(f"{cur}/{total}")
-                )
-            # Creates: output.mp4
-    
+        Example:
+            ```python
+            export_service.export_session(
+                s_id=session_id,
+                output_path="/home/user/videos/output.mp4",
+                progress_callback=lambda cur, total: print(f"{cur}/{total}")
+            )
+            ```
+
         Note:
             Output Files Generated:
-                ``{output_path}`` — Blurred video (MP4).
-    
+                `{output_path}` — Blurred video (MP4).
+
             Flow:
                 export_session(s_id, output_path, progress_callback)
                   └──> Render blurred video with progress callback
@@ -229,6 +240,12 @@ class ExportService(QObject):
         return apply_masked_blur(frame, boxes, strength)
 
     def export_annotations_csv(self, s_id: SessionId, output_path: str) -> None:
+        """Write the session's stored boxes to a CSV file.
+
+        Args:
+            s_id: Identifier of the session whose boxes should be exported.
+            output_path: Destination path for the CSV file.
+        """
         session_state = self._app_adapter.get_session_by_id(s_id).state
         os.makedirs(os.path.dirname(output_path) or ".", exist_ok=True)
         with open(output_path, "w", newline="", encoding="utf-8") as f:

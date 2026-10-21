@@ -1,4 +1,8 @@
-"""Factory for converting Session objects to UI view model (list display)."""
+"""Factory for converting Session objects to UI view model (list display).
+
+Layer: Infrastructure.
+Context: Implements concrete processing and I/O behind application-facing contracts.
+"""
 
 from __future__ import annotations
 
@@ -11,11 +15,11 @@ from app.domain.views import SessionFileListViewModel
 
 def list_of_session_list_view_models(sessions: list[Session]) -> list[SessionFileListViewModel]:
     """
-    Convert Session objects to ``SessionFileListViewModel`` for UI list display.
+    Convert Session objects to `SessionFileListViewModel` for UI list display.
 
     Note:
-        Maps ``session.view_state.metadata`` to the subtitle format
-        ``"WxH | FPS fps | N frames"``.
+        Maps `session.view_state.metadata` to the subtitle format
+        `"WxH | FPS fps | N frames"`.
     """
     session_files: list[SessionFileListViewModel] = []
     for session in sessions:

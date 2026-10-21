@@ -1,4 +1,8 @@
-"""Circular frame buffer with thread-safe O(1) lookup for video playback buffering."""
+"""Circular frame buffer with thread-safe O(1) lookup for video playback buffering.
+
+Layer: Domain.
+Context: Defines application concepts independently of UI and infrastructure implementations.
+"""
 
 from __future__ import annotations
 
@@ -18,9 +22,9 @@ class VideoRingBuffer:
 
     Note:
         Provides O(1) frame lookup through modulo hashing while tracking a
-        contiguous ``[start_idx, end_idx]`` range. Uses a lightweight
-        ``threading.Lock()`` for thread safety and pre-allocates storage with
-        no dynamic resizing. Used by ``VideoDecodeWorker`` for both sequential
+        contiguous `[start_idx, end_idx]` range. Uses a lightweight
+        `threading.Lock()` for thread safety and pre-allocates storage with
+        no dynamic resizing. Used by `VideoDecodeWorker` for both sequential
         playback buffering and hard seeks. When the buffer wraps, the oldest
         frame is overwritten and the start index advances.
 
@@ -30,10 +34,18 @@ class VideoRingBuffer:
         buffer.push(1, frame_1)
         frame = buffer.get(0)  # O(1) lookup
         buffer.clear()  # Free memory for inactive session
-    """
+
+
+Layer: Domain.
+Context: Represents application concepts without UI or infrastructure dependencies.
+
+
+    Args:
+        capacity: Number of frame slots allocated in the ring buffer.
+"""
 
     def __init__(self, capacity: int = 90):
-        """Initialize ring buffer with ``capacity`` pre-allocated slots."""
+        """Initialize ring buffer with `capacity` pre-allocated slots."""
         self.capacity = capacity
         # Pre-allocate physical memory slots
         self._frames: list[RGBFrame | None] = [None] * capacity
@@ -46,7 +58,7 @@ class VideoRingBuffer:
 
     def push(self, idx: int, frame: RGBFrame) -> None:
         """
-        Push ``frame`` at ``idx`` (thread-safe), update bounds, handle wrapping.
+        Push `frame` at `idx` (thread-safe), update bounds, handle wrapping.
 
         Args:
             idx (int): Frame index to store.
@@ -54,8 +66,8 @@ class VideoRingBuffer:
 
         Note:
             If the buffer is empty or a hard seek introduces a gap in the
-            sequence, the start index resets to ``idx``. The frame is stored in
-            slot ``idx % capacity``, the end index is updated, and wrapping
+            sequence, the start index resets to `idx`. The frame is stored in
+            slot `idx % capacity`, the end index is updated, and wrapping
             advances the start index when the oldest frame is overwritten.
         """
         with self._lock:
@@ -74,7 +86,14 @@ class VideoRingBuffer:
                 self._start_idx = self._end_idx - self.capacity + 1
 
     def get(self, idx: int) -> RGBFrame | None:
-        """Return cached frame at ``idx``, or None if cache miss (out of bounds)."""
+        """Return cached frame at `idx`, or None if cache miss (out of bounds).
+
+        Args:
+            idx: Absolute frame index to look up in the buffer.
+
+        Returns:
+            Cached RGB frame when `idx` is within the stored range; otherwise `None`.
+        """
         with self._lock:
             if self._start_idx <= idx <= self._end_idx:
                 slot = idx % self.capacity

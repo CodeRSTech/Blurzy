@@ -1,3 +1,9 @@
+"""Package for shared; implements the Qt presentation components.
+
+Layer: Presentation.
+Context: Implements the qt presentation components at this architectural boundary.
+"""
+
 from .geometry_ui import get_handle_points_from_rect
 from .icons import create_tinted_icon
 from .layout_shortcuts import create_hbox_layout, create_vbox_layout

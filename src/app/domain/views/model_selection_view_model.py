@@ -1,3 +1,9 @@
+"""Module for model selection view model; defines application concepts without UI or infrastructure dependencies.
+
+Layer: Domain.
+Context: Defines application concepts without ui or infrastructure dependencies at this architectural boundary.
+"""
+
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -15,10 +21,14 @@ class ModelSelectionViewModel:
         provider_display_name (str): User-facing provider label shown in provider pickers.
 
     Note:
-        Instances flow from ``DetectionService.get_available_detection_models()``
-        to the UI dropdown, which displays ``display_name`` while keeping
-        ``model_id`` available for the actual model selection.
-    """
+        Instances flow from `DetectionService.get_available_detection_models()`
+        to the UI dropdown, which displays `display_name` while keeping
+        `model_id` available for the actual model selection.
+
+
+Layer: Domain.
+Context: Represents application concepts without UI or infrastructure dependencies.
+"""
 
     model_id: str
     display_name: str

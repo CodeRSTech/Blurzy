@@ -1,4 +1,8 @@
-"""Tracking layer export service — serialises layers C or D to JSON / CSV."""
+"""Tracking layer export service — serialises layers C or D to JSON / CSV.
+
+Layer: Application.
+Context: Coordinates domain state and infrastructure to complete application use cases.
+"""
 
 from __future__ import annotations
 
@@ -33,22 +37,30 @@ class TrackingExportService(QObject):
 
     Responsibilities:
         - Retrieve all bounding boxes from the requested tracking layer.
-        - Write them as JSON or CSV (determined by ``file_path`` extension).
+        - Write them as JSON or CSV (determined by `file_path` extension).
         - Return the number of boxes exported for status reporting.
 
     Note:
-        This service satisfies the :class:`~app.application.interfaces.IDataExporter`
+        This service satisfies the `IDataExporter` interface
         Protocol via structural subtyping.
 
         The output is produced using the same shared wire format as
-        :class:`DetectionExportService`, so files can be cross-imported between
+        `DetectionExportService`, so files can be cross-imported between
         detection and tracking layers when the user explicitly chooses to do so
         via the dialog.
 
-        Consider future improvement: add a ``has_data(s_id, layer) -> bool``
+        Consider future improvement: add a `has_data(s_id, layer) -> bool`
         helper that the handler can call before opening the save-file dialog,
         surfacing a friendly warning when the user tries to export an empty layer.
-    """
+
+
+Layer: Application.
+Context: Coordinates use-case behavior through domain services and application contracts.
+
+
+    Args:
+        app: Application used to resolve sessions and read tracking-layer boxes for export.
+"""
 
     def __init__(self, app: Application) -> None:
         super().__init__(parent=app)
@@ -65,18 +77,18 @@ class TrackingExportService(QObject):
         file_path: str,
     ) -> int:
         """
-        Export all boxes in tracking ``layer`` for ``s_id`` to ``file_path``.
+        Export all boxes in tracking `layer` for `s_id` to `file_path`.
 
         Args:
             s_id:      Source session.
-            layer:     Source layer — should be ``C`` or ``D`` (or their string equivalents).
-            file_path: Absolute destination path with ``.json`` or ``.csv`` extension.
+            layer:     Source layer — should be `C` or `D` (or their string equivalents).
+            file_path: Absolute destination path with `.json` or `.csv` extension.
 
         Returns:
             int: Number of boxes written.
 
         Note:
-            Accepts both ``VideoDataLayer`` enums and string layer names to handle
+            Accepts both `VideoDataLayer` enums and string layer names to handle
             Qt signal/slot type coercion.
         """
         # ====================================================================

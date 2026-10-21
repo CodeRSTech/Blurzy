@@ -1,3 +1,9 @@
+"""Defines serializable domain records used by project files.
+
+Layer: Domain.
+Context: Defines application concepts without ui or infrastructure dependencies at this architectural boundary.
+"""
+
 from __future__ import annotations
 
 from dataclasses import dataclass, field

@@ -1,3 +1,9 @@
+"""Module for transport controls panel; implements the Qt presentation components.
+
+Layer: Presentation.
+Context: Implements the qt presentation components at this architectural boundary.
+"""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -22,6 +28,15 @@ logger = get_logger("UI-> Transport Control Panel")
 
 @final
 class TransportControlsPanel(QVBoxLayout):
+    """Provide the transport controls panel presentation component.
+
+Layer: Presentation.
+Context: Supports user interaction and delegates application work through presentation contracts.
+
+
+    Args:
+        parent: Optional Qt parent object.
+"""
     seek_pos_changed = Signal(int)
     rotate_requested = Signal(int)
     fit_view_requested = Signal()
@@ -210,6 +225,11 @@ class TransportControlsPanel(QVBoxLayout):
 
     @Slot(bool)
     def update_video_related_widgets_state(self, is_enabled: bool = False) -> None:
+        """Enable or disable playback, seeking, rotation, and fit-view controls.
+
+        Args:
+            is_enabled: Whether video controls should be enabled.
+        """
         for widget in (
             self.play_btn,
             self.pause_btn,
@@ -223,25 +243,50 @@ class TransportControlsPanel(QVBoxLayout):
             widget.setEnabled(is_enabled)
 
     def set_seek_value(self, frame_index: int) -> None:
-        """Set the seek position to the given frame index."""
+        """Set the seek position to the given frame index.
+
+Args:
+    frame_index: Zero-based frame index.
+"""
         with QSignalBlocker(self.seek_slider):
             self.seek_slider.setValue(max(0, frame_index))
 
     def set_seek_range(self, maximum_frame_index: int) -> None:
-        """Update seek slider with maximum frame index."""
+        """Set the seek slider range from frame zero through the final frame.
+
+Args:
+    maximum_frame_index: Index of the final frame; negative values produce a zero-only range.
+"""
         self.seek_slider.setMinimum(0)
         self.seek_slider.setMaximum(max(0, maximum_frame_index))
 
     def set_frame_label_text(self, text: str):
+        """Update the text shown beside the transport controls.
+
+        Args:
+            text: Frame-position text to display.
+        """
         self.frame_label.setText(text)
 
     @Slot(float, float, float)
     def set_viewport_state(self, zoom_factor: float, pan_x: float, pan_y: float) -> None:
+        """Update the zoom and whether the viewport label should report a panned view.
+
+        Args:
+            zoom_factor: Current zoom multiplier.
+            pan_x: Horizontal pan offset; magnitudes above 0.5 mark the view as panned.
+            pan_y: Vertical pan offset; magnitudes above 0.5 mark the view as panned.
+        """
         self._zoom_factor = zoom_factor
         self._is_panned = abs(pan_x) > 0.5 or abs(pan_y) > 0.5
         self._refresh_view_state_label()
 
     def set_rotation_degrees(self, rotation_degrees: int) -> None:
+        """Store rotation modulo 360 degrees and refresh the viewport summary.
+
+        Args:
+            rotation_degrees: Current image rotation in degrees.
+        """
         self._rotation_degrees = rotation_degrees % 360
         self._refresh_view_state_label()
 

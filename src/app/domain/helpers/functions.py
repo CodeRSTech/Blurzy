@@ -1,4 +1,8 @@
-"""Domain utility functions for string handling and validation."""
+"""Domain utility functions for string handling and validation.
+
+Layer: Domain.
+Context: Defines application concepts independently of UI and infrastructure implementations.
+"""
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -26,10 +30,10 @@ def str_iterable_as_set_without_null_values(iterable: Iterable[str]) -> set[str]
         iterable (Iterable[str]): Input values to clean and deduplicate.
 
     Returns:
-        set[str]: A set containing only truthy string values from ``iterable``.
+        set[str]: A set containing only truthy string values from `iterable`.
 
     Raises:
-        EmptySetGeneratedFromKeysError: If every item in ``iterable`` is falsy.
+        EmptySetGeneratedFromKeysError: If every item in `iterable` is falsy.
 
     Note:
         Filters out empty or otherwise falsy values, deduplicates the remaining
@@ -55,19 +59,19 @@ def map_detections_to_bbox(
         detections: list[DetectionResult],
 ) -> ListOfBoxes:
     """
-    Maps a list of ``DetectionResult`` objects to a list of ``BBoxViewModel`` objects for UI display.
+    Maps a list of `DetectionResult` objects to a list of `BBoxViewModel` objects for UI display.
 
     Note:
-        ``DetectionResult`` ≡ ``BBoxViewModel`` But,
+        `DetectionResult` ≡ `BBoxViewModel` But,
 
-        ``BBoxViewModel`` is used for UI representation and,
-        includes literal attributes ``source`` and ``key``.
+        `BBoxViewModel` is used for UI representation and,
+        includes literal attributes `source` and `key`.
 
     Args:
-        detections: List of ``DetectionResult`` objects to be mapped.
+        detections: List of `DetectionResult` objects to be mapped.
 
     Returns:
-        List of ``BBoxViewModel`` objects representing the mapped detections.
+        List of `BBoxViewModel` objects representing the mapped detections.
     """
     return [d.to_frame_box_view_model() for d in detections]
 

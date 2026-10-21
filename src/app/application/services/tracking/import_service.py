@@ -1,4 +1,8 @@
-"""Tracking layer import service — loads bounding-box data into layers C or D."""
+"""Tracking layer import service — loads bounding-box data into layers C or D.
+
+Layer: Application.
+Context: Coordinates domain state and infrastructure to complete application use cases.
+"""
 
 from __future__ import annotations
 
@@ -37,25 +41,33 @@ class TrackingImportService(QObject):
     Loads persisted bounding-box data into tracking layers C or D.
 
     Responsibilities:
-        - Read a JSON or CSV file produced by :class:`TrackingExportService`
+        - Read a JSON or CSV file produced by `TrackingExportService`
           (or any exporter that uses the shared wire format).
-        - Apply the chosen :class:`ImportMode` merge strategy.
+        - Apply the chosen `ImportMode` merge strategy.
         - Return the total number of boxes written.
 
     Note:
-        This service satisfies the :class:`~app.application.interfaces.IDataImporter`
+        This service satisfies the `IDataImporter` interface
         Protocol via structural subtyping.
 
         Layers C/D are the *tracking* layers.  Writing detection-source boxes
-        (``BoxSource.DETECTION``) into layer C is technically allowed by the
+        (`BoxSource.DETECTION`) into layer C is technically allowed by the
         data store but semantically unusual — the dialog restricts this by
         scoping the layer combo to C/D only.
 
         Consider future improvement: after a successful import into layer C,
-        automatically trigger ``Application.sync_tracking_cache()`` so that
+        automatically trigger `Application.sync_tracking_cache()` so that
         any downstream view model caches are refreshed without requiring the
         user to manually re-run tracking.
-    """
+
+
+Layer: Application.
+Context: Coordinates use-case behavior through domain services and application contracts.
+
+
+    Args:
+        app: Application used to resolve the destination session and replace imported tracking-layer data.
+"""
 
     def __init__(self, app: Application) -> None:
         super().__init__(parent=app)
@@ -73,19 +85,19 @@ class TrackingImportService(QObject):
         mode: ImportMode | str,
     ) -> int:
         """
-        Import bounding-box data from ``file_path`` into tracking ``layer``.
+        Import bounding-box data from `file_path` into tracking `layer`.
 
         Args:
             s_id:      Target session.
-            layer:     Target layer — should be ``C`` or ``D`` (or their string equivalents).
-            file_path: Absolute path to a ``.json`` or ``.csv`` file.
+            layer:     Target layer — should be `C` or `D` (or their string equivalents).
+            file_path: Absolute path to a `.json` or `.csv` file.
             mode:      Merge strategy (enum or string).
 
         Returns:
             int: Number of boxes written.
 
         Note:
-            Accepts both ``VideoDataLayer`` enums and string layer names to handle
+            Accepts both `VideoDataLayer` enums and string layer names to handle
             Qt signal/slot type coercion.
         """
         # ====================================================================

@@ -1,3 +1,9 @@
+"""Module for box io; provides reusable helpers across application layers.
+
+Layer: Shared utilities.
+Context: Provides reusable helpers across application layers at this architectural boundary.
+"""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -10,6 +16,14 @@ if TYPE_CHECKING:
 
 
 def box_to_dict(box: BBoxViewModel) -> dict[str, object]:
+    """Serialize a box view model to a JSON-compatible mapping.
+
+    Args:
+        box: Bounding box whose fields are serialized.
+
+    Returns:
+        Mapping containing the box ID, source, label, coordinates, color, confidence, and key.
+    """
     return {
         "id": box.id,
         "source": box.source.value,
@@ -22,6 +36,14 @@ def box_to_dict(box: BBoxViewModel) -> dict[str, object]:
 
 
 def dict_to_box(data: dict[str, object]) -> BBoxViewModel:
+    """Build a box view model from its serialized fields.
+
+    Args:
+        data: Mapping with `id`, `source`, `label`, `bbox_xyxy`, and `color_hex`; `confidence` and `key` are optional.
+
+    Returns:
+        Box view model populated from the mapping.
+    """
     return BBoxViewModel(
         id=str(data["id"]),
         source=BoxSource(str(data["source"])),

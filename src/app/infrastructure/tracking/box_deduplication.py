@@ -1,4 +1,8 @@
-"""Containment-based duplicate suppression for per-frame tracker inputs."""
+"""Containment-based duplicate suppression for per-frame tracker inputs.
+
+Layer: Infrastructure.
+Context: Implements concrete processing and I/O behind application-facing contracts.
+"""
 
 from __future__ import annotations
 
@@ -59,7 +63,7 @@ def suppress_nested_same_class_boxes(
 
     A stronger box is at least as large and as confident as the candidate;
     manual boxes are prioritized and retained. “Mostly contained” means the
-    intersection covers at least ``iomin_threshold`` of the smaller box.
+    intersection covers at least `iomin_threshold` of the smaller box.
     Suppressed candidates are merged into the retained box by taking the
     union of their bounds.
 
@@ -137,7 +141,7 @@ def suppress_nested_same_class_boxes(
         Cloned boxes with nested duplicates merged into their retained box.
 
     Raises:
-        ValueError: If ``iomin_threshold`` is outside the inclusive range ``0..1``.
+        ValueError: If `iomin_threshold` is outside the inclusive range `0..1`.
 
     Note:
         Boxes are prioritized by manual origin, confidence, then area. A candidate

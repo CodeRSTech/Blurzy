@@ -1,5 +1,14 @@
 # Model and Provider Management
 
+!!! info "Current status"
+
+    The application already exposes provider selection and model choices for
+    supported YOLO, TorchVision, and MTCNN integrations. This proposal remains
+    relevant to discoverability and provider-specific guidance; it is not a
+    statement that provider selection is absent. See the
+    [detection package notes](../../reference/infrastructure/detection/index.md)
+    and [architecture guide](../../architecture.md).
+
 ## What this is
 
 A cleaner way to choose *what kind* of model the user wants before choosing the exact model.
@@ -16,11 +25,13 @@ For Blurzy, that could mean flows such as:
 - YOLO models
 - MTCNN models
 
-## Why this is a must
+## Original motivation
 
-As model support grows, a single flat picker gets harder to understand. Users need a mental map of the available options.
+As model support grows, a flat picker can become harder to understand. Users
+need a mental map of the available options.
 
-Good model/provider management also makes future integrations easier because each family can bring its own defaults, validation, and help text.
+Provider selection exists today. This proposal remains useful for improving
+provider-specific defaults, validation, and help as integrations grow.
 
 ## Simple example
 
@@ -28,4 +39,6 @@ A beginner may know they want a YOLO-based workflow, but not know the exact mode
 
 ## Why it matters for Blurzy
 
-Your README already calls out a provider dropdown as a wishlist item, and the dependency set shows multiple model ecosystems. This is a strong candidate for structured product improvement.
+The application supports multiple model ecosystems and exposes provider
+selection. Continued work should focus on discoverability and provider-specific
+guidance rather than adding the already-present selection control.

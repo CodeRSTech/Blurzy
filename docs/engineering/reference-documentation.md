@@ -144,7 +144,8 @@ is missing or escapes the API asset directory.
 ### 4. Parse docstrings and render HTML
 
 The configured Google-style parser recognizes sections such as `Args:`,
-`Returns:`, `Raises:`, and `Attributes:`. Descriptive text and examples then
+`Returns:`, `Raises:`, and `Attributes:`; `docstring_section_style: spacy`
+renders those sections as readable tables. Descriptive text and examples then
 pass through Markdown rendering. Material supplies maintained typography,
 syntax highlighting, responsive navigation, color modes, and API symbol styling.
 Small member-kind labels identify properties and attributes; they are metadata,

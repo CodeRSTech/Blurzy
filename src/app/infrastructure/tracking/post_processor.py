@@ -1,4 +1,8 @@
-"""Offline tracklet stitching and bounded Gaussian interpolation."""
+"""Offline tracklet stitching and bounded Gaussian interpolation.
+
+Layer: Infrastructure.
+Context: Implements concrete processing and I/O behind application-facing contracts.
+"""
 
 from __future__ import annotations
 
@@ -43,17 +47,41 @@ class _Tracklet:
 
     @property
     def frames(self) -> list[int]:
+        """Return the sorted frame indices containing observations.
+
+        Returns:
+            Observed frame indices for this tracklet.
+        """
         return sorted(self.boxes)
 
     @property
     def start_frame(self) -> int:
+        """Return the first observed frame index.
+
+        Returns:
+            Earliest frame containing an observation.
+        """
         return min(self.boxes)
 
     @property
     def end_frame(self) -> int:
+        """Return the last observed frame index.
+
+        Returns:
+            Latest frame containing an observation.
+        """
         return max(self.boxes)
 
     def velocity(self, *, at_end: bool, window: int = 5) -> np.ndarray:
+        """Estimate box-coordinate velocity near a tracklet endpoint.
+
+        Args:
+            at_end: Use final observations when true; otherwise use initial ones.
+            window: Maximum number of endpoint observations to use.
+
+        Returns:
+            Mean coordinate displacement per elapsed frame in `xyxy` order.
+        """
         frames = self.frames
         selected = frames[-window:] if at_end else frames[:window]
         if len(selected) < 2:
@@ -94,7 +122,11 @@ class TrackingPostProcessor:
     Example:
         processor = TrackingPostProcessor(max_gap=25, gsi_smoothness=10.0)
         results = processor.process(track_data, total_frames=300)
-    """
+
+
+Layer: Infrastructure.
+Context: Implements concrete processing or I/O behind application-facing contracts.
+"""
 
     def __init__(
         self,
@@ -168,7 +200,7 @@ class TrackingPostProcessor:
             A sorted frame-to-box mapping containing observations and accepted coasts.
 
         Raises:
-            ValueError: If ``total_frames`` is negative.
+            ValueError: If `total_frames` is negative.
 
         Note:
             Legacy boxes without coast metadata are treated as detection-backed.
@@ -195,6 +227,14 @@ class TrackingPostProcessor:
         predecessors = {target: source for source, target in links}
 
         def root_key(key: tuple[str, int]) -> tuple[str, int]:
+            """Follow predecessor links to the earliest tracklet in a chain.
+
+            Args:
+                key: Key identifying the starting tracklet.
+
+            Returns:
+                Key of the chain's root tracklet.
+            """
             while key in predecessors:
                 key = predecessors[key]
             return key
@@ -280,10 +320,13 @@ class TrackingPostProcessor:
 
         Note:
             The size envelope expands immediately and contracts only by
-            ``rho * envelope + (1 - rho) * observation`` when resistance is on.
+            `rho * envelope + (1 - rho) * observation` when resistance is on.
             Pre/post motion is estimated from at most five observed box centers,
             clamped to one quarter of the envelope per frame, and damped by
             $0.85^k$ for each projected step.
+            A safety proportion `p` expands a box of width `w` and height
+            `h` by `p*w` and `p*h` respectively, split evenly around the
+            center before clipping to known frame bounds.
 
         Example:
             safe_tracks = processor._apply_privacy_features(tracks, 300)
@@ -511,6 +554,11 @@ class TrackingPostProcessor:
 
         Returns:
             A confidence that remains eligible for the tracking output floor.
+
+        Note:
+            With endpoint confidence `c0`, age `k`, and configured padding
+            length `N`, the returned value is
+            `round(max(min(1, min_confidence + 0.001), c0 * (1 - 0.25*k/max(1, N))), 4)`.
 
         Example:
             confidence = processor._padding_confidence(box, age=2, total_padding=10)
@@ -804,7 +852,7 @@ class TrackingPostProcessor:
             target: Later same-class tracklet with an observed start.
 
         Returns:
-            A finite link cost or ``None`` when projected geometry is implausible.
+            A finite link cost or `None` when projected geometry is implausible.
 
 
         Note:
@@ -882,7 +930,7 @@ class TrackingPostProcessor:
         template: BBoxViewModel,
         smoothness: float,
     ) -> int:
-        """Interpolate missing frames with two endpoint predictions and GSI weights.
+        r"""Interpolate missing frames with two endpoint predictions and GSI weights.
 
         Args:
             output: Mutable output frame map.
@@ -896,8 +944,32 @@ class TrackingPostProcessor:
 
 
         Note:
-            Each endpoint prediction is weighted by a Gaussian of its temporal
-            distance; larger tau spreads influence more evenly through the gap.
+            For an interpolated frame $f$, let $f_L$ and $f_R$ be the
+            endpoint frame indices. The temporal distances and constant-velocity
+            endpoint predictions are
+
+            $$
+            d_L = f - f_L,\quad d_R = f_R - f,\qquad
+            \mathbf{p}_L = \mathbf{b}_L + d_L\mathbf{v}_L,\quad
+            \mathbf{p}_R = \mathbf{b}_R - d_R\mathbf{v}_R.
+            $$
+
+            With smoothness lengthscale $\tau$, the Gaussian endpoint weights
+            and per-coordinate blend are
+
+            $$
+            w_L = \exp\!\left(-\frac{1}{2}\left(\frac{d_L}{\tau}\right)^2\right),
+            \quad
+            w_R = \exp\!\left(-\frac{1}{2}\left(\frac{d_R}{\tau}\right)^2\right),
+            \qquad
+            \mathbf{b}(f) =
+            \frac{w_L\mathbf{p}_L + w_R\mathbf{p}_R}{w_L+w_R}.
+            $$
+
+            Here $\mathbf{b}_L$ and $\mathbf{b}_R$ are endpoint `xyxy`
+            coordinates, and $\mathbf{v}_L$ and $\mathbf{v}_R$ are their
+            estimated coordinate velocities. Larger $\tau$ makes the weights
+            decay more gradually with temporal distance.
 
         Example:
             count = TrackingPostProcessor._fill_gap(output, left, right, template, 10.0)
@@ -954,12 +1026,15 @@ class TrackingPostProcessor:
             template: Canonical identity and color source.
 
         Returns:
-            A coasted clone, or ``None`` when confidence falls below the floor.
+            A coasted clone, or `None` when confidence falls below the floor.
 
 
         Note:
             Unbridged offline estimates lose confidence at twice the standard
-            rate and are separately capped by ``max_unbridged_coast``.
+            rate and are separately capped by `max_unbridged_coast`.
+            For base confidence `c0` and missed-frame age `k`, confidence is
+            `max(0, c0 - lambda*k)`, with `lambda` equal to
+            `confidence_decay` or twice that value when offline stitching is on.
 
         Example:
             estimate = processor._coast_box(tracklet, age=2, template=box)

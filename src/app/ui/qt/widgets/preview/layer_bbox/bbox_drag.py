@@ -1,3 +1,9 @@
+"""Module for bbox drag; implements the Qt presentation components.
+
+Layer: Presentation.
+Context: Implements the qt presentation components at this architectural boundary.
+"""
+
 from __future__ import annotations
 
 from enum import Enum, auto
@@ -6,6 +12,11 @@ from PySide6.QtCore import Qt
 
 
 class DragMode(Enum):
+    """Represent drag mode.
+
+Layer: Presentation.
+Context: Supports user interaction and delegates application work through presentation contracts.
+"""
     NONE = auto()
     DRAW = auto()
     MOVE = auto()

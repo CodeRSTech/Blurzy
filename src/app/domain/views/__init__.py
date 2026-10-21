@@ -1,4 +1,8 @@
-"""View model for UI binding — boxes, sessions, settings, model selection."""
+"""View model for UI binding — boxes, sessions, settings, model selection.
+
+Layer: Domain.
+Context: Defines application concepts independently of UI and infrastructure implementations.
+"""
 
 from .bounding_box_view_model import BBoxViewModel
 from .frame_boxes_view_model import FrameBoxesViewModel

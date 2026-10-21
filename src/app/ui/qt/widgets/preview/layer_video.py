@@ -1,3 +1,9 @@
+"""Module for layer video; implements the Qt presentation components.
+
+Layer: Presentation.
+Context: Implements the qt presentation components at this architectural boundary.
+"""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -12,6 +18,15 @@ if TYPE_CHECKING:
 
 
 class VideoDisplayWidget(QWidget):
+    """Provide the video display widget presentation component.
+
+Layer: Presentation.
+Context: Supports user interaction and delegates application work through presentation contracts.
+
+
+    Args:
+        parent: Optional Qt parent object.
+"""
     pixmap_rect_changed = Signal(QRect, QSize)
 
     def __init__(self, parent: QWidget | None = None) -> None:
@@ -29,16 +44,28 @@ class VideoDisplayWidget(QWidget):
 
     # --- Viewport API ---
     def set_zoom(self, factor: float) -> None:
+        """Set the display zoom, clamped to the range 1×–10×, and redraw.
+
+        Args:
+            factor: Requested zoom multiplier.
+        """
         self._zoom_factor = max(1.0, min(factor, 10.0))  # Clamp zoom between 1x and 10x
         self._update_pixmap_rect()
         self.update()
 
     def set_pan(self, dx: float, dy: float) -> None:
+        """Set the display offset in widget coordinates and redraw.
+
+        Args:
+            dx: Horizontal offset in pixels.
+            dy: Vertical offset in pixels.
+        """
         self._pan_offset = QPointF(dx, dy)
         self._update_pixmap_rect()
         self.update()
 
     def reset_viewport(self) -> None:
+        """Restore 1× zoom and zero pan, then recompute and redraw the image."""
         self._zoom_factor = 1.0
         self._pan_offset = QPointF(0.0, 0.0)
         self._update_pixmap_rect()
@@ -46,21 +73,40 @@ class VideoDisplayWidget(QWidget):
 
     # --- Existing API ---
     def set_image(self, image: QImage) -> None:
+        """Display an image, recompute its fitted rectangle, and redraw.
+
+        Args:
+            image: Image to display.
+        """
         self._image = image
         self._update_pixmap_rect()
         self.update()
 
     def set_message(self, message: str) -> None:
+        """Clear the image and display a centered placeholder message.
+
+        Args:
+            message: Text to show when no image is available.
+        """
         self._image = None
         self._placeholder_text = message
         self._update_pixmap_rect()
         self.update()
 
     def get_pixmap_rect(self) -> QRect:
+        """Return the image rectangle currently used for drawing.
+
+        Returns:
+            Current image rectangle in widget coordinates.
+        """
         return self._pixmap_rect
 
     # --- Rendering ---
     def paintEvent(self, event: QPaintEvent) -> None:
+        """Paint the current video frame or status message.
+
+        Args:
+            event: Qt event being handled. (QPaintEvent)."""
         painter = QPainter(self)
         painter.setRenderHint(QPainter.RenderHint.SmoothPixmapTransform)
         painter.fillRect(self.rect(), QColor(30, 30, 30))
@@ -77,6 +123,10 @@ class VideoDisplayWidget(QWidget):
         painter.end()
 
     def resizeEvent(self, event: QResizeEvent) -> None:
+        """Update the viewport after the widget is resized.
+
+        Args:
+            event: Qt event being handled. (QResizeEvent)."""
         super().resizeEvent(event)
         self._update_pixmap_rect()
 

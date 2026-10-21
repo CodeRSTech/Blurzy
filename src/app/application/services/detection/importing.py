@@ -1,4 +1,8 @@
-"""Detection layer import service — loads bounding-box data into layers A or B."""
+"""Detection layer import service — loads bounding-box data into layers A or B.
+
+Layer: Application.
+Context: Coordinates domain state and infrastructure to complete application use cases.
+"""
 
 from __future__ import annotations
 
@@ -42,27 +46,35 @@ class DetectionImportService(QObject):
     Loads persisted bounding-box data into detection layers A or B.
 
     Responsibilities:
-        - Read a JSON or CSV file produced by :class:`DetectionExportService`.
-        - Apply the chosen :class:`ImportMode` merge strategy via
-          :func:`~app.application.services._layer_io.apply_import_to_layer`.
+        - Read a JSON or CSV file produced by `DetectionExportService`.
+        - Apply the chosen `ImportMode` merge strategy via
+          `apply_import_to_layer`.
         - Return the total number of boxes written for status reporting.
 
     Note:
-        This service satisfies the :class:`~app.application.interfaces.IDataImporter`
+        This service satisfies the `IDataImporter` interface
         Protocol via structural subtyping — no explicit inheritance is needed.
 
         Layers A/B are the *detection* layers.  Do not use this service to write
-        to tracking layers C/D; use :class:`TrackingImportService` instead.
+        to tracking layers C/D; use `TrackingImportService` instead.
 
-        The ``file_path`` extension determines the format:
-            ``.json`` → JSON deserialiser
-            ``.csv``  → CSV  deserialiser
-            Anything else raises ``ValueError``.
+        The `file_path` extension determines the format:
+            `.json` → JSON deserialiser
+            `.csv`  → CSV  deserialiser
+            Anything else raises `ValueError`.
 
         Consider future improvement: add progress callbacks for very large files
         (millions of boxes across thousands of frames), similar to how the
         detection/export workers report progress today.
-    """
+
+
+Layer: Application.
+Context: Coordinates use-case behavior through domain services and application contracts.
+
+
+    Args:
+        app: Application adapted for resolving sessions and writing imported detection-layer boxes.
+"""
 
     def __init__(self, app: Application) -> None:
         super().__init__(parent=app)
@@ -80,23 +92,23 @@ class DetectionImportService(QObject):
         mode: ImportMode | str,
     ) -> int:
         """
-        Import bounding-box data from ``file_path`` into ``layer``.
+        Import bounding-box data from `file_path` into `layer`.
 
         Args:
             s_id:      Target session.
-            layer:     Target layer — should be ``A`` or ``B`` (or their string equivalents).
-            file_path: Absolute path to a ``.json`` or ``.csv`` file.
+            layer:     Target layer — should be `A` or `B` (or their string equivalents).
+            file_path: Absolute path to a `.json` or `.csv` file.
             mode:      Merge strategy (enum or string).
 
         Returns:
             int: Number of boxes written.
 
         Raises:
-            ValueError: If ``file_path`` has an unrecognised extension.
-            FileNotFoundError: If ``file_path`` does not exist.
+            ValueError: If `file_path` has an unrecognised extension.
+            FileNotFoundError: If `file_path` does not exist.
 
         Note:
-            Accepts both ``VideoDataLayer`` enums and string layer names to handle
+            Accepts both `VideoDataLayer` enums and string layer names to handle
             Qt signal/slot type coercion.
         """
         # ====================================================================

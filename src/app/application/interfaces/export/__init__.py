@@ -1,4 +1,8 @@
-"""Export interface contracts."""
+"""Export interface contracts.
+
+Layer: Application.
+Context: Defines protocol boundaries consumed by application orchestration.
+"""
 
 from app.application.interfaces.export_all.worker_factory_interface import ExportAllWorkerFactoryInterface
 from app.application.interfaces.export_all.worker_interface import ExportAllWorkerInterface

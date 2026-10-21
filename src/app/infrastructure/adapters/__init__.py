@@ -4,6 +4,10 @@ Each adapter wraps a concrete infrastructure class and exposes the corresponding
 application-layer interface.  Concrete classes already satisfy their Protocol
 interfaces via structural subtyping; these adapters provide explicit named seams
 for documentation and testing purposes.
+
+
+Layer: Infrastructure.
+Context: Implements concrete processing and I/O behind application-facing contracts.
 """
 
 from app.infrastructure.adapters.detection_engine_adapter import DetectionEngineAdapter

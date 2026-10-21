@@ -1,3 +1,9 @@
+"""Module for uicontroller; presents application behavior to users.
+
+Layer: Presentation.
+Context: Presents application behavior to users at this architectural boundary.
+"""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, final, override
@@ -43,7 +49,17 @@ class UIController(QObject):
             Qt events (clicks, signals) → Handlers (via signal connections).
             Handlers call controller methods for coordination.
             Controller triggers frame renders, status updates, dialog creation.
-    """
+
+
+Layer: Presentation.
+Context: Supports user interaction and delegates application work through presentation contracts.
+
+
+    Args:
+        q_app: Qt application instance.
+        window: Window instance used by this component.
+        app: Application facade exposed to UI handlers and adapters for session and settings operations.
+"""
 
     def __init__(self, q_app: QApplication, window: Window, app: Application, ) -> None:
         logger.info("Initializing UI Controller...")
@@ -127,14 +143,29 @@ class UIController(QObject):
 
     @property
     def active_session(self) -> Session | None:
+        """Return the currently active session, if any.
+
+        Returns:
+            Active session, or `None` when no session is selected.
+        """
         return self.app.active_session
 
     @property
     def detection_tab_data_table(self) -> QTableWidget:
+        """Return the detection-layer table shown in the bottom panel.
+
+        Returns:
+            Detection table widget.
+        """
         return self.window.bottom_panel.detection_tab_frame_data_table
 
     @property
     def tracker_tab_data_table(self) -> QTableWidget:
+        """Return the tracking-layer table shown in the bottom panel.
+
+        Returns:
+            Tracking table widget.
+        """
         return self.window.bottom_panel.tracker_tab_frame_data_table
 
     def create_edit_annotation_dialogue(
@@ -143,13 +174,21 @@ class UIController(QObject):
             initial_bbox_xyxy: tuple[int, int, int, int]
     ) -> EditAnnotationDialog:
         """
-        Create and return an ``EditAnnotationDialog`` with the given initial label and bounding box.
+        Create and return an `EditAnnotationDialog` with the given initial label and bounding box.
         """
         return self.dialogue_handler.handle_edit_annotation_dialogue(
             initial_label=initial_label, initial_bbox_xyxy=initial_bbox_xyxy
         )
 
     def create_model_change_warning_dialog(self, s_id: SessionId) -> ModelChangeWarningDialog:
+        """Create model change warning dialog.
+
+        Args:
+            s_id: Session whose detection model would be changed.
+
+        Returns:
+            Dialog describing the consequences of changing that model.
+        """
         return self.dialogue_handler.handle_model_change_warning_dialogue(s_id)
 
     @Slot()
@@ -158,7 +197,7 @@ class UIController(QObject):
         Handle application shutdown cleanup.
 
         Note:
-            Triggered by ``QApplication.aboutToQuit`` signal (before main window closes).
+            Triggered by `QApplication.aboutToQuit` signal (before main window closes).
 
             Flow:
                 on_about_to_quit() [this slot]
@@ -204,14 +243,14 @@ class UIController(QObject):
         Handle main window close request (checks if export in progress).
 
         Returns:
-            bool: ``True`` — Allow window to close. ``False`` — Prevent window from closing (user cancelled).
+            bool: `True` — Allow window to close. `False` — Prevent window from closing (user cancelled).
 
         Note:
-            Triggered by ``MainWindow.closeEvent`` → ``set_close_request_handler()``.
+            Triggered by `MainWindow.closeEvent` → `set_close_request_handler()`.
 
             Flow:
 
-            ``on_close_requested()`` `[this slot]`
+            `on_close_requested()` `[this slot]`
               |    ├── Check if export currently in progress
               |    ├── If no export: allow close
               |    └── If export: ask user for confirmation
@@ -245,9 +284,9 @@ class UIController(QObject):
         Handle seek slider position change from transport panel.
 
         Note:
-            Triggered by ``transport_panel.seek_pos_changed`` signal.
+            Triggered by `transport_panel.seek_pos_changed` signal.
 
-            Delegates To: ``PlaybackHandler.on_seek(idx)`` for actual seeking.
+            Delegates To: `PlaybackHandler.on_seek(idx)` for actual seeking.
         """
         self.playback_handler.on_seek(idx)
 
@@ -256,12 +295,19 @@ class UIController(QObject):
         Render the saved frame for the given session ID.
 
         Note:
-            Delegates to ``UIHandler.render_saved_frame(s_id)`` for actual rendering.
+            Delegates to `UIHandler.render_saved_frame(s_id)` for actual rendering.
         """
         self.ui_handler.render_saved_frame(s_id)
 
     def set_ui_data_tab_frame_boxes(self, tab: VideoDataLayerGroup, boxes: ListOfBoxes) -> None:
+        """Display frame boxes in the specified detection or tracking table.
+
+        Args:
+            tab: Data-layer table to update.
+            boxes: Boxes to display in that table.
+        """
         self.ui_handler.set_boxes_for_tab(boxes, tab)
 
     def update_ui_status_bar(self):
+        """Update ui status bar."""
         self.ui_handler.update_status_bar()

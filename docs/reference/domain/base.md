@@ -2,10 +2,12 @@
 
 Source: `src/app/domain/base/`
 
-This package holds shared domain data types and base exceptions. The types
-support bounding-box coordinates, frame-indexed box collections, and
-identifiers used by domain packages.
+This package owns domain-level shared types and validation exceptions. Its
+`ProcessingSettingsKwargs` type describes partial settings updates; the
+domain exception marks invalid empty key-derived sets. Bounding-box, frame,
+and session identifiers are defined by their owning packages rather than
+duplicated here.
 
-**Expand this stub with:** type invariants, exception ownership, and guidance
-for adding a new domain-level value type.
-
+Keep a value here only when multiple domain concepts need it and it has no
+more-specific owner. See [domain helpers](helpers.md),
+[detection values](detection.md), and [session identity](session.md).

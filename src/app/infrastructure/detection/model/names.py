@@ -1,4 +1,8 @@
-"""Detection model registry and confidence thresholds for Torch and YOLO variants."""
+"""Detection model registry and confidence thresholds for Torch and YOLO variants.
+
+Layer: Infrastructure.
+Context: Implements concrete processing and I/O behind application-facing contracts.
+"""
 
 from __future__ import annotations
 

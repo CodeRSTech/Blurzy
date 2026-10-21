@@ -1,10 +1,14 @@
 """Incremental BoT-SORT-style tracking with conservative appearance updates.
 
-Motion uses the constant-velocity state ``[cx, cy, w, h, vx, vy, vw, vh]``,
+Motion uses the constant-velocity state `[cx, cy, w, h, vx, vy, vw, vh]`,
 not aspect ratio. High-confidence boxes are associated by spatially gated
 minimum IoU/appearance cost, then by an unambiguous wide-radius Re-ID pass.
 Low-confidence boxes only recover existing tracks through motion. No
 camera-motion compensation or learned model is needed.
+
+
+Layer: Infrastructure.
+Context: Implements concrete processing and I/O behind application-facing contracts.
 """
 
 from __future__ import annotations
@@ -78,6 +82,16 @@ class _Track:
 
     @classmethod
     def create(cls, uid: int, box: BBoxViewModel, frame_idx: int) -> _Track:
+        """Initialize a Kalman track from one detection.
+
+        Args:
+            uid: Unique identifier assigned to the track.
+            box: Detection providing the initial position, label, and confidence.
+            frame_idx: Index of the frame containing the initial detection.
+
+        Returns:
+            Track with an eight-dimensional position/velocity state and initial covariance.
+        """
         position = _xywh(box)
         scale = np.maximum(position[[2, 3, 2, 3]], 1.0)
         std = np.concatenate((0.1 * scale, 0.0625 * scale))
@@ -91,6 +105,7 @@ class _Track:
         )
 
     def predict(self) -> None:
+        """Advance the Kalman position and covariance by one frame."""
         transition = np.eye(8)
         transition[:4, 4:] = np.eye(4)
         scale = np.maximum(self.mean[[2, 3, 2, 3]], 1.0)
@@ -100,6 +115,13 @@ class _Track:
         self.mean[2:4] = np.maximum(self.mean[2:4], 1.0)
 
     def correct(self, box: BBoxViewModel, frame_idx: int, *, relocate: bool = False) -> None:
+        """Correct the track state from a matched detection.
+
+        Args:
+            box: Detection matched to this track.
+            frame_idx: Index of the frame containing the detection.
+            relocate: Whether this is a Re-ID relocation that resets motion state.
+        """
         if relocate:
             # A pure Re-ID relocation invalidates the old local velocity estimate.
             fresh = self.create(self.uid, box, frame_idx)
@@ -124,9 +146,9 @@ class BotSortStrategy:
     Attributes:
         uses_appearance: Whether the strategy consumes appearance vectors.
 
-    ``embeddings`` must align with the *original* frame_boxes order; ``None`` or
+    `embeddings` must align with the *original* frame_boxes order; `None` or
     zero vectors mean appearance is unavailable. Explicit embeddings take
-    precedence over extraction from RGB ``frame`` pixels. Without either, the
+    precedence over extraction from RGB `frame` pixels. Without either, the
     strategy operates on motion/IoU alone, never geometry-derived fake Re-ID.
 
     Tracks start only from scores >= max(0.5, min_confidence). Appearance EMA
@@ -140,13 +162,17 @@ class BotSortStrategy:
     track velocity. This recovery pass resets stale velocity after relocation.
 
     Note:
-        The persistent motion state is ``[cx, cy, w, h, vx, vy, vw, vh]`` and
+        The persistent motion state is `[cx, cy, w, h, vx, vy, vw, vh]` and
         appearance prototypes are updated only from isolated high-confidence
         observations.
 
     Example:
         strategy = BotSortStrategy(min_confidence=0.2)
-    """
+
+
+Layer: Infrastructure.
+Context: Implements concrete processing or I/O behind application-facing contracts.
+"""
 
     uses_appearance: bool = True
 
@@ -270,7 +296,7 @@ class BotSortStrategy:
             frame_idx: Nonnegative, strictly increasing frame index.
             frame_boxes: Detections in the original input order.
             frame: Optional RGB frame for extractor fallback.
-            embeddings: Optional vectors aligned with ``frame_boxes``.
+            embeddings: Optional vectors aligned with `frame_boxes`.
 
         Returns:
             Tracking and coasted boxes for this frame.
@@ -280,7 +306,7 @@ class BotSortStrategy:
 
         Note:
             Skipped frame indices age and predict tracks by the actual elapsed time.
-            Low scores below ``min_confidence`` are ignored, but remain part of
+            Low scores below `min_confidence` are ignored, but remain part of
             the same-frame appearance-isolation check.
 
         Example:
@@ -360,6 +386,12 @@ class BotSortStrategy:
         matches.extend((remaining_rows[row], index) for row, index in motion_low)
 
         def update_appearance(track: _Track, index: int) -> None:
+            """Update a track's appearance EMA from an isolated high-confidence detection.
+
+            Args:
+                track: Track whose appearance prototype is updated.
+                index: Position of the detection in the original `frame_boxes` sequence.
+            """
             vector = vectors[index]
             if index not in high or vector is None:
                 return
@@ -428,7 +460,7 @@ class BotSortStrategy:
 
         Args:
             source_data: Sparse per-frame detections.
-            total_frames: Number of frames; zero infers it from ``source_data``.
+            total_frames: Number of frames; zero infers it from `source_data`.
             frames: Optional RGB frames keyed by index or supplied as a sequence.
             embeddings_by_frame: Optional per-frame, box-aligned feature vectors.
 
@@ -439,7 +471,7 @@ class BotSortStrategy:
             ValueError: If frame counts or source-data indices are invalid.
 
         Note:
-            Each batch resets IDs and incremental state. Positive ``total_frames``
+            Each batch resets IDs and incremental state. Positive `total_frames`
             includes trailing empty frames.
 
         Example:

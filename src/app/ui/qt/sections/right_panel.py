@@ -1,3 +1,9 @@
+"""Module for right panel; implements the Qt presentation components.
+
+Layer: Presentation.
+Context: Implements the qt presentation components at this architectural boundary.
+"""
+
 from __future__ import annotations
 
 from typing import final, cast, TYPE_CHECKING
@@ -58,7 +64,11 @@ class RightControlPanel(QScrollArea):
         <img class="api-example-image"
         src="api-asset:ui/right-panel/preview.png"
         alt="Sample preview of the right panel, some components are not shown.">
-    """
+
+
+Layer: Presentation.
+Context: Supports user interaction and delegates application work through presentation contracts.
+"""
 
     # --- Signals ---
     # PySide Rule: Signals must be declared at the class level.
@@ -623,6 +633,11 @@ class RightControlPanel(QScrollArea):
         self.start_tracking_requested.emit(strategy_id, source_id)
 
     def update_video_related_widgets_state(self, is_enabled: bool = False) -> None:
+        """Enable or disable the video-dependent controls as a group.
+
+        Args:
+            is_enabled: Whether those controls should be enabled.
+        """
         self._container.setEnabled(is_enabled)
 
     # --- Public API ---
@@ -721,10 +736,20 @@ class RightControlPanel(QScrollArea):
         self.set_tracking_config_warning_visible(False)
 
     def set_iou_widgets_visible(self, visible: bool) -> None:
+        """Show or hide the minimum-IoU label and spin box.
+
+        Args:
+            visible: Whether the controls should be visible.
+        """
         self.min_iou_label.setVisible(visible)
         self.min_iou_spinbox.setVisible(visible)
 
     def set_blur_strength_visible(self, visible: bool) -> None:
+        """Show or hide the blur-strength label and spin box.
+
+        Args:
+            visible: Whether the controls should be visible.
+        """
         self.blur_strength_label.setVisible(visible)
         self.blur_strength_spinbox.setVisible(visible)
 
@@ -827,7 +852,7 @@ class RightControlPanel(QScrollArea):
             enabled: Whether export blur is enabled.
 
         Note:
-            Disabling the master does not alter ``preview_blur_enabled``; it only
+            Disabling the master does not alter `preview_blur_enabled`; it only
             disables the control and preview rendering.
 
         Example:
@@ -836,10 +861,19 @@ class RightControlPanel(QScrollArea):
         self.preview_blur_checkbox.setEnabled(enabled)
 
     def set_tracking_config_warning_visible(self, visible: bool) -> None:
+        """Show or hide the tracking configuration warning.
+
+        Args:
+            visible: Whether the warning label should be visible.
+        """
         self.tracking_config_warning_label.setVisible(visible)
 
     def set_detection_loading_state(self, is_loading: bool) -> None:
-        """Enables/disables certain widgets while a model is loading."""
+        """Disable detection controls and show the model-loading spinner while loading.
+
+Args:
+    is_loading: Whether a detection model is currently loading.
+"""
         self.model_combo_box.setEnabled(not is_loading)
         self.detect_btn.setEnabled(not is_loading)
         self.detect_all_btn.setEnabled(not is_loading)
@@ -850,17 +884,35 @@ class RightControlPanel(QScrollArea):
             self.model_loading_spinner.stop()
 
     def set_tracking_loading_state(self, is_loading: bool) -> None:
+        """Disable tracking controls while the tracking worker is running.
+
+        Args:
+            is_loading: Whether tracking is currently loading or running.
+        """
         self.track_btn.setEnabled(not is_loading)
         self.imp_exp_tracks_button.setEnabled(not is_loading)
         self.tracking_strategy_combo_box.setEnabled(not is_loading)
         self.tracking_source_combo_box.setEnabled(not is_loading)
 
     def set_detection_progress_busy(self, is_busy: bool) -> None:
+        """Show or hide detection progress and reset it when work starts.
+
+        Args:
+            is_busy: Whether detection work is active.
+        """
         self.detection_progress_bar.setVisible(is_busy)
         if is_busy:
             self._reset_detection_progress_bar()
 
     def set_detection_progress(self, current: int, total: int, label: str = "Detection", eta_msecs: float | None = None) -> None:
+        """Display detection completion percentage and optional elapsed-time estimate.
+
+        Args:
+            current: Number of items completed.
+            total: Total number of items; values below one use a denominator of one.
+            label: Prefix shown in the progress-bar text.
+            eta_msecs: Optional remaining-time estimate in milliseconds.
+        """
         maximum = max(total, 1)
         percent = (current / maximum) * 100
         percent_formatted = f"{percent:.2f} %"
@@ -874,6 +926,12 @@ class RightControlPanel(QScrollArea):
             self.detection_progress_bar.setFormat(f"{label}: {percent_formatted}")
 
     def set_tracking_progress_busy(self, is_busy: bool, indeterminate: bool = False) -> None:
+        """Show tracking progress, selecting indeterminate or initial determinate mode.
+
+        Args:
+            is_busy: Whether tracking work is active.
+            indeterminate: Whether to use Qt's continuously animated busy indicator.
+        """
         self.tracking_progress_bar.setVisible(is_busy)
         if not is_busy:
             self._reset_tracking_progress_bar()
@@ -887,6 +945,13 @@ class RightControlPanel(QScrollArea):
         self.tracking_progress_bar.setFormat("Tracking: starting...")
 
     def set_tracking_progress(self, current: int, total: int, label: str = "Tracking") -> None:
+        """Display the completed/total tracking count and corresponding percentage.
+
+        Args:
+            current: Number of items completed.
+            total: Total number of items; values below one use a denominator of one.
+            label: Prefix shown in the progress-bar text.
+        """
         maximum = max(total, 1)
         percent = int((current / maximum) * 100)
         self.tracking_progress_bar.setRange(0, 100)
@@ -906,6 +971,11 @@ class RightControlPanel(QScrollArea):
         progress_bar.setFormat(label)
 
     def set_detection_model_boxes(self, boxes: list[ModelSelectionViewModel]) -> None:
+        """Replace the available detection models and refresh the provider-filtered list.
+
+        Args:
+            boxes: Model choices to make available in the detection model selector.
+        """
         self._all_detection_models = list(boxes)
         self._apply_model_provider_filter(emit_model_signal=False)
 
@@ -944,6 +1014,11 @@ class RightControlPanel(QScrollArea):
             self.model_changed.emit(current_model_id)
 
     def set_selected_detection_model(self, model_id: str) -> None:
+        """Select the model's provider and model entry without emitting a model-change signal.
+
+        Args:
+            model_id: Model identifier, or `"None"` to select the all-providers entry.
+        """
         provider_id = (
             DETECTION_MODEL_PROVIDER_ALL
             if model_id == "None"

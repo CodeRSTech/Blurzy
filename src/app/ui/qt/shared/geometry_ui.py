@@ -1,3 +1,9 @@
+"""Module for geometry ui; implements the Qt presentation components.
+
+Layer: Presentation.
+Context: Implements the qt presentation components at this architectural boundary.
+"""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -10,6 +16,14 @@ if TYPE_CHECKING:
 
 
 def get_handle_points_from_rect(rect: QRect) -> list[QPoint]:
+    """Return the eight corner and edge-midpoint handles of a rectangle.
+
+    Args:
+        rect: Rectangle whose handle positions are calculated.
+
+    Returns:
+        Points ordered clockwise from the top-left corner, omitting the center.
+    """
     x1, y1, x2, y2 = rect.left(), rect.top(), rect.right(), rect.bottom()
     mx, my = (x1 + x2) // 2, (y1 + y2) // 2
     return [

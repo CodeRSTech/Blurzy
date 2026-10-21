@@ -1,5 +1,9 @@
 """
 Infrastructure layer — workers, video decoding, model loading, session data management.
+
+
+Layer: Infrastructure.
+Context: Implements concrete processing and I/O behind application-facing contracts.
 """
 
 from .dtypes import RGBFrame  # depends on numpy only

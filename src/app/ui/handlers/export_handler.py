@@ -1,4 +1,8 @@
-"""Video export handler for exporting annotated videos."""
+"""Video export handler for exporting annotated videos.
+
+Layer: Presentation.
+Context: Converts user actions and worker signals into application calls and UI feedback.
+"""
 
 from __future__ import annotations
 
@@ -46,8 +50,16 @@ class ExportHandler(QObject):
         Uses background worker threads for non-blocking export.
         Prevents overlapping exports.
         Tracks batch export failures and cancellations.
-        Cleans up workers after completion via ``deleteLater()``.
-    """
+        Cleans up workers after completion via `deleteLater()`.
+
+
+Layer: Presentation.
+Context: Supports user interaction and delegates application work through presentation contracts.
+
+
+    Args:
+        controller supplying export operations, export workers, and progress/status widgets.
+"""
 
     def __init__(self, controller: UIController) -> None:
         super().__init__()
@@ -89,6 +101,11 @@ class ExportHandler(QObject):
 
     @property
     def is_exporting(self) -> bool:
+        """Return whether any export worker is currently running.
+
+        Returns:
+            `True` while a single-session or all-session export is running.
+        """
         return (
             self.has_export_worker and self._export_worker.isRunning()
         ) or (
@@ -97,13 +114,28 @@ class ExportHandler(QObject):
 
     @property
     def has_export_worker(self) -> bool:
+        """Return whether a single-session export worker has been assigned.
+
+        Returns:
+            `True` when an export worker is available.
+        """
         return self.__export_worker is not None
 
     @property
     def has_export_all_worker(self) -> bool:
+        """Return whether an all-session export worker has been assigned.
+
+        Returns:
+            `True` when an all-session export worker is available.
+        """
         return self.__export_all_worker is not None
 
     def stop_exports(self, wait: bool = False) -> None:
+        """Request cancellation of active exports and optionally wait for workers to finish.
+
+        Args:
+            wait: Whether to block until each active worker has stopped.
+        """
         if self.has_export_worker and self._export_worker.isRunning():
             self._export_worker.stop()
             if wait:
@@ -118,12 +150,12 @@ class ExportHandler(QObject):
     def on_draw_boxes_changed(self, enabled: bool) -> None:
         """
         Toggle box outlines and ID/label tags in the editor preview.
-    
+
         Note:
-            Triggered by right panel ``draw_boxes_changed`` signal.
-    
+            Triggered by right panel `draw_boxes_changed` signal.
+
             Action:
-                Update session setting ``draw_boxes`` to enabled/disabled.
+                Update session setting `draw_boxes` to enabled/disabled.
                 Re-render the editor frame immediately; export rendering is unchanged.
         """
         s_id = self._window.selected_s_id
@@ -182,7 +214,7 @@ class ExportHandler(QObject):
             enabled: Whether to render blur in the editor when master blur is enabled.
 
         Note:
-            Export blur remains controlled by ``blur_enabled``.
+            Export blur remains controlled by `blur_enabled`.
 
         Example:
             handler.on_preview_blur_changed(True)
@@ -196,13 +228,13 @@ class ExportHandler(QObject):
     def on_blur_toggled(self, enabled: bool) -> None:
         """
         Toggle blur effect on exported video.
-    
+
         Note:
-            Triggered by right panel ``blur_toggled`` signal.
-    
+            Triggered by right panel `blur_toggled` signal.
+
             Action:
                 Show/hide blur strength slider.
-                Update session setting ``blur_enabled``.
+                Update session setting `blur_enabled`.
                 Re-render frame to reflect change immediately.
 
         Args:
@@ -235,13 +267,16 @@ class ExportHandler(QObject):
     @Slot(float)
     def on_blur_strength_changed(self, value: float) -> None:
         """
-        Update blur strength value for exported video.
-    
+        Set the selected session's blur strength and refresh its preview.
+
+        Args:
+            value: Requested Gaussian blur strength from the controls.
+
         Note:
-            Triggered by right panel ``blur_strength_changed`` signal.
-    
+            Triggered by right panel `blur_strength_changed` signal.
+
             Action:
-                Update session setting ``blur_strength`` to new value.
+                Update session setting `blur_strength` to new value.
                 Re-render frame with new blur strength.
         """
         s_id = self._window.selected_s_id
@@ -260,9 +295,9 @@ class ExportHandler(QObject):
     def on_export(self) -> None:
         """
         Export current session video with annotations to file.
-    
+
         Note:
-            Triggered by right panel ``export_btn.clicked``.
+            Triggered by right panel `export_btn.clicked`.
 
             Flow:
                 on_export() [this slot]
@@ -272,7 +307,7 @@ class ExportHandler(QObject):
                   ├── Show file save dialog
                   ├── Create ExportWorker with output path
                   └──> Connect worker signals and start export
-    
+
             Validates:
                 Session is selected (not None).
                 No export currently in progress.
@@ -368,9 +403,9 @@ class ExportHandler(QObject):
     def on_export_all(self) -> None:
         """
         Batch export all open sessions with configurable output paths.
-    
+
         Note:
-            Triggered by right panel ``export_all_btn.clicked`` or File menu action.
+            Triggered by right panel `export_all_btn.clicked` or File menu action.
 
             Flow:
                 on_export_all() [this slot]
@@ -379,12 +414,12 @@ class ExportHandler(QObject):
                   ├── Show batch export configuration dialog
                   ├── Create ExportAllWorker with parameters
                   └──> Connect worker signals and start batch export
-    
+
             User Configuration (via dialog):
                 Output directory path.
                 Filename prefix.
                 Filename suffix.
-    
+
             Tracks:
                 Failed session count (displayed in final message).
                 Cancellation view_state (user stops batch).
@@ -472,10 +507,10 @@ class ExportHandler(QObject):
     def _on_export_all_started(self, s_id: SessionId) -> None:
         """
         Handle start of exporting a single session in batch.
-    
+
         Note:
-            Triggered by ``ExportAllWorker.session_started`` signal.
-    
+            Triggered by `ExportAllWorker.session_started` signal.
+
             Action: Update status bar to show which session is being exported.
         """
         self._window.set_export_progress_status(f"{s_id.basename} (Preparing)")
@@ -485,10 +520,10 @@ class ExportHandler(QObject):
     def _on_export_progress(self, current_frame: int, total_frames: int) -> None:
         """
         Handle progress update from single-session export.
-    
+
         Note:
-            Triggered by ``ExportWorker.progress_updated`` signal.
-    
+            Triggered by `ExportWorker.progress_updated` signal.
+
             Action: Update progress bar and status text with frame count.
         """
         self._window.set_export_progress(current_frame, total_frames, "Exporting")
@@ -498,10 +533,10 @@ class ExportHandler(QObject):
     def _on_export_succeeded(self) -> None:
         """
         Handle successful completion of single-session export.
-    
+
         Note:
-            Triggered by ``ExportWorker.succeeded`` signal.
-    
+            Triggered by `ExportWorker.succeeded` signal.
+
             Action: Show completion message and full progress bar.
         """
         self._window.set_status_text("Export completed.")
@@ -511,10 +546,10 @@ class ExportHandler(QObject):
     def _on_export_cancelled(self) -> None:
         """
         Handle cancellation of single-session export.
-    
+
         Note:
-            Triggered by ``ExportWorker.cancelled`` signal.
-    
+            Triggered by `ExportWorker.cancelled` signal.
+
             Action: Update status bar with cancellation message.
         """
         self._window.set_status_text("Export cancelled.")
@@ -524,10 +559,10 @@ class ExportHandler(QObject):
     def _on_export_failed(self, error: str) -> None:
         """
         Handle failure of single-session export.
-    
+
         Note:
-            Triggered by ``ExportWorker.error_occurred`` signal.
-    
+            Triggered by `ExportWorker.error_occurred` signal.
+
             Action: Show error dialog and update status bar.
         """
         self._window.set_status_text("Export failed.")
@@ -538,10 +573,10 @@ class ExportHandler(QObject):
     def _cleanup_export_worker(self) -> None:
         """
         Clean up single-session export worker after completion.
-    
+
         Note:
-            Triggered by ``ExportWorker.finished_processing`` signal.
-    
+            Triggered by `ExportWorker.finished_processing` signal.
+
             Action: Schedule worker deletion and clear busy view_state.
         """
         self._window.set_export_busy(False)
@@ -553,10 +588,10 @@ class ExportHandler(QObject):
     def _on_export_all_session_progress(self, s_id: SessionId, current_frame: int, total_frames: int) -> None:
         """
         Handle per-session frame progress during batch export.
-    
+
         Note:
-            Triggered by ``ExportAllWorker.session_export_progress_updated`` signal.
-    
+            Triggered by `ExportAllWorker.session_export_progress_updated` signal.
+
             Action: Update progress bar with session name and frame count.
         """
         self._window.set_export_progress(current_frame, total_frames, s_id.basename)
@@ -565,10 +600,10 @@ class ExportHandler(QObject):
     def _on_export_all_progress(self, sessions_done: int, total_sessions: int) -> None:
         """
         Handle overall batch progress (sessions completed vs. total).
-    
+
         Note:
-            Triggered by ``ExportAllWorker.progress_updated`` signal.
-    
+            Triggered by `ExportAllWorker.progress_updated` signal.
+
             Action: Update status bar with session progress (X/N completed).
         """
         self._window.set_export_overall_progress(sessions_done, total_sessions, "Batch")
@@ -578,10 +613,10 @@ class ExportHandler(QObject):
     def _on_export_all_session_failed(self, s_id: SessionId, error: str) -> None:
         """
         Handle failure of a single session during batch export.
-    
+
         Note:
-            Triggered by ``ExportAllWorker.session_failed`` signal.
-    
+            Triggered by `ExportAllWorker.session_failed` signal.
+
             Action:
                 Increment failed count (displayed in final message).
                 Log error for debugging.
@@ -594,10 +629,10 @@ class ExportHandler(QObject):
     def _on_export_all_cancelled(self) -> None:
         """
         Handle cancellation of batch export (user stopped it).
-    
+
         Note:
-            Triggered by ``ExportAllWorker.cancelled`` signal.
-    
+            Triggered by `ExportAllWorker.cancelled` signal.
+
             Action: Set flag so final message indicates cancellation.
         """
         self._batch_cancelled = True
@@ -606,10 +641,10 @@ class ExportHandler(QObject):
     def _on_export_all_finished(self) -> None:
         """
         Handle completion of batch export (all sessions done or cancelled).
-    
+
         Note:
-            Triggered by ``ExportAllWorker.finished_processing`` signal.
-    
+            Triggered by `ExportAllWorker.finished_processing` signal.
+
             Flow:
                 _on_export_all_finished() [this slot]
                   ├── Clear busy view_state in UI
