@@ -1,5 +1,9 @@
 """Module for dummy; implements concrete processing and I/O behind application-facing contracts.
 
+See Also:
+    - [`BaseDetectionModel`][app.infrastructure.detection.model.base.BaseDetectionModel] — contract implemented by this model
+    - [`load_detection_model`][app.infrastructure.detection.model.loader.load_detection_model] — selects the dummy model when detection is disabled
+
 Layer: Infrastructure.
 Context: Implements concrete processing and i/o behind application-facing contracts at this architectural boundary.
 """

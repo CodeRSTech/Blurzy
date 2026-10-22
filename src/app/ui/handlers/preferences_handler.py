@@ -1,5 +1,9 @@
 """Module for preferences handler; translates user actions into application calls and UI feedback.
 
+See Also:
+    - [`AppPreferencesStore`][app.shared.app_preferences.AppPreferencesStore] — persists user preferences
+    - [`PreferencesDialog`][app.ui.qt.dialogs.preferences.PreferencesDialog] — provides preference-editing controls
+
 Layer: Presentation.
 Context: Translates user actions into application calls and ui feedback at this architectural boundary.
 """

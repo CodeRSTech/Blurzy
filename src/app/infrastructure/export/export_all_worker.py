@@ -1,5 +1,9 @@
 """Batch export orchestrator — detects, tracks, and exports multiple sessions sequentially.
 
+See Also:
+    - [`ExportService`][app.application.services.export_service.ExportService] — configures export workflows
+    - [`ExportWorker`][app.infrastructure.export.export_worker.ExportWorker] — processes individual session exports
+
 Layer: Infrastructure.
 Context: Implements concrete processing and I/O behind application-facing contracts.
 """

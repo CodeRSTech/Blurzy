@@ -1,5 +1,9 @@
 """Import merge-strategy enum shared by all layer import services.
 
+See Also:
+    - [`DetectionImportService`][app.application.services.detection.importing.DetectionImportService] — applies the selected mode to detection layers
+    - [`TrackingImportService`][app.application.services.tracking.import_service.TrackingImportService] — applies the selected mode to tracking layers
+
 Layer: Application.
 Context: Coordinates domain state and infrastructure to complete application use cases.
 """

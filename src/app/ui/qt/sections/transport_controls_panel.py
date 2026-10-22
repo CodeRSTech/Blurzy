@@ -1,5 +1,9 @@
 """Module for transport controls panel; implements the Qt presentation components.
 
+See Also:
+    - [`PlaybackState`][app.domain.video.playback_state.PlaybackState] — stores the playback state displayed by the controls
+    - [`PlaybackHandler`][app.ui.handlers.playback_handler.PlaybackHandler] — handles transport actions
+
 Layer: Presentation.
 Context: Implements the qt presentation components at this architectural boundary.
 """

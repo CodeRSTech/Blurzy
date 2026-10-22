@@ -1,6 +1,9 @@
 """
 Module for handling application distribution paths and Qt application metadata configuration.
 
+See Also:
+    - [`Window`][app.ui.qt.window.window.Window] — initializes the main Qt application window
+    - [`TransportControlsPanel`][app.ui.qt.sections.transport_controls_panel.TransportControlsPanel] — loads packaged control icons
 
 Layer: Shared utilities.
 Context: Provides reusable cross-layer helpers without owning application workflow state.

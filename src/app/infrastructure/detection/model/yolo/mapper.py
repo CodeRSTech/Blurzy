@@ -1,5 +1,9 @@
 """Mapper for converting Ultralytics YOLO model output to DetectionPayload.
 
+See Also:
+    - [`DetectionResult`][app.domain.detection.result.DetectionResult] — normalized detection record produced by the mapper
+    - [`YoloDetectionModel`][app.infrastructure.detection.model.yolo.model.YoloDetectionModel] — runs the mapped model output
+
 Layer: Infrastructure.
 Context: Implements concrete processing and I/O behind application-facing contracts.
 """

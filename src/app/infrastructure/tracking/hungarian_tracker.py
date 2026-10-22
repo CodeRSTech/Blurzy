@@ -29,6 +29,10 @@ $$
 The Hungarian solver minimizes total assignment cost; a candidate match is
 accepted only when its IoU meets `iou_threshold`.
 
+See Also:
+    - [`HungarianStrategy`][app.infrastructure.tracking.tracking_strategy.HungarianStrategy] — adapts the tracker to frame-based strategy dispatch
+    - [`TrackingWorker`][app.infrastructure.tracking.track_worker.TrackingWorker] — sends per-frame detections to tracker strategies
+
 Layer: Infrastructure tracking.
 Context: A Qt-independent tracker consumes plain detections and returns
 per-frame track states to the tracking worker.

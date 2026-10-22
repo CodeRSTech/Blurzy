@@ -1,5 +1,9 @@
 """Export interface contracts.
 
+See Also:
+    - [`ExportWorkerFactoryInterface`][app.application.interfaces.export.factory_interface.ExportWorkerFactoryInterface] — creates single-session export workers
+    - [`ExportWorkerInterface`][app.application.interfaces.export.worker_interface.ExportWorkerInterface] — describes worker controls and signals
+
 Layer: Application.
 Context: Defines protocol boundaries consumed by application orchestration.
 """

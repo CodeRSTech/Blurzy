@@ -1,5 +1,9 @@
 """Module for application; coordinates application workflows.
 
+See Also:
+    - [`SessionManager`][app.application.managers.session.SessionManager] — owns session lifecycle operations
+    - [`DetectionService`][app.application.services.detection.service.DetectionService] — coordinates detection workflows
+
 Layer: Application.
 Context: Coordinates application workflows at this architectural boundary.
 """

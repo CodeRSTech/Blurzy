@@ -4,6 +4,10 @@ These `Protocol`-based interfaces decouple services and managers from
 concrete infrastructure implementations.  Concrete classes satisfy them
 via structural subtyping — no explicit `implements` declaration is required.
 
+See Also:
+    - [`UIApplicationInterface`][app.application.interfaces.application_interface.UIApplicationInterface] — application operations exposed to the UI
+    - [`SessionDataStoreInterface`][app.application.interfaces.session.session_data_store_interface.SessionDataStoreInterface] — storage seam for session annotations
+
 
 Layer: Application.
 Context: Defines protocol boundaries consumed by application orchestration.

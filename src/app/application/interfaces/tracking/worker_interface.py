@@ -1,5 +1,9 @@
 """Interface contract for background tracking worker implementations.
 
+See Also:
+    - [`TrackingWorker`][app.infrastructure.tracking.track_worker.TrackingWorker] — implements this worker contract in the background
+    - [`TrackingWorkerFactoryAdapter`][app.application.adapters.tracking_worker_factory_adapter.TrackingWorkerFactoryAdapter] — constructs the concrete worker
+
 Layer: Application.
 Context: Defines protocol boundaries consumed by application orchestration.
 """

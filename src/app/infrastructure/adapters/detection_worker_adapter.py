@@ -1,5 +1,9 @@
 """Explicit adapter wrapping `DetectionWorker` to `DetectionWorkerInterface`.
 
+See Also:
+    - [`DetectionWorkerInterface`][app.application.interfaces.detection.worker_interface.DetectionWorkerInterface] — defines the exposed worker contract
+    - [`DetectionWorker`][app.infrastructure.detection.worker.detection_worker.DetectionWorker] — concrete worker being adapted
+
 Layer: Infrastructure.
 Context: Implements concrete processing and I/O behind application-facing contracts.
 """

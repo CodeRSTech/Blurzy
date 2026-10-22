@@ -1,5 +1,9 @@
 """Interface contract for creating detection worker instances.
 
+See Also:
+    - [`DetectionWorkerFactoryAdapter`][app.application.adapters.detection_worker_factory_adapter.DetectionWorkerFactoryAdapter] — creates concrete detection workers
+    - [`DetectionWorker`][app.infrastructure.detection.worker.detection_worker.DetectionWorker] — concrete worker type
+
 Layer: Application.
 Context: Defines protocol boundaries consumed by application orchestration.
 """

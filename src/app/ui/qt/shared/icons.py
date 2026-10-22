@@ -1,5 +1,9 @@
 """Module for icons; implements the Qt presentation components.
 
+See Also:
+    - [`TransportControlsPanel`][app.ui.qt.sections.transport_controls_panel.TransportControlsPanel] — uses tinted icons for playback controls
+    - [`bundled_resource_path`][app.shared.distribution.bundled_resource_path] — resolves packaged icon assets
+
 Layer: Presentation.
 Context: Implements the qt presentation components at this architectural boundary.
 """

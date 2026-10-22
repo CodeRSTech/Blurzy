@@ -1,5 +1,9 @@
 """Module for bbox drag; implements the Qt presentation components.
 
+See Also:
+    - [`get_drag_mode_for_rect_at_pos`][app.ui.qt.widgets.preview.layer_bbox.helpers.get_drag_mode_for_rect_at_pos] — determines the active handle mode
+    - [`BBoxState`][app.ui.qt.widgets.preview.layer_bbox.bbox_state.BBoxState] — stores drag state for an overlay
+
 Layer: Presentation.
 Context: Implements the qt presentation components at this architectural boundary.
 """

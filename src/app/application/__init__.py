@@ -20,6 +20,10 @@ It has managers, such as the
 
 [`VideoDecodeWorkerManager`][app.application.managers.video_decode_worker.VideoDecodeWorkerManager] - manages the lifecycle of video decode workers for sessions.
 
+See Also:
+    - [`Application`][app.application.application.Application] — exposes orchestrated workflows to the UI
+    - [`SessionService`][app.application.services.session_service.SessionService] — coordinates session and worker use cases
+
 Purpose
 -------
 Implements app use-cases and workflow orchestration.

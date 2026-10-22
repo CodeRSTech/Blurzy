@@ -1,5 +1,9 @@
 """Detection operations handler for model-based object detection.
 
+See Also:
+    - [`DetectionService`][app.application.services.detection.service.DetectionService] — coordinates detection workflows
+    - [`DetectionLayerService`][app.application.services.detection.layer.DetectionLayerService] — applies detection-layer changes
+
 Layer: Presentation.
 Context: Converts user actions and worker signals into application calls and UI feedback.
 """

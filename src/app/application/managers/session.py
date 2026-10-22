@@ -1,5 +1,9 @@
 """Module for session; coordinates session and worker lifecycles.
 
+See Also:
+    - [`SessionInitializer`][app.application.managers.session_initializer.SessionInitializer] — attaches runtime collaborators to new sessions
+    - [`Session`][app.infrastructure.session.session.Session] — infrastructure runtime object managed here
+
 Layer: Application.
 Context: Coordinates session and worker lifecycles at this architectural boundary.
 """

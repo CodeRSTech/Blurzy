@@ -1,5 +1,9 @@
 """Video file metadata — dimensions, FPS, frame count, and timing.
 
+See Also:
+    - [`VideoReader`][app.infrastructure.video.reader.VideoReader] — reads video streams and their metadata
+    - [`SessionState`][app.domain.session.session_state.SessionState] — holds metadata for the active video
+
 Layer: Domain.
 Context: Defines application concepts independently of UI and infrastructure implementations.
 """

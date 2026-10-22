@@ -1,5 +1,9 @@
 """Infrastructure-backed factory adapter for batch export workers.
 
+See Also:
+    - [`ExportAllWorkerFactoryInterface`][app.application.interfaces.export_all.worker_factory_interface.ExportAllWorkerFactoryInterface] — defines the factory contract
+    - [`ExportAllWorkerAdapter`][app.infrastructure.adapters.export_all_worker_adapter.ExportAllWorkerAdapter] — adapts the concrete worker to its interface
+
 Layer: Application.
 Context: Adapts infrastructure implementations to application contracts.
 """

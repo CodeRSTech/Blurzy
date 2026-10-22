@@ -1,5 +1,9 @@
 """Captures and restores project state through the application and project store.
 
+See Also:
+    - [`ProjectStore`][app.infrastructure.project.project_store.ProjectStore] — persists project documents
+    - [`ProjectDocument`][app.domain.project.project_document.ProjectDocument] — represents the saved project structure
+
 Layer: Application.
 Context: Implements use cases by coordinating domain and infrastructure operations at this architectural boundary.
 """

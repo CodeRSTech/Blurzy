@@ -1,6 +1,10 @@
 """
 Mapper for converting MTCNN model output to DetectionPayload.
 
+See Also:
+    - [`DetectionResult`][app.domain.detection.result.DetectionResult] — normalized detection record produced by the mapper
+    - [`MTCNNTFDetectionModel`][app.infrastructure.detection.model.mtcnn_tf.model.MTCNNTFDetectionModel] — runs the mapped model output
+
 **[NOTE]**
 **[IMPORTANT]**
 !!! **NOT supported** as of current development status !!!

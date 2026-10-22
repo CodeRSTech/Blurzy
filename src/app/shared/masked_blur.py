@@ -1,5 +1,9 @@
 """Shared alpha-mask and Gaussian blur rendering used by preview and export.
 
+See Also:
+    - [`UIHandler`][app.ui.handlers.ui_handler.UIHandler] — applies masked blur to the preview frame
+    - [`ExportService`][app.application.services.export_service.ExportService] — uses the same blur operation when exporting
+
 Layer: Shared utilities.
 Context: Provides reusable cross-layer helpers without owning application workflow state.
 """

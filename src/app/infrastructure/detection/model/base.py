@@ -1,5 +1,9 @@
 """Module for base; implements concrete processing and I/O behind application-facing contracts.
 
+See Also:
+    - [`DetectionEngine`][app.infrastructure.detection.engine.detection_engine.DetectionEngine] — invokes the model interface
+    - [`YoloDetectionModel`][app.infrastructure.detection.model.yolo.model.YoloDetectionModel] — one implementation of the model contract
+
 Layer: Infrastructure.
 Context: Implements concrete processing and i/o behind application-facing contracts at this architectural boundary.
 """

@@ -1,5 +1,9 @@
 """Detection service orchestration for model-based object detection across sessions.
 
+See Also:
+    - [`DetectionEngineManager`][app.application.managers.detection_engine.DetectionEngineManager] — manages per-session inference engines
+    - [`DetectionWorkerFactoryAdapter`][app.application.adapters.detection_worker_factory_adapter.DetectionWorkerFactoryAdapter] — creates background detection workers
+
 Layer: Application.
 Context: Coordinates domain state and infrastructure to complete application use cases.
 """

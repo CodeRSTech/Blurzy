@@ -1,5 +1,9 @@
 """Thin UI-layer facade over the concrete `Application` object.
 
+See Also:
+    - [`UIApplicationInterface`][app.ui.interfaces.ui_application_interface.UIApplicationInterface] — defines the UI-facing application contract
+    - [`Application`][app.application.application.Application] — concrete application wrapped by the adapter
+
 Layer: Presentation.
 Context: Bridges UI-facing contracts to application operations.
 """

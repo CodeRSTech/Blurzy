@@ -1,5 +1,9 @@
 """Interface contract for creating tracking worker instances.
 
+See Also:
+    - [`TrackingWorkerFactoryAdapter`][app.application.adapters.tracking_worker_factory_adapter.TrackingWorkerFactoryAdapter] — creates concrete tracking workers
+    - [`TrackingWorker`][app.infrastructure.tracking.track_worker.TrackingWorker] — concrete worker type
+
 Layer: Application.
 Context: Defines protocol boundaries consumed by application orchestration.
 """

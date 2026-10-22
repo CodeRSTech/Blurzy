@@ -4,6 +4,10 @@ This protocol lives in the UI layer on purpose: it describes the subset of the
 concrete `Application` facade that UI handlers need. It is *not* a duplicate
 of the application-layer service contracts; it is the UI's view of the app.
 
+See Also:
+    - [`Application`][app.application.application.Application] — supplies the underlying workflows
+    - [`UIApplicationAdapter`][app.ui.adapters.ui_application_adapter.UIApplicationAdapter] — adapts the application for UI handlers
+
 
 Layer: Presentation.
 Context: Defines presentation-facing contracts for controllers, application access, and windows.

@@ -1,5 +1,9 @@
 """Module for selection history state; stores transient interaction state.
 
+See Also:
+    - [`BBoxViewModel`][app.domain.views.bounding_box_view_model.BBoxViewModel] — snapshots box data for undo and redo
+    - [`AnnotationHandler`][app.ui.handlers.annotation_handler.AnnotationHandler] — applies recorded selection mutations
+
 Layer: Presentation.
 Context: Stores transient interaction state at this architectural boundary.
 """

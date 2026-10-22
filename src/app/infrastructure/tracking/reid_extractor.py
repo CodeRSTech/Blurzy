@@ -1,5 +1,9 @@
 """Deterministic, part-based appearance embeddings for object tracking.
 
+See Also:
+    - [`DeepSortStrategy`][app.infrastructure.tracking.deepsort_strategy.DeepSortStrategy] — uses appearance features for association
+    - [`BotSortStrategy`][app.infrastructure.tracking.botsort_strategy.BotSortStrategy] — uses appearance features for conservative re-identification
+
 Layer: Infrastructure.
 Context: Implements concrete processing and I/O behind application-facing contracts.
 """

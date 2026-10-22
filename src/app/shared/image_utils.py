@@ -1,5 +1,9 @@
 """Module for image utils; provides reusable helpers across application layers.
 
+See Also:
+    - [`UIHandler`][app.ui.handlers.ui_handler.UIHandler] — converts displayed frames for the UI
+    - [`VideoDisplayWidget`][app.ui.qt.widgets.preview.layer_video.VideoDisplayWidget] — presents video frames
+
 Layer: Shared utilities.
 Context: Provides reusable helpers across application layers at this architectural boundary.
 """

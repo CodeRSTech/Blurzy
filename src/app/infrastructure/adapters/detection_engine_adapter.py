@@ -1,5 +1,9 @@
 """Explicit adapter wrapping `DetectionEngine` to `DetectionEngineInterface`.
 
+See Also:
+    - [`DetectionEngineInterface`][app.application.interfaces.detection.engine_interface.DetectionEngineInterface] — defines the exposed engine contract
+    - [`DetectionEngine`][app.infrastructure.detection.engine.detection_engine.DetectionEngine] — concrete engine being adapted
+
 Layer: Infrastructure.
 Context: Implements concrete processing and I/O behind application-facing contracts.
 """

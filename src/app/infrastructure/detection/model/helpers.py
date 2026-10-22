@@ -1,5 +1,9 @@
 """Module for helpers; implements concrete processing and I/O behind application-facing contracts.
 
+See Also:
+    - [`ModelSelectionViewModel`][app.domain.views.model_selection_view_model.ModelSelectionViewModel] — represents provider-specific model choices
+    - [`load_detection_model`][app.infrastructure.detection.model.loader.load_detection_model] — loads a selected model
+
 Layer: Infrastructure.
 Context: Implements concrete processing and i/o behind application-facing contracts at this architectural boundary.
 """

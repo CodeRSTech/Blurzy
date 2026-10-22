@@ -1,5 +1,9 @@
 """Detection model management handler for asynchronous model loading.
 
+See Also:
+    - [`ModelLoadWorker`][app.ui.qt.workers.model_loader.ModelLoadWorker] — loads models without blocking the UI
+    - [`ModelSelectionViewModel`][app.domain.views.model_selection_view_model.ModelSelectionViewModel] — represents available model choices
+
 Layer: Presentation.
 Context: Converts user actions and worker signals into application calls and UI feedback.
 """

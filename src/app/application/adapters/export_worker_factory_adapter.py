@@ -1,5 +1,9 @@
 """Infrastructure-backed factory adapter for single-session export workers.
 
+See Also:
+    - [`ExportWorkerFactoryInterface`][app.application.interfaces.export.factory_interface.ExportWorkerFactoryInterface] — defines the factory contract
+    - [`ExportWorkerAdapter`][app.infrastructure.adapters.export_worker_adapter.ExportWorkerAdapter] — adapts the concrete worker to its interface
+
 Layer: Application.
 Context: Adapts infrastructure implementations to application contracts.
 """

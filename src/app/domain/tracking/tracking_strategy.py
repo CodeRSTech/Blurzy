@@ -1,5 +1,9 @@
 """Tracking algorithm strategy enumeration.
 
+See Also:
+    - [`TrackingService`][app.application.services.tracking.service.TrackingService] — coordinates tracking use cases
+    - [`TrackingWorker`][app.infrastructure.tracking.track_worker.TrackingWorker] — executes the selected tracking strategy
+
 Layer: Domain.
 Context: Defines application concepts independently of UI and infrastructure implementations.
 """

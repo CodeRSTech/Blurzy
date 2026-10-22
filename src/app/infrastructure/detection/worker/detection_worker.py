@@ -1,5 +1,9 @@
 """Background YOLO detection worker — thread-safe batch frame inference.
 
+See Also:
+    - [`DetectionExecutionService`][app.application.services.detection.execution.DetectionExecutionService] — coordinates detection execution
+    - [`VideoReader`][app.infrastructure.video.reader.VideoReader] — supplies frames for inference
+
 Layer: Infrastructure.
 Context: Implements concrete processing and I/O behind application-facing contracts.
 """

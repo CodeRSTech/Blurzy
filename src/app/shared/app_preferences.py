@@ -1,5 +1,9 @@
 """Module for app preferences; provides reusable helpers across application layers.
 
+See Also:
+    - [`PreferencesHandler`][app.ui.handlers.preferences_handler.PreferencesHandler] — applies user preference changes
+    - [`PreferencesDialog`][app.ui.qt.dialogs.preferences.PreferencesDialog] — edits preferences in the UI
+
 Layer: Shared utilities.
 Context: Provides reusable helpers across application layers at this architectural boundary.
 """

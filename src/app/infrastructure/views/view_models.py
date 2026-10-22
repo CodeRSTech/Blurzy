@@ -1,5 +1,9 @@
 """Factory for converting Session objects to UI view model (list display).
 
+See Also:
+    - [`SessionFileListViewModel`][app.domain.views.session_file_list_view_model.SessionFileListViewModel] — returned representation for each session
+    - [`SessionManager`][app.application.managers.session.SessionManager] — supplies sessions for UI presentation
+
 Layer: Infrastructure.
 Context: Implements concrete processing and I/O behind application-facing contracts.
 """

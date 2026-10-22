@@ -1,5 +1,9 @@
 """Module for preview container; implements the Qt presentation components.
 
+See Also:
+    - [`VideoDisplayWidget`][app.ui.qt.widgets.preview.layer_video.VideoDisplayWidget] — presents decoded frames
+    - [`AnnotationOverlayWidget`][app.ui.qt.widgets.preview.layer_bbox.layer_bbox.AnnotationOverlayWidget] — overlays editable bounding boxes
+
 Layer: Presentation.
 Context: Implements the qt presentation components at this architectural boundary.
 """

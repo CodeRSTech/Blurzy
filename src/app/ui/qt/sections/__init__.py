@@ -1,5 +1,9 @@
 """Package for sections; implements the Qt presentation components.
 
+See Also:
+    - [`Window`][app.ui.qt.window.window.Window] — assembles the main sections
+    - [`RightControlPanel`][app.ui.qt.sections.right_panel.RightControlPanel] — contains session and processing controls
+
 Layer: Presentation.
 Context: Implements the qt presentation components at this architectural boundary.
 """

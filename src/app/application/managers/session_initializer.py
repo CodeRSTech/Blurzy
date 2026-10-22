@@ -4,6 +4,9 @@ This helper keeps `Session` construction side-effect free by moving the
 expensive runtime setup out of `Session.__init__` and into the application
 layer.
 
+See Also:
+    - [`Session`][app.infrastructure.session.session.Session] — receives initialized collaborators
+    - [`VideoDecodeWorkerManager`][app.application.managers.video_decode_worker.VideoDecodeWorkerManager] — manages the session's decode worker
 
 Layer: Application.
 Context: Coordinates session-scoped lifecycles for application workers and resources.

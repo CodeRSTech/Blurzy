@@ -1,5 +1,9 @@
 """Session identifier — unique key for a video processing session.
 
+See Also:
+    - [`Session`][app.infrastructure.session.session.Session] — runtime container identified by a session ID
+    - [`SessionManager`][app.application.managers.session.SessionManager] — creates and manages session lifecycles
+
 Layer: Domain.
 Context: Defines application concepts independently of UI and infrastructure implementations.
 """

@@ -1,5 +1,9 @@
 """Offline tracklet stitching and bounded Gaussian interpolation.
 
+See Also:
+    - [`TrackingWorker`][app.infrastructure.tracking.track_worker.TrackingWorker] — applies post-processing to produced tracks
+    - [`ReIDExtractorProtocol`][app.infrastructure.tracking.reid_extractor.ReIDExtractorProtocol] — provides appearance similarity support
+
 Layer: Infrastructure.
 Context: Implements concrete processing and I/O behind application-facing contracts.
 """

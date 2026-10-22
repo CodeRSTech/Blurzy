@@ -1,5 +1,9 @@
 """Containment-based duplicate suppression for per-frame tracker inputs.
 
+See Also:
+    - [`TrackingWorker`][app.infrastructure.tracking.track_worker.TrackingWorker] — applies suppression before strategy updates
+    - [`BBoxViewModel`][app.domain.views.bounding_box_view_model.BBoxViewModel] — represents candidate boxes
+
 Layer: Infrastructure.
 Context: Implements concrete processing and I/O behind application-facing contracts.
 """

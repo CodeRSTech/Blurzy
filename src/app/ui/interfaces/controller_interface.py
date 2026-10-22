@@ -4,6 +4,10 @@ This protocol is intentionally small and UI-owned. It models only the
 controller operations handlers actually need, while keeping handlers from
 depending on the entire concrete `UIController` surface.
 
+See Also:
+    - [`UIController`][app.ui.uicontroller.UIController] — provides the controller operations
+    - [`UIControllerAdapter`][app.ui.adapters.controller_adapter.UIControllerAdapter] — adapts it for handler access
+
 
 Layer: Presentation.
 Context: Defines presentation-facing contracts for controllers, application access, and windows.

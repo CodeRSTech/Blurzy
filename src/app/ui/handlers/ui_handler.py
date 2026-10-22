@@ -1,5 +1,9 @@
 """Frame rendering and UI view_state management handler.
 
+See Also:
+    - [`UIController`][app.ui.uicontroller.UIController] — coordinates the UI handlers
+    - [`draw_frame_overlays`][app.shared.frame_overlay.draw_frame_overlays] — renders annotation overlays on frames
+
 Layer: Presentation.
 Context: Converts user actions and worker signals into application calls and UI feedback.
 """

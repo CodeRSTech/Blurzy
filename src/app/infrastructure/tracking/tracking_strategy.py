@@ -1,5 +1,9 @@
 """Module for tracking strategy; implements concrete processing and I/O behind application-facing contracts.
 
+See Also:
+    - [`TrackingStrategy`][app.domain.tracking.tracking_strategy.TrackingStrategy] — lists the strategies selected by the application
+    - [`HungarianIoUTracker`][app.infrastructure.tracking.hungarian_tracker.HungarianIoUTracker] — core tracker used by the Hungarian strategy
+
 Layer: Infrastructure.
 Context: Implements concrete processing and i/o behind application-facing contracts at this architectural boundary.
 """

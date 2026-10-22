@@ -1,5 +1,9 @@
 """Module for label; implements the Qt presentation components.
 
+See Also:
+    - [`BBoxViewModel`][app.domain.views.bounding_box_view_model.BBoxViewModel] — carries the label displayed for a box
+    - [`AnnotationHandler`][app.ui.handlers.annotation_handler.AnnotationHandler] — coordinates label edits
+
 Layer: Presentation.
 Context: Implements the qt presentation components at this architectural boundary.
 """

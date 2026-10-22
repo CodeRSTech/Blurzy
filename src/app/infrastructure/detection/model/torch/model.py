@@ -1,5 +1,9 @@
 """Module for model; implements concrete processing and I/O behind application-facing contracts.
 
+See Also:
+    - [`BaseDetectionModel`][app.infrastructure.detection.model.base.BaseDetectionModel] — common model contract
+    - [`TorchModelLoaderFactory`][app.infrastructure.detection.model.torch.loader_factory.TorchModelLoaderFactory] — loads the underlying model
+
 Layer: Infrastructure.
 Context: Implements concrete processing and i/o behind application-facing contracts at this architectural boundary.
 """

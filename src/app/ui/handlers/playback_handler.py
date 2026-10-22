@@ -1,5 +1,9 @@
 """Playback control handler for video playback operations.
 
+See Also:
+    - [`PlaybackState`][app.domain.video.playback_state.PlaybackState] — stores playback position and status
+    - [`VideoDecodeWorkerManager`][app.application.managers.video_decode_worker.VideoDecodeWorkerManager] — controls decoding lifecycle
+
 Layer: Presentation.
 Context: Converts user actions and worker signals into application calls and UI feedback.
 """

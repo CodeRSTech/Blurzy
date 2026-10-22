@@ -1,5 +1,9 @@
 """Origin classification for bounding boxes (detection/tracking/manual).
 
+See Also:
+    - [`Box`][app.domain.detection.box.Box] — carries the source value with box data
+    - [`BBoxViewModel`][app.domain.views.bounding_box_view_model.BBoxViewModel] — exposes box source to presentation code
+
 Layer: Domain.
 Context: Defines application concepts independently of UI and infrastructure implementations.
 """

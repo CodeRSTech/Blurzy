@@ -1,5 +1,9 @@
 """UI handlers module for session, playback, detection, tracking, and detection management.
 
+See Also:
+    - [`UIController`][app.ui.uicontroller.UIController] — composes and exposes the handlers
+    - [`UIControllerInterface`][app.ui.interfaces.controller_interface.UIControllerInterface] — keeps handler dependencies narrow
+
 Layer: Presentation.
 Context: Converts user actions and worker signals into application calls and UI feedback.
 """

@@ -1,5 +1,9 @@
 """Result processing collaborator for worker-produced tracking outputs.
 
+See Also:
+    - [`TrackingPostProcessor`][app.infrastructure.tracking.post_processor.TrackingPostProcessor] — refines raw tracking output
+    - [`TrackingWorker`][app.infrastructure.tracking.track_worker.TrackingWorker] — produces the tracking results processed here
+
 Layer: Application.
 Context: Coordinates domain state and infrastructure to complete application use cases.
 """

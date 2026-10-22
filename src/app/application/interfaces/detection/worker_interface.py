@@ -1,5 +1,9 @@
 """Interface contract for background detection worker implementations.
 
+See Also:
+    - [`DetectionWorkerAdapter`][app.infrastructure.adapters.detection_worker_adapter.DetectionWorkerAdapter] — adapts worker operations to this contract
+    - [`DetectionWorker`][app.infrastructure.detection.worker.detection_worker.DetectionWorker] — performs detection in the background
+
 Layer: Application.
 Context: Defines protocol boundaries consumed by application orchestration.
 """

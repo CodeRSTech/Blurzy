@@ -1,5 +1,9 @@
 """Playback view_state management — frame position and playback status.
 
+See Also:
+    - [`SessionState`][app.domain.session.session_state.SessionState] — aggregates playback with session settings
+    - [`Direction`][app.domain.video.direction.Direction] — represents frame-navigation direction
+
 Layer: Domain.
 Context: Defines application concepts independently of UI and infrastructure implementations.
 """

@@ -1,5 +1,9 @@
 """Package for detection; implements use cases by coordinating domain and infrastructure operations.
 
+See Also:
+    - [`DetectionService`][app.application.services.detection.service.DetectionService] — orchestrates model-based detection
+    - [`DetectionBatchProcessor`][app.application.services.detection.batch_processor.DetectionBatchProcessor] — processes worker results
+
 Layer: Application.
 Context: Implements use cases by coordinating domain and infrastructure operations at this architectural boundary.
 """

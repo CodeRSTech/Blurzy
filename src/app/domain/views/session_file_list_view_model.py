@@ -1,5 +1,9 @@
 """Module for session file list view model; defines application concepts without UI or infrastructure dependencies.
 
+See Also:
+    - [`SessionId`][app.domain.session.session_id.SessionId] — identifies each listed session
+    - [`SessionHandler`][app.ui.handlers.session_handler.SessionHandler] — manages sessions shown in the UI
+
 Layer: Domain.
 Context: Defines application concepts without ui or infrastructure dependencies at this architectural boundary.
 """

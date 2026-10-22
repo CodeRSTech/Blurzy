@@ -1,5 +1,9 @@
 """Annotation creation and editing handler for bounding detection management.
 
+See Also:
+    - [`AnnotationContextActions`][app.domain.detection.context_actions.AnnotationContextActions] — describes supported annotation operations
+    - [`AnnotationOverlayWidget`][app.ui.qt.widgets.preview.layer_bbox.layer_bbox.AnnotationOverlayWidget] — captures box-editing interactions
+
 Layer: Presentation.
 Context: Converts user actions and worker signals into application calls and UI feedback.
 """

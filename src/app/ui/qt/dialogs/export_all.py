@@ -1,5 +1,9 @@
 """Module for export all; implements the Qt presentation components.
 
+See Also:
+    - [`ExportService`][app.application.services.export_service.ExportService] — coordinates export operations
+    - [`ExportAllWorkerFactoryAdapter`][app.application.adapters.export_all_worker_factory_adapter.ExportAllWorkerFactoryAdapter] — creates the batch export worker
+
 Layer: Presentation.
 Context: Implements the qt presentation components at this architectural boundary.
 """

@@ -1,5 +1,9 @@
 """Multi-object tracking infrastructure — tracker strategies and background worker.
 
+See Also:
+    - [`TrackingWorker`][app.infrastructure.tracking.track_worker.TrackingWorker] — dispatches frames to tracker strategies
+    - [`TrackingService`][app.application.services.tracking.service.TrackingService] — coordinates tracking use cases
+
 Layer: Infrastructure.
 Context: Implements concrete processing and I/O behind application-facing contracts.
 """

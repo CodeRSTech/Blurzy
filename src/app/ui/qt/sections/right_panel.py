@@ -1,5 +1,9 @@
 """Module for right panel; implements the Qt presentation components.
 
+See Also:
+    - [`VideoDataLayerGroup`][app.domain.video.layer_group.VideoDataLayerGroup] — groups layer controls shown in the panel
+    - [`TrackingStrategy`][app.domain.tracking.tracking_strategy.TrackingStrategy] — supplies tracking choices
+
 Layer: Presentation.
 Context: Implements the qt presentation components at this architectural boundary.
 """

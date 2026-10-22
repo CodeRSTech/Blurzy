@@ -1,5 +1,9 @@
 """Module for frame overlay; provides reusable helpers across application layers.
 
+See Also:
+    - [`UIHandler`][app.ui.handlers.ui_handler.UIHandler] — composes overlays for displayed frames
+    - [`BBoxViewModel`][app.domain.views.bounding_box_view_model.BBoxViewModel] — provides annotation geometry and styling
+
 Layer: Shared utilities.
 Context: Provides reusable helpers across application layers at this architectural boundary.
 """

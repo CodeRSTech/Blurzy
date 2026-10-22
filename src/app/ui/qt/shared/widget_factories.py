@@ -1,5 +1,9 @@
 """Module for widget factories; implements the Qt presentation components.
 
+See Also:
+    - [`create_hbox_layout`][app.ui.qt.shared.layout_shortcuts.create_hbox_layout] — provides layouts used by widget factories
+    - [`RightControlPanel`][app.ui.qt.sections.right_panel.RightControlPanel] — composes reusable controls
+
 Layer: Presentation.
 Context: Implements the qt presentation components at this architectural boundary.
 """

@@ -1,5 +1,9 @@
 """Module for bbox state; implements the Qt presentation components.
 
+See Also:
+    - [`DragMode`][app.ui.qt.widgets.preview.layer_bbox.bbox_drag.DragMode] — identifies the active drag interaction
+    - [`interaction`][app.ui.qt.widgets.preview.layer_bbox.interaction] — updates this state during pointer gestures
+
 Layer: Presentation.
 Context: Implements the qt presentation components at this architectural boundary.
 """

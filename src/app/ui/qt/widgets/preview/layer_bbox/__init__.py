@@ -11,6 +11,10 @@ This package contains the concern-based split of the preview bbox overlay:
 Public API:
 - `AnnotationOverlayWidget`
 
+See Also:
+    - [`FrameBoxesViewModel`][app.domain.views.frame_boxes_view_model.FrameBoxesViewModel] — represents boxes rendered by the overlay
+    - [`AnnotationHandler`][app.ui.handlers.annotation_handler.AnnotationHandler] — handles actions emitted by the widget
+
 
 Layer: Presentation.
 Context: Contains concrete Qt presentation components and supporting utilities.

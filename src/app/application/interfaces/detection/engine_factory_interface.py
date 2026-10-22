@@ -1,5 +1,9 @@
 """Module for engine factory interface; defines contracts independent of concrete adapters.
 
+See Also:
+    - [`DetectionEngineAdapterFactory`][app.infrastructure.detection.engine.detection_engine_factory.DetectionEngineAdapterFactory] — implements engine construction
+    - [`DetectionEngineManager`][app.application.managers.detection_engine.DetectionEngineManager] — consumes the factory contract
+
 Layer: Application.
 Context: Defines contracts independent of concrete adapters at this architectural boundary.
 """

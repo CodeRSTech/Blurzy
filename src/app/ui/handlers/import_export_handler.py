@@ -1,5 +1,9 @@
 """Import / Export handler for detection and tracking layer data.
 
+See Also:
+    - [`DetectionImportService`][app.application.services.detection.importing.DetectionImportService] — imports detection-layer data
+    - [`TrackingExportService`][app.application.services.tracking.export_service.TrackingExportService] — exports tracking-layer data
+
 Layer: Presentation.
 Context: Converts user actions and worker signals into application calls and UI feedback.
 """

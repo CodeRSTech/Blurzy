@@ -2,6 +2,10 @@
 
 This module contains paint-only helpers and does not mutate widget state.
 
+See Also:
+    - [`BBoxViewModel`][app.domain.views.bounding_box_view_model.BBoxViewModel] — provides box geometry and style
+    - [`get_handle_points_from_rect`][app.ui.qt.shared.geometry_ui.get_handle_points_from_rect] — computes resize-handle positions
+
 
 Layer: Presentation.
 Context: Contains concrete Qt presentation components and supporting utilities.

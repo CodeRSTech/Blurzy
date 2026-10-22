@@ -1,5 +1,9 @@
 """Session view_state management — playback, settings, and frame data.
 
+See Also:
+    - [`PlaybackState`][app.domain.video.playback_state.PlaybackState] — tracks the active frame and playback status
+    - [`ProcessingSettings`][app.domain.export.processing_settings.ProcessingSettings] — stores per-session processing options
+
 Layer: Domain.
 Context: Defines application concepts independently of UI and infrastructure implementations.
 """

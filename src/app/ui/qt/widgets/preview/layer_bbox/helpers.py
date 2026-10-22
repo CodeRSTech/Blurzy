@@ -3,6 +3,9 @@
 These helpers are intentionally primitive operations reused by higher-level
 interaction and widget facade logic.
 
+See Also:
+    - [`DragMode`][app.ui.qt.widgets.preview.layer_bbox.bbox_drag.DragMode] — describes the resize handle selected by hit-testing
+    - [`find_bbox_at_pos`][app.ui.qt.widgets.preview.layer_bbox.geometry.find_bbox_at_pos] — locates boxes under the pointer
 
 Layer: Presentation.
 Context: Contains concrete Qt presentation components and supporting utilities.

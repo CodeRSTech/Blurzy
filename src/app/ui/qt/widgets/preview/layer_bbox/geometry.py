@@ -3,6 +3,10 @@
 This module converts between image space and widget space, and provides proximity
 lookup for selecting the nearest bbox around the cursor.
 
+See Also:
+    - [`BBoxState`][app.ui.qt.widgets.preview.layer_bbox.bbox_state.BBoxState] — tracks selected and edited geometry
+    - [`get_drag_mode_for_rect_at_pos`][app.ui.qt.widgets.preview.layer_bbox.helpers.get_drag_mode_for_rect_at_pos] — detects handle hits
+
 
 Layer: Presentation.
 Context: Contains concrete Qt presentation components and supporting utilities.

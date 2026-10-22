@@ -1,5 +1,9 @@
 """Session lifecycle management and worker coordination service.
 
+See Also:
+    - [`SessionManager`][app.application.managers.session.SessionManager] — manages session creation and selection
+    - [`VideoDecodeWorkerManager`][app.application.managers.video_decode_worker.VideoDecodeWorkerManager] — coordinates decode-worker lifecycle
+
 Layer: Application.
 Context: Coordinates domain state and infrastructure to complete application use cases.
 """

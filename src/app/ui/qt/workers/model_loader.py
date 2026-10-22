@@ -1,5 +1,9 @@
 """Module for model loader; implements the Qt presentation components.
 
+See Also:
+    - [`load_detection_model`][app.infrastructure.detection.model.loader.load_detection_model] — loads the selected model
+    - [`ModelHandler`][app.ui.handlers.model_handler.ModelHandler] — manages worker lifecycle and UI feedback
+
 Layer: Presentation.
 Context: Implements the qt presentation components at this architectural boundary.
 """

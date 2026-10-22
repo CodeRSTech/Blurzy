@@ -1,5 +1,9 @@
 """Mapper for converting MTCNN (facenet-pytorch) output to DetectionResult.
 
+See Also:
+    - [`DetectionResult`][app.domain.detection.result.DetectionResult] — normalized detection record produced by the mapper
+    - [`MTCNNTorchDetectionModel`][app.infrastructure.detection.model.mtcnn_torch.model.MTCNNTorchDetectionModel] — runs the mapped model output
+
 Layer: Infrastructure.
 Context: Implements concrete processing and I/O behind application-facing contracts.
 """

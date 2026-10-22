@@ -1,5 +1,9 @@
 """Module for frame boxes view model; defines application concepts without UI or infrastructure dependencies.
 
+See Also:
+    - [`BBoxViewModel`][app.domain.views.bounding_box_view_model.BBoxViewModel] — represents each box in the frame
+    - [`AnnotationOverlayWidget`][app.ui.qt.widgets.preview.layer_bbox.layer_bbox.AnnotationOverlayWidget] — displays and edits frame boxes
+
 Layer: Domain.
 Context: Defines application concepts without ui or infrastructure dependencies at this architectural boundary.
 """

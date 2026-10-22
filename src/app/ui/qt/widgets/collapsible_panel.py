@@ -1,5 +1,9 @@
 """Module for collapsible panel; implements the Qt presentation components.
 
+See Also:
+    - [`create_vbox_layout`][app.ui.qt.shared.layout_shortcuts.create_vbox_layout] — builds the panel's content layout
+    - [`RightControlPanel`][app.ui.qt.sections.right_panel.RightControlPanel] — embeds collapsible control sections
+
 Layer: Presentation.
 Context: Implements the qt presentation components at this architectural boundary.
 """

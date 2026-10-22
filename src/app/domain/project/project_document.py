@@ -1,5 +1,9 @@
 """Defines serializable domain records used by project files.
 
+See Also:
+    - [`ProjectService`][app.application.services.project_service.ProjectService] — coordinates project loading and saving
+    - [`ProjectStore`][app.infrastructure.project.project_store.ProjectStore] — persists project documents
+
 Layer: Domain.
 Context: Defines application concepts without ui or infrastructure dependencies at this architectural boundary.
 """

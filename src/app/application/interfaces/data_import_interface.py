@@ -1,5 +1,9 @@
 """Protocol interface for layer data importers.
 
+See Also:
+    - [`DetectionImportService`][app.application.services.detection.importing.DetectionImportService] — imports detection layers
+    - [`TrackingImportService`][app.application.services.tracking.import_service.TrackingImportService] — imports tracking layers
+
 Layer: Application.
 Context: Defines protocol boundaries consumed by application orchestration.
 """

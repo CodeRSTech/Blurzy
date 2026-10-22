@@ -1,5 +1,9 @@
 """Tracking layer export service — serialises layers C or D to JSON / CSV.
 
+See Also:
+    - [`IDataExporter`][app.application.interfaces.data_export_interface.IDataExporter] — defines the export contract
+    - [`serialize_layer_to_json`][app.application.services.helpers.layer_io.serialize_layer_to_json] — serializes layer records
+
 Layer: Application.
 Context: Coordinates domain state and infrastructure to complete application use cases.
 """

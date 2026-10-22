@@ -1,5 +1,9 @@
 """Unified layer service facade for cross-layer operations.
 
+See Also:
+    - [`DetectionLayerService`][app.application.services.detection.layer.DetectionLayerService] — manages detection-layer operations
+    - [`TrackingLayerService`][app.application.services.tracking.layer_service.TrackingLayerService] — manages tracking-layer operations
+
 Layer: Application.
 Context: Coordinates domain state and infrastructure to complete application use cases.
 """

@@ -1,5 +1,9 @@
 """Module for table key filter; stores transient interaction state.
 
+See Also:
+    - [`BottomDataPanelContainer`][app.ui.qt.sections.bottom_data_panel.BottomDataPanelContainer] — uses the filter for table keyboard events
+    - [`SessionFileListViewModel`][app.domain.views.session_file_list_view_model.SessionFileListViewModel] — supplies session rows displayed in the panel
+
 Layer: Presentation.
 Context: Stores transient interaction state at this architectural boundary.
 """

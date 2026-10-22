@@ -1,5 +1,9 @@
 """Interface contract for creating export worker instances.
 
+See Also:
+    - [`ExportWorkerFactoryAdapter`][app.application.adapters.export_worker_factory_adapter.ExportWorkerFactoryAdapter] — creates concrete export workers
+    - [`ExportWorker`][app.infrastructure.export.export_worker.ExportWorker] — concrete single-session export worker
+
 Layer: Application.
 Context: Defines protocol boundaries consumed by application orchestration.
 """

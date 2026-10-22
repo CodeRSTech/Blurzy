@@ -1,5 +1,9 @@
 """Detection model factory and polymorphic implementations (Torch, YOLO, Dummy).
 
+See Also:
+    - [`DetectionModelError`][app.infrastructure.detection.exceptions.DetectionModelError] — reports model-loading failures
+    - [`BaseDetectionModel`][app.infrastructure.detection.model.base.BaseDetectionModel] — common contract for loaded models
+
 Layer: Infrastructure.
 Context: Implements concrete processing and I/O behind application-facing contracts.
 """

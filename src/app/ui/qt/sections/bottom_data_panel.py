@@ -1,5 +1,9 @@
 """Module for bottom data panel; implements the Qt presentation components.
 
+See Also:
+    - [`FrameBoxesViewModel`][app.domain.views.frame_boxes_view_model.FrameBoxesViewModel] — supplies box data for frame tables
+    - [`SessionFileListViewModel`][app.domain.views.session_file_list_view_model.SessionFileListViewModel] — supplies session-list entries
+
 Layer: Presentation.
 Context: Implements the qt presentation components at this architectural boundary.
 """

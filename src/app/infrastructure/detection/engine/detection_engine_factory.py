@@ -1,5 +1,9 @@
 """Module for detection engine factory; implements concrete processing and I/O behind application-facing contracts.
 
+See Also:
+    - [`DetectionEngineFactoryInterface`][app.application.interfaces.detection.engine_factory_interface.DetectionEngineFactoryInterface] — defines the factory boundary
+    - [`DetectionEngine`][app.infrastructure.detection.engine.detection_engine.DetectionEngine] — concrete engine created by this factory
+
 Layer: Infrastructure.
 Context: Implements concrete processing and i/o behind application-facing contracts at this architectural boundary.
 """

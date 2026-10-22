@@ -5,6 +5,9 @@ application-layer interface.  Concrete classes already satisfy their Protocol
 interfaces via structural subtyping; these adapters provide explicit named seams
 for documentation and testing purposes.
 
+See Also:
+    - [`DetectionEngineInterface`][app.application.interfaces.detection.engine_interface.DetectionEngineInterface] — a contract implemented by this adapter package
+    - [`DetectionEngineAdapter`][app.infrastructure.adapters.detection_engine_adapter.DetectionEngineAdapter] — adapts concrete inference engines
 
 Layer: Infrastructure.
 Context: Implements concrete processing and I/O behind application-facing contracts.

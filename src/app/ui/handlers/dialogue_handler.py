@@ -1,5 +1,9 @@
 """Dialog management handler for UI interactions.
 
+See Also:
+    - [`EditAnnotationDialog`][app.ui.qt.dialogs.annotation.EditAnnotationDialog] — edits annotation details
+    - [`ModelChangeWarningDialog`][app.ui.qt.dialogs.model_change.ModelChangeWarningDialog] — confirms model-change consequences
+
 Layer: Presentation.
 Context: Converts user actions and worker signals into application calls and UI feedback.
 """

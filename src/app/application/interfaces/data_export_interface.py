@@ -1,5 +1,9 @@
 """Protocol interface for layer data exporters.
 
+See Also:
+    - [`DetectionExportService`][app.application.services.detection.exporting.DetectionExportService] — exports detection layers
+    - [`TrackingExportService`][app.application.services.tracking.export_service.TrackingExportService] — exports tracking layers
+
 Layer: Application.
 Context: Defines protocol boundaries consumed by application orchestration.
 """

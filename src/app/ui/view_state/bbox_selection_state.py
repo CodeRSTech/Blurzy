@@ -3,6 +3,10 @@
 Maintains the set of selected box keys for a given session and tab.
 This is the single source of truth for which boxes are currently selected.
 
+See Also:
+    - [`BBoxViewModel`][app.domain.views.bounding_box_view_model.BBoxViewModel] — identifies selectable boxes
+    - [`AnnotationOverlayWidget`][app.ui.qt.widgets.preview.layer_bbox.layer_bbox.AnnotationOverlayWidget] — reflects selection in the preview
+
 
 Layer: Presentation.
 Context: Stores transient state used by presentation interactions.

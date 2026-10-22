@@ -1,5 +1,9 @@
 """Tracking layer (Layer C/D) CRUD operations and track management.
 
+See Also:
+    - [`Direction`][app.domain.video.direction.Direction] — selects the direction for track propagation
+    - [`UnifiedLayerService`][app.application.services.unified_layer_service.UnifiedLayerService] — coordinates operations across layers
+
 Layer: Application.
 Context: Coordinates domain state and infrastructure to complete application use cases.
 """

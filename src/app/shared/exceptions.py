@@ -1,5 +1,9 @@
 """Module for exceptions; provides reusable helpers across application layers.
 
+See Also:
+    - [`SessionManager`][app.application.managers.session.SessionManager] — raises session lifecycle exceptions
+    - [`SessionHandler`][app.ui.handlers.session_handler.SessionHandler] — handles session-opening failures in the UI
+
 Layer: Shared utilities.
 Context: Provides reusable helpers across application layers at this architectural boundary.
 """

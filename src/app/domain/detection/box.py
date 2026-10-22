@@ -1,5 +1,9 @@
 """Base bounding-detection domain dataclass — base core for detection and tracking results.
 
+See Also:
+    - [`DetectionResult`][app.domain.detection.result.DetectionResult] — specializes boxes for inference output
+    - [`BBoxViewModel`][app.domain.views.bounding_box_view_model.BBoxViewModel] — presents box data to the UI
+
 Layer: Domain.
 Context: Defines application concepts independently of UI and infrastructure implementations.
 """

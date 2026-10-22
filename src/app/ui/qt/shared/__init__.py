@@ -1,5 +1,9 @@
 """Package for shared; implements the Qt presentation components.
 
+See Also:
+    - [`create_hbox_layout`][app.ui.qt.shared.layout_shortcuts.create_hbox_layout] — supplies common layout construction
+    - [`get_handle_points_from_rect`][app.ui.qt.shared.geometry_ui.get_handle_points_from_rect] — calculates annotation resize handles
+
 Layer: Presentation.
 Context: Implements the qt presentation components at this architectural boundary.
 """

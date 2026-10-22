@@ -1,5 +1,9 @@
 """Factory for loading Ultralytics YOLO detection model.
 
+See Also:
+    - [`YoloDetectionModel`][app.infrastructure.detection.model.yolo.model.YoloDetectionModel] — consumes the loaded model
+    - [`DetectionModelError`][app.infrastructure.detection.exceptions.DetectionModelError] — reports loader failures
+
 Layer: Infrastructure.
 Context: Implements concrete processing and I/O behind application-facing contracts.
 """

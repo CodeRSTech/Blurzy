@@ -1,5 +1,9 @@
 """Interface contract for creating export all worker instances.
 
+See Also:
+    - [`ExportAllWorkerFactoryAdapter`][app.application.adapters.export_all_worker_factory_adapter.ExportAllWorkerFactoryAdapter] — creates concrete batch export workers
+    - [`ExportAllWorker`][app.infrastructure.export.export_all_worker.ExportAllWorker] — concrete batch worker
+
 Layer: Application.
 Context: Defines protocol boundaries consumed by application orchestration.
 """

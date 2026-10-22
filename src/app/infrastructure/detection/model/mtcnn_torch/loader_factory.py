@@ -1,5 +1,9 @@
 """Factory for loading TorchVision detection model with pretrained weights.
 
+See Also:
+    - [`MTCNNTorchDetectionModel`][app.infrastructure.detection.model.mtcnn_torch.model.MTCNNTorchDetectionModel] — consumes the loaded model
+    - [`DetectionModelError`][app.infrastructure.detection.exceptions.DetectionModelError] — reports loader failures
+
 Layer: Infrastructure.
 Context: Implements concrete processing and I/O behind application-facing contracts.
 """

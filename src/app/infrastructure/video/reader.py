@@ -1,5 +1,9 @@
 """PyAV-based video reader with GPU acceleration, rotation extraction, and frame seeking.
 
+See Also:
+    - [`VideoMetadata`][app.domain.video.metadata.VideoMetadata] — describes the opened video stream
+    - [`VideoDecodeWorker`][app.infrastructure.video.decode_worker.VideoDecodeWorker] — reads frames asynchronously
+
 Layer: Infrastructure.
 Context: Implements concrete processing and I/O behind application-facing contracts.
 """

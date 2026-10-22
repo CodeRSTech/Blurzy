@@ -3,6 +3,10 @@
 This module isolates cache lookup + seek + timeout polling from `Session` so
 the QObject container remains focused on view_state ownership.
 
+See Also:
+    - [`VideoRingBuffer`][app.domain.video.ring_buffer.VideoRingBuffer] — provides cached frame lookup
+    - [`Session`][app.infrastructure.session.session.Session] — delegates frame retrieval to this accessor
+
 
 Layer: Infrastructure.
 Context: Implements concrete processing and I/O behind application-facing contracts.

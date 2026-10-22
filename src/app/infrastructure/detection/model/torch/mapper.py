@@ -1,5 +1,9 @@
 """Mapper for converting TorchVision model output to DetectionPayload.
 
+See Also:
+    - [`DetectionResult`][app.domain.detection.result.DetectionResult] — normalized detection record produced by the mapper
+    - [`TorchDetectionModel`][app.infrastructure.detection.model.torch.model.TorchDetectionModel] — runs the mapped model output
+
 Layer: Infrastructure.
 Context: Implements concrete processing and I/O behind application-facing contracts.
 """

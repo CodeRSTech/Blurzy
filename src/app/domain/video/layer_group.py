@@ -1,5 +1,9 @@
 """Data tab enumeration for UI tab selection.
 
+See Also:
+    - [`VideoDataLayer`][app.domain.video.layer.VideoDataLayer] — individual data layers grouped for display
+    - [`RightControlPanel`][app.ui.qt.sections.right_panel.RightControlPanel] — presents layer-group controls
+
 Layer: Domain.
 Context: Defines application concepts independently of UI and infrastructure implementations.
 """

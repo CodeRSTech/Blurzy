@@ -1,5 +1,9 @@
 """Interface contract for detection engine implementations.
 
+See Also:
+    - [`DetectionEngine`][app.infrastructure.detection.engine.detection_engine.DetectionEngine] — concrete inference engine
+    - [`DetectionEngineAdapter`][app.infrastructure.adapters.detection_engine_adapter.DetectionEngineAdapter] — exposes the engine through this contract
+
 Layer: Application.
 Context: Defines protocol boundaries consumed by application orchestration.
 """

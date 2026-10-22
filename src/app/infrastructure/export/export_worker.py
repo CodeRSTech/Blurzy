@@ -1,5 +1,9 @@
 """Background video export worker with progress callbacks and cancellation support.
 
+See Also:
+    - [`ExportService`][app.application.services.export_service.ExportService] — configures export requests
+    - [`ExportAllWorker`][app.infrastructure.export.export_all_worker.ExportAllWorker] — coordinates exports across sessions
+
 Layer: Infrastructure.
 Context: Implements concrete processing and I/O behind application-facing contracts.
 """

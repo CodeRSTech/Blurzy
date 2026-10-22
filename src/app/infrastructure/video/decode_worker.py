@@ -1,5 +1,9 @@
 """Background video decoding worker with ring buffer cache and hard-seek support.
 
+See Also:
+    - [`VideoRingBuffer`][app.domain.video.ring_buffer.VideoRingBuffer] — stores decoded frames for playback
+    - [`VideoReader`][app.infrastructure.video.reader.VideoReader] — decodes the source video
+
 Layer: Infrastructure.
 Context: Implements concrete processing and I/O behind application-facing contracts.
 """

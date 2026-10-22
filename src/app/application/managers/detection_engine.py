@@ -1,5 +1,9 @@
 """Centralizes detection engine lifecycle (create / update / remove) per session.
 
+See Also:
+    - [`DetectionEngineAdapterFactory`][app.infrastructure.detection.engine.detection_engine_factory.DetectionEngineAdapterFactory] — creates engine adapters
+    - [`DetectionService`][app.application.services.detection.service.DetectionService] — configures detection through this manager
+
 Layer: Application.
 Context: Coordinates session-scoped lifecycles for application workers and resources.
 """

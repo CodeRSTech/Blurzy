@@ -1,5 +1,9 @@
 """Module for model change; implements the Qt presentation components.
 
+See Also:
+    - [`ModelHandler`][app.ui.handlers.model_handler.ModelHandler] — initiates model changes
+    - [`DetectionEngineManager`][app.application.managers.detection_engine.DetectionEngineManager] — replaces per-session detection engines
+
 Layer: Presentation.
 Context: Implements the qt presentation components at this architectural boundary.
 """

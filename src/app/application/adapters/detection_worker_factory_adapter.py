@@ -2,6 +2,10 @@
 # Says "tracking workers" but this adapter is for "detection workers"
 """Adapt the detection-worker factory contract to infrastructure.
 
+See Also:
+    - [`DetectionWorkerFactoryInterface`][app.application.interfaces.detection.worker_factory_interface.DetectionWorkerFactoryInterface] — defines the factory contract
+    - [`DetectionWorker`][app.infrastructure.detection.worker.detection_worker.DetectionWorker] — concrete worker created by the adapter
+
 Layer: Application adapter.
 Context: Creates the infrastructure worker lazily, keeping its concrete type
 behind the application interface.

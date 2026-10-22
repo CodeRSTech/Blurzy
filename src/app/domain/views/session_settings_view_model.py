@@ -1,5 +1,9 @@
 """Module for session settings view model; defines application concepts without UI or infrastructure dependencies.
 
+See Also:
+    - [`ProcessingSettings`][app.domain.export.processing_settings.ProcessingSettings] — underlying session processing options
+    - [`PreferencesHandler`][app.ui.handlers.preferences_handler.PreferencesHandler] — coordinates settings presented to the user
+
 Layer: Domain.
 Context: Defines application concepts without ui or infrastructure dependencies at this architectural boundary.
 """

@@ -1,5 +1,9 @@
 """Type aliases and callback signatures for domain layer.
 
+See Also:
+    - [`ProcessingSettings`][app.domain.export.processing_settings.ProcessingSettings] — defines the settings shape used by session updates
+    - [`UIApplicationInterface`][app.application.interfaces.application_interface.UIApplicationInterface] — consumes typed settings updates
+
 Layer: Domain.
 Context: Defines application concepts independently of UI and infrastructure implementations.
 """

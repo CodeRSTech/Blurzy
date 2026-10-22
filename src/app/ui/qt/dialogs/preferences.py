@@ -1,5 +1,9 @@
 """Module for preferences; implements the Qt presentation components.
 
+See Also:
+    - [`AppPreferences`][app.shared.app_preferences.AppPreferences] — stores the preference values edited here
+    - [`PreferencesHandler`][app.ui.handlers.preferences_handler.PreferencesHandler] — applies dialog changes
+
 Layer: Presentation.
 Context: Implements the qt presentation components at this architectural boundary.
 """

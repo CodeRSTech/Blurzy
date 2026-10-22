@@ -1,5 +1,9 @@
 """Module for spinner label; implements the Qt presentation components.
 
+See Also:
+    - [`ModelLoadWorker`][app.ui.qt.workers.model_loader.ModelLoadWorker] — reports asynchronous model-loading progress
+    - [`ModelHandler`][app.ui.handlers.model_handler.ModelHandler] — coordinates worker feedback with the UI
+
 Layer: Presentation.
 Context: Implements the qt presentation components at this architectural boundary.
 """

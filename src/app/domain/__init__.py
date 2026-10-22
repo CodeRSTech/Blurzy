@@ -1,5 +1,9 @@
 """Package for domain; defines application concepts without UI or infrastructure dependencies.
 
+See Also:
+    - [`SessionState`][app.domain.session.session_state.SessionState] — aggregates active-session state
+    - [`VideoDataLayer`][app.domain.video.layer.VideoDataLayer] — identifies annotation layers
+
 Layer: Domain.
 Context: Defines application concepts without ui or infrastructure dependencies at this architectural boundary.
 """

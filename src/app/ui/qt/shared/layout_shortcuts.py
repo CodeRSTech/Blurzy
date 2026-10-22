@@ -1,5 +1,9 @@
 """Module for layout shortcuts; implements the Qt presentation components.
 
+See Also:
+    - [`widget_factories`][app.ui.qt.shared.widget_factories] — combines reusable layouts with widget constructors
+    - [`CollapsiblePanel`][app.ui.qt.widgets.collapsible_panel.CollapsiblePanel] — uses the shared layout helpers
+
 Layer: Presentation.
 Context: Implements the qt presentation components at this architectural boundary.
 """

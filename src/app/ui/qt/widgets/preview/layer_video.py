@@ -1,5 +1,9 @@
 """Module for layer video; implements the Qt presentation components.
 
+See Also:
+    - [`PreviewContainer`][app.ui.qt.widgets.preview.preview_container.PreviewContainer] — embeds the video view with annotation overlays
+    - [`PlaybackHandler`][app.ui.handlers.playback_handler.PlaybackHandler] — supplies playback updates
+
 Layer: Presentation.
 Context: Implements the qt presentation components at this architectural boundary.
 """

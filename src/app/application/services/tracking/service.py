@@ -1,5 +1,9 @@
 """Tracking worker orchestration and multi-object tracking management.
 
+See Also:
+    - [`TrackingWorkerManager`][app.application.managers.tracking_worker.TrackingWorkerManager] — coordinates worker lifecycle
+    - [`TrackingWorkerFactoryAdapter`][app.application.adapters.tracking_worker_factory_adapter.TrackingWorkerFactoryAdapter] — creates tracking workers
+
 Layer: Application.
 Context: Coordinates domain state and infrastructure to complete application use cases.
 """

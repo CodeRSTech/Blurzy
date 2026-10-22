@@ -1,5 +1,9 @@
 """Video export handler for exporting annotated videos.
 
+See Also:
+    - [`ExportService`][app.application.services.export_service.ExportService] — prepares export operations
+    - [`ExportWorkerFactoryAdapter`][app.application.adapters.export_worker_factory_adapter.ExportWorkerFactoryAdapter] — creates the session export worker
+
 Layer: Presentation.
 Context: Converts user actions and worker signals into application calls and UI feedback.
 """

@@ -1,5 +1,9 @@
 """Centralizes tracking worker lifecycle transitions per session.
 
+See Also:
+    - [`TrackingWorkerFactoryAdapter`][app.application.adapters.tracking_worker_factory_adapter.TrackingWorkerFactoryAdapter] — constructs workers behind the application contract
+    - [`TrackingService`][app.application.services.tracking.service.TrackingService] — requests tracking workers for use cases
+
 Layer: Application.
 Context: Coordinates session-scoped lifecycles for application workers and resources.
 """

@@ -1,5 +1,9 @@
 """Right-click context menu actions for detection editing (add, copy, delete, select, reset).
 
+See Also:
+    - [`AnnotationHandler`][app.ui.handlers.annotation_handler.AnnotationHandler] — dispatches annotation actions
+    - [`build_hit_action_map`][app.ui.qt.widgets.preview.layer_bbox.menu.build_hit_action_map] — maps menu entries to action identifiers
+
 Layer: Domain.
 Context: Defines application concepts independently of UI and infrastructure implementations.
 """

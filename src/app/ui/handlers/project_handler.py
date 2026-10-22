@@ -1,5 +1,9 @@
 """Module for project handler; translates user actions into application calls and UI feedback.
 
+See Also:
+    - [`ProjectService`][app.application.services.project_service.ProjectService] — loads and saves project state
+    - [`ProjectStore`][app.infrastructure.project.project_store.ProjectStore] — persists project documents
+
 Layer: Presentation.
 Context: Translates user actions into application calls and ui feedback at this architectural boundary.
 """

@@ -1,5 +1,9 @@
 """Custom exceptions for domain layer validation and error handling.
 
+See Also:
+    - [`new_passes_filter`][app.domain.helpers.functions.new_passes_filter] — raises key-derived validation errors
+    - [`DomainException`][app.shared.exceptions.DomainException] — shared base for domain-facing failures
+
 Layer: Domain.
 Context: Defines application concepts independently of UI and infrastructure implementations.
 """

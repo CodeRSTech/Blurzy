@@ -2,6 +2,10 @@
 It loads the named model when created, then passes each image or frame to that model’s `detect()` method and
 returns the resulting `DetectionResult` list. It can also replace the active model at runtime with `set_model()`.
 
+See Also:
+    - [`BaseDetectionModel`][app.infrastructure.detection.model.base.BaseDetectionModel] — performs model-specific inference
+    - [`load_detection_model`][app.infrastructure.detection.model.loader.load_detection_model] — resolves the configured implementation
+
 !!! quote "Simple explanation"
 
     A `DetectionEngine` takes an input image and returns a list of detected objects as `List[DetectionResult]`

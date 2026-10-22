@@ -1,5 +1,9 @@
 """Explicit adapter wrapping `Application` to `ApplicationInterface`.
 
+See Also:
+    - [`Application`][app.application.application.Application] — provides the concrete workflow operations
+    - [`UIApplicationInterface`][app.application.interfaces.application_interface.UIApplicationInterface] — defines the contract exposed to callers
+
 Layer: Application.
 Context: Adapts infrastructure implementations to application contracts.
 """

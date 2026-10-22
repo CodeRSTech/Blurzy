@@ -7,6 +7,10 @@ interface contract, this adapter creates concrete
 [`TrackingWorker`][app.infrastructure.tracking.track_worker.TrackingWorker]
 instances behind an interface seam.
 
+See Also:
+    - [`TrackingWorkerManager`][app.application.managers.tracking_worker.TrackingWorkerManager] — coordinates worker lifecycle
+    - [`TrackingWorkerInterface`][app.application.interfaces.tracking.worker_interface.TrackingWorkerInterface] — describes the returned worker contract
+
 
 Layer: Application.
 Context: Adapts infrastructure implementations to application contracts.

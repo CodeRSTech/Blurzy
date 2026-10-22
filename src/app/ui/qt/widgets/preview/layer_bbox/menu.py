@@ -5,6 +5,10 @@ Why this module exists:
 - Centralizes QAction->action-name mapping to avoid long `if/elif` chains.
 - Preserves placeholder selection entries as explicit no-op actions.
 
+See Also:
+    - [`AnnotationContextActions`][app.domain.detection.context_actions.AnnotationContextActions] — defines the action identifiers
+    - [`AnnotationOverlayWidget`][app.ui.qt.widgets.preview.layer_bbox.layer_bbox.AnnotationOverlayWidget] — displays the generated menus
+
 
 Layer: Presentation.
 Context: Contains concrete Qt presentation components and supporting utilities.

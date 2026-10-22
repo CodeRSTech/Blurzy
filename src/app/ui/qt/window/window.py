@@ -1,5 +1,9 @@
 """Module for window; implements the Qt presentation components.
 
+See Also:
+    - [`UIController`][app.ui.uicontroller.UIController] — coordinates application behavior for the window
+    - [`RightControlPanel`][app.ui.qt.sections.right_panel.RightControlPanel] — provides the main control area
+
 Layer: Presentation.
 Context: Implements the qt presentation components at this architectural boundary.
 """

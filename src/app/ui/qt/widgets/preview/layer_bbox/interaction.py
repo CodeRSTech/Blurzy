@@ -3,6 +3,9 @@
 These functions are intentionally side-effect-light and operate on `BBoxState` so
 the widget facade can remain thin and easier to test.
 
+See Also:
+    - [`BBoxState`][app.ui.qt.widgets.preview.layer_bbox.bbox_state.BBoxState] — holds gesture and selection state
+    - [`MouseReleaseOutcome`][app.ui.qt.widgets.preview.layer_bbox.bbox_mouse_release.MouseReleaseOutcome] — describes release handling results
 
 Layer: Presentation.
 Context: Contains concrete Qt presentation components and supporting utilities.

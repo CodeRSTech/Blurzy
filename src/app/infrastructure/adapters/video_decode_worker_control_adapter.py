@@ -1,5 +1,9 @@
 """Explicit adapter wrapping `VideoDecodeWorker` to `VideoDecodeWorkerControlInterface`.
 
+See Also:
+    - [`VideoDecodeWorkerControlInterface`][app.application.interfaces.video.decode_worker_control_interface.VideoDecodeWorkerControlInterface] — defines the lifecycle contract
+    - [`VideoDecodeWorker`][app.infrastructure.video.decode_worker.VideoDecodeWorker] — concrete worker being adapted
+
 Layer: Infrastructure.
 Context: Implements concrete processing and I/O behind application-facing contracts.
 """

@@ -1,5 +1,9 @@
 """Serializes project documents to JSON and validates them when reading.
 
+See Also:
+    - [`ProjectDocument`][app.domain.project.project_document.ProjectDocument] — document model persisted by this store
+    - [`ProjectService`][app.application.services.project_service.ProjectService] — coordinates project persistence
+
 Layer: Infrastructure.
 Context: Implements concrete processing and i/o behind application-facing contracts at this architectural boundary.
 """

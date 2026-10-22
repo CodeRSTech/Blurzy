@@ -1,5 +1,9 @@
 """Module for annotation; implements the Qt presentation components.
 
+See Also:
+    - [`AnnotationHandler`][app.ui.handlers.annotation_handler.AnnotationHandler] — handles annotation edits submitted by the dialog
+    - [`BBoxViewModel`][app.domain.views.bounding_box_view_model.BBoxViewModel] — represents the edited box data
+
 Layer: Presentation.
 Context: Implements the qt presentation components at this architectural boundary.
 """

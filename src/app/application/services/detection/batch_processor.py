@@ -1,5 +1,9 @@
 """Batch processing collaborator for worker-produced detection results.
 
+See Also:
+    - [`DetectionResult`][app.domain.detection.result.DetectionResult] — the per-frame result records processed here
+    - [`DetectionExecutionService`][app.application.services.detection.execution.DetectionExecutionService] — runs inference that produces worker results
+
 Layer: Application.
 Context: Coordinates domain state and infrastructure to complete application use cases.
 """

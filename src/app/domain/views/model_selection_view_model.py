@@ -1,5 +1,9 @@
 """Module for model selection view model; defines application concepts without UI or infrastructure dependencies.
 
+See Also:
+    - [`get_detection_model_names_as_view_model_by_provider_id`][app.infrastructure.detection.model.helpers.get_detection_model_names_as_view_model_by_provider_id] — builds model choices by provider
+    - [`ModelHandler`][app.ui.handlers.model_handler.ModelHandler] — applies model selection changes
+
 Layer: Domain.
 Context: Defines application concepts without ui or infrastructure dependencies at this architectural boundary.
 """

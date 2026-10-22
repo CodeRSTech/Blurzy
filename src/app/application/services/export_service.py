@@ -1,5 +1,9 @@
 """Video export service for rendering blurred videos and detection exports.
 
+See Also:
+    - [`ExportWorkerFactoryAdapter`][app.application.adapters.export_worker_factory_adapter.ExportWorkerFactoryAdapter] — creates session export workers
+    - [`ExportAllWorkerFactoryAdapter`][app.application.adapters.export_all_worker_factory_adapter.ExportAllWorkerFactoryAdapter] — creates batch export workers
+
 Layer: Application.
 Context: Coordinates domain state and infrastructure to complete application use cases.
 """

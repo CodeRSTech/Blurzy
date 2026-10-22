@@ -1,5 +1,9 @@
 """Annotation layer enumeration for managing bounding detection data.
 
+See Also:
+    - [`VideoDataLayerGroup`][app.domain.video.layer_group.VideoDataLayerGroup] — groups layers for UI selection
+    - [`SessionDataStore`][app.infrastructure.session.session_data_store.SessionDataStore] — stores annotations by layer
+
 Layer: Domain.
 Context: Defines application concepts independently of UI and infrastructure implementations.
 """

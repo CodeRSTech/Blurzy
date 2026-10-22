@@ -3,6 +3,10 @@
 Layer: Application interface.
 Context: The application depends on this data-only contract rather than the
 infrastructure store; operations address domain layers and per-frame boxes.
+
+See Also:
+    - [`SessionDataStore`][app.infrastructure.session.session_data_store.SessionDataStore] — implements the storage contract
+    - [`Session`][app.infrastructure.session.session.Session] — owns the concrete store
 """
 
 from __future__ import annotations

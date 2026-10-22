@@ -1,5 +1,9 @@
 """Module for bounding box view model; defines application concepts without UI or infrastructure dependencies.
 
+See Also:
+    - [`Box`][app.domain.detection.box.Box] — domain geometry represented by the view model
+    - [`DetectionResult`][app.domain.detection.result.DetectionResult] — detection output converted to this view model
+
 Layer: Domain.
 Context: Defines application concepts without ui or infrastructure dependencies at this architectural boundary.
 """

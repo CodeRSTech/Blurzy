@@ -1,5 +1,9 @@
 """Module for preview state; stores transient interaction state.
 
+See Also:
+    - [`PreviewContainer`][app.ui.qt.widgets.preview.preview_container.PreviewContainer] — presents the preview state
+    - [`AnnotationOverlayWidget`][app.ui.qt.widgets.preview.layer_bbox.layer_bbox.AnnotationOverlayWidget] — consumes preview tool mode
+
 Layer: Presentation.
 Context: Stores transient interaction state at this architectural boundary.
 """

@@ -1,6 +1,10 @@
 """
 Thread-safe CRUD store for bounding boxes with four-layer architecture support.
 
+See Also:
+    - [`SessionDataStoreInterface`][app.application.interfaces.session.session_data_store_interface.SessionDataStoreInterface] — describes the application-facing storage contract
+    - [`VideoDataLayer`][app.domain.video.layer.VideoDataLayer] — identifies the stored annotation layers
+
 
 Layer: Infrastructure.
 Context: Implements concrete processing and I/O behind application-facing contracts.

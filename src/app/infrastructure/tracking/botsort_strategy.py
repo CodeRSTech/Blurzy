@@ -1,5 +1,9 @@
 """Incremental BoT-SORT-style tracking with conservative appearance updates.
 
+See Also:
+    - [`TrackingWorker`][app.infrastructure.tracking.track_worker.TrackingWorker] — dispatches frames to this strategy
+    - [`ReIDExtractorProtocol`][app.infrastructure.tracking.reid_extractor.ReIDExtractorProtocol] — supplies optional appearance features
+
 Motion uses the constant-velocity state `[cx, cy, w, h, vx, vy, vw, vh]`,
 not aspect ratio. High-confidence boxes are associated by spatially gated
 minimum IoU/appearance cost, then by an unambiguous wide-radius Re-ID pass.

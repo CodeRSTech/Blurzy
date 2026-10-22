@@ -1,5 +1,9 @@
 """Tracking configuration and execution handler for multi-object tracking.
 
+See Also:
+    - [`TrackingService`][app.application.services.tracking.service.TrackingService] — coordinates tracking workflows
+    - [`TrackingStrategy`][app.domain.tracking.tracking_strategy.TrackingStrategy] — defines selectable tracking algorithms
+
 Layer: Presentation.
 Context: Converts user actions and worker signals into application calls and UI feedback.
 """

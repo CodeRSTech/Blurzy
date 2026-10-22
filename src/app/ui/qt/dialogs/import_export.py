@@ -4,6 +4,10 @@ Shown when the user clicks either "Import / Export" button on the right panel.
 The dialog is *scope-aware*: the detection button opens it scoped to layers A/B,
 while the tracking button opens it scoped to layers C/D.
 
+See Also:
+    - [`ImportMode`][app.application.services.helpers.import_mode.ImportMode] — controls how imported boxes are merged
+    - [`VideoDataLayer`][app.domain.video.layer.VideoDataLayer] — identifies the layer scope for import and export
+
 Result
 ------
 After the user clicks OK, call `ImportExportDialog.get_config` to receive

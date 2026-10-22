@@ -1,5 +1,9 @@
 """Detection layer import service — loads bounding-box data into layers A or B.
 
+See Also:
+    - [`IDataImporter`][app.application.interfaces.data_import_interface.IDataImporter] — defines the import contract
+    - [`ImportMode`][app.application.services.helpers.import_mode.ImportMode] — selects how imported boxes merge with existing data
+
 Layer: Application.
 Context: Coordinates domain state and infrastructure to complete application use cases.
 """

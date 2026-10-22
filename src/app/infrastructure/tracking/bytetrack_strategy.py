@@ -6,6 +6,10 @@ motion, then keeps each object under the same track ID. If a detection is not
 very confident, ByteTrack can still use it as a secondary hint so tracks do not
 break too quickly.
 
+See Also:
+    - [`TrackingWorker`][app.infrastructure.tracking.track_worker.TrackingWorker] — dispatches frames to this strategy
+    - [`TrackingStrategy`][app.domain.tracking.tracking_strategy.TrackingStrategy] — lists the user-selectable strategy
+
 
 Layer: Infrastructure.
 Context: Implements concrete processing and I/O behind application-facing contracts.

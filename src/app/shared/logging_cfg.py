@@ -1,5 +1,9 @@
 """Module for logging cfg; provides reusable helpers across application layers.
 
+See Also:
+    - [`normalize_log_level`][app.shared.runtime_config.normalize_log_level] — validates configured logging levels
+    - [`validate_log_file_path`][app.shared.runtime_config.validate_log_file_path] — validates log destinations
+
 Layer: Shared utilities.
 Context: Provides reusable helpers across application layers at this architectural boundary.
 """

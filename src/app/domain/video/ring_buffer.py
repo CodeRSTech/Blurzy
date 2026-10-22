@@ -1,5 +1,9 @@
 """Circular frame buffer with thread-safe O(1) lookup for video playback buffering.
 
+See Also:
+    - [`VideoDecodeWorker`][app.infrastructure.video.decode_worker.VideoDecodeWorker] — fills the buffer with decoded frames
+    - [`SessionFrameAccessor`][app.infrastructure.session.frame_access.SessionFrameAccessor] — reads buffered frames for a session
+
 Layer: Domain.
 Context: Defines application concepts independently of UI and infrastructure implementations.
 """

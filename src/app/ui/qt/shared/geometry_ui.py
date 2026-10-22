@@ -1,5 +1,9 @@
 """Module for geometry ui; implements the Qt presentation components.
 
+See Also:
+    - [`draw_active_bbox`][app.ui.qt.widgets.preview.layer_bbox.rendering.draw_active_bbox] — draws geometry using widget-space handles
+    - [`AnnotationOverlayWidget`][app.ui.qt.widgets.preview.layer_bbox.layer_bbox.AnnotationOverlayWidget] — consumes the geometry helpers
+
 Layer: Presentation.
 Context: Implements the qt presentation components at this architectural boundary.
 """

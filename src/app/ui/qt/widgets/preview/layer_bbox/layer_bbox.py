@@ -7,6 +7,10 @@ Design notes for maintainers:
 - Placeholder selection menu actions are intentionally routed to a no-op action until
   full multi-selection behavior is implemented.
 
+See Also:
+    - [`interaction`][app.ui.qt.widgets.preview.layer_bbox.interaction] — contains side-effect-light gesture transitions
+    - [`FrameBoxesViewModel`][app.domain.views.frame_boxes_view_model.FrameBoxesViewModel] — supplies boxes drawn by the overlay
+
 
 Layer: Presentation.
 Context: Contains concrete Qt presentation components and supporting utilities.

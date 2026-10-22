@@ -1,5 +1,9 @@
 """Incremental DeepSORT-style tracking with conservative appearance memory.
 
+See Also:
+    - [`TrackingWorker`][app.infrastructure.tracking.track_worker.TrackingWorker] — dispatches frames to this strategy
+    - [`ReIDExtractorProtocol`][app.infrastructure.tracking.reid_extractor.ReIDExtractorProtocol] — supplies appearance embeddings
+
 Layer: Infrastructure.
 Context: Implements concrete processing and I/O behind application-facing contracts.
 """

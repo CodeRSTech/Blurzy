@@ -1,5 +1,9 @@
 """Session management handler for UI layer.
 
+See Also:
+    - [`SessionManager`][app.application.managers.session.SessionManager] — manages the active session collection
+    - [`SessionFileListViewModel`][app.domain.views.session_file_list_view_model.SessionFileListViewModel] — supplies session entries for display
+
 Layer: Presentation.
 Context: Converts user actions and worker signals into application calls and UI feedback.
 """

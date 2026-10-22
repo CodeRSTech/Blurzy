@@ -1,5 +1,9 @@
 """Centralizes video decode worker activation and deactivation per session.
 
+See Also:
+    - [`VideoDecodeWorker`][app.infrastructure.video.decode_worker.VideoDecodeWorker] — performs frame decoding
+    - [`SessionInitializer`][app.application.managers.session_initializer.SessionInitializer] — attaches decoding resources to a session
+
 Layer: Application.
 Context: Coordinates session-scoped lifecycles for application workers and resources.
 """

@@ -1,5 +1,9 @@
 """Module for uicontroller; presents application behavior to users.
 
+See Also:
+    - [`Application`][app.application.application.Application] — supplies application workflows
+    - [`UIControllerInterface`][app.ui.interfaces.controller_interface.UIControllerInterface] — defines the handler-facing controller contract
+
 Layer: Presentation.
 Context: Presents application behavior to users at this architectural boundary.
 """

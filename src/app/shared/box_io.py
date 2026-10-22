@@ -1,5 +1,9 @@
 """Module for box io; provides reusable helpers across application layers.
 
+See Also:
+    - [`BBoxViewModel`][app.domain.views.bounding_box_view_model.BBoxViewModel] — the view-model shape serialized by these helpers
+    - [`BoxSource`][app.domain.detection.source.BoxSource] — source values included in serialized boxes
+
 Layer: Shared utilities.
 Context: Provides reusable helpers across application layers at this architectural boundary.
 """

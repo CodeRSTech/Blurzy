@@ -1,5 +1,9 @@
 """Interface contract for background single-session export worker implementations.
 
+See Also:
+    - [`ExportWorkerAdapter`][app.infrastructure.adapters.export_worker_adapter.ExportWorkerAdapter] — adapts worker signals and controls to this contract
+    - [`ExportWorker`][app.infrastructure.export.export_worker.ExportWorker] — performs single-session export
+
 Layer: Application.
 Context: Defines protocol boundaries consumed by application orchestration.
 """

@@ -1,5 +1,9 @@
 """Domain utility functions for string handling and validation.
 
+See Also:
+    - [`VideoDataLayer`][app.domain.video.layer.VideoDataLayer] — layer values used by detection helpers
+    - [`EmptySetGeneratedFromKeysError`][app.domain.base.exceptions.EmptySetGeneratedFromKeysError] — raised for invalid empty key sets
+
 Layer: Domain.
 Context: Defines application concepts independently of UI and infrastructure implementations.
 """

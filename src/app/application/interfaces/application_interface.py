@@ -1,5 +1,9 @@
 """Interface contract for session repository / session access.
 
+See Also:
+    - [`Application`][app.application.application.Application] — provides the concrete application operations
+    - [`ApplicationAdapter`][app.application.adapters.application_adapter.ApplicationAdapter] — adapts the concrete application to this contract
+
 Layer: Application.
 Context: Defines protocol boundaries consumed by application orchestration.
 """

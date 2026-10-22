@@ -1,5 +1,9 @@
 """Detection layer (Layer B) CRUD operations and filtering.
 
+See Also:
+    - [`DetectionResult`][app.domain.detection.result.DetectionResult] — represents machine-generated boxes
+    - [`UnifiedLayerService`][app.application.services.unified_layer_service.UnifiedLayerService] — coordinates cross-layer operations
+
 Layer: Application.
 Context: Coordinates domain state and infrastructure to complete application use cases.
 """

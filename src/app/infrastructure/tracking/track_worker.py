@@ -1,5 +1,9 @@
 """Frame-aware background tracking worker and strategy dispatch.
 
+See Also:
+    - [`TrackingStrategy`][app.domain.tracking.tracking_strategy.TrackingStrategy] — exposes strategy choices to the application
+    - [`TrackingPostProcessor`][app.infrastructure.tracking.post_processor.TrackingPostProcessor] — refines generated tracks
+
 Layer: Infrastructure.
 Context: Implements concrete processing and I/O behind application-facing contracts.
 """

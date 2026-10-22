@@ -1,5 +1,9 @@
 """User-configurable settings for detection, tracking, and rendering pipelines.
 
+See Also:
+    - [`SessionState`][app.domain.session.session_state.SessionState] — owns the settings used by an active session
+    - [`SessionSettingsViewModel`][app.domain.views.session_settings_view_model.SessionSettingsViewModel] — exposes editable settings to the UI
+
 Layer: Domain.
 Context: Defines application concepts independently of UI and infrastructure implementations.
 """

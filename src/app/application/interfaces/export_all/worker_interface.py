@@ -1,5 +1,9 @@
 """Interface contract for background batch export worker implementations.
 
+See Also:
+    - [`ExportAllWorkerAdapter`][app.infrastructure.adapters.export_all_worker_adapter.ExportAllWorkerAdapter] — adapts the worker to this contract
+    - [`ExportAllWorker`][app.infrastructure.export.export_all_worker.ExportAllWorker] — processes exports across sessions
+
 Layer: Application.
 Context: Defines protocol boundaries consumed by application orchestration.
 """

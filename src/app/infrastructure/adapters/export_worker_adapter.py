@@ -1,5 +1,9 @@
 """Explicit adapter wrapping `ExportWorker` to `ExportWorkerInterface`.
 
+See Also:
+    - [`ExportWorkerInterface`][app.application.interfaces.export.worker_interface.ExportWorkerInterface] — defines the exposed worker contract
+    - [`ExportWorker`][app.infrastructure.export.export_worker.ExportWorker] — concrete worker being adapted
+
 Layer: Infrastructure.
 Context: Implements concrete processing and I/O behind application-facing contracts.
 """

@@ -1,5 +1,9 @@
 """Direction enumeration for frame navigation and copying.
 
+See Also:
+    - [`PlaybackState`][app.domain.video.playback_state.PlaybackState] — stores the current playback position
+    - [`TrackingLayerService`][app.application.services.tracking.layer_service.TrackingLayerService] — uses direction when propagating annotations
+
 Layer: Domain.
 Context: Defines application concepts independently of UI and infrastructure implementations.
 """

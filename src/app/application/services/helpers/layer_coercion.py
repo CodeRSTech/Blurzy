@@ -2,6 +2,10 @@
 
 The `VideoDataLayer` and `ImportMode` enums are both `str`-based.
 
+See Also:
+    - [`VideoDataLayer`][app.domain.video.layer.VideoDataLayer] — layer enum normalized by these helpers
+    - [`ImportMode`][app.application.services.helpers.import_mode.ImportMode] — import enum normalized by these helpers
+
 Why coercion is necessary
 -------------------------
 `str`-based enums inherit from `str`.  When such an object is stored as

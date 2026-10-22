@@ -1,5 +1,8 @@
 """Module for runtime config; provides reusable helpers across application layers.
 
+See Also:
+    - [`configure_logging`][app.shared.logging_cfg.configure_logging] — applies validated log-level configuration
+
 Layer: Shared utilities.
 Context: Provides reusable helpers across application layers at this architectural boundary.
 """

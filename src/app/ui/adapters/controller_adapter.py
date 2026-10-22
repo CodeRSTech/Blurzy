@@ -1,5 +1,9 @@
 """Thin UI-layer facade over the concrete `UIController` object.
 
+See Also:
+    - [`UIControllerInterface`][app.ui.interfaces.controller_interface.UIControllerInterface] — defines the handler-facing contract
+    - [`UIController`][app.ui.uicontroller.UIController] — concrete controller wrapped by the adapter
+
 Layer: Presentation.
 Context: Bridges UI-facing contracts to application operations.
 """

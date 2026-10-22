@@ -1,6 +1,10 @@
 """
 Infrastructure layer — workers, video decoding, model loading, session data management.
 
+See Also:
+    - [`Session`][app.infrastructure.session.session.Session] — composes runtime session collaborators
+    - [`SessionInitializer`][app.application.managers.session_initializer.SessionInitializer] — initializes infrastructure resources for each session
+
 
 Layer: Infrastructure.
 Context: Implements concrete processing and I/O behind application-facing contracts.

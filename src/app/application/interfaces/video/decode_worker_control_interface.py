@@ -1,5 +1,9 @@
 """Interface contract for controlling the video decode worker (activate/deactivate).
 
+See Also:
+    - [`VideoDecodeWorkerControlAdapter`][app.infrastructure.adapters.video_decode_worker_control_adapter.VideoDecodeWorkerControlAdapter] — adapts decode-worker controls
+    - [`VideoDecodeWorker`][app.infrastructure.video.decode_worker.VideoDecodeWorker] — implements the decode lifecycle
+
 Layer: Application.
 Context: Defines protocol boundaries consumed by application orchestration.
 """
