@@ -224,6 +224,10 @@ except Exception:
 
         self.write("src/app/infrastructure/__init__.py", '"""Infrastructure."""\n')
         self.write("src/app/infrastructure/tracking/__init__.py", '"""Tracking."""\n')
+        self.write("src/app/infrastructure/tracking/track_worker.py", "class TrackingWorker: pass\n")
+        self.write("src/app/domain/__init__.py", "")
+        self.write("src/app/domain/views/__init__.py", "")
+        self.write("src/app/domain/views/bounding_box_view_model.py", "class BBoxViewModel: pass\n")
         self.write(
             "src/app/infrastructure/tracking/box_deduplication.py",
             (
@@ -249,6 +253,11 @@ except Exception:
             / "index.html"
         )
         rendered = html_path.read_text(encoding="utf-8")
+        self.assertIn('href="../track_worker/#app.infrastructure.tracking.track_worker.TrackingWorker"', rendered)
+        self.assertIn(
+            'href="../../../domain/views/bounding_box_view_model/#app.domain.views.bounding_box_view_model.BBoxViewModel"',
+            rendered,
+        )
         self.assertIn(
             'src="../../../../../../assets/api/tracking/nested-boxes.svg"',
             rendered,
@@ -437,9 +446,22 @@ OMIT_ME = create_singleton()
     def test_representative_example_and_logger_html(self):
         source = (ROOT / "src" / "app" / "infrastructure" / "detection" / "engine" / "detection_engine.py").read_text()
         self.write("src/app/engine.py", source)
+        self.write("src/app/infrastructure/__init__.py", "")
+        self.write("src/app/infrastructure/detection/__init__.py", "")
+        self.write("src/app/infrastructure/detection/model/__init__.py", "")
+        self.write("src/app/infrastructure/detection/model/base.py", "class BaseDetectionModel: pass\n")
+        self.write("src/app/infrastructure/detection/model/loader.py", "def load_detection_model(): pass\n")
         build(self.config())
         html = (self.root / "site" / "docs" / "reference" / "api" / "app" / "engine" / "index.html").read_text(
             encoding="utf-8"
+        )
+        self.assertIn(
+            'href="../infrastructure/detection/model/base/#app.infrastructure.detection.model.base.BaseDetectionModel"',
+            html,
+        )
+        self.assertIn(
+            'href="../infrastructure/detection/model/loader/#app.infrastructure.detection.model.loader.load_detection_model"',
+            html,
         )
         self.assertNotIn('id="app.engine.logger"', html)
         self.assertNotIn("get_logger(", html)

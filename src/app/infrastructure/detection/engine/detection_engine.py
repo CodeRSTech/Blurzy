@@ -60,13 +60,13 @@ class DetectionEngine:
     ```
 
 
-Layer: Infrastructure.
-Context: Implements concrete processing or I/O behind application-facing contracts.
+    Layer: Infrastructure.
+    Context: Implements concrete processing or I/O behind application-facing contracts.
 
 
     Args:
         model_name: Registered name of the detection model.
-"""
+    """
     def __init__(self, model_name: str) -> None:
         """Load a detection model by `model_name` (e.g., "YOLOv8n")."""
         logger.info("Initializing DetectionEngine with model {}", model_name)
