@@ -1,4 +1,12 @@
-"""Frame rendering and UI view_state management handler."""
+"""Frame rendering and UI view_state management handler.
+
+See Also:
+    - [`UIController`][app.ui.uicontroller.UIController] — coordinates the UI handlers
+    - [`draw_frame_overlays`][app.shared.frame_overlay.draw_frame_overlays] — renders annotation overlays on frames
+
+Layer: Presentation.
+Context: Converts user actions and worker signals into application calls and UI feedback.
+"""
 
 from __future__ import annotations
 
@@ -49,9 +57,17 @@ class UIHandler:
     Note:
         Separates rendering logic from handler coordination.
         Does not emit signals (utility class for UI updates).
-        Works with ``RGBFrame`` data from session cache.
+        Works with `RGBFrame` data from session cache.
         Converts frames and generates overlays for preview container.
-    """
+
+
+Layer: Presentation.
+Context: Supports user interaction and delegates application work through presentation contracts.
+
+
+    Args:
+        controller supplying the selected session, preview widgets, and frame-rendering operations.
+"""
 
     def __init__(self, controller: UIController) -> None:
         self._controller = controller
@@ -75,17 +91,17 @@ class UIHandler:
     def set_boxes_for_tab(self, boxes: ListOfBoxes, tab: VideoDataLayerGroup) -> None:
         """
         Update the data boxes displayed in a specific tab.
-    
+
         Args:
-            boxes (ListOfBoxes): List of ``BBoxViewModel`` objects to display.
-            tab (VideoDataLayerGroup): Target tab (``DataBox.DETECTION`` or ``DataBox.TRACKING``).
+            boxes (ListOfBoxes): List of `BBoxViewModel` objects to display.
+            tab (VideoDataLayerGroup): Target tab (`DataBox.DETECTION` or `DataBox.TRACKING`).
         """
         self._window.bottom_panel.set_data_boxes_for_tab(boxes, tab)
 
     def update_status_bar(self) -> None:
         """
         Update status bar with session metadata and playback view_state.
-    
+
         Note:
             Flow:
                 update_status_bar()
@@ -93,8 +109,8 @@ class UIHandler:
                   ├── Extract metadata (filename, resolution, FPS, frame count)
                   ├── Extract playback view_state (current frame, playing status)
                   └──> Format and set status text
-    
-            Status Format: ``filename | 1920x1080 | 30.00 fps | 1/1500 frames | Playing | Model: yolov8n``.
+
+            Status Format: `filename | 1920x1080 | 30.00 fps | 1/1500 frames | Playing | Model: yolov8n`.
         """
         # ====================================================================
         # 1. FETCH ACTIVE SESSION
@@ -142,16 +158,16 @@ class UIHandler:
     def render_saved_frame(self, s_id: SessionId) -> None:
         """
         Fetch, draw boxes on, and display the current frame for a session.
-    
+
         Note:
-            Triggered by ``UIController.render_frame_for_session_id()`` internal calls.
-    
+            Triggered by `UIController.render_frame_for_session_id()` internal calls.
+
             Flow:
                 render_saved_frame(s_id) [this slot]
                   ├── Get session and current frame from cache
                   ├── Draw detection and tracking boxes on frame
                   └──> Update UI labels, seek slider, and status bar
-    
+
             Handles:
                 Frame acquisition from session cache.
                 Bounding detection drawing (detection + tracking overlays).
@@ -193,7 +209,7 @@ class UIHandler:
     def _draw_boxes_on_frame_for_session_id(self, s_id: SessionId, frame: RGBFrame) -> None:
         """
         Fetch boxes for the current frame and prepare frame for rendering.
-    
+
         Note:
             Flow:
                 _draw_boxes_on_frame_for_session_id(s_id, frame)
@@ -201,8 +217,8 @@ class UIHandler:
                   ├── Get tracking boxes for current frame
                   ├── Determine which boxes to display (based on active tab)
                   └──> Call _update_frame_with_bboxes() to render
-    
-            Only draws preview outlines if ``draw_boxes`` is True; table data is
+
+            Only draws preview outlines if `draw_boxes` is True; table data is
             always populated independently of outline visibility.
             Displays detection boxes if Detection tab active, tracking boxes if Tracking tab active.
 
@@ -213,8 +229,8 @@ class UIHandler:
             Exception: Propagates failures fetching session data or applying overlays.
 
         Note:
-            Live Gaussian blur requires both export ``blur_enabled`` and the
-            editor-only ``preview_blur_enabled`` setting.
+            Live Gaussian blur requires both export `blur_enabled` and the
+            editor-only `preview_blur_enabled` setting.
 
         Example:
             handler._draw_boxes_on_frame_for_session_id(session_id, frame)
@@ -264,13 +280,13 @@ class UIHandler:
     ) -> None:
         """
         Synchronize UI controls with frame playback view_state.
-    
+
         Args:
             frame_label_text (str): Text to display in frame counter (e.g., "Frame 123/1500").
             idx (int): Current frame index (0-based).
             max_frame_idx (int): Maximum frame index (for seek slider range).
             status_text (str | None): Optional status bar text.
-    
+
         Note:
             Updates:
                 Frame label in preview container.
@@ -305,16 +321,16 @@ class UIHandler:
     ) -> None:
         """
         Draw bounding boxes on frame and update UI preview.
-    
+
         Note:
             Flow:
-                ``_update_frame_with_bboxes(frame, tab_index, boxes, draw_boxes=True)``
+                `_update_frame_with_bboxes(frame, tab_index, boxes, draw_boxes=True)`
                   ├── Set active bboxes for overlay highlighting
                   ├── Draw boxes_to_draw onto frame
                   ├── Convert RGB frame to QImage
                   ├── Display QImage in preview container
                   └──> Populate data tabs with detection and tracking boxes
-    
+
             Handles:
                 Box drawing with color/label overlays.
                 RGB to QImage conversion for Qt display.

@@ -1,4 +1,12 @@
-"""Frame-aware background tracking worker and strategy dispatch."""
+"""Frame-aware background tracking worker and strategy dispatch.
+
+See Also:
+    - [`TrackingStrategy`][app.domain.tracking.tracking_strategy.TrackingStrategy] — exposes strategy choices to the application
+    - [`TrackingPostProcessor`][app.infrastructure.tracking.post_processor.TrackingPostProcessor] — refines generated tracks
+
+Layer: Infrastructure.
+Context: Implements concrete processing and I/O behind application-facing contracts.
+"""
 
 from __future__ import annotations
 
@@ -36,7 +44,11 @@ class TrackerStrategy(Protocol):
     Note:
         Strategies may ignore frame pixels and appearance features, but must
         accept them to keep worker dispatch independent of the selected tracker.
-    """
+
+
+Layer: Infrastructure.
+Context: Implements concrete processing or I/O behind application-facing contracts.
+"""
 
     uses_appearance: bool
 
@@ -46,7 +58,19 @@ class TrackerStrategy(Protocol):
         frame_boxes: list[BBoxViewModel],
         frame: RGBFrame | None = None,
         embeddings: Sequence[np.ndarray | None] | None = None,
-    ) -> list[BBoxViewModel]: ...
+    ) -> list[BBoxViewModel]:
+        """Update tracker state from detections and optional appearance data.
+
+        Args:
+            frame_idx: Zero-based frame index.
+            frame_boxes: Detections available for association on this frame.
+            frame: Optional decoded frame for appearance-aware strategies.
+            embeddings: Optional appearance descriptors aligned with the boxes.
+
+        Returns:
+            Box view models representing the strategy's updated tracks.
+        """
+        ...
 
 
 _STRATEGY_MAP: dict[str, type] = {
@@ -63,19 +87,19 @@ class TrackingWorker(QThread):
     Background QThread that runs multi-object tracking on frame detections.
 
     Strategy behavior in simple words:
-        - ``dummy``: copy detections without real tracking.
-        - ``hungarian``: match by box overlap (IoU), coast internally, and emit observed boxes only.
-        - ``bytetrack``: prioritize strong matches and use weaker detections to keep IDs stable.
-        - ``deepsort``: match using motion cascade, overlap, and appearance memory.
-        - ``botsort``: combine direct width/height Kalman filtering with two-stage
+        - `dummy`: copy detections without real tracking.
+        - `hungarian`: match by box overlap (IoU), coast internally, and emit observed boxes only.
+        - `bytetrack`: prioritize strong matches and use weaker detections to keep IDs stable.
+        - `deepsort`: match using motion cascade, overlap, and appearance memory.
+        - `botsort`: combine direct width/height Kalman filtering with two-stage
           confidence matching and isolated Re-ID appearance updates.
 
     Attributes:
-        _strategy_name (str): Tracking strategy name, such as ``"dummy"`` or
-            ``"hungarian"``.
+        _strategy_name (str): Tracking strategy name, such as `"dummy"` or
+            `"hungarian"`.
         _source_data (BoxesByFrameIndex): Deep copy of the input detections.
         _tracked_data (BoxesByFrameIndex): Output tracking results protected by
-            ``_mutex``.
+            `_mutex`.
         _mutex (QMutex): Guards tracked output view_state.
         _stop_requested (bool): True when early stop is requested.
         _is_complete (bool): True after tracking finishes successfully.
@@ -91,7 +115,11 @@ class TrackingWorker(QThread):
         settings = ProcessingSettings(min_iou=0.3, confidence_decay=0.05, ...)
         worker = TrackingWorker("hungarian", source_boxes, settings, start=True)
         results = worker.get_tracked_data()
-    """
+
+
+Layer: Infrastructure.
+Context: Implements concrete processing or I/O behind application-facing contracts.
+"""
     progress_updated = Signal(int, int)
     finished_processing = Signal()
     error_occurred = Signal(str)
@@ -185,15 +213,27 @@ class TrackingWorker(QThread):
         self._stop_requested = True
 
     def isRunning(self) -> bool:
-        """Return True while the underlying QThread is active."""
+        """Return True while the underlying QThread is active.
+
+        Returns:
+            `True` while the tracking worker thread is running.
+        """
         return super().isRunning()
 
     def is_complete(self) -> bool:
-        """Return True if tracking finished successfully."""
+        """Return True if tracking finished successfully.
+
+        Returns:
+            `True` when tracking completed successfully.
+        """
         return self._is_complete
 
     def get_tracked_data(self) -> ListOfBoxesByFrameIndexAsDict:
-        """Return deep copy of tracked results (thread-safe via ``_mutex``)."""
+        """Return deep copy of tracked results (thread-safe via `_mutex`).
+
+        Returns:
+            Deep copy of boxes grouped by frame index.
+        """
         with QMutexLocker(self._mutex):
             return copy.deepcopy(self._tracked_data)
 
@@ -203,15 +243,15 @@ class TrackingWorker(QThread):
 
         Note:
             Workflow:
-                1. Open a thread-owned ``VideoReader`` when the session path exists.
+                1. Open a thread-owned `VideoReader` when the session path exists.
                 2. Read each frame, extract aligned embeddings, and call
-                   ``_tracker.update_frame(...)``.
+                   `_tracker.update_frame(...)`.
                 3. Run appearance-aware offline stitching and coast generation.
-                4. Store the result in ``_tracked_data`` under the mutex.
-                5. Emit ``error_occurred(msg)`` on exceptions and always emit
-                   ``finished_processing()``.
+                4. Store the result in `_tracked_data` under the mutex.
+                5. Emit `error_occurred(msg)` on exceptions and always emit
+                   `finished_processing()`.
         Raises:
-            None: Worker failures are signaled through ``error_occurred``.
+            None: Worker failures are signaled through `error_occurred`.
 
         Note:
             Optional post-processing settings control tracklet stitching, GSI, and

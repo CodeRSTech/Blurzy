@@ -1,3 +1,13 @@
+"""Module for model; implements concrete processing and I/O behind application-facing contracts.
+
+See Also:
+    - [`BaseDetectionModel`][app.infrastructure.detection.model.base.BaseDetectionModel] — common model contract
+    - [`TorchModelLoaderFactory`][app.infrastructure.detection.model.torch.loader_factory.TorchModelLoaderFactory] — loads the underlying model
+
+Layer: Infrastructure.
+Context: Implements concrete processing and i/o behind application-facing contracts at this architectural boundary.
+"""
+
 
 
 
@@ -31,8 +41,19 @@ class TorchDetectionModel(BaseDetectionModel):
         _mapper (TorchDetectionMapper): Mapper for converting raw output to DetectionPayload.
 
     Note:
-        Confidence threshold: ``DEFAULT_TORCH_CONFIDENCE_THRESHOLD`` (0.50).
-    """
+        Confidence threshold: `DEFAULT_TORCH_CONFIDENCE_THRESHOLD` (0.50).
+
+
+Layer: Infrastructure.
+Context: Implements concrete processing or I/O behind application-facing contracts.
+
+
+    Args:
+        model_name: Registered name of the detection model.
+        weights_name: Name of the model weights to load.
+        loader: Backend-specific model loader.
+        mapper: TorchVision output mapper that applies confidence/label filtering and creates detection results.
+"""
     def __init__(
         self,
         model_name: str,
@@ -40,7 +61,18 @@ class TorchDetectionModel(BaseDetectionModel):
         loader: TorchModelLoaderFactory | None = None,
         mapper: TorchDetectionMapper | None = None,
     ) -> None:
-        """Initialize TorchVision model by ``model_name`` and ``weights_name``."""
+        """Load the TorchVision model and prepare its inference mapper.
+
+        Args:
+            model_name: TorchVision model class name selected by the registry.
+            weights_name: Weights enum name passed to the model loader.
+            loader: Optional loader override, primarily for tests or alternate backends.
+            mapper: Optional `TorchDetectionMapper` override for confidence filtering and result conversion.
+
+        Note:
+            If omitted, the loader and mapper are constructed automatically; model
+            loading occurs during initialization.
+        """
         self._model_name = model_name
         self._weights_name = weights_name
         self._loader = loader or TorchModelLoaderFactory()
@@ -60,7 +92,16 @@ class TorchDetectionModel(BaseDetectionModel):
         frame: np.ndarray,
         chosen_labels: list[str] | None = None,
     ) -> list[Box]:
-        """Run TorchVision inference, filter by confidence and optional label list."""
+        """Run TorchVision inference, filter by confidence and optional label list.
+
+        Args:
+            frame: RGB image array converted to a tensor before inference.
+            chosen_labels: Optional class labels to retain in the mapped detections.
+
+        Returns:
+            TorchVision boxes meeting the confidence threshold and label filter;
+            an empty list when the model is not loaded or inference cannot proceed.
+        """
 
         if self._model is None or self.labels is None:
             return []

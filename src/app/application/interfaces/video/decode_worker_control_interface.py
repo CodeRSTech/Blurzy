@@ -1,4 +1,12 @@
-"""Interface contract for controlling the video decode worker (activate/deactivate)."""
+"""Interface contract for controlling the video decode worker (activate/deactivate).
+
+See Also:
+    - [`VideoDecodeWorkerControlAdapter`][app.infrastructure.adapters.video_decode_worker_control_adapter.VideoDecodeWorkerControlAdapter] — adapts decode-worker controls
+    - [`VideoDecodeWorker`][app.infrastructure.video.decode_worker.VideoDecodeWorker] — implements the decode lifecycle
+
+Layer: Application.
+Context: Defines protocol boundaries consumed by application orchestration.
+"""
 
 from __future__ import annotations
 
@@ -12,16 +20,20 @@ class VideoDecodeWorkerControlInterface(Protocol):
     """
     Abstraction boundary for the video decode worker's activation controls.
 
-    Allows callers (e.g. ``VideoDecodeWorkerManager``) to activate, deactivate,
+    Allows callers (e.g. `VideoDecodeWorkerManager`) to activate, deactivate,
     and stop the worker, and to read cached frames — without depending on the
-    concrete ``VideoDecodeWorker`` class.
-    """
+    concrete `VideoDecodeWorker` class.
+
+
+Layer: Application.
+Context: Coordinates use-case behavior through domain services and application contracts.
+"""
 
     def set_active(self, active: bool, resume_idx: int = 0) -> None:
         """
-        Toggle the worker on (``True``) or off (``False``).
+        Toggle the worker on (`True`) or off (`False`).
 
-        When activated, the worker seeks to ``resume_idx`` and begins buffering
+        When activated, the worker seeks to `resume_idx` and begins buffering
         frames from that position.  When deactivated, the ring buffer is cleared
         to release memory immediately.
         """
@@ -32,5 +44,12 @@ class VideoDecodeWorkerControlInterface(Protocol):
         ...
 
     def get_cached_frame_at_index(self, idx: int) -> RGBFrame | None:
-        """Return the cached frame at ``idx``, or ``None`` if not in the buffer."""
+        """Return the cached frame at `idx`, or `None` if not in the buffer.
+
+        Args:
+            idx: Zero-based frame index to look up.
+
+        Returns:
+            Cached RGB frame, or `None` when the index is not buffered.
+        """
         ...

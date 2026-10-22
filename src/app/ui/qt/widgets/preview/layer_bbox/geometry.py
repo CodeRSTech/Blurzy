@@ -2,6 +2,14 @@
 
 This module converts between image space and widget space, and provides proximity
 lookup for selecting the nearest bbox around the cursor.
+
+See Also:
+    - [`BBoxState`][app.ui.qt.widgets.preview.layer_bbox.bbox_state.BBoxState] — tracks selected and edited geometry
+    - [`get_drag_mode_for_rect_at_pos`][app.ui.qt.widgets.preview.layer_bbox.helpers.get_drag_mode_for_rect_at_pos] — detects handle hits
+
+
+Layer: Presentation.
+Context: Contains concrete Qt presentation components and supporting utilities.
 """
 
 from __future__ import annotations
@@ -21,7 +29,19 @@ def image_rect_to_widget_space(
     pixmap_rect: QRect,
     image_size: QSize | None,
 ) -> QRect:
-    """Convert image-space coordinates into a widget-space rectangle."""
+    """Convert image-space coordinates into a widget-space rectangle.
+
+    Args:
+        x1: Left image-space coordinate.
+        y1: Top image-space coordinate.
+        x2: Right image-space coordinate.
+        y2: Bottom image-space coordinate.
+        pixmap_rect: Displayed image rectangle in widget coordinates.
+        image_size: Original image dimensions, or `None` if unavailable.
+
+    Returns:
+        Normalized widget-space rectangle, or an empty rectangle if conversion is unavailable.
+    """
     if pixmap_rect.width() == 0 or image_size is None:
         return QRect()
 
@@ -43,7 +63,16 @@ def widget_rect_to_image_space(
     pixmap_rect: QRect,
     image_size: QSize | None,
 ) -> BBoxXYXYTuple:
-    """Convert a widget-space rectangle into clamped image-space coordinates."""
+    """Convert a widget-space rectangle into clamped image-space coordinates.
+
+    Args:
+        rect: Bounding rectangle in widget coordinates.
+        pixmap_rect: Displayed image rectangle in widget coordinates.
+        image_size: Original image dimensions, or `None` if unavailable.
+
+    Returns:
+        `(x1, y1, x2, y2)` coordinates clamped to the image bounds, or zeros if conversion is unavailable.
+    """
     if pixmap_rect.width() == 0 or image_size is None:
         return 0, 0, 0, 0
 
@@ -64,7 +93,18 @@ def find_bbox_at_pos(
     image_size: QSize | None,
     snap_radius_sq: int = 2500,
 ) -> tuple[str | None, QRect | None]:
-    """Find a bbox at the cursor or snap to the nearest bbox center within radius."""
+    """Find a bbox at the cursor or snap to the nearest bbox center within radius.
+
+    Args:
+        active_bboxes: Box keys mapped to image-space coordinate tuples.
+        pos: Cursor position in widget coordinates.
+        pixmap_rect: Displayed image rectangle in widget coordinates.
+        image_size: Original image dimensions, or `None` if unavailable.
+        snap_radius_sq: Maximum squared widget-pixel distance from a box center for snapping.
+
+    Returns:
+        `(box_key, widget_rect)` for a containing or nearby box; `(None, None)` if none qualifies.
+    """
     closest_id: str | None = None
     closest_rect: QRect | None = None
     min_dist = float("inf")
@@ -101,10 +141,24 @@ def image_rect_to_widget_space_with_transforms(
     pan_x: float = 0.0,
     pan_y: float = 0.0,
 ) -> QRect:
-    """Convert image-space coordinates into widget-space using the viewport rect.
+    """Convert image-space box coordinates using the displayed image rectangle.
 
     The video widget already applies zoom/pan to the displayed image, so the overlay
     should use that same pixmap rect rather than re-scaling the bbox rectangle again.
+
+    Args:
+        x1: Left image-space coordinate.
+        y1: Top image-space coordinate.
+        x2: Right image-space coordinate.
+        y2: Bottom image-space coordinate.
+        pixmap_rect: Displayed image rectangle in widget coordinates.
+        image_size: Original image dimensions, or `None` if unavailable.
+        zoom: Retained for API compatibility; coordinate conversion uses `pixmap_rect`.
+        pan_x: Retained for API compatibility; coordinate conversion uses `pixmap_rect`.
+        pan_y: Retained for API compatibility; coordinate conversion uses `pixmap_rect`.
+
+    Returns:
+        Normalized widget-space rectangle.
     """
     return image_rect_to_widget_space(x1, y1, x2, y2, pixmap_rect, image_size)
 
@@ -119,7 +173,21 @@ def find_bbox_at_pos_with_transforms(
     pan_y: float = 0.0,
     snap_radius_sq: int = 2500,
 ) -> tuple[str | None, QRect | None]:
-    """Find a bbox at the cursor using the viewport-aligned widget-space rect."""
+    """Find a bbox at the cursor using the viewport-aligned widget-space rect.
+
+    Args:
+        active_bboxes: Box keys mapped to image-space coordinate tuples.
+        pos: Cursor position in widget coordinates.
+        pixmap_rect: Displayed image rectangle in widget coordinates.
+        image_size: Original image dimensions, or `None` if unavailable.
+        zoom: Retained for API compatibility; the supplied `pixmap_rect` already reflects zoom.
+        pan_x: Retained for API compatibility; the supplied `pixmap_rect` already reflects panning.
+        pan_y: Retained for API compatibility; the supplied `pixmap_rect` already reflects panning.
+        snap_radius_sq: Maximum squared widget-pixel distance from a box center for snapping.
+
+    Returns:
+        `(box_key, widget_rect)` for a containing or nearby box; `(None, None)` if none qualifies.
+    """
     closest_id: str | None = None
     closest_rect: QRect | None = None
     min_dist = float("inf")
@@ -153,7 +221,17 @@ def find_bbox_keys_intersecting_rect(
     pixmap_rect: QRect,
     image_size: QSize | None,
 ) -> list[str]:
-    """Return box keys whose widget-space bounds intersect a marquee rectangle."""
+    """Return box keys whose widget-space bounds intersect a marquee rectangle.
+
+    Args:
+        active_bboxes: Box keys mapped to image-space coordinate tuples.
+        selection_rect: Marquee rectangle in widget coordinates.
+        pixmap_rect: Displayed image rectangle in widget coordinates.
+        image_size: Original image dimensions, or `None` if unavailable.
+
+    Returns:
+        Keys of boxes whose widget-space rectangles intersect the marquee.
+    """
     return [
         bbox_id
         for bbox_id, (x1, y1, x2, y2) in active_bboxes.items()

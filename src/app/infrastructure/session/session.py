@@ -45,6 +45,10 @@ See Also:
     layers. That can indicate an **Interface Segregation Principle (ISP)** concern
     for clients that need only one of those capabilities. These are design tradeoffs
     to assess against actual change and testing needs, not automatic violations.
+
+
+Layer: Infrastructure.
+Context: Implements concrete processing and I/O behind application-facing contracts.
 """
 
 from __future__ import annotations
@@ -75,7 +79,7 @@ class Session(QObject):
     Container holding the runtime view_state and layer storage for a single video
     processing session.
 
-    ``Session`` stays a ``QObject`` for now and keeps a narrow runtime role:
+    `Session` stays a `QObject` for now and keeps a narrow runtime role:
     it owns IDs, layer storage, collaborator references, and thin convenience
     methods. Expensive initialization and frame-orchestration logic are
     delegated to dedicated collaborators.
@@ -90,7 +94,15 @@ class Session(QObject):
         detection_engine: Detection engine used by the session, if initialized.
         detection_worker: Detection worker, if initialized.
         tracking_worker: Tracking worker, if initialized.
-    """
+
+
+Layer: Infrastructure.
+Context: Implements concrete processing or I/O behind application-facing contracts.
+
+
+    Args:
+        s_id: Identifier of the session associated with this object.
+"""
 
     def __init__(self, s_id: SessionId) -> None:
         """Create a bare session shell.
@@ -146,26 +158,47 @@ class Session(QObject):
 
     @property
     def has_buffered_frame(self) -> bool:
-        """Check if the session has a buffered frame."""
+        """Check if the session has a buffered frame.
+
+Returns:
+    `True` when the decode worker can provide a buffered frame.
+"""
         return self.get_buffered_frame() is not None
 
     @property
     def has_running_detection_worker(self) -> bool:
-        """Check if the session has a running detection worker."""
+        """Check if the session has a running detection worker.
+
+Returns:
+    `True` when the detection worker exists and is running.
+"""
         return self.detection_worker is not None and self.detection_worker.isRunning()
 
     @property
     def has_running_tracking_worker(self) -> bool:
-        """Check if the session has a running tracking worker."""
+        """Check if the session has a running tracking worker.
+
+Returns:
+    `True` when the tracking worker exists and is running.
+"""
         return self.tracking_worker is not None and self.tracking_worker.isRunning()
 
     @property
     def is_playing_video(self) -> bool:
-        """Check if the session is currently playing the video."""
+        """Check if the session is currently playing the video.
+
+Returns:
+    Whether the session is currently playing.
+"""
         return self._require_state().playback.is_playing
 
     @is_playing_video.setter
     def is_playing_video(self, is_playing: bool) -> None:
+        """Set whether this session's playback is active.
+
+        Args:
+            is_playing: Whether playback should be active.
+        """
         self._require_state().playback.is_playing = is_playing
 
     def close(self) -> None:
@@ -185,20 +218,49 @@ class Session(QObject):
     # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
     def get_layer_by_name(self, layer_name: VideoDataLayer) -> ListOfBoxesByFrameIndexAsDict:
-        """Get all boxes for a specific layer as a dictionary of lists."""
+        """Get all boxes for a specific layer as a dictionary of lists.
+
+        Args:
+            layer_name: Layer whose boxes should be retrieved.
+
+        Returns:
+            Mapping of frame indices to the layer's boxes for those frames.
+        """
         return self.data.get_all_boxes_for_layer_as_dict_of_lists(layer_name)
 
     def get_layer_boxes_for_index(self, layer_name: VideoDataLayer, frame_index: int) -> ListOfBoxes:
-        """Get all boxes for a specific layer at a specific frame index."""
+        """Get all boxes for a specific layer at a specific frame index.
+
+        Args:
+            layer_name: Layer to query.
+            frame_index: Zero-based frame index to query.
+
+        Returns:
+            Boxes stored in the layer at that frame, or an empty list if none are stored.
+        """
         # Natively fetches the list directly from the Pandas dataframe!
         return self.data.get_boxes_for_layer_at_frame_index_as_list(layer_name, frame_index)
 
     def get_layer_boxes_for_current_frame(self, layer_name: VideoDataLayer) -> ListOfBoxes:
-        """Get all boxes for a specific layer at the current playback frame index."""
+        """Get all boxes for a specific layer at the current playback frame index.
+
+        Args:
+            layer_name: Layer to query.
+
+        Returns:
+            Boxes stored in the layer at the current playback index.
+        """
         return self.get_layer_boxes_for_index(layer_name, self._require_state().playback.current_frame_index)
 
     def has_boxes_for_layer(self, layer_name: VideoDataLayer) -> bool:
-        """Check if there are any boxes for a specific layer."""
+        """Check if there are any boxes for a specific layer.
+
+Args:
+    layer_name: Name of the target layer.
+
+Returns:
+    `True` when the layer contains boxes.
+"""
         return self.data.has_boxes_for_layer(layer_name)
 
     def stop_playback(self):
@@ -210,7 +272,14 @@ class Session(QObject):
     # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
     def get_buffered_frame(self) -> RGBFrame | None:
-        """Get the next frame (current_idx + 1) from the ring buffer (for lookahead during playback)."""
+        """Get the next frame (current_idx + 1) from the ring buffer (for lookahead during playback).
+
+        Returns:
+            Next RGB frame, or `None` if it is not currently available.
+
+        Note:
+            The frame accessor updates playback state when the frame is retrieved.
+        """
         return self._frame_accessor.get_buffered_frame(
             session_state=self._require_state(),
             decode_worker=self._require_video_decode_worker(),
@@ -218,22 +287,22 @@ class Session(QObject):
 
     def get_frame_by_index(self, frame_index: int) -> RGBFrame | None:
         """
-        Fetch frame at ``frame_index`` from the ring buffer cache with timeout-based seek handling.
+        Fetch frame at `frame_index` from the ring buffer cache with timeout-based seek handling.
 
         Workflow:
-            1. Clamp ``frame_index`` to the valid range.
+            1. Clamp `frame_index` to the valid range.
             2. Check the ring buffer cache and return immediately on a hit.
             3. On a miss, either wait for sequential playback to catch up or trigger
-                   ``request_seek()`` for a scrub jump.
+                   `request_seek()` for a scrub jump.
             4. Wait up to 2 seconds for the worker to supply the frame.
-            5. Return the frame or ``None`` on timeout.
+            5. Return the frame or `None` on timeout.
 
         !!! warning "Side effects"
-            updates ``playback.current_frame_index`` and
-            ``current_frame_data`` when a frame is retrieved.
+            updates `playback.current_frame_index` and
+            `current_frame_data` when a frame is retrieved.
 
         Returns:
-            RGBFrame | None: The requested frame, or ``None`` if it is unavailable.
+            RGBFrame | None: The requested frame, or `None` if it is unavailable.
         """
         return self._frame_accessor.get_frame_by_index(
             session_state=self._require_state(),
@@ -242,21 +311,42 @@ class Session(QObject):
         )
 
     def get_current_frame(self) -> RGBFrame | None:
-        """Get frame at current playback position (caches result in view_state)."""
+        """Get frame at current playback position (caches result in view_state).
+
+        Returns:
+            Current RGB frame, or `None` when no frame is available.
+
+        Side Effects:
+            Caches a retrieved frame in the session state.
+        """
         return self._frame_accessor.get_current_frame(
             session_state=self._require_state(),
             decode_worker=self._require_video_decode_worker(),
         )
 
     def get_next_frame(self) -> RGBFrame | None:
-        """Get next frame (current_idx + 1)."""
+        """Get next frame (current_idx + 1).
+
+        Returns:
+            Next RGB frame, or `None` when it is not decoded before the timeout.
+
+        Side Effects:
+            On success, advances the playback index and caches the frame.
+        """
         return self._frame_accessor.get_next_frame(
             session_state=self._require_state(),
             decode_worker=self._require_video_decode_worker(),
         )
 
     def get_previous_frame(self) -> RGBFrame | None:
-        """Get previous frame at index ``(current_idx - 1)``."""
+        """Get previous frame at index `(current_idx - 1)`.
+
+        Returns:
+            Previous RGB frame, or `None` when it is not decoded before the timeout.
+
+        Side Effects:
+            On success, moves the playback index backward and caches the frame.
+        """
         return self._frame_accessor.get_previous_frame(
             session_state=self._require_state(),
             decode_worker=self._require_video_decode_worker(),
@@ -267,7 +357,7 @@ class Session(QObject):
         Change the detection model and clear Layers B and D.
 
         Note:
-            If ``model_name == "None"``, all layers (A, B, C, and D) are cleared.
+            If `model_name == "None"`, all layers (A, B, C, and D) are cleared.
             Otherwise the new model name is stored and Layers B and D are cleared while
             optionally preserving manual annotations.
         """

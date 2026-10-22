@@ -1,3 +1,13 @@
+"""Module for helpers; implements concrete processing and I/O behind application-facing contracts.
+
+See Also:
+    - [`ModelSelectionViewModel`][app.domain.views.model_selection_view_model.ModelSelectionViewModel] — represents provider-specific model choices
+    - [`load_detection_model`][app.infrastructure.detection.model.loader.load_detection_model] — loads a selected model
+
+Layer: Infrastructure.
+Context: Implements concrete processing and i/o behind application-facing contracts at this architectural boundary.
+"""
+
 from __future__ import annotations
 
 from app.domain.views import ModelSelectionViewModel
@@ -24,12 +34,23 @@ def get_available_detection_model_names_as_str() -> list[str]:
 
 
 def get_detection_model_provider_options() -> list[tuple[str, str]]:
-    """Return provider dropdown options in display order."""
+    """Return provider dropdown options in display order.
+
+    Returns:
+        `(provider_id, display_label)` pairs in the order used by the model selector.
+    """
     return list(_PROVIDER_LABELS.items())
 
 
 def resolve_detection_model_provider(model_name: str) -> str:
-    """Map a model name to its provider/family identifier."""
+    """Map a model name to its provider/family identifier.
+
+    Args:
+        model_name: Registered model name to classify.
+
+    Returns:
+        Provider identifier (`"all"`, `"torch"`, `"yolo"`, or `"mtcnn"`).
+    """
     if model_name == "None":
         return DETECTION_MODEL_PROVIDER_ALL
     if model_name in TORCH_MODELS:

@@ -168,25 +168,56 @@ loading separate from UI widgets.
 
 ### Tracking, editing, and export
 
-Tracking process detection boxes in Layer A/B into layer C after user presses the "Start Tracking" button. 
+The four data layers separate original machine output from editable results:
 
-The tracking service then:
-- validates the request,
-- creates a `TrackingWorker` with a selected strategy, and
-- later synchronizes output to Layer C. 
+| Layer | Contents | Role |
+| --- | --- | --- |
+| A | Raw detector output | Preserves the original detections. |
+| B | Reviewed/editable detections | User-selected input for tracking and detection export. |
+| C | Raw tracker output | Stores the strategy and post-processor result before manual edits. |
+| D | Reviewed/editable tracks | User-facing tracked annotations and the preferred tracking export source. |
 
-Layer D is the user-editable result layer. 
-Every run refreshes Layer D boxes across all frames while preserving manual annotations. 
-Trackers suppress nested same-class detector boxes before association and tag coasted estimates separately from detection-backed observations. 
+The tracking service validates the request, seeds its input from the selected
+detection layer (normally B), creates a background `TrackingWorker`, and
+synchronizes completed output to C and the editable track layer D. Trackers
+suppress nested same-class detector boxes before association and distinguish
+coasted estimates from detection-backed observations.
 
-#### Optional
+Available strategies are Hungarian IoU association, ByteTrack's high/low
+confidence association, DeepSORT with motion and appearance matching, and
+BoT-SORT with Kalman motion and optional appearance matching. Frame-aware
+appearance embeddings have configurable dimensions of 128, 256, or 512; the
+worker derives them from the source video and falls back to appearance-disabled
+behavior when it cannot open a local video path.
 
-Offline stitching uses bidirectional tracklet matching and Gaussian-smoothed
-gap interpolation; rejected tails decay quickly. Preview-only box, mask, and
-live-blur settings are separate from Render controls, which govern exported
-video blur.
-Annotation handlers update the selected layer and request the preview/table
-to render again.
+When enabled, offline post-processing matches compatible tracklets in forward
+and backward temporal directions, fills accepted gaps with Gaussian Smoothed
+Interpolation (GSI), and applies confidence-decayed coast tails. For a missing
+frame $t$, GSI combines the left and right endpoint box predictions, with each
+weighted by its temporal distance from the corresponding observation:
+
+$$
+w_L = \exp\left(-\frac{d_L^2}{2\sigma^2}\right), \qquad
+w_R = \exp\left(-\frac{d_R^2}{2\sigma^2}\right)
+$$
+
+$$
+B_t = \frac{w_L \widehat{B}_{L,t} + w_R \widehat{B}_{R,t}}{w_L + w_R}
+$$
+
+Here, $\widehat{B}_{L,t}$ and $\widehat{B}_{R,t}$ are endpoint box
+coordinates projected to frame $t$, and $\sigma$ is the configured smoothness
+length. Nearby observations therefore exert more influence on the interpolation.
+
+Privacy Shield (Paranoid Mode) can resist sudden box shrinkage, backfill a
+configurable interval before the first detection, hold coverage after the last
+detection, and inflate boxes by a safety margin. These conservative controls
+operate on tracking output and do not guarantee that every subject is detected.
+
+Preview-only box outlines, border width, mask display, and live blur are
+separate from Render settings, which govern blur in exported video. Annotation
+handlers update the selected editable layer and request the preview/table to
+render again.
 
 For blurred-video export, the export service reads the selected session and
 uses Layer D when it contains boxes, otherwise Layer C. The export worker runs
@@ -203,6 +234,10 @@ data, and project directories in domain project documents. The infrastructure
 `ProjectStore` serializes and validates the JSON project file. Loading
 reopens the referenced videos and restores session settings and annotation
 layers; unavailable or invalid sessions are reported as skipped.
+
+Layer interchange is separate from project persistence: detection and tracking
+import/export services read or write the selected layer as JSON or CSV, while a
+project file records the broader session state and file references.
 
 ## Data and background-work boundaries
 

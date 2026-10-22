@@ -1,3 +1,13 @@
+"""Module for frame boxes view model; defines application concepts without UI or infrastructure dependencies.
+
+See Also:
+    - [`BBoxViewModel`][app.domain.views.bounding_box_view_model.BBoxViewModel] — represents each box in the frame
+    - [`AnnotationOverlayWidget`][app.ui.qt.widgets.preview.layer_bbox.layer_bbox.AnnotationOverlayWidget] — displays and edits frame boxes
+
+Layer: Domain.
+Context: Defines application concepts without ui or infrastructure dependencies at this architectural boundary.
+"""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -20,8 +30,12 @@ class FrameBoxesViewModel:
         frame_data_boxes (ListOfBoxes): Boxes displayed for one frame.
 
     Note:
-        Wraps the list of ``BBoxViewModel`` rows shown in the UI Data tab and
+        Wraps the list of `BBoxViewModel` rows shown in the UI Data tab and
         supports multi-select operations such as copy, delete, and edit.
-    """
+
+
+Layer: Domain.
+Context: Represents application concepts without UI or infrastructure dependencies.
+"""
 
     frame_data_boxes: ListOfBoxes = field(default_factory=list)

@@ -2,10 +2,13 @@
 
 Source: `src/app/domain/video/`
 
-Video value types cover metadata, playback state, directions, layers, and the
-frame ring-buffer abstraction. Video file decoding is performed by
-Infrastructure.
+This package defines immutable video metadata, mutable playback position and
+status, navigation direction, the four annotation-layer identifiers and their
+UI groups, and a bounded ring buffer for sequential frame access. These types
+describe state and data boundaries; opening files and decoding frames are
+infrastructure responsibilities.
 
-**Expand this stub with:** metadata invariants, playback state transitions,
-and buffer ownership.
-
+Session state combines playback and metadata with other per-video values
+([Session](session.md)). The runtime reader and decode worker are in
+[video infrastructure](../infrastructure/video.md); the layers are used by
+[detection](detection.md) and [tracking](tracking.md) workflows.

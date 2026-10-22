@@ -2,9 +2,12 @@
 
 Source: `src/app/application/interfaces/video/`
 
-Video decode-worker control contracts allow application managers to switch
-active-session buffering without depending on a specific worker class.
+`VideoDecodeWorkerControlInterface` exposes the small control surface needed
+by the video-decode manager: activate or deactivate a worker, stop it cleanly,
+and retrieve a cached frame when available. The manager uses this contract to
+prioritize the active session without taking a direct dependency on the
+concrete decoder implementation.
 
-**Expand this stub with:** activation, seeking, shutdown, and thread-affinity
-expectations.
-
+Frame decoding and buffering are owned by [video infrastructure](../../infrastructure/video.md);
+session-level coordination is in [managers](../managers.md). The interface
+does not itself promise that a requested frame is already buffered.

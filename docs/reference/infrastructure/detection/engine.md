@@ -2,22 +2,17 @@
 
 Source: `src/app/infrastructure/detection/engine/`
 
-The engine factory creates a model-backed `DetectionEngine`. The engine
-loads the selected provider model, runs per-frame inference, and maps output
-to domain detection results.
+The factory creates a model-backed `DetectionEngine`. The engine owns the
+selected provider model, runs per-frame inference, and maps provider output to
+domain detection results. Provider-specific loading and mapping live under
+[models](model.md); video-wide frame iteration is handled by the
+[detection worker](worker.md), not by the engine.
 
 Supported model names are maintained in
-`src/app/infrastructure/detection/model/names.py`. The generated
-`DetectionEngine` API page includes the registry names grouped by provider;
-the catalog is derived from this source rather than maintained separately.
+`src/app/infrastructure/detection/model/names.py`; the generated engine API
+page derives its provider catalog from those registries. No second list is
+maintained in this package note.
 
-## Supported model names
-
-### Torch
-- `...`
-
-### Ultralytics
-- `...`
-
-### MTCNN
-- `...`, 'ULTRALYTICS_YOLO_MODELS', 'MTCNN_MODELS']
+The Application manager owns engines per session and coordinates model
+selection. See [Detection interfaces](../../application/interfaces/detection.md)
+and [Application managers](../../application/managers.md).

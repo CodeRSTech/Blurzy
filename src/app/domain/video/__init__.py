@@ -1,4 +1,12 @@
-"""Video domain model — playback view_state, metadata, ring buffer, direction."""
+"""Video domain model — playback view_state, metadata, ring buffer, direction.
+
+See Also:
+    - [`VideoMetadata`][app.domain.video.metadata.VideoMetadata] — describes the active source video
+    - [`VideoRingBuffer`][app.domain.video.ring_buffer.VideoRingBuffer] — stores frames for playback
+
+Layer: Domain.
+Context: Defines application concepts independently of UI and infrastructure implementations.
+"""
 
 from .direction import Direction
 from .playback_state import PlaybackState

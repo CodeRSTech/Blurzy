@@ -1,3 +1,13 @@
+"""Module for spinner label; implements the Qt presentation components.
+
+See Also:
+    - [`ModelLoadWorker`][app.ui.qt.workers.model_loader.ModelLoadWorker] — reports asynchronous model-loading progress
+    - [`ModelHandler`][app.ui.handlers.model_handler.ModelHandler] — coordinates worker feedback with the UI
+
+Layer: Presentation.
+Context: Implements the qt presentation components at this architectural boundary.
+"""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -11,7 +21,17 @@ if TYPE_CHECKING:
 
 
 class InlineSpinnerLabel(QLabel):
-    """Small animated inline spinner label for lightweight loading states."""
+    """Small animated inline spinner label for lightweight loading states.
+
+Layer: Presentation.
+Context: Supports user interaction and delegates application work through presentation contracts.
+
+
+    Args:
+        text: Initial text displayed by the widget.
+        parent: Optional Qt parent object.
+        interval_ms: Animation interval in milliseconds.
+"""
 
     _FRAMES = ("⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏")
 
@@ -30,6 +50,11 @@ class InlineSpinnerLabel(QLabel):
         self.setVisible(False)
 
     def start(self, text: str | None = None) -> None:
+        """Show the label and start its frame timer.
+
+        Args:
+            text: Optional replacement status text; when omitted, keep the current text.
+        """
         if text is not None:
             self._text = text
         self._frame_index = 0
@@ -39,6 +64,7 @@ class InlineSpinnerLabel(QLabel):
             self._timer.start()
 
     def stop(self) -> None:
+        """Stop the frame timer and hide the label."""
         if self._timer.isActive():
             self._timer.stop()
         self.setVisible(False)

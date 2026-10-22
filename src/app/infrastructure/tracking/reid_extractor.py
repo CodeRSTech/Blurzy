@@ -1,4 +1,12 @@
-"""Deterministic, part-based appearance embeddings for object tracking."""
+"""Deterministic, part-based appearance embeddings for object tracking.
+
+See Also:
+    - [`DeepSortStrategy`][app.infrastructure.tracking.deepsort_strategy.DeepSortStrategy] — uses appearance features for association
+    - [`BotSortStrategy`][app.infrastructure.tracking.botsort_strategy.BotSortStrategy] — uses appearance features for conservative re-identification
+
+Layer: Infrastructure.
+Context: Implements concrete processing and I/O behind application-facing contracts.
+"""
 
 from __future__ import annotations
 
@@ -26,7 +34,11 @@ class ReIDExtractorProtocol(Protocol):
     Note:
         Implementations may use a hand-crafted descriptor or a learned backbone;
         callers rely only on input-order preservation and unit-normalized vectors.
-    """
+
+
+Layer: Infrastructure.
+Context: Implements concrete processing or I/O behind application-facing contracts.
+"""
 
     def extract_for_boxes(
         self,
@@ -69,7 +81,11 @@ class PartBasedAppearanceEmbedder:
 
     Example:
         embedder = PartBasedAppearanceEmbedder(embedding_dim=256)
-    """
+
+
+Layer: Infrastructure.
+Context: Implements concrete processing or I/O behind application-facing contracts.
+"""
 
     _CANONICAL_SIZE = (64, 128)
 
@@ -269,7 +285,7 @@ class PartBasedAppearanceEmbedder:
 
 
 def cosine_similarity(vec_a: np.ndarray, vec_b: np.ndarray) -> float:
-    """Return cosine similarity for two equal-length vectors.
+    r"""Return cosine similarity for two equal-length vectors.
 
     Args:
         vec_a: First feature vector.
@@ -282,7 +298,17 @@ def cosine_similarity(vec_a: np.ndarray, vec_b: np.ndarray) -> float:
         ValueError: If the vectors have different shapes.
 
     Note:
-        Zero-length vectors have similarity zero rather than dividing by zero.
+        For nonzero inputs, similarity is
+
+        $$
+        \operatorname{sim}(\mathbf{a},\mathbf{b}) =
+        \operatorname{clip}\!\left(
+        \frac{\mathbf{a}^{\mathsf T}\mathbf{b}}
+        {\lVert\mathbf{a}\rVert_2\lVert\mathbf{b}\rVert_2},-1,1\right).
+        $$
+
+        If either input norm is at most $10^{-8}$, the implementation returns
+        zero instead of dividing by zero.
 
     Example:
         similarity = cosine_similarity(first, second)
@@ -297,7 +323,7 @@ def cosine_similarity(vec_a: np.ndarray, vec_b: np.ndarray) -> float:
 
 
 def cosine_distance(vec_a: np.ndarray, vec_b: np.ndarray) -> float:
-    """Return cosine distance, defined as one minus cosine similarity.
+    r"""Return cosine distance, defined as one minus cosine similarity.
 
     Args:
         vec_a: First feature vector.
@@ -310,8 +336,12 @@ def cosine_distance(vec_a: np.ndarray, vec_b: np.ndarray) -> float:
         ValueError: If the vectors have different shapes.
 
     Note:
-        Unit-normalized vectors reduce the calculation to one minus their dot
-        product.
+        The implementation uses
+        $d_{\cos}(\mathbf{a},\mathbf{b}) =
+        1-\operatorname{sim}(\mathbf{a},\mathbf{b})$. For unit-normalized
+        nonzero vectors, this reduces to
+        $1-\mathbf{a}^{\mathsf T}\mathbf{b}$. If either input norm is at most
+        $10^{-8}$, the similarity fallback is zero and the distance is one.
 
     Example:
         distance = cosine_distance(first, second)
@@ -324,7 +354,7 @@ def update_ema_embedding(
     new_vec: np.ndarray,
     momentum: float = 0.90,
 ) -> np.ndarray:
-    """Blend a new unit feature into a normalized exponential-moving prototype.
+    r"""Blend a new unit feature into a normalized exponential-moving prototype.
 
     Args:
         prototype: Prior normalized appearance vector, if any.
@@ -338,8 +368,23 @@ def update_ema_embedding(
         ValueError: If momentum or vector shapes are invalid.
 
     Note:
-        The final prototype is normalized so downstream cosine comparisons
-        remain scale-independent.
+        For prior prototype $\mathbf{p}$, observation $\mathbf{x}$, and
+        momentum $m$, the blend and normalized update are
+
+        $$
+        \mathbf{b} =
+        \begin{cases}
+        \mathbf{x}, & \mathbf{p}\text{ is absent},\\
+        m\mathbf{p} + (1-m)\mathbf{x}, & \text{otherwise},
+        \end{cases}
+        \qquad
+        \mathbf{p}_{\mathrm{new}} =
+        \frac{\mathbf{b}}{\max(\lVert\mathbf{b}\rVert_2,10^{-8})}.
+        $$
+
+        Inputs are converted to float32; an existing prototype is expected to
+        already be normalized. The denominator's epsilon floor prevents division
+        by zero.
 
     Example:
         prototype = update_ema_embedding(previous, observation, momentum=0.9)

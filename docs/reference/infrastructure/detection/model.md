@@ -2,9 +2,14 @@
 
 Source: `src/app/infrastructure/detection/model/`
 
-This package contains the model protocol, loader, common helpers, and
-provider-specific model integrations, including YOLO and MTCNN variants.
+This package defines the model protocol and common helpers, resolves model
+names through the loader, and contains provider integrations and output
+mappers for TorchVision, Ultralytics YOLO, and MTCNN. The literal registries in
+`names.py` are the source of supported model names; the generated engine API
+catalog reads them directly. Model loading and inference are invoked through
+the [detection engine](engine.md), not from UI widgets.
 
-**Expand this stub with:** provider dependencies, supported model names,
-device selection, and licensing/weight distribution notes.
-
+Provider-specific dependencies and weight availability depend on the selected
+integration and runtime; this package note does not claim a single download or
+licensing policy. See the [detection package overview](index.md) and
+[engine lifecycle](engine.md).

@@ -1,9 +1,17 @@
-"""Context menu builders for ``AnnotationOverlayWidget``.
+"""Context menu builders for `AnnotationOverlayWidget`.
 
 Why this module exists:
 - Keeps UI label text near its emitted backend action string.
-- Centralizes QAction->action-name mapping to avoid long ``if/elif`` chains.
+- Centralizes QAction->action-name mapping to avoid long `if/elif` chains.
 - Preserves placeholder selection entries as explicit no-op actions.
+
+See Also:
+    - [`AnnotationContextActions`][app.domain.detection.context_actions.AnnotationContextActions] — defines the action identifiers
+    - [`AnnotationOverlayWidget`][app.ui.qt.widgets.preview.layer_bbox.layer_bbox.AnnotationOverlayWidget] — displays the generated menus
+
+
+Layer: Presentation.
+Context: Contains concrete Qt presentation components and supporting utilities.
 """
 
 from __future__ import annotations
@@ -16,7 +24,14 @@ if TYPE_CHECKING:
     from PySide6.QtGui import QAction
     from PySide6.QtWidgets import QMenu
 def build_no_hit_action_map(menu: QMenu) -> dict[QAction, str]:
-    """Build context menu actions used when right-clicking empty canvas space."""
+    """Build context menu actions used when right-clicking empty canvas space.
+
+Args:
+    menu: Menu to populate with empty-canvas actions.
+
+Returns:
+    Mapping from each created action to its `AnnotationContextActions` value.
+"""
     action_select_all = menu.addAction("Select All")
     action_select_none = menu.addAction("Deselect All")
     action_select_inverse = menu.addAction("Invert Selection")
@@ -44,7 +59,15 @@ def build_no_hit_action_map(menu: QMenu) -> dict[QAction, str]:
 
 
 def build_hit_action_map(menu: QMenu, tracker_actions_enabled: bool) -> dict[QAction, str]:
-    """Build context menu actions used when right-clicking over an existing bbox."""
+    """Build context menu actions used when right-clicking over an existing bbox.
+
+Args:
+    menu: Menu to populate with actions for an existing box.
+    tracker_actions_enabled: Whether to include delete-next/previous-occurrence actions.
+
+Returns:
+    Mapping from each created action to its `AnnotationContextActions` value.
+"""
     action_select_all = menu.addAction("Select All")
     action_select_none = menu.addAction("Deselect All")
     action_select_inverse = menu.addAction("Invert Selection")
@@ -82,8 +105,15 @@ def build_hit_action_map(menu: QMenu, tracker_actions_enabled: bool) -> dict[QAc
 
 
 def resolve_selected_action(chosen: QAction | None, action_names: dict[QAction, str]) -> str | None:
-    """Resolve the selected QAction into a context action string payload."""
+    """Resolve the selected QAction into a context action string payload.
+
+Args:
+    chosen: Action selected by the user, or `None` if the menu was dismissed.
+    action_names: Mapping produced by one of the context-menu builders.
+
+Returns:
+    Mapped action identifier, or `None` if the action is absent or unmapped.
+"""
     if chosen is None:
         return None
     return action_names.get(chosen)
-

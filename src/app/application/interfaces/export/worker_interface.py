@@ -1,4 +1,12 @@
-"""Interface contract for background single-session export worker implementations."""
+"""Interface contract for background single-session export worker implementations.
+
+See Also:
+    - [`ExportWorkerAdapter`][app.infrastructure.adapters.export_worker_adapter.ExportWorkerAdapter] — adapts worker signals and controls to this contract
+    - [`ExportWorker`][app.infrastructure.export.export_worker.ExportWorker] — performs single-session export
+
+Layer: Application.
+Context: Defines protocol boundaries consumed by application orchestration.
+"""
 
 from __future__ import annotations
 
@@ -8,7 +16,11 @@ from PySide6.QtCore import SignalInstance
 
 
 class ExportWorkerInterface(Protocol):
-    """Abstraction boundary for single-session export workers."""
+    """Abstraction boundary for single-session export workers.
+
+Layer: Application.
+Context: Coordinates use-case behavior through domain services and application contracts.
+"""
 
     progress_updated = SignalInstance
     succeeded = SignalInstance
@@ -25,7 +37,11 @@ class ExportWorkerInterface(Protocol):
         ...
 
     def isRunning(self) -> bool:
-        """Return ``True`` while the worker thread is active."""
+        """Return `True` while the worker thread is active.
+
+        Returns:
+            `True` while the export worker thread is running.
+        """
         ...
 
     def deleteLater(self) -> None:

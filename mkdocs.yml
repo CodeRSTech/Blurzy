@@ -50,7 +50,7 @@ plugins:
             heading_level: 2
             show_symbol_type_heading: true
             show_symbol_type_toc: true
-            docstring_section_style: table # Spacy tables work better than regular tables with longer names, type annotations, descriptions, etc., by reserving more horizontal space on the second column.
+            docstring_section_style: spacy
             relative_crossrefs: true
             docstring_options:
               trim_doctest_flags: false

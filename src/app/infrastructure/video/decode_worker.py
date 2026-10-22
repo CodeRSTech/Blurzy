@@ -1,4 +1,12 @@
-"""Background video decoding worker with ring buffer cache and hard-seek support."""
+"""Background video decoding worker with ring buffer cache and hard-seek support.
+
+See Also:
+    - [`VideoRingBuffer`][app.domain.video.ring_buffer.VideoRingBuffer] — stores decoded frames for playback
+    - [`VideoReader`][app.infrastructure.video.reader.VideoReader] — decodes the source video
+
+Layer: Infrastructure.
+Context: Implements concrete processing and I/O behind application-facing contracts.
+"""
 
 from __future__ import annotations
 
@@ -22,7 +30,11 @@ logger = get_logger("Infrastructure->VideoDecodeWorker")
 
 
 class DecoderSignals(QObject):
-    """Container for Qt signals emitted by ``VideoDecodeWorker`` (must inherit ``QObject``)."""
+    """Container for Qt signals emitted by `VideoDecodeWorker` (must inherit `QObject`).
+
+Layer: Infrastructure.
+Context: Implements concrete processing or I/O behind application-facing contracts.
+"""
     # Signals must be defined on a QObject.
     # Emits (frame_index) when a sought frame is successfully cached
     seek_completed = Signal(int)
@@ -59,22 +71,32 @@ class VideoDecodeWorker(QThread):
             - Deactivation is used to aggressively release cached frame memory.
 
         !!! info "Thread lifecycle (caller responsibility)"
-            Call in this order: ``stop()`` -> ``quit()`` -> ``wait()`` -> ``deleteLater()``.
+            Call in this order: `stop()` -> `quit()` -> `wait()` -> `deleteLater()`.
 
     Example:
         UI seek flow:
-            `slider moved` -> ``set_active(False)``, ``request_seek(idx)``
+            `slider moved` -> `set_active(False)`, `request_seek(idx)`
 
             run loop handles seek and caches frame
 
-            ``signals.seek_completed(idx)`` emitted
+            `signals.seek_completed(idx)` emitted
 
-            UI resumes decode with ``set_active(True)``
-    """
+            UI resumes decode with `set_active(True)`
+
+
+Layer: Infrastructure.
+Context: Implements concrete processing or I/O behind application-facing contracts.
+
+
+    Args:
+        path: Filesystem path of the video or resource.
+        playback: Playback state shared with the decode worker.
+        parent: Optional Qt parent object.
+"""
     def __init__(
             self, path: str, playback: PlaybackState, parent=None
     ) -> None:
-        """Initialize decode worker for ``path`` with reference to ``playback`` view_state."""
+        """Initialize decode worker for `path` with reference to `playback` view_state."""
         super().__init__(parent)  # Important for garbage collection
         self.signals = DecoderSignals()
         self._running = False
@@ -104,7 +126,11 @@ class VideoDecodeWorker(QThread):
         )
 
     def request_seek(self, frame_index: int) -> None:
-        """Request hard seek to ``frame_index`` (thread-safe, clears buffer)."""
+        """Request hard seek to `frame_index` (thread-safe, clears buffer).
+
+Args:
+    frame_index: Zero-based frame index.
+"""
         with QMutexLocker(self._mutex):
             self._seek_request = frame_index
             self.ring_buffer.clear()
@@ -116,10 +142,10 @@ class VideoDecodeWorker(QThread):
         **Workflow:**
 
         - Check if active; if not, sleep 10ms
-        - Handle pending seek request (hard seek via ``VideoReader``, emit ``seek_completed``)
+        - Handle pending seek request (hard seek via `VideoReader`, emit `seek_completed`)
         - Throttle if buffer ahead by 45 frames (sleep 10ms)
         - Read next frame sequentially, push to ring buffer
-        - Repeat until ``_running`` becomes False
+        - Repeat until `_running` becomes False
         """
         self._running = True
         logger.debug(
@@ -174,10 +200,10 @@ class VideoDecodeWorker(QThread):
 
     def set_active(self, active: bool, resume_idx: int = 0) -> None:
         """
-        Toggle worker on/off (thread-safe via ``_mutex``).
+        Toggle worker on/off (thread-safe via `_mutex`).
 
         **When False:** Clears ring buffer (frees large chunk of RAM immediately).
-        **When True:** Schedules seek to ``resume_idx`` to refill buffer from playhead.
+        **When True:** Schedules seek to `resume_idx` to refill buffer from playhead.
         """
         with QMutexLocker(self._mutex):
             self._is_active = active
@@ -192,11 +218,11 @@ class VideoDecodeWorker(QThread):
 
         **Sequence:**
 
-        1. Set ``_running=False`` (exit main loop)
-        2. Call ``quit()`` (signal quit)
-        3. Call ``wait(500)`` (up to 500ms for loop exit)
-        4. If stuck, ``terminate()`` then ``wait()`` (fallback for deadlock)
-        5. Close ``VideoReader``
+        1. Set `_running=False` (exit main loop)
+        2. Call `quit()` (signal quit)
+        3. Call `wait(500)` (up to 500ms for loop exit)
+        4. If stuck, `terminate()` then `wait()` (fallback for deadlock)
+        5. Close `VideoReader`
 
         !!! warning "IMPORTANT"
 
@@ -212,5 +238,12 @@ class VideoDecodeWorker(QThread):
         self._reader.close()
 
     def get_cached_frame_at_index(self, idx: int) -> RGBFrame | None:
-        """Return cached frame at ``idx``, or None if not in buffer."""
+        """Return cached frame at `idx`, or None if not in buffer.
+
+        Args:
+            idx: Zero-based frame index to look up.
+
+        Returns:
+            Cached RGB frame, or `None` when the index is outside the buffer's range.
+        """
         return self.ring_buffer.get(idx)

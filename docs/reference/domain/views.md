@@ -2,10 +2,12 @@
 
 Source: `src/app/domain/views/`
 
-These data models present domain information to application and UI code,
-including bounding boxes, frame boxes, model choices, and session settings.
-They are not Qt widgets.
+These plain data models shape information for presentation without being Qt
+widgets. They include a box row with source and tracking metadata, a
+per-frame box collection, model-selector choices, session-file entries, and
+formatted session settings. `ViewModelService` and infrastructure view-model
+helpers assemble these values from session/domain data for UI consumers.
 
-**Expand this stub with:** conversion boundaries between domain values,
-infrastructure results, and UI presentation.
-
+Interactive selection and undo history are separate [UI view state](../ui/view_state.md).
+Detection and tracking result values remain in [their domain packages](detection.md);
+see [infrastructure view models](../infrastructure/views.md) for adapters.

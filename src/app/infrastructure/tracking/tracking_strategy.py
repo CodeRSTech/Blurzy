@@ -1,3 +1,13 @@
+"""Module for tracking strategy; implements concrete processing and I/O behind application-facing contracts.
+
+See Also:
+    - [`TrackingStrategy`][app.domain.tracking.tracking_strategy.TrackingStrategy] — lists the strategies selected by the application
+    - [`HungarianIoUTracker`][app.infrastructure.tracking.hungarian_tracker.HungarianIoUTracker] — core tracker used by the Hungarian strategy
+
+Layer: Infrastructure.
+Context: Implements concrete processing and i/o behind application-facing contracts at this architectural boundary.
+"""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -26,12 +36,23 @@ _TRACK_PALETTE: list[str] = [
 ]
 
 def uid_to_color(uid: int) -> str:
-    """Map track UID to color (wraps around palette for >20 tracks)."""
+    """Map track UID to color (wraps around palette for >20 tracks).
+
+    Args:
+        uid: Positive track identifier used to select a palette entry.
+
+    Returns:
+        Hex color selected cyclically from the tracking palette.
+    """
     return _TRACK_PALETTE[(uid - 1) % len(_TRACK_PALETTE)]
 
 
 class HungarianStrategy:
-    """Tracking strategy using Hungarian algorithm with IoU matching (see ``HungarianIoUTracker``)."""
+    """Tracking strategy using Hungarian algorithm with IoU matching (see `HungarianIoUTracker`).
+
+Layer: Infrastructure.
+Context: Implements concrete processing or I/O behind application-facing contracts.
+"""
 
     uses_appearance = False
 
@@ -49,7 +70,7 @@ class HungarianStrategy:
             min_confidence: Confidence floor used to prune internal tracks.
 
         Note:
-            Coasting states are retained in output with ``detection_backed=False``.
+            Coasting states are retained in output with `detection_backed=False`.
 
         Example:
             strategy = HungarianStrategy(iou_threshold=0.3, confidence_decay=0.05)
@@ -131,7 +152,11 @@ class HungarianStrategy:
 
 
 class DummyTracker:
-    """No-op tracker — passes through detections as-is, marks with magenta (#ff00ff)."""
+    """No-op tracker — passes through detections as-is, marks with magenta (#ff00ff).
+
+Layer: Infrastructure.
+Context: Implements concrete processing or I/O behind application-facing contracts.
+"""
 
     uses_appearance = False
 
@@ -164,7 +189,15 @@ class DummyTracker:
 
     @staticmethod
     def track(source_data: ListOfBoxesByFrameIndexAsDict, total_frames: int = 0) -> ListOfBoxesByFrameIndexAsDict:
-        """Return detections unchanged, just update source/color/key labels."""
+        """Return detections unchanged, just update source/color/key labels.
+
+        Args:
+            source_data: Detection boxes grouped by frame index.
+            total_frames: Retained for tracker API compatibility; this implementation does not use it.
+
+        Returns:
+            New frame mapping containing deep-copied boxes retagged as dummy tracks.
+        """
         tracked: ListOfBoxesByFrameIndexAsDict = {}
         for frame_idx, boxes in source_data.items():
             tracked[frame_idx] = []

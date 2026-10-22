@@ -1,5 +1,12 @@
 # Settings and Preferences
 
+!!! info "Current status"
+
+    Blurzy has a Preferences dialog and session-level processing settings.
+    The ideas below describe possible improvements and additional defaults, not
+    the absence of a settings UI. See the [Qt dialog notes](../../reference/ui/qt/dialogs.md)
+    for the presentation layer.
+
 ## What this is
 
 A dedicated settings area where users can control app-wide behavior instead of re-tuning the app every time they open it.
@@ -13,11 +20,15 @@ Typical settings here would include:
 - export defaults
 - UI defaults such as fullscreen on launch
 
-## Why this is a must
+## Original motivation
 
-Without a settings system, the app feels temporary. Users cannot make Blurzy behave like *their* tool.
+This proposal began from the need for a dedicated settings area, rather than
+repeating configuration each time the app opens. Blurzy now has a Preferences
+dialog and session-level processing settings.
 
-It also becomes harder to support repeatable workflows. If a user always wants YOLO, medium blur strength, and fullscreen mode, they should not have to reconfigure that on every run.
+The remaining opportunity is to evaluate which additional values should be
+persisted as app-wide defaults and how they should interact with per-session
+settings.
 
 ## Simple example
 
@@ -25,4 +36,5 @@ If a reviewer opens 20 videos every day and always uses the same model and expor
 
 ## Why it matters for Blurzy
 
-Your own README already lists a settings window as an open backlog item. That makes it one of the clearest product-level gaps still visible in the repo.
+Preferences and session settings support repeatable workflows; this proposal
+captures potential additions and refinements, not a missing settings window.

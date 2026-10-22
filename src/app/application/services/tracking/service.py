@@ -1,4 +1,12 @@
-"""Tracking worker orchestration and multi-object tracking management."""
+"""Tracking worker orchestration and multi-object tracking management.
+
+See Also:
+    - [`TrackingWorkerManager`][app.application.managers.tracking_worker.TrackingWorkerManager] — coordinates worker lifecycle
+    - [`TrackingWorkerFactoryAdapter`][app.application.adapters.tracking_worker_factory_adapter.TrackingWorkerFactoryAdapter] — creates tracking workers
+
+Layer: Application.
+Context: Coordinates domain state and infrastructure to complete application use cases.
+"""
 
 from __future__ import annotations
 
@@ -32,22 +40,30 @@ class TrackingService:
     Orchestrates multi-object tracking operations and worker lifecycle.
 
     Responsibilities:
-        - Start background ``TrackingWorker`` for multi-frame tracking.
+        - Start background `TrackingWorker` for multi-frame tracking.
         - Validate tracking prerequisites (layer data, worker view_state).
         - Clear tracking output layers before starting new tracking.
-        - Synchronize tracking results from worker to ``DataLayer.C``.
+        - Synchronize tracking results from worker to `DataLayer.C`.
         - Handle worker creation and view_state management.
 
     Note:
-        Creates ``TrackingWorker`` instances (runs in background thread).
+        Creates `TrackingWorker` instances (runs in background thread).
         Manages Layer C/D lifecycle (clears C before tracking, syncs after).
         Validates the source layer and seeds missing Layer B frames from Layer A.
-        Does NOT manage tracking layer editing (delegates to ``TrackingLayerService``).
+        Does NOT manage tracking layer editing (delegates to `TrackingLayerService`).
 
         Tracking Layers:
-            ``DataLayer.C`` — Post-processed tracking output (immutable, machine-written).
-            ``DataLayer.D`` — User-editable tracking results (eagerly seeded from C).
-    """
+            `DataLayer.C` — Post-processed tracking output (immutable, machine-written).
+            `DataLayer.D` — User-editable tracking results (eagerly seeded from C).
+
+
+Layer: Application.
+Context: Coordinates use-case behavior through domain services and application contracts.
+
+
+    Args:
+        app: Application adapted for tracking-worker startup and result processing against session data.
+"""
 
     def __init__(self, app: Application):
         # self._app = app
@@ -63,12 +79,12 @@ class TrackingService:
     ) -> None:
         """
         Start background multi-object tracking on detection/tracking data.
-    
+
         Args:
             s_id (SessionId): Session ID.
             strategy_name (str): Tracking algorithm (e.g., "Hungarian", "DeepSort").
-            source_layer_name (str): Source layer (``DataLayer.A`` or ``DataLayer.B``).
-    
+            source_layer_name (str): Source layer (`DataLayer.A` or `DataLayer.B`).
+
         Note:
             Flow:
                 start_background_tracking(s_id, strategy, source_layer)
@@ -78,16 +94,16 @@ class TrackingService:
                   ├── Clear Layer C/D (immutable/editable tracking layers)
                   ├── Create TrackingWorker with source data
                   └──> Start worker in background thread
-    
+
             Error Handling:
-                Raises ``InvalidSessionIdException`` if session ID is invalid.
-                Raises ``TrackingWorkerAlreadyRunningException`` if tracking already running.
-                Raises ``UnsupportedLayerException`` if source layer is C or D (immutable).
-                Raises ``EmptyLayerException`` if source layer has no detections.
-    
+                Raises `InvalidSessionIdException` if session ID is invalid.
+                Raises `TrackingWorkerAlreadyRunningException` if tracking already running.
+                Raises `UnsupportedLayerException` if source layer is C or D (immutable).
+                Raises `EmptyLayerException` if source layer has no detections.
+
             Side Effects:
-                Clears ``DataLayer.C`` and ``DataLayer.D`` to prepare for new tracking.
-                Creates and starts ``TrackingWorker`` thread.
+                Clears `DataLayer.C` and `DataLayer.D` to prepare for new tracking.
+                Creates and starts `TrackingWorker` thread.
         """
         logger.info("Starting background tracking for session: '{}' (strategy='{}', source='{}')",
                     s_id,
@@ -108,28 +124,28 @@ class TrackingService:
 
     def sync_tracking_cache(self, s_id: SessionId) -> None:
         """
-        Synchronize tracking results from worker to ``DataLayer.C`` (immutable tracking output).
-    
+        Synchronize tracking results from worker to `DataLayer.C` (immutable tracking output).
+
         Args:
             s_id (SessionId): Session ID.
-    
+
         Note:
-            Called after ``TrackingWorker`` finishes processing all frames.
+            Called after `TrackingWorker` finishes processing all frames.
             Fetches tracking results from worker (dict of frame_index → [boxes]).
-            Overwrites ``DataLayer.C`` with post-processed tracking output.
-            Uninitialized ``DataLayer.D`` frames are eagerly seeded with the current filter.
-    
+            Overwrites `DataLayer.C` with post-processed tracking output.
+            Uninitialized `DataLayer.D` frames are eagerly seeded with the current filter.
+
             Layer Updates:
                 Layer.C — Updated with post-processed tracking output (immutable).
                 Layer.D — Seeded for uninitialized frames while preserving existing edits.
-    
+
             Error Handling:
-                Raises ``InvalidSessionIdException`` if session ID invalid.
-                Raises ``TrackingWorkerNotFoundException`` if no worker exists for session.
-    
+                Raises `InvalidSessionIdException` if session ID invalid.
+                Raises `TrackingWorkerNotFoundException` if no worker exists for session.
+
             Side Effects:
-                Overwrites all of ``DataLayer.C`` with new tracking data.
-                Preserves initialized ``DataLayer.D`` frames (including user edits).
+                Overwrites all of `DataLayer.C` with new tracking data.
+                Preserves initialized `DataLayer.D` frames (including user edits).
         """
         # ====================================================================
         # 1. VALIDATE SESSION ID

@@ -2,14 +2,16 @@
 
 Source: `src/app/shared/`
 
-Shared code provides cross-cutting utilities used by multiple layers,
-including logging, exceptions, runtime configuration, image helpers,
-annotation serialization, and Qt application metadata.
+Shared code provides cross-cutting support used by multiple layers: logging
+and startup configuration, shared exceptions, image/frame helpers, box
+serialization, masked blur primitives, and distribution/resource utilities.
+These helpers support the application but do not own session workflows or
+domain policy.
 
-Shared is a convenience boundary rather than a domain layer. Keep additions
-small and broadly reusable; workflow decisions belong in Application and
-UI-specific helpers belong in UI.
-
-**Expand this stub with:** utility ownership, logging conventions, and rules
-for preventing this package from becoming a catch-all.
+Keep additions small, stable, and broadly reusable. Session and workflow
+decisions belong in [Application](../application/index.md), core types and
+rules in [Domain](../domain/index.md), and widget-specific helpers in
+[UI](../ui/index.md). For example, shared masked-blur primitives are consumed
+by both preview and export code, while annotation import/export orchestration
+remains in [Application services](../application/services/index.md).
 

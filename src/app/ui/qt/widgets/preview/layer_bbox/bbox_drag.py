@@ -1,3 +1,13 @@
+"""Module for bbox drag; implements the Qt presentation components.
+
+See Also:
+    - [`get_drag_mode_for_rect_at_pos`][app.ui.qt.widgets.preview.layer_bbox.helpers.get_drag_mode_for_rect_at_pos] — determines the active handle mode
+    - [`BBoxState`][app.ui.qt.widgets.preview.layer_bbox.bbox_state.BBoxState] — stores drag state for an overlay
+
+Layer: Presentation.
+Context: Implements the qt presentation components at this architectural boundary.
+"""
+
 from __future__ import annotations
 
 from enum import Enum, auto
@@ -6,6 +16,11 @@ from PySide6.QtCore import Qt
 
 
 class DragMode(Enum):
+    """Represent drag mode.
+
+Layer: Presentation.
+Context: Supports user interaction and delegates application work through presentation contracts.
+"""
     NONE = auto()
     DRAW = auto()
     MOVE = auto()

@@ -1,3 +1,9 @@
+"""Module for debug repr; implements the Qt presentation components.
+
+Layer: Presentation.
+Context: Implements the qt presentation components at this architectural boundary.
+"""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -35,6 +41,14 @@ def _safe_repr(obj: Core.QObject, generator: Callable[..., str]) -> str:
 
 def _qobject_repr(self: Core.QObject) -> str:
     def gen(o: Core.QObject) -> str:
+        """Format a QObject's class name and optional object name.
+
+        Args:
+            o: Qt object whose class name and object name are formatted.
+
+        Returns:
+            Angle-bracketed class name with an optional object name.
+        """
         name = o.objectName()
         name_str = f" name='{name}'" if name else ""
         return f"<{o.__class__.__name__}{name_str}>"
@@ -44,6 +58,14 @@ def _qobject_repr(self: Core.QObject) -> str:
 
 def _qwidget_repr(self: Widgets.QWidget) -> str:
     def gen(w: Widgets.QWidget) -> str:
+        """Format a widget's class, optional name, size, visibility, and enabled state.
+
+        Args:
+            w: Widget whose name, size, visibility, and enabled state are formatted.
+
+        Returns:
+            Angle-bracketed summary of the widget's geometry and state.
+        """
         name = w.objectName()
         name_str = f" '{name}'" if name else ""
         geo = w.geometry()
@@ -57,6 +79,14 @@ def _qwidget_repr(self: Widgets.QWidget) -> str:
 def _qabstractbutton_repr(self: Widgets.QAbstractButton) -> str:
     # Catches QPushButton, QRadioButton, QCheckBox
     def gen(b: Widgets.QAbstractButton) -> str:
+        """Format a button's class, optional name, shortened text, and state.
+
+        Args:
+            b: Button whose name, shortened text, enabled state, and check state are formatted.
+
+        Returns:
+            Angle-bracketed summary of the button's display and state.
+        """
         name = b.objectName()
         name_str = f" '{name}'" if name else ""
         text = _truncate(b.text())
@@ -69,6 +99,14 @@ def _qabstractbutton_repr(self: Widgets.QAbstractButton) -> str:
 
 def _qlabel_repr(self: Widgets.QLabel) -> str:
     def gen(l: Widgets.QLabel) -> str:
+        """Format a label's class, optional name, and shortened text.
+
+        Args:
+            l: Label whose name and shortened text are formatted.
+
+        Returns:
+            Angle-bracketed summary of the label.
+        """
         name = l.objectName()
         name_str = f" '{name}'" if name else ""
         text = _truncate(l.text(), max_len=30)
@@ -79,6 +117,14 @@ def _qlabel_repr(self: Widgets.QLabel) -> str:
 
 def _qcombobox_repr(self: Widgets.QComboBox) -> str:
     def gen(c: Widgets.QComboBox) -> str:
+        """Format a combo box's class, optional name, item count, and current text.
+
+        Args:
+            c: Combo box whose name, item count, and current text are formatted.
+
+        Returns:
+            Angle-bracketed summary of the combo box contents.
+        """
         name = c.objectName()
         name_str = f" '{name}'" if name else ""
         return f"<{c.__class__.__name__}{name_str} items={c.count()} current='{c.currentText()}'>"
@@ -88,6 +134,14 @@ def _qcombobox_repr(self: Widgets.QComboBox) -> str:
 
 def _qslider_repr(self: Widgets.QAbstractSlider) -> str:
     def gen(s: Widgets.QAbstractSlider) -> str:
+        """Format a slider's class, optional name, current value, and range.
+
+        Args:
+            s: Slider whose name, current value, and range are formatted.
+
+        Returns:
+            Angle-bracketed summary of the slider state.
+        """
         name = s.objectName()
         name_str = f" '{name}'" if name else ""
         return f"<{s.__class__.__name__}{name_str} val={s.value()} range=[{s.minimum()}, {s.maximum()}]>"
@@ -98,6 +152,14 @@ def _qslider_repr(self: Widgets.QAbstractSlider) -> str:
 def _qitemviews_repr(self: Widgets.QAbstractItemView) -> str:
     # Catches QListWidget, QTableWidget, etc.
     def gen(v: Widgets.QAbstractItemView) -> str:
+        """Format an item view's class, optional name, and model dimensions.
+
+        Args:
+            v: Item view whose name and model dimensions are formatted.
+
+        Returns:
+            Angle-bracketed summary of row and column counts.
+        """
         name = v.objectName()
         name_str = f" '{name}'" if name else ""
         model = v.model()

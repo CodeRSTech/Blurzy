@@ -1,4 +1,12 @@
-"""Detection service orchestration for model-based object detection across sessions."""
+"""Detection service orchestration for model-based object detection across sessions.
+
+See Also:
+    - [`DetectionEngineManager`][app.application.managers.detection_engine.DetectionEngineManager] — manages per-session inference engines
+    - [`DetectionWorkerFactoryAdapter`][app.application.adapters.detection_worker_factory_adapter.DetectionWorkerFactoryAdapter] — creates background detection workers
+
+Layer: Application.
+Context: Coordinates domain state and infrastructure to complete application use cases.
+"""
 
 from __future__ import annotations
 
@@ -30,8 +38,8 @@ class DetectionService:
     Orchestrates object detection operations and detection engine management.
 
     Responsibilities:
-        - Create and manage ``DetectionEngine`` instances (one per session, per model).
-        - Execute single-frame detection via ``detect_current_frame()``.
+        - Create and manage `DetectionEngine` instances (one per session, per model).
+        - Execute single-frame detection via `detect_current_frame()`.
         - Start background detection workers for processing entire sessions.
         - Apply confidence and label filtering to detection results.
         - Store detection results in session data layer.
@@ -41,12 +49,20 @@ class DetectionService:
         Does not directly create DetectionWorker (delegates to external code).
         Manages DetectionEngine lifecycle (creation, model updates).
         Filters raw YOLO detections by confidence and chosen labels.
-        Stores filtered results in ``DataLayer.B`` (detection layer).
+        Stores filtered results in `DataLayer.B` (detection layer).
 
-        ``detect_current_frame()`` — Single-frame detection (blocking, for UI immediate use).
-        ``create_or_update_detection_engine_from_model_name_for_session_id()`` — Model management.
-        ``start_detection_worker_for_session_id()`` — Background detection (threading).
-    """
+        `detect_current_frame()` — Single-frame detection (blocking, for UI immediate use).
+        `create_or_update_detection_engine_from_model_name_for_session_id()` — Model management.
+        `start_detection_worker_for_session_id()` — Background detection (threading).
+
+
+Layer: Application.
+Context: Coordinates use-case behavior through domain services and application contracts.
+
+
+    Args:
+        app: Application adapted for session access, model management, detection, and worker coordination.
+"""
 
     def __init__(self, app: Application) -> None:
         # [AUDIT] TESTABILITY & SRP ISSUE: Services created inline without factory abstraction
@@ -84,7 +100,7 @@ class DetectionService:
             Exception: Propagates detection or storage failures.
 
         Note:
-            The ``...layer_b...`` name is a backward-compatible legacy API surface.
+            The `...layer_b...` name is a backward-compatible legacy API surface.
             Label/confidence-filtered output is stored in Layer A and cloned into
             Layer B while preserving manual annotations. The compatibility frame
             seeder can still populate Layer B for older data.
@@ -122,7 +138,7 @@ class DetectionService:
 
     def start_detection_worker_for_session_id(self, s_id: SessionId) -> None:
         """
-        Starts a background ``DetectionWorker`` .
+        Starts a background `DetectionWorker` .
         """
         logger.info("Starting background detection (DetectionWorker) for session '{}'", s_id)
         session = self._app_adapter.get_session_by_id(s_id)
@@ -198,6 +214,13 @@ class DetectionService:
     # Slot for detection worker progress update
     @Slot(int, int, float)
     def on_detection_progress_updated(self, processed_frames: int, total_frames: int, eta_msecs: float | None) -> None:
+        """Forward detection progress updates to the UI-facing callback.
+
+        Args:
+            processed_frames: Number of frames processed so far.
+            total_frames: Total number of frames in the detection job.
+            eta_msecs: Estimated remaining time in milliseconds, if available.
+        """
         if eta_msecs is not None:
             eta_seconds = int(eta_msecs // 1000)
             logger.trace("Detection worker processed {}/{} frames. ETA: {}s", processed_frames, total_frames,
@@ -217,7 +240,7 @@ class DetectionService:
 
         Note:
 
-        - Delegates to ``DetectionEngineManager.create_or_update()``.
+        - Delegates to `DetectionEngineManager.create_or_update()`.
         - Kept for backward-compatibility as an internal helper; new code
         - should call the manager directly.
         """

@@ -1,4 +1,12 @@
-"""Centralizes detection engine lifecycle (create / update / remove) per session."""
+"""Centralizes detection engine lifecycle (create / update / remove) per session.
+
+See Also:
+    - [`DetectionEngineAdapterFactory`][app.infrastructure.detection.engine.detection_engine_factory.DetectionEngineAdapterFactory] — creates engine adapters
+    - [`DetectionService`][app.application.services.detection.service.DetectionService] — configures detection through this manager
+
+Layer: Application.
+Context: Coordinates session-scoped lifecycles for application workers and resources.
+"""
 
 from __future__ import annotations
 
@@ -16,20 +24,28 @@ logger = get_logger("Application->DetectionEngineManager")
 
 class DetectionEngineManager:
     """
-    Manages the lifecycle of ``DetectionEngine`` instances on a per-session basis.
+    Manages the lifecycle of `DetectionEngine` instances on a per-session basis.
 
     Responsibilities:
-        - Create a new ``DetectionEngine`` when none exists for a session.
-        - Update the loaded model in an existing ``DetectionEngine``.
+        - Create a new `DetectionEngine` when none exists for a session.
+        - Update the loaded model in an existing `DetectionEngine`.
         - Remove (clear) the engine reference from a session.
 
     This manager centralises the engine-creation logic that previously lived
-    inside ``DetectionService._create_or_update_detection_engine_from_model_name_for_session_id``,
-    giving ``DetectionService`` a narrower single responsibility.
+    inside `DetectionService._create_or_update_detection_engine_from_model_name_for_session_id`,
+    giving `DetectionService` a narrower single responsibility.
 
     The session repository is injected, so the manager is independently
-    unit-testable without a live ``Application`` instance.
-    """
+    unit-testable without a live `Application` instance.
+
+
+Layer: Application.
+Context: Coordinates use-case behavior through domain services and application contracts.
+
+
+    Args:
+        session_repo: Interface used to find a session and assign its detection engine.
+"""
 
     def __init__(self, session_repo: UIApplicationInterface) -> None:
         self._app_adapter = session_repo
@@ -40,19 +56,19 @@ class DetectionEngineManager:
 
     def create_or_update(self, s_id: SessionId, model_name: str) -> None:
         """
-        Create a new engine or update the model in an existing engine for ``s_id``.
+        Create a new engine or update the model in an existing engine for `s_id`.
 
         Args:
             s_id: Session ID of the target session.
-            model_name: YOLO model name to load (e.g. ``"yolov8n"``).
+            model_name: YOLO model name to load (e.g. `"yolov8n"`).
 
         Note:
-            If the session has no engine yet, a new ``DetectionEngine`` is
-            instantiated and assigned to ``session.detection_engine``.
+            If the session has no engine yet, a new `DetectionEngine` is
+            instantiated and assigned to `session.detection_engine`.
             If an engine already exists, its model is updated via
-            ``DetectionEngine.set_model()`` to avoid unnecessary re-creation.
+            `DetectionEngine.set_model()` to avoid unnecessary re-creation.
 
-            ``DetectionEngine`` is imported lazily to keep this module free of
+            `DetectionEngine` is imported lazily to keep this module free of
             heavy infrastructure dependencies at import time.
         """
         session = self._app_adapter.get_session_by_id(s_id)
@@ -66,13 +82,13 @@ class DetectionEngineManager:
 
     def remove(self, s_id: SessionId) -> None:
         """
-        Remove (clear) the detection engine reference for ``s_id``.
+        Remove (clear) the detection engine reference for `s_id`.
 
         Args:
             s_id: Session ID of the target session.
 
         Note:
-            Sets ``session.detection_engine`` to ``None``.  Any in-flight
+            Sets `session.detection_engine` to `None`.  Any in-flight
             worker using that engine must be stopped before calling this.
         """
         session = self._app_adapter.get_session_by_id(s_id)

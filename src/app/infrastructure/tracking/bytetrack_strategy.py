@@ -5,6 +5,14 @@ ByteTrack links boxes from one frame to the next by looking at overlap and
 motion, then keeps each object under the same track ID. If a detection is not
 very confident, ByteTrack can still use it as a secondary hint so tracks do not
 break too quickly.
+
+See Also:
+    - [`TrackingWorker`][app.infrastructure.tracking.track_worker.TrackingWorker] — dispatches frames to this strategy
+    - [`TrackingStrategy`][app.domain.tracking.tracking_strategy.TrackingStrategy] — lists the user-selectable strategy
+
+
+Layer: Infrastructure.
+Context: Implements concrete processing and I/O behind application-facing contracts.
 """
 
 from __future__ import annotations
@@ -48,7 +56,7 @@ def _generalized_iou(
         second: Current detection box.
 
     Returns:
-        GIoU in the range ``[-1.0, 1.0]``.
+        GIoU in the range `[-1.0, 1.0]`.
 
     Example:
         similarity = _generalized_iou(predicted, detection)
@@ -78,11 +86,15 @@ class ByteTrackStrategy:
     """Track objects using ByteTrack while preserving the app's output contract.
 
     Simple runtime note:
-    Ultralytics ByteTrack expects a ``Boxes``/results-like object (with fields
-    like ``conf`` and ``xywh``), not a raw matrix. We therefore build a
-    ``Boxes`` object per frame and parse ByteTrack's ndarray output rows back
-    into ``BBoxViewModel`` objects.
-    """
+    Ultralytics ByteTrack expects a `Boxes`/results-like object (with fields
+    like `conf` and `xywh`), not a raw matrix. We therefore build a
+    `Boxes` object per frame and parse ByteTrack's ndarray output rows back
+    into `BBoxViewModel` objects.
+
+
+Layer: Infrastructure.
+Context: Implements concrete processing or I/O behind application-facing contracts.
+"""
 
     uses_appearance = False
 
@@ -331,10 +343,10 @@ class ByteTrackStrategy:
             excluded_ids: Track IDs already assigned to another current row.
 
         Returns:
-            The best plausible prior ID, or ``None`` when no safe fallback exists.
+            The best plausible prior ID, or `None` when no safe fallback exists.
 
         Note:
-            The predicted state is ``[xc, yc, w, h, vx, vy, vw, vh]``. The
+            The predicted state is `[xc, yc, w, h, vx, vy, vw, vh]`. The
             center-distance fallback permits reacquisition after circular motion
             even when ordinary IoU is weak, while a 30-frame age cap prevents
             long-range identity guesses.
@@ -394,7 +406,7 @@ class ByteTrackStrategy:
             label: Detection class name.
 
         Note:
-            The state is ``[xc, yc, w, h, vx, vy, vw, vh]``. Measured center
+            The state is `[xc, yc, w, h, vx, vy, vw, vh]`. Measured center
             displacement and size changes are blended with prior velocity to
             dampen detector jitter while retaining fast direction changes.
 

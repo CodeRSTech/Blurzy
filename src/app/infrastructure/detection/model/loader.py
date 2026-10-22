@@ -1,4 +1,12 @@
-"""Detection model factory and polymorphic implementations (Torch, YOLO, Dummy)."""
+"""Detection model factory and polymorphic implementations (Torch, YOLO, Dummy).
+
+See Also:
+    - [`DetectionModelError`][app.infrastructure.detection.exceptions.DetectionModelError] — reports model-loading failures
+    - [`BaseDetectionModel`][app.infrastructure.detection.model.base.BaseDetectionModel] — common contract for loaded models
+
+Layer: Infrastructure.
+Context: Implements concrete processing and I/O behind application-facing contracts.
+"""
 
 from __future__ import annotations
 
@@ -24,17 +32,19 @@ logger = get_logger("Infrastructure->Detection->Models")
 
 
 def load_detection_model(model_name: str) -> BaseDetectionModel:
-    """
-    Factory function — return appropriate ``BaseDetectionModel`` instance by ``model_name``.
+    """Instantiate the model implementation registered under `model_name`.
+
+    Args:
+        model_name: Registered model name, or `"None"` to select the dummy model.
+
+    Returns:
+        Model implementation for the requested TorchVision, YOLO, MTCNN, or dummy model.
 
     Note:
-        Routing:
-            - ``"None"`` -> ``DummyDetectionModel()``.
-            - Torch model names -> ``TorchDetectionModel(...)``.
-            - YOLO model names -> ``YoloDetectionModel(...)``.
+        TorchVision, YOLO, and MTCNN names select their matching backend wrapper.
 
     Raises:
-        DetectionModelError: If ``model_name`` is unknown.
+        DetectionModelError: If the name is not registered by any supported backend.
     """
     if model_name == "None":
         return DummyDetectionModel()

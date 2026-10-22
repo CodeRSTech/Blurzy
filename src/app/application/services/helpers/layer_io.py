@@ -1,14 +1,13 @@
 """Shared JSON/CSV serialisation helpers for BBoxViewModel layer data.
 
-This module is an *internal* utility — it is not exposed through any ``__init__.py``.
+This module is an *internal* utility — it is not exposed through any `__init__.py`.
 Both the detection and tracking import/export services import from here so that
 the wire format is defined in exactly one place.
 
-Wire format
------------
-JSON
-~~~~
-.. code-block:: json
+## Wire format
+
+### JSON
+```json
 
     {
       "meta": {
@@ -31,21 +30,24 @@ JSON
         ]
       }
     }
+```
 
-CSV
-~~~
-Columns (tab/comma-separated): ``frame_index, id, source, label, x1, y1, x2, y2,
-confidence, color_hex, key``
+### CSV
+Columns (tab/comma-separated): `frame_index, id, source, label, x1, y1, x2, y2, confidence, color_hex, key`
 
-``source`` is stored as its *value* string (e.g. ``"Detection"``) because
-:class:`~app.domain.detection.source.BoxSource` is a ``str``-based enum.
-``confidence`` is left blank when ``None``.
+`source` is stored as its *value* string (e.g. `"Detection"`) because
+`BoxSource` is a `str`-based enum.
+`confidence` is left blank when `None`.
 
 Design notes
 ------------
-* ``format_version`` in the JSON meta block enables forward-compatible migrations.
-* All keys are preserved verbatim on round-trips.  :meth:`apply_import_to_layer`
-  handles collision resolution according to the chosen :class:`ImportMode`.
+* `format_version` in the JSON meta block enables forward-compatible migrations.
+* All keys are preserved verbatim on round-trips. `apply_import_to_layer`
+  handles collision resolution according to the chosen `ImportMode`.
+
+
+Layer: Application.
+Context: Coordinates domain state and infrastructure to complete application use cases.
 """
 
 from __future__ import annotations
@@ -78,7 +80,16 @@ def serialize_layer_to_json(
     data: dict[int, ListOfBoxes],
     file_path: str,
 ) -> int:
-    """Write ``data`` as a JSON file.  Returns the number of boxes written."""
+    """Write `data` as a JSON file.  Returns the number of boxes written.
+
+    Args:
+        layer_name_str: Layer name recorded in the JSON metadata.
+        data: Boxes grouped by zero-based frame index.
+        file_path: Destination path for the JSON file.
+
+    Returns:
+        Number of boxes serialized.
+    """
     frames: dict[str, list[dict]] = {}
     total_boxes = 0
 
@@ -110,7 +121,16 @@ def serialize_layer_to_csv(
     data: dict[int, ListOfBoxes],
     file_path: str,
 ) -> int:
-    """Write ``data`` as a CSV file.  Returns the number of boxes written."""
+    """Write `data` as a CSV file.  Returns the number of boxes written.
+
+    Args:
+        layer_name_str: Unused compatibility argument retained to match the JSON helper.
+        data: Boxes grouped by zero-based frame index.
+        file_path: Destination path for the CSV file.
+
+    Returns:
+        Number of boxes written to the CSV file.
+    """
     total_boxes = 0
     _ensure_parent_dir(file_path)
 
@@ -144,11 +164,11 @@ def serialize_layer_to_csv(
 # ──────────────────────────────────────────────────────────────────────────────
 
 def deserialize_layer_from_json(file_path: str) -> dict[int, ListOfBoxes]:
-    """Read a JSON file and return ``{frame_index: [BBoxViewModel, ...]}``.
+    """Read a JSON file and return `{frame_index: [BBoxViewModel, ...]}`.
 
     Note:
-        Unknown ``source`` values that are not registered in ``BoxSource`` will
-        raise ``ValueError``.  The calling service should catch and surface this
+        Unknown `source` values that are not registered in `BoxSource` will
+        raise `ValueError`.  The calling service should catch and surface this
         as a user-friendly error.
     """
     with open(file_path, "r", encoding="utf-8") as fh:
@@ -159,10 +179,10 @@ def deserialize_layer_from_json(file_path: str) -> dict[int, ListOfBoxes]:
 
 
 def deserialize_layer_from_csv(file_path: str) -> dict[int, ListOfBoxes]:
-    """Read a CSV file and return ``{frame_index: [BBoxViewModel, ...]}``.
+    """Read a CSV file and return `{frame_index: [BBoxViewModel, ...]}`.
 
     Note:
-        Rows with an empty ``confidence`` field are loaded with ``confidence=None``.
+        Rows with an empty `confidence` field are loaded with `confidence=None`.
     """
     result: dict[int, list[BBoxViewModel]] = {}
 
@@ -194,13 +214,13 @@ def apply_import_to_layer(
     incoming: dict[int, ListOfBoxes],
     mode: ImportMode,
 ) -> int:
-    """Apply ``incoming`` data into ``store``'s ``layer`` according to ``mode``.
+    """Apply `incoming` data into `store`'s `layer` according to `mode`.
 
     Returns:
         int: Total number of boxes written into the layer.
 
     Note:
-        MERGE_RENAME uses a ``"imp-"`` prefix on both ``key`` and ``id`` for
+        MERGE_RENAME uses a `"imp-"` prefix on both `key` and `id` for
         each box whose key already exists in the target frame.  This makes
         re-imported boxes distinguishable and avoids silent data loss.
 

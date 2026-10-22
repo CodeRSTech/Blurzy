@@ -1,4 +1,4 @@
-"""
+r"""
 HungarianIoUTracker — pure NumPy/SciPy multi-object tracker.
 
 Architectural contract
@@ -18,6 +18,24 @@ Algorithm
 5. Unmatched detections → new tracks.
 6. Unmatched tracks → coast internally (move by last velocity, decay confidence).
 7. Tracks whose confidence drops below min_confidence are pruned; unobserved states are not emitted.
+
+For axis-aligned boxes, the overlap and assignment cost are
+
+$$
+\operatorname{IoU}(A,B)=\frac{|A\cap B|}{|A\cup B|},
+\qquad C_{ij}=1-\operatorname{IoU}(T_i,D_j).
+$$
+
+The Hungarian solver minimizes total assignment cost; a candidate match is
+accepted only when its IoU meets `iou_threshold`.
+
+See Also:
+    - [`HungarianStrategy`][app.infrastructure.tracking.tracking_strategy.HungarianStrategy] — adapts the tracker to frame-based strategy dispatch
+    - [`TrackingWorker`][app.infrastructure.tracking.track_worker.TrackingWorker] — sends per-frame detections to tracker strategies
+
+Layer: Infrastructure tracking.
+Context: A Qt-independent tracker consumes plain detections and returns
+per-frame track states to the tracking worker.
 """
 
 from __future__ import annotations
@@ -59,7 +77,11 @@ logger = get_logger("Infrastructure->HungarianTracker")
 
 @dataclass
 class TrackInput:
-    """One detection handed to the tracker for a single frame."""
+    """One detection handed to the tracker for a single frame.
+
+Layer: Infrastructure.
+Context: Implements concrete processing or I/O behind application-facing contracts.
+"""
     bbox_xyxy: BBoxXYXYTuple  # (x1, y1, x2, y2)
     confidence: float
     label: str
@@ -67,7 +89,11 @@ class TrackInput:
 
 @dataclass
 class TrackState:
-    """The live view_state of one confirmed track, returned per frame."""
+    """The live view_state of one confirmed track, returned per frame.
+
+Layer: Infrastructure.
+Context: Implements concrete processing or I/O behind application-facing contracts.
+"""
     uid: int
     bbox_xyxy: BBoxXYXYTuple
     confidence: float
@@ -93,6 +119,11 @@ class _Track:
     time_since_update: int = 0
 
     def centroid(self) -> tuple[float, float]:
+        """Return the center point of the track's `xyxy` box.
+
+        Returns:
+            `(x, y)` centroid coordinates in pixels.
+        """
         x1, y1, x2, y2 = self.bbox_xyxy
         return (x1 + x2) / 2.0, (y1 + y2) / 2.0
 
@@ -121,6 +152,11 @@ class _Track:
         self.time_since_update += 1
 
     def to_state(self) -> TrackState:
+        """Copy the current record into its public track-state value.
+
+        Returns:
+            Snapshot including velocity, observation status, and track age.
+        """
         return TrackState(
             uid=self.uid,
             bbox_xyxy=self.bbox_xyxy,
@@ -174,6 +210,16 @@ def _iou_matrix(
 
 @final
 class HungarianIoUTracker:
+    """Associate frame detections with active tracks by global IoU assignment.
+
+    Layer: Infrastructure tracking.
+    Context: Owns the live track set used by a tracking strategy adapter.
+
+    Args:
+        iou_threshold: Minimum IoU required to accept a detection-track match.
+        confidence_decay: Confidence decrease applied to a track per missed frame.
+        min_confidence: Minimum confidence at which an unmatched track remains active.
+"""
     def __init__(
             self,
             iou_threshold: float = 0.3,

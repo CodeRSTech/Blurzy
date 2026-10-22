@@ -1,4 +1,12 @@
-"""Right-click context menu actions for detection editing (add, copy, delete, select, reset)."""
+"""Right-click context menu actions for detection editing (add, copy, delete, select, reset).
+
+See Also:
+    - [`AnnotationHandler`][app.ui.handlers.annotation_handler.AnnotationHandler] — dispatches annotation actions
+    - [`build_hit_action_map`][app.ui.qt.widgets.preview.layer_bbox.menu.build_hit_action_map] — maps menu entries to action identifiers
+
+Layer: Domain.
+Context: Defines application concepts independently of UI and infrastructure implementations.
+"""
 
 from __future__ import annotations
 
@@ -14,9 +22,13 @@ class AnnotationContextActions(str, Enum):
         actions such as copy, directional delete, and delete-all; selection
         actions such as select all, none, and inverse; and reset actions for
         reverting Layer B or Layer D view_state. Clipboard operations are also
-        included. ``AnnotationHandler`` routes each action to the appropriate
+        included. `AnnotationHandler` routes each action to the appropriate
         service method.
-    """
+
+
+Layer: Domain.
+Context: Represents application concepts without UI or infrastructure dependencies.
+"""
     ADD_BBOX_HERE = "add_bbox_here"
     COPY = "copy"
     COPY_CURRENT = "copy_current"

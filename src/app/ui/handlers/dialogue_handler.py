@@ -1,4 +1,12 @@
-"""Dialog management handler for UI interactions."""
+"""Dialog management handler for UI interactions.
+
+See Also:
+    - [`EditAnnotationDialog`][app.ui.qt.dialogs.annotation.EditAnnotationDialog] — edits annotation details
+    - [`ModelChangeWarningDialog`][app.ui.qt.dialogs.model_change.ModelChangeWarningDialog] — confirms model-change consequences
+
+Layer: Presentation.
+Context: Converts user actions and worker signals into application calls and UI feedback.
+"""
 
 from __future__ import annotations
 
@@ -29,7 +37,15 @@ class DialogueHandler(QObject):
         Factory pattern: creates dialogs without managing lifecycle.
         Caller is responsible for executing dialog and handling results.
         Centralizes dialog creation logic.
-    """
+
+
+Layer: Presentation.
+Context: Supports user interaction and delegates application work through presentation contracts.
+
+
+    Args:
+        controller providing the parent window and application queries needed to construct dialogs.
+"""
 
     def __init__(self, controller: UIController):
         super().__init__()
@@ -42,13 +58,13 @@ class DialogueHandler(QObject):
     ) -> EditAnnotationDialog:
         """
         Create edit detection dialog with initial label and coordinates.
-    
+
         Args:
             initial_label (str): The label text to pre-populate.
-            initial_bbox_xyxy (tuple[int, int, int, int]): Tuple ``(x1, y1, x2, y2)`` of detection coordinates.
-    
+            initial_bbox_xyxy (tuple[int, int, int, int]): Tuple `(x1, y1, x2, y2)` of detection coordinates.
+
         Returns:
-            EditAnnotationDialog: A ``EditAnnotationDialog`` instance ready to execute. Caller must call ``.exec()`` and then ``.get_annotation_data()`` to retrieve results.
+            EditAnnotationDialog: A `EditAnnotationDialog` instance ready to execute. Caller must call `.exec()` and then `.get_annotation_data()` to retrieve results.
         """
         dlg = EditAnnotationDialog(
             self._window, initial_label=initial_label, initial_bbox_xyxy=initial_bbox_xyxy
@@ -58,12 +74,12 @@ class DialogueHandler(QObject):
     def handle_model_change_warning_dialogue(self, s_id: SessionId) -> ModelChangeWarningDialog:
         """
         Create model change warning dialog for the session.
-    
+
         Args:
             s_id (SessionId): Session ID (for context, if needed).
-    
+
         Returns:
-            ModelChangeWarningDialog: A ``ModelChangeWarningDialog`` instance ready to execute. Caller must call ``.exec()`` and then ``.get_results()`` to retrieve ``(keep_manual, dont_ask_again)`` tuple.
+            ModelChangeWarningDialog: A `ModelChangeWarningDialog` instance ready to execute. Caller must call `.exec()` and then `.get_results()` to retrieve `(keep_manual, dont_ask_again)` tuple.
         """
         dlg = ModelChangeWarningDialog(self._window)
         return dlg

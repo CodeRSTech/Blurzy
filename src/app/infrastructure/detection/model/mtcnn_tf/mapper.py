@@ -1,9 +1,17 @@
 """
 Mapper for converting MTCNN model output to DetectionPayload.
 
+See Also:
+    - [`DetectionResult`][app.domain.detection.result.DetectionResult] — normalized detection record produced by the mapper
+    - [`MTCNNTFDetectionModel`][app.infrastructure.detection.model.mtcnn_tf.model.MTCNNTFDetectionModel] — runs the mapped model output
+
 **[NOTE]**
 **[IMPORTANT]**
 !!! **NOT supported** as of current development status !!!
+
+
+Layer: Infrastructure.
+Context: Implements concrete processing and I/O behind application-facing contracts.
 """
 
 from __future__ import annotations
@@ -16,7 +24,11 @@ logger = get_logger("Infrastructure->Detection->Models->MTCNN TF ModelMapper")
 
 
 class MTCNNTFDetectionMapper:
-    """Maps raw MTCNN detection results to DetectionPayload format."""
+    """Maps raw MTCNN detection results to DetectionPayload format.
+
+Layer: Infrastructure.
+Context: Implements concrete processing or I/O behind application-facing contracts.
+"""
 
     @staticmethod
     def map(
@@ -27,11 +39,11 @@ class MTCNNTFDetectionMapper:
         Map MTCNN raw inference output to DetectionResult list.
 
         Args:
-            results: Raw MTCNN model output (list of Result objects).
-            chosen_labels: Optional filter to include only these labels.
+            results: MTCNN face-result mappings containing `box` and `confidence`.
+            chosen_labels: Optional label allowlist; this mapper emits only `"person"`.
 
         Returns:
-            List of DetectionResult instances filtered by confidence and label.
+            Person detections meeting the configured confidence threshold and label filter.
         """
         detections: list[DetectionResult] = []
 

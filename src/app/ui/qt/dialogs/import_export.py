@@ -4,22 +4,26 @@ Shown when the user clicks either "Import / Export" button on the right panel.
 The dialog is *scope-aware*: the detection button opens it scoped to layers A/B,
 while the tracking button opens it scoped to layers C/D.
 
+See Also:
+    - [`ImportMode`][app.application.services.helpers.import_mode.ImportMode] — controls how imported boxes are merged
+    - [`VideoDataLayer`][app.domain.video.layer.VideoDataLayer] — identifies the layer scope for import and export
+
 Result
 ------
-After the user clicks OK, call :meth:`ImportExportDialog.get_config` to receive
-an :class:`ImportExportConfig` dataclass.  If the dialog was rejected or the user
-cancelled the overwrite-warning confirmation, ``get_config()`` returns ``None``.
+After the user clicks OK, call `ImportExportDialog.get_config` to receive
+an `ImportExportConfig` dataclass. If the dialog was rejected or the user
+cancelled the overwrite-warning confirmation, `get_config()` returns `None`.
 
 ⚠️  KNOWN QT QVARIANT COERCION ISSUE — READ BEFORE EDITING
 ============================================================
-``VideoDataLayer`` and ``ImportMode`` are both ``str``-based enums:
+`VideoDataLayer` and `ImportMode` are both `str`-based enums:
     class VideoDataLayer(str, Enum): A = "a" …
     class ImportMode(str, Enum):     OVERWRITE = "overwrite" …
 
-When any Python object that is a *subclass of ``str``* is stored as userData in a
-``QComboBox`` via ``addItem(label, userData)`` and retrieved via ``currentData()``,
-PySide6's internal Qt ``QVariant`` machinery sees a plain string (because the object
-IS-A str), discards the Python subclass identity, and returns a bare ``str``.
+When any Python object that is a *subclass of `str`* is stored as userData in a
+`QComboBox` via `addItem(label, userData)` and retrieved via `currentData()`,
+PySide6's internal Qt `QVariant` machinery sees a plain string (because the object
+IS-A str), discards the Python subclass identity, and returns a bare `str`.
 
 Concretely:
     self._layer_combo.addItem("Layer A", VideoDataLayer.A)  # enum IN
@@ -48,6 +52,10 @@ through Qt's QVariant heap:
 
 DO NOT remove ensure_layer_enum()/ensure_import_mode() calls without understanding this.
 See: app/application/services/layer_coercion.py
+
+
+Layer: Presentation.
+Context: Contains concrete Qt presentation components and supporting utilities.
 """
 
 from __future__ import annotations
@@ -77,16 +85,20 @@ if TYPE_CHECKING:
 @dataclass
 class ImportExportConfig:
     """
-    Immutable result returned by :meth:`ImportExportDialog.get_config`.
+    Store the import/export choices collected by `ImportExportDialog.get_config`.
 
     Attributes:
-        is_import:   ``True``  → the user chose Import.
-                     ``False`` → the user chose Export.
-        layer:       The target/source :class:`VideoDataLayer`.
-        fmt:         ``"json"`` or ``"csv"``.
+        is_import:   `True`  → the user chose Import.
+                     `False` → the user chose Export.
+        layer: The target/source `VideoDataLayer`.
+        fmt:         `"json"` or `"csv"`.
         file_path:   Absolute path selected by the user.
-        import_mode: The chosen :class:`ImportMode`; ``None`` for exports.
-    """
+        import_mode: The chosen `ImportMode`; `None` for exports.
+
+
+Layer: Presentation.
+Context: Supports user interaction and delegates application work through presentation contracts.
+"""
     is_import: bool
     layer: VideoDataLayer
     fmt: str
@@ -109,7 +121,7 @@ _LAYER_LABELS: dict[VideoDataLayer, str] = {
 # Note: the dialog intentionally allows cross-scope imports (e.g. exporting
 # from Layer A and importing into Layer C) because the feature spec says
 # "user can export from any layer and import into any layer".
-# The ``scope_layers`` parameter merely determines which layers are *shown*
+# The `scope_layers` parameter merely determines which layers are *shown*
 # in this particular dialog instance (detection context → A/B, tracking → C/D).
 
 
@@ -123,8 +135,8 @@ class ImportExportDialog(QDialog):
         scope_title:  Human-readable scope label shown in the window title.
         parent:       Optional Qt parent widget.
 
-    Usage::
-
+    Example:
+        ```python
         dlg = ImportExportDialog(
             scope_layers=[VideoDataLayer.A, VideoDataLayer.B],
             scope_title="Detection",
@@ -132,17 +144,22 @@ class ImportExportDialog(QDialog):
         )
         if dlg.exec() == QDialog.DialogCode.Accepted:
             cfg = dlg.get_config()
-            if cfg:   # None if the user cancelled the overwrite warning
+            if cfg:  # None if the user cancelled the overwrite warning
                 ...
+        ```
 
     Note:
         The dialog enforces the overwrite warning itself (before calling
-        ``accept()``) so the handler does not need to show a second dialog.
+        `accept()`) so the handler does not need to show a second dialog.
 
         Consider future improvement: persist the last-used directory per scope
-        (detection / tracking) using ``QSettings`` so the file browser opens
+        (detection / tracking) using `QSettings` so the file browser opens
         in a sensible location across sessions.
-    """
+
+
+Layer: Presentation.
+Context: Supports user interaction and delegates application work through presentation contracts.
+"""
 
     def __init__(
         self,
@@ -387,6 +404,6 @@ class ImportExportDialog(QDialog):
         Return the user's choices after the dialog was accepted.
 
         Returns:
-            :class:`ImportExportConfig` if the user confirmed, otherwise ``None``.
+            `ImportExportConfig` if the user confirmed, otherwise `None`.
         """
         return self._config

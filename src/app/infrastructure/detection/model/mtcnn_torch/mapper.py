@@ -1,4 +1,12 @@
-"""Mapper for converting MTCNN (facenet-pytorch) output to DetectionResult."""
+"""Mapper for converting MTCNN (facenet-pytorch) output to DetectionResult.
+
+See Also:
+    - [`DetectionResult`][app.domain.detection.result.DetectionResult] — normalized detection record produced by the mapper
+    - [`MTCNNTorchDetectionModel`][app.infrastructure.detection.model.mtcnn_torch.model.MTCNNTorchDetectionModel] — runs the mapped model output
+
+Layer: Infrastructure.
+Context: Implements concrete processing and I/O behind application-facing contracts.
+"""
 
 from __future__ import annotations
 
@@ -17,13 +25,17 @@ logger = get_logger("Infrastructure->Detection->Models->MTCNN Torch ModelMapper"
 class MTCNNTorchDetectionMapper:
     """Maps raw MTCNN (facenet-pytorch) detection output to DetectionResult format.
 
-    ``facenet_pytorch.MTCNN.detect()`` returns a pair ``(boxes, probs)`` where:
+    `facenet_pytorch.MTCNN.detect()` returns a pair `(boxes, probs)` where:
 
-    * ``boxes`` – ``numpy.ndarray`` of shape ``(N, 4)`` in **xyxy** order, or
-      ``None`` when no face is found.
-    * ``probs`` – ``numpy.ndarray`` of shape ``(N,)`` with confidence scores in
-      ``[0, 1]``, or ``None`` when no face is found.
-    """
+    * `boxes` – `numpy.ndarray` of shape `(N, 4)` in **xyxy** order, or
+      `None` when no face is found.
+    * `probs` – `numpy.ndarray` of shape `(N,)` with confidence scores in
+      `[0, 1]`, or `None` when no face is found.
+
+
+Layer: Infrastructure.
+Context: Implements concrete processing or I/O behind application-facing contracts.
+"""
 
     @staticmethod
     def map(
@@ -35,14 +47,14 @@ class MTCNNTorchDetectionMapper:
         Map MTCNN raw inference output to a list of DetectionResult.
 
         Args:
-            boxes: Array of bounding boxes in xyxy format, shape ``(N, 4)``, or
-                ``None`` if no faces were detected.
-            probs: Array of confidence scores, shape ``(N,)``, or ``None``.
+            boxes: Array of bounding boxes in xyxy format, shape `(N, 4)`, or
+                `None` if no faces were detected.
+            probs: Array of confidence scores, shape `(N,)`, or `None`.
             chosen_labels: Optional filter; results whose label is not in this
-                list are dropped.  MTCNN always emits ``"person"`` labels.
+                list are dropped.  MTCNN always emits `"person"` labels.
 
         Returns:
-            List of :class:`DetectionResult` instances filtered by confidence
+            List of `DetectionResult` instances filtered by confidence
             threshold and optional label filter.
         """
         if boxes is None or probs is None:

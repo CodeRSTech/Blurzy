@@ -1,3 +1,13 @@
+"""Captures and restores project state through the application and project store.
+
+See Also:
+    - [`ProjectStore`][app.infrastructure.project.project_store.ProjectStore] — persists project documents
+    - [`ProjectDocument`][app.domain.project.project_document.ProjectDocument] — represents the saved project structure
+
+Layer: Application.
+Context: Implements use cases by coordinating domain and infrastructure operations at this architectural boundary.
+"""
+
 from __future__ import annotations
 
 import os
@@ -19,11 +29,34 @@ logger = get_logger("Application->ProjectService")
 
 @dataclass(slots=True)
 class ProjectLoadReport:
+    """Summarize which project sessions were restored successfully.
+
+    Layer: Application.
+    Context: Returned to callers after project restoration; missing or
+    unopenable source videos are reported rather than aborting other sessions.
+
+    Attributes:
+        restored_sessions: Number of sessions opened and restored.
+        skipped_session_paths: Video paths that could not be restored.
+    """
+
     restored_sessions: int
     skipped_session_paths: list[str]
 
 
 class ProjectService:
+    """Coordinate project persistence with application session management.
+
+    Layer: Application.
+    Context: Captures serializable session state through the application,
+    delegates file encoding to `ProjectStore`, and restores sessions while
+    reporting per-video failures.
+
+    Args:
+        app: Application facade whose session manager and video operations are
+            used to capture and restore project sessions.
+    """
+
     def __init__(self, app: Application) -> None:
         self._app = app
         self._store = ProjectStore()
@@ -32,10 +65,20 @@ class ProjectService:
 
     @property
     def current_project_path(self) -> str:
+        """Return the path of the currently loaded or most recently saved project.
+
+        Returns:
+            The project file path, or an empty string when no project is active.
+        """
         return self._current_project_path
 
     @property
     def directories(self) -> ProjectDirectories:
+        """Return the mutable project-specific import/export directory settings.
+
+        Returns:
+            The current `ProjectDirectories` value object.
+        """
         return self._directories
 
     def update_directories(
@@ -46,6 +89,14 @@ class ProjectService:
         export_prefix: str | None = None,
         export_suffix: str | None = None,
     ) -> None:
+        """Update only the supplied project directory or export-name settings.
+
+        Args:
+            last_import_directory: Optional most recently used import directory.
+            last_export_directory: Optional most recently used export directory.
+            export_prefix: Optional prefix for exported filenames.
+            export_suffix: Optional suffix for exported filenames.
+        """
         if last_import_directory is not None:
             self._directories.last_import_directory = last_import_directory
         if last_export_directory is not None:
@@ -56,12 +107,21 @@ class ProjectService:
             self._directories.export_suffix = export_suffix
 
     def clear_project(self) -> None:
+        """Close all managed sessions and reset the active project state."""
         logger.debug("Clearing project state and open sessions")
         self._app.sm.close_all()
         self._current_project_path = ""
         self._directories = ProjectDirectories()
 
     def save_project(self, file_path: str) -> ProjectDocument:
+        """Capture current sessions and persist them to a project file.
+
+        Args:
+            file_path: Destination path for the serialized project document.
+
+        Returns:
+            The in-memory document that was written.
+        """
         logger.debug("Saving project to {}", file_path)
         project = self._capture_project_document()
         self._store.save(file_path, project)
@@ -69,6 +129,14 @@ class ProjectService:
         return project
 
     def load_project(self, file_path: str) -> ProjectLoadReport:
+        """Load a project and restore every session whose video is available.
+
+        Args:
+            file_path: Path to the project document to read.
+
+        Returns:
+            Counts and paths describing restored and skipped sessions.
+        """
         logger.debug("Loading project from {}", file_path)
         project = self._store.load(file_path)
         report = self._restore_project_document(project)

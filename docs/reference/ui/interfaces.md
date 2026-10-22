@@ -2,9 +2,13 @@
 
 Source: `src/app/ui/interfaces/`
 
-These contracts describe the UI/controller/window capabilities used by
-handlers, reducing direct coupling to concrete widgets.
+`UIApplicationInterface` is the facade consumed by handlers for session and
+workflow operations; `UIControllerInterface` exposes handler/controller
+capabilities to UI composition code. The concrete facade adapter and
+controller adapter live in [UI adapters](adapters.md). Compatibility modules
+preserve earlier import names; a separate window adapter/interface is
+intentionally not implemented.
 
-**Expand this stub with:** intended interface consumers and their concrete
-window/controller adapters.
-
+The [handlers](handlers.md) use these seams to keep workflow requests separate
+from widget implementation. Application-owned worker contracts are covered in
+[Application interfaces](../application/interfaces/index.md).

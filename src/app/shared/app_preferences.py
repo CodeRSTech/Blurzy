@@ -1,3 +1,13 @@
+"""Module for app preferences; provides reusable helpers across application layers.
+
+See Also:
+    - [`PreferencesHandler`][app.ui.handlers.preferences_handler.PreferencesHandler] — applies user preference changes
+    - [`PreferencesDialog`][app.ui.qt.dialogs.preferences.PreferencesDialog] — edits preferences in the UI
+
+Layer: Shared utilities.
+Context: Provides reusable helpers across application layers at this architectural boundary.
+"""
+
 from __future__ import annotations
 
 from dataclasses import dataclass, field
@@ -102,11 +112,30 @@ def _coerce_str(value: object, default: str) -> str:
 
 
 class _SettingsBackend(Protocol):
-    def value(self, key: str, defaultValue: object | None = None) -> object: ...
+    def value(self, key: str, defaultValue: object | None = None) -> object:
+        """Read a setting or return its default.
 
-    def setValue(self, key: str, value: object) -> None: ...
+        Args:
+            key: Settings key to read.
+            defaultValue: Fallback returned when `key` has no stored setting.
 
-    def sync(self) -> None: ...
+        Returns:
+            Stored value or `defaultValue`.
+        """
+        ...
+
+    def setValue(self, key: str, value: object) -> None:
+        """Store a value under a settings key.
+
+        Args:
+            key: Settings key to update.
+            value: Preference data, such as a boolean, number, string, or string list, to store under `key`.
+        """
+        ...
+
+    def sync(self) -> None:
+        """Flush pending settings changes to the backend."""
+        ...
 
 
 @dataclass(slots=True)
@@ -116,7 +145,11 @@ class AppPreferences:
     Note:
         Default processing options are copied into sessions when they are created;
         edits to a session do not mutate these global preferences.
-    """
+
+
+Layer: Shared utilities.
+Context: Provides reusable cross-layer behavior without owning workflow state.
+"""
     startup_fullscreen: bool = False
     default_detection_model_name: str = DEFAULT_DETECTION_MODEL_NAME
     default_min_detection_confidence: float = DEFAULT_MIN_DETECTION_CONFIDENCE
@@ -143,6 +176,11 @@ class AppPreferences:
 
     @property
     def chosen_labels_text(self) -> str:
+        """Return the chosen labels as display text.
+
+        Returns:
+            Configured default labels joined with comma-space separators.
+        """
         return ", ".join(self.default_chosen_labels)
 
     def to_processing_settings_kwargs(self) -> dict[str, object]:
@@ -183,11 +221,15 @@ class AppPreferences:
 
 @final
 class AppPreferencesStore:
-    """Load and persist ``AppPreferences`` through a settings backend.
+    """Load and persist `AppPreferences` through a settings backend.
 
     Note:
         Stored key names are stable across launches and support injected test backends.
-    """
+
+
+Layer: Shared utilities.
+Context: Provides reusable cross-layer behavior without owning workflow state.
+"""
     _KEYS = {
         "startup_fullscreen": "preferences/startup_fullscreen",
         "default_detection_model_name": "preferences/default_detection_model_name",
@@ -218,7 +260,7 @@ class AppPreferencesStore:
         """Create a preference store over an injected or Qt settings backend.
 
         Args:
-            settings: Optional backend, defaulting to ``QSettings``.
+            settings: Optional backend, defaulting to `QSettings`.
         Raises:
             ImportError: If Qt settings are requested but PySide6 is unavailable.
 

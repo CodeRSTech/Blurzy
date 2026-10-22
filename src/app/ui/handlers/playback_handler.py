@@ -1,4 +1,12 @@
-"""Playback control handler for video playback operations."""
+"""Playback control handler for video playback operations.
+
+See Also:
+    - [`PlaybackState`][app.domain.video.playback_state.PlaybackState] — stores playback position and status
+    - [`VideoDecodeWorkerManager`][app.application.managers.video_decode_worker.VideoDecodeWorkerManager] — controls decoding lifecycle
+
+Layer: Presentation.
+Context: Converts user actions and worker signals into application calls and UI feedback.
+"""
 
 from __future__ import annotations
 
@@ -43,9 +51,17 @@ class PlaybackHandler(QObject):
     Note:
         Signal flow:
             Receives signals from transport control panel (play, pause, seek buttons).
-            Emits ``render_frame_requested`` signal to trigger frame updates.
-            Uses QTimer to trigger periodic ``on_playback_tick()`` calls during playback.
-    """
+            Emits `render_frame_requested` signal to trigger frame updates.
+            Uses QTimer to trigger periodic `on_playback_tick()` calls during playback.
+
+
+Layer: Presentation.
+Context: Supports user interaction and delegates application work through presentation contracts.
+
+
+    Args:
+        controller: Provides playback operations, transport controls, and frame rendering.
+"""
 
     render_frame_requested = Signal(object)
     """Emitted when a frame needs to be rendered. Payload: ``SessionId``."""
@@ -79,17 +95,21 @@ class PlaybackHandler(QObject):
 
     @property
     def selected_s_id(self) -> SessionId:
-        """Retrieves the selected session ID from the session list."""
+        """Retrieves the selected session ID from the session list.
+
+Returns:
+    Identifier of the selected session, or the empty identifier when none is selected.
+"""
         return self._window.selected_s_id
 
     @Slot()
     def on_play(self) -> None:
         """
         Start video playback for the selected session.
-    
+
         Note:
-            Triggered by transport panel ``play_btn.clicked`` signal.
-    
+            Triggered by transport panel `play_btn.clicked` signal.
+
             Flow:
                 on_play() [this slot]
                   ├── Validate session is selected
@@ -114,11 +134,11 @@ class PlaybackHandler(QObject):
     def on_pause(self) -> None:
         """
         Stop video playback for the selected session.
-    
+
         Note:
-            Triggered by transport panel ``pause_btn.clicked`` signal.
-    
-            Action: Calls ``stop_playback()`` to halt the playback timer and app playback view_state.
+            Triggered by transport panel `pause_btn.clicked` signal.
+
+            Action: Calls `stop_playback()` to halt the playback timer and app playback view_state.
         """
         self.stop_playback()
 
@@ -126,10 +146,10 @@ class PlaybackHandler(QObject):
     def on_next_frame(self) -> None:
         """
         Advance to the next frame in the selected session.
-    
+
         Note:
-            Triggered by transport panel ``next_btn.clicked`` signal.
-    
+            Triggered by transport panel `next_btn.clicked` signal.
+
             Flow:
                 on_next_frame() [this slot]
                   ├── Stop current playback if active
@@ -154,10 +174,10 @@ class PlaybackHandler(QObject):
     def on_previous_frame(self) -> None:
         """
         Advance to the previous frame in the selected session.
-    
+
         Note:
-            Triggered by transport panel ``previous_btn.clicked`` signal.
-    
+            Triggered by transport panel `previous_btn.clicked` signal.
+
             Flow:
                 on_previous_frame() [this slot]
                   ├── Stop current playback
@@ -178,14 +198,14 @@ class PlaybackHandler(QObject):
     def on_seek(self, frame_index: int) -> None:
         """
         Seek to a specific frame index via slider movement.
-    
+
         Note:
-            Triggered by transport panel ``seek_slider`` ``sliderMoved`` signal.
-    
+            Triggered by transport panel `seek_slider` `sliderMoved` signal.
+
             Flow:
                 on_seek(frame_index) [this method]
                   ├── Stop any active playback
-                  ├── Load frame at ``frame_index`` via App
+                  ├── Load frame at `frame_index` via App
                   └──> Render frame via Controller
         """
         s_id = self.selected_s_id
@@ -202,6 +222,11 @@ class PlaybackHandler(QObject):
 
     @Slot(int)
     def on_rotate_requested(self, delta_degrees: int) -> None:
+        """Rotate the selected video's preview by the requested number of degrees.
+
+        Args:
+            delta_degrees: Rotation increment requested by a transport control.
+        """
         s_id = self.selected_s_id
         if not s_id:
             return
@@ -224,16 +249,17 @@ class PlaybackHandler(QObject):
 
     @Slot()
     def on_fit_view_requested(self) -> None:
+        """Reset the preview viewport to fit the image within its available area."""
         self._window.preview_container.reset_viewport()
 
     @Slot()
     def on_playback_tick(self) -> None:
         """
         Periodic timer callback to update frame during playback.
-    
+
         Note:
-            Triggered by ``_playback_timer.timeout`` signal at regular intervals.
-    
+            Triggered by `_playback_timer.timeout` signal at regular intervals.
+
             Flow:
                 on_playback_tick() [this slot]
                   ├── Check if session is still selected
@@ -241,10 +267,10 @@ class PlaybackHandler(QObject):
                   ├── Check if buffered frame is available
                   ├── If available: render frame
                   └── If not: skip frame to maintain sync (buffer underrun)
-    
+
             Why this matters:
                 Called every 16ms (or configured interval) during playback.
-                Pulls pre-buffered frames from ``VideoDecodeWorker``.
+                Pulls pre-buffered frames from `VideoDecodeWorker`.
                 Skips frames if buffer underruns to prevent stutter.
                 Stops playback automatically at end of video.
         """
@@ -283,7 +309,7 @@ class PlaybackHandler(QObject):
     def _start_session_playback(self, s_id: SessionId) -> None:
         """
         Initialize and start playback for the specified session.
-    
+
         Note:
             Flow:
                 _start_session_playback(s_id)
@@ -291,11 +317,11 @@ class PlaybackHandler(QObject):
                   ├── Fetch frame interval (milliseconds) from App metadata
                   ├── Start QTimer with calculated interval
                   └──> Update UI status bar with playback info
-    
+
             Key Steps:
-                Notify App that session is starting playback (marks ``is_playing=True``).
-                Calculate ``interval`` from FPS metadata (e.g., 30 fps → 33.33 ms).
-                Start ``_playback_timer`` which triggers ``on_playback_tick()`` every interval.
+                Notify App that session is starting playback (marks `is_playing=True`).
+                Calculate `interval` from FPS metadata (e.g., 30 fps → 33.33 ms).
+                Start `_playback_timer` which triggers `on_playback_tick()` every interval.
                 Update status bar to reflect playback view_state.
         """
         # ====================================================================
@@ -318,7 +344,7 @@ class PlaybackHandler(QObject):
     def stop_playback(self) -> None:
         """
         Stop video playback and reset playback timer.
-    
+
         Note:
             Flow:
                 stop_playback()

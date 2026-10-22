@@ -1,4 +1,12 @@
-"""Tracking algorithm strategy enumeration."""
+"""Tracking algorithm strategy enumeration.
+
+See Also:
+    - [`TrackingService`][app.application.services.tracking.service.TrackingService] — coordinates tracking use cases
+    - [`TrackingWorker`][app.infrastructure.tracking.track_worker.TrackingWorker] — executes the selected tracking strategy
+
+Layer: Domain.
+Context: Defines application concepts independently of UI and infrastructure implementations.
+"""
 
 from __future__ import annotations
 
@@ -10,14 +18,18 @@ class TrackingStrategy(str, Enum):
     Multi-object tracking algorithm selection.
 
     Note:
-        ``DUMMY`` is a pass-through strategy and ``HUNGARIAN`` is the primary
-        motion-only tracker using IoU matching. ``DEEP_SORT`` uses an age
-        cascade with an appearance gallery, while ``BOT_SORT`` combines
+        `DUMMY` is a pass-through strategy and `HUNGARIAN` is the primary
+        motion-only tracker using IoU matching. `DEEP_SORT` uses an age
+        cascade with an appearance gallery, while `BOT_SORT` combines
         ByteTrack's two-stage association with EMA Re-ID appearance features and
-        direct width/height Kalman state estimation. ``BYTRACK`` and ``CSRT``
+        direct width/height Kalman state estimation. `BYTRACK` and `CSRT`
         remain additional strategy selections. The current default is
-        ``HUNGARIAN``.
-    """
+        `HUNGARIAN`.
+
+
+Layer: Domain.
+Context: Represents application concepts without UI or infrastructure dependencies.
+"""
     DUMMY = "dummy"
     HUNGARIAN = "hungarian"
     BOT_SORT = "botsort"

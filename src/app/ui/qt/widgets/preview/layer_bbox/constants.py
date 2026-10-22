@@ -1,3 +1,13 @@
+"""Module for constants; implements the Qt presentation components.
+
+See Also:
+    - [`AnnotationOverlayWidget`][app.ui.qt.widgets.preview.layer_bbox.layer_bbox.AnnotationOverlayWidget]
+    - [`rendering`][app.ui.qt.widgets.preview.layer_bbox.rendering]
+
+Layer: Presentation.
+Context: Implements the qt presentation components at this architectural boundary.
+"""
+
 from __future__ import annotations
 
 from PySide6.QtGui import QColor

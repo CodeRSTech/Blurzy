@@ -1,4 +1,12 @@
-"""Annotation creation and editing handler for bounding detection management."""
+"""Annotation creation and editing handler for bounding detection management.
+
+See Also:
+    - [`AnnotationContextActions`][app.domain.detection.context_actions.AnnotationContextActions] — describes supported annotation operations
+    - [`AnnotationOverlayWidget`][app.ui.qt.widgets.preview.layer_bbox.layer_bbox.AnnotationOverlayWidget] — captures box-editing interactions
+
+Layer: Presentation.
+Context: Converts user actions and worker signals into application calls and UI feedback.
+"""
 
 # [10-08-26 05:00 PM] `AnnotationHandler` has a lot of responsibilities, we must create a module
 # `annotation_handler` or just `annotation` under `src/app/ui/handlers` and move all the related logic there.
@@ -58,7 +66,15 @@ class AnnotationHandler(QObject):
             Receives signals from the bottom panel (edit, delete, copy buttons).
             Handles keyboard events for detection nudging with acceleration.
             Emits frame render requests after detection changes.
-    """
+
+
+Layer: Presentation.
+Context: Supports user interaction and delegates application work through presentation contracts.
+
+
+    Args:
+        controller supplying annotation mutations, selection widgets, and preview rendering.
+"""
 
     def __init__(self, controller: UIController) -> None:
         super().__init__()
@@ -155,12 +171,12 @@ class AnnotationHandler(QObject):
     def handle_new_drawn_box(self, s_id: SessionId, x1: int, y1: int, x2: int, y2: int) -> None:
         """
         Handles the addition of a new drawn box.
-    
+
         This function is triggered when a new box is drawn on the interface. It prompts the user
         to provide a label for the box via a dialog. If a valid label is provided and accepted, the function
         attempts to add the box, updates the user interface, and triggers the provided rendering
         function to refresh the box visually.
-    
+
         Args:
             s_id (SessionId): A unique identifier for the current session.
             x1 (int): The x-coordinate of the top-left corner of the box.
@@ -191,7 +207,13 @@ class AnnotationHandler(QObject):
             box_key: str,
             new_coords: BBoxXYXYTuple | None = None,
     ) -> None:
-        """Handles both visual drags (new_coords) and table 'Edit' clicks (dialog)."""
+        """Handles both visual drags (new_coords) and table 'Edit' clicks (dialog).
+
+Args:
+    s_id: Identifier of the target session.
+    box_key: Key of the existing box to update.
+    new_coords: Replacement `(x1, y1, x2, y2)` coordinates from a drag, or `None` to open the edit dialog.
+"""
         tab = self._window.active_tab_index
 
         box = (
@@ -477,6 +499,14 @@ class AnnotationHandler(QObject):
         return True
 
     def handle_delete_key(self, event: QKeyEvent) -> bool:
+        """Delete the current selection for an unmodified Delete key press.
+
+        Args:
+            event: Key event to inspect.
+
+        Returns:
+            `True` if the key was Delete and was consumed, including when nothing is selected.
+        """
         if event.modifiers() != Qt.KeyboardModifier.NoModifier:
             return False
         if event.key() != Qt.Key.Key_Delete:
@@ -491,6 +521,14 @@ class AnnotationHandler(QObject):
         return True
 
     def handle_selection_shortcut(self, event: QKeyEvent) -> bool:
+        """Apply a supported Ctrl selection, history, clipboard, or cut shortcut.
+
+        Args:
+            event: Key event to inspect.
+
+        Returns:
+            `True` if a supported Ctrl shortcut was handled; otherwise `False`.
+        """
         if event.modifiers() != Qt.KeyboardModifier.ControlModifier:
             return False
 
@@ -524,6 +562,14 @@ class AnnotationHandler(QObject):
         return False
 
     def handle_nudge_key(self, event: QKeyEvent) -> bool:
+        """Move selected boxes by one nudge increment for an unmodified arrow key.
+
+        Args:
+            event: Key event to inspect.
+
+        Returns:
+            `True` if an arrow key was consumed; otherwise `False`.
+        """
         if event.modifiers() != Qt.KeyboardModifier.NoModifier:
             return False
 
@@ -592,7 +638,7 @@ class AnnotationHandler(QObject):
 
         Flow:
 
-        ``on_delete_selected()`` `[this slot]`:
+        `on_delete_selected()` `[this slot]`:
          |
          | ├── Get selected session and detection keys
          | ├── Delete boxes from the active tab (Detection or Tracking)
@@ -683,6 +729,7 @@ class AnnotationHandler(QObject):
 
     @Slot()
     def on_reset_frame(self) -> None:
+        """Reset editable detection layer B on the current frame and rerender it."""
         s_id = self._window.selected_s_id
         if not s_id:
             return
@@ -695,6 +742,7 @@ class AnnotationHandler(QObject):
 
     @Slot()
     def on_reset_all(self) -> None:
+        """Reset editable detection layer B across all frames and rerender the current frame."""
         s_id = self._window.selected_s_id
         if not s_id:
             return
@@ -706,6 +754,7 @@ class AnnotationHandler(QObject):
 
     @Slot()
     def on_reset_tracker_frame(self) -> None:
+        """Reset editable tracking layer D on the current frame and rerender it."""
         s_id = self._window.selected_s_id
         if not s_id:
             return
@@ -718,6 +767,7 @@ class AnnotationHandler(QObject):
 
     @Slot()
     def on_reset_all_trackers(self) -> None:
+        """Reset editable tracking layer D across all frames and rerender the current frame."""
         s_id = self._window.selected_s_id
         if not s_id:
             return
@@ -729,10 +779,12 @@ class AnnotationHandler(QObject):
 
     @Slot()
     def on_delete_next_occurrences(self) -> None:
+        """Delete the selected boxes' later-frame occurrences."""
         self._delete_occurrences(direction=Direction.NEXT)
 
     @Slot()
     def on_delete_prev_occurrences(self) -> None:
+        """Delete the selected boxes' earlier-frame occurrences."""
         self._delete_occurrences(direction=Direction.PREV)
 
     @Slot(object, str, int, int, int, int)
@@ -760,6 +812,14 @@ class AnnotationHandler(QObject):
 
     @Slot(int, int, int, int)
     def on_preview_bbox_drawn(self, x1: int, y1: int, x2: int, y2: int) -> None:
+        """Forward newly drawn preview coordinates to the selected session's annotation flow.
+
+        Args:
+            x1: Left coordinate of the drawn box.
+            y1: Top coordinate of the drawn box.
+            x2: Right coordinate of the drawn box.
+            y2: Bottom coordinate of the drawn box.
+        """
         logger.debug("Preview bbox drawn: ({}, {}), ({}, {})", x1, y1, x2, y2)
         s_id = self._window.selected_s_id
         if s_id:
@@ -769,6 +829,15 @@ class AnnotationHandler(QObject):
     # NEW: Moved few slots from the controller to here.
     @Slot(str, int, int, int, int)
     def on_preview_bbox_edited(self, box_key: str, x1: int, y1: int, x2: int, y2: int) -> None:
+        """Forward edited preview coordinates to the selected session's annotation flow.
+
+        Args:
+            box_key: Key of the box being edited.
+            x1: Updated left coordinate.
+            y1: Updated top coordinate.
+            x2: Updated right coordinate.
+            y2: Updated bottom coordinate.
+        """
         logger.debug("Preview bbox edited ({}, {}, {}, {}) key: {}", x1, y1, x2, y2, box_key)
         s_id = self._window.selected_s_id
         if s_id:
@@ -777,6 +846,11 @@ class AnnotationHandler(QObject):
 
     @Slot(str)
     def on_preview_bbox_deleted(self, box_key: str) -> None:
+        """Delete the box from the active layer, update selection history, and rerender.
+
+        Args:
+            box_key: Key of the box to delete.
+        """
         logger.debug("Preview detection deleted: {})", box_key)
         s_id = self._window.selected_s_id
         if s_id:
@@ -795,13 +869,22 @@ class AnnotationHandler(QObject):
 
     @Slot(str)
     def on_preview_bbox_selected(self, box_key: str) -> None:
-        """Handle canvas-originated selection and sync to table and shared state."""
+        """Handle canvas-originated selection and sync to table and shared state.
+
+Args:
+    box_key: Key of the box selected on the preview canvas.
+"""
         logger.debug("Canvas bbox selected: {}", box_key)
         self._apply_selection_keys([box_key], record_history=True)
 
     @Slot(str, bool)
     def on_preview_bbox_selection_requested(self, box_key: str, additive: bool) -> None:
-        """Apply a canvas click to the shared selection, toggling when Ctrl is held."""
+        """Apply a canvas click to the shared selection, toggling when Ctrl is held.
+
+Args:
+    box_key: Key of the box clicked on the canvas.
+    additive: Whether the click toggles this box in the existing selection.
+"""
         if not additive:
             self._apply_selection_keys([box_key], record_history=True)
             return
@@ -820,7 +903,11 @@ class AnnotationHandler(QObject):
 
     @Slot(list)
     def on_preview_bbox_marquee_selected(self, box_keys: list[str]) -> None:
-        """Add marquee-contained boxes to the current shared selection."""
+        """Add marquee-contained boxes to the current shared selection.
+
+Args:
+    box_keys: Keys of boxes contained by the marquee rectangle.
+"""
         selected_keys = list(self._window.selected_frame_box_keys)
         selected_key_set = set(selected_keys)
         selected_keys.extend(key for key in box_keys if key not in selected_key_set)
@@ -828,7 +915,13 @@ class AnnotationHandler(QObject):
 
     @Slot(list, int, int)
     def on_preview_bboxes_moved(self, box_keys: list[str], dx: int, dy: int) -> None:
-        """Apply an overlay group-drag delta to every selected editable box."""
+        """Apply an overlay group-drag delta to every selected editable box.
+
+Args:
+    box_keys: Keys of boxes moved by the drag.
+    dx: Horizontal drag delta in image coordinates.
+    dy: Vertical drag delta in image coordinates.
+"""
         s_id = self._window.selected_s_id
         if not s_id or not box_keys:
             return
@@ -860,6 +953,12 @@ class AnnotationHandler(QObject):
 
     @Slot(str, str)
     def on_preview_context_action(self, action: str, box_key: str) -> None:
+        """Apply the requested context-menu action to the target or selected boxes.
+
+        Args:
+            action: Context-action identifier emitted by the preview menu.
+            box_key: Box under the context menu, if any.
+        """
         logger.debug("Preview detection context action: {}, {}", action, box_key)
         s_id: SessionId = self._window.selected_s_id
         if not s_id:
@@ -996,6 +1095,12 @@ class AnnotationHandler(QObject):
             self._window.show_error("Delete Occurrences Failed", str(exc))
 
     def copy_to_direction(self, direction: Direction, keys: list[str] | None = None) -> None:
+        """Copy the specified boxes to the adjacent frame in the selected direction.
+
+        Args:
+            direction: `Direction.NEXT` or `Direction.PREV`.
+            keys: Box keys to copy; defaults to the current selection.
+        """
         s_id = self._window.selected_s_id
         keys = self._window.selected_frame_box_keys if keys is None else keys
         if not s_id or not keys:

@@ -1,4 +1,12 @@
-"""User-configurable settings for detection, tracking, and rendering pipelines."""
+"""User-configurable settings for detection, tracking, and rendering pipelines.
+
+See Also:
+    - [`SessionState`][app.domain.session.session_state.SessionState] — owns the settings used by an active session
+    - [`SessionSettingsViewModel`][app.domain.views.session_settings_view_model.SessionSettingsViewModel] — exposes editable settings to the UI
+
+Layer: Domain.
+Context: Defines application concepts independently of UI and infrastructure implementations.
+"""
 
 from __future__ import annotations
 
@@ -13,7 +21,7 @@ class ProcessingSettings:
     Mutable configuration snapshot for a video processing session.
 
     Attributes:
-        detection_model_name (str): YOLO model name, or ``"None"`` when disabled.
+        detection_model_name (str): YOLO model name, or `"None"` when disabled.
         min_detection_confidence (float): Confidence threshold used to filter detections.
         chosen_labels (list[str]): Whitelist of class names to detect.
         tracking_strategy (str): Tracking algorithm name.
@@ -40,8 +48,8 @@ class ProcessingSettings:
 
     Note:
         Created per session with defaults, updated when the user changes UI
-        controls, and converted to ``SessionSettingsViewModel`` through
-        ``as_view_model()`` for widget binding.
+        controls, and converted to `SessionSettingsViewModel` through
+        `as_view_model()` for widget binding.
 
     Example:
         settings = ProcessingSettings(
@@ -52,7 +60,11 @@ class ProcessingSettings:
             blur_enabled=True
         )
         view_model = settings.as_view_model()  # For UI binding
-    """
+
+
+Layer: Domain.
+Context: Represents application concepts without UI or infrastructure dependencies.
+"""
 
     # --- Detection ---
     detection_model_name: str = "None"
@@ -93,7 +105,7 @@ class ProcessingSettings:
 
         Raises:
             ValueError: If a bounded setting is outside its documented range or
-                ``reid_embedding_dim`` is not one of 128, 256, or 512.
+                `reid_embedding_dim` is not one of 128, 256, or 512.
 
         Note:
             UI widgets use the same ranges and embedding dimensions; this protects
@@ -162,5 +174,9 @@ class ProcessingSettings:
 
     @property
     def model_name_is_null(self) -> bool:
-        """Return True if no detection model selected (""None"" or empty string)."""
+        """Return whether no detection model is selected.
+
+        Returns:
+            `True` when the model name is empty or the literal `"None"`.
+        """
         return self.detection_model_name == "None" or self.detection_model_name == ""

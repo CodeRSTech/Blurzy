@@ -20,6 +20,10 @@ It has managers, such as the
 
 [`VideoDecodeWorkerManager`][app.application.managers.video_decode_worker.VideoDecodeWorkerManager] - manages the lifecycle of video decode workers for sessions.
 
+See Also:
+    - [`Application`][app.application.application.Application] — exposes orchestrated workflows to the UI
+    - [`SessionService`][app.application.services.session_service.SessionService] — coordinates session and worker use cases
+
 Purpose
 -------
 Implements app use-cases and workflow orchestration.
@@ -46,6 +50,10 @@ Communication
 - **Talks upward to:** [UI layer][app.ui] through returned data/results
 - **Talks downward to:** [Domain layer][app.domain] and [Infrastructure layer][app.infrastructure] through method calls and data manipulation
 - **Must not depend on:** concrete widget behavior or layout details
+
+
+Layer: Application.
+Context: Coordinates application workflows.
 """
 
 # from .editor_app_service import EditorAppService

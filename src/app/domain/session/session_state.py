@@ -1,4 +1,12 @@
-"""Session view_state management — playback, settings, and frame data."""
+"""Session view_state management — playback, settings, and frame data.
+
+See Also:
+    - [`PlaybackState`][app.domain.video.playback_state.PlaybackState] — tracks the active frame and playback status
+    - [`ProcessingSettings`][app.domain.export.processing_settings.ProcessingSettings] — stores per-session processing options
+
+Layer: Domain.
+Context: Defines application concepts independently of UI and infrastructure implementations.
+"""
 
 from __future__ import annotations
 
@@ -33,11 +41,15 @@ class SessionState:
 
     Note:
         This class is a runtime data container rather than a business-logic
-        object. Bounding detection data lives separately in ``SessionDataStore``,
+        object. Bounding detection data lives separately in `SessionDataStore`,
         while playback, settings, and the current frame cache are kept here for
         fast UI access. Instances are created when a session opens, updated
         during playback and settings changes, and cleared when the session ends.
-    """
+
+
+Layer: Domain.
+Context: Represents application concepts without UI or infrastructure dependencies.
+"""
 
     s_id: SessionId
     metadata: VideoMetadata
@@ -57,16 +69,31 @@ class SessionState:
 
     @property
     def is_at_last_frame(self) -> bool:
+        """Return whether playback is at or beyond the final video frame.
+
+        Returns:
+            `True` when no frames are reported or the current index reaches the last frame.
+        """
         if self.metadata.frame_count <= 0:
             return True
         return self.playback.current_frame_index >= self.metadata.frame_count - 1
 
     @property
     def is_playing_video(self) -> bool:
+        """Return whether video playback is active.
+
+        Returns:
+            `True` while playback is active; otherwise `False`.
+        """
         return self.playback.is_playing
 
     @property
     def settings_view_model(self) -> SessionSettingsViewModel:
+        """Return the session settings as a view model.
+
+        Returns:
+            View model built from the current processing settings.
+        """
         return self.settings.as_view_model()
 
     def update_current_frame_data_and_index(self, idx: int, frame_data: RGBFrame) -> None:
@@ -77,5 +104,11 @@ class SessionState:
         # - set_playback_frame_index(idx) — updates position
         # - cache_frame_data(frame) — caches display data
         # This improves intent clarity and follows Single Responsibility Principle.
+        """Update current frame data and index.
+
+        Args:
+            idx: Zero-based index of the displayed frame.
+            frame_data: RGB pixel data for the displayed frame.
+        """
         self.playback.current_frame_index = idx
         self.current_frame_data = frame_data

@@ -2,9 +2,15 @@
 
 Source: `src/app/infrastructure/detection/worker/`
 
-`DetectionWorker` reads video frames, runs inference through the selected
-engine, and emits result batches and progress from a background Qt thread.
+`DetectionWorker` processes a session's frames away from the GUI event loop,
+calling the selected engine and caching detections by frame. It reports
+progress, result batches, completion, and errors through Qt signals; callers
+can request a stop and query the result cache through the Application worker
+contract. The detection service consumes batches and writes them to session
+layers.
 
-**Expand this stub with:** thread lifecycle, batch size, cancellation, and
-signal ownership.
-
+The worker is created through the Application-side
+[factory adapter](../adapters.md); model inference belongs to the
+[engine](engine.md), and batch-to-layer behavior belongs to
+[Detection services](../../application/services/detection.md). Cancellation
+is cooperative with the worker loop; it does not interrupt a model call.

@@ -1,4 +1,12 @@
-"""Detection layer (Layer B) CRUD operations and filtering."""
+"""Detection layer (Layer B) CRUD operations and filtering.
+
+See Also:
+    - [`DetectionResult`][app.domain.detection.result.DetectionResult] — represents machine-generated boxes
+    - [`UnifiedLayerService`][app.application.services.unified_layer_service.UnifiedLayerService] — coordinates cross-layer operations
+
+Layer: Application.
+Context: Coordinates domain state and infrastructure to complete application use cases.
+"""
 
 from __future__ import annotations
 
@@ -21,28 +29,36 @@ logger = get_logger("Application->DetectionLayerService")
 @final
 class DetectionLayerService(QObject):
     """
-    Manages user-editable detection layer (``DataLayer.B``) operations.
+    Manages user-editable detection layer (`DataLayer.B`) operations.
 
     Responsibilities:
-        - CRUD operations for ``DataLayer.B`` bounding boxes.
+        - CRUD operations for `DataLayer.B` bounding boxes.
         - Manual detection creation (Create).
         - Copy detections to adjacent frames (Update).
         - Apply confidence and label filtering to detections (Update).
-        - Reset detections (revert to ``DataLayer.A``) (Update).
+        - Reset detections (revert to `DataLayer.A`) (Update).
         - Delete detections by key (Delete).
 
     Note:
-        ``DataLayer.A`` — Raw immutable detection output (cannot edit).
-        ``DataLayer.B`` — User-editable detections (seeded from A, filtered by settings).
+        `DataLayer.A` — Raw immutable detection output (cannot edit).
+        `DataLayer.B` — User-editable detections (seeded from A, filtered by settings).
         Filters applied via confidence-threshold and chosen-labels list.
         All user edits are in Layer B only.
 
         Data Flow:
-            Detection Model (YOLO, Torch, etc.) → ``DataLayer.A`` (raw output).
-            Apply Filters (confidence, labels) → ``DataLayer.B`` (filtered).
-            User Edits (add, delete, move, relabel) on ``DataLayer.B``.
-            Export ``DataLayer.B`` to video.
-    """
+            Detection Model (YOLO, Torch, etc.) → `DataLayer.A` (raw output).
+            Apply Filters (confidence, labels) → `DataLayer.B` (filtered).
+            User Edits (add, delete, move, relabel) on `DataLayer.B`.
+            Export `DataLayer.B` to video.
+
+
+Layer: Application.
+Context: Coordinates use-case behavior through domain services and application contracts.
+
+
+    Args:
+        app: Application adapted for session lookup and manual or filtered detection-layer updates.
+"""
 
     def __init__(self, app: Application) -> None:
         super().__init__(parent=app)
@@ -63,16 +79,16 @@ class DetectionLayerService(QObject):
         # This follows principle of YAGNI (You Aren't Gonna Need It) for method names.
         """
         Add a manually-drawn bounding detection to the current frame in Layer B.
-    
+
         Args:
             s_id (SessionId): Session ID.
             label (str): Object class label (e.g., "person", "car").
-            bbox_xyxy (BBoxTuple): Tuple ``(x1, y1, x2, y2)`` in pixel coordinates.
+            bbox_xyxy (BBoxTuple): Tuple `(x1, y1, x2, y2)` in pixel coordinates.
             color_hex (str): Optional color for display (default green).
-    
+
         Note:
-            - Creates ``BBoxViewModel`` with confidence=1.0 (user confidence).
-            - Assigns unique manual ID via ``next_annotation_id`` counter.
+            - Creates `BBoxViewModel` with confidence=1.0 (user confidence).
+            - Assigns unique manual ID via `next_annotation_id` counter.
             - Adds to current frame's Layer B.
             - Increments detection ID counter for next manual detection.
         """

@@ -1,4 +1,12 @@
-"""Import / Export handler for detection and tracking layer data."""
+"""Import / Export handler for detection and tracking layer data.
+
+See Also:
+    - [`DetectionImportService`][app.application.services.detection.importing.DetectionImportService] — imports detection-layer data
+    - [`TrackingExportService`][app.application.services.tracking.export_service.TrackingExportService] — exports tracking-layer data
+
+Layer: Presentation.
+Context: Converts user actions and worker signals into application calls and UI feedback.
+"""
 
 from __future__ import annotations
 
@@ -26,27 +34,28 @@ class ImportExportHandler(QObject):
     tracking layers (C/D).
 
     Responsibilities:
-        - Open :class:`~app.ui.qt.dialogs.import_export_dlg.ImportExportDialog`
+        - Open `ImportExportDialog`
           scoped to the appropriate layers when either "Import / Export" button is clicked.
         - Dispatch the user's choice to
-          :meth:`Application.import_layer` or :meth:`Application.export_layer`.
+          `Application.import_layer` or `Application.export_layer`.
         - Trigger a frame re-render after a successful import so the UI reflects
           the newly loaded data immediately.
         - Show a success / error status message via the window's status bar.
 
     Note:
-        Signal flow::
+        Signal flow:
+        ```text
+        right_panel.imp_exp_detections_button.clicked
+          └──> on_import_export_detections()
+                └──> _run_import_export(scope=[A, B], title="Detection")
 
-            right_panel.imp_exp_detections_button.clicked
-              └──> on_import_export_detections()
-                    └──> _run_import_export(scope=[A, B], title="Detection")
-
-            right_panel.imp_exp_tracks_button.clicked
-              └──> on_import_export_tracks()
-                    └──> _run_import_export(scope=[C, D], title="Tracking")
+        right_panel.imp_exp_tracks_button.clicked
+          └──> on_import_export_tracks()
+                └──> _run_import_export(scope=[C, D], title="Tracking")
+        ```
 
         After a successful *import* the handler calls
-        ``controller.render_frame_for_session_id()`` so the video preview
+        `controller.render_frame_for_session_id()` so the video preview
         updates without the user having to scrub the timeline.
 
         After a successful *export* only a status-bar message is shown — no
@@ -55,7 +64,15 @@ class ImportExportHandler(QObject):
         Consider future improvement: run the actual file I/O in a background
         QThread (similar to how DetectionWorker / TrackingWorker operate) so
         that very large files do not freeze the UI during deserialisation.
-    """
+
+
+Layer: Presentation.
+Context: Supports user interaction and delegates application work through presentation contracts.
+
+
+    Args:
+        controller: Controller supplying import/export actions, the active window, and post-import rendering.
+"""
 
     def __init__(self, controller: UIController) -> None:
         super().__init__(parent=controller)
@@ -88,7 +105,7 @@ class ImportExportHandler(QObject):
         Open the Import / Export dialog scoped to detection layers A and B.
 
         **Triggered By:**
-            Right panel ``imp_exp_detections_button.clicked``
+            Right panel `imp_exp_detections_button.clicked`
         """
         self._run_import_export(
             scope=[VideoDataLayer.A, VideoDataLayer.B],
@@ -101,7 +118,7 @@ class ImportExportHandler(QObject):
         Open the Import / Export dialog scoped to tracking layers C and D.
 
         **Triggered By:**
-            Right panel ``imp_exp_tracks_button.clicked``
+            Right panel `imp_exp_tracks_button.clicked`
         """
         self._run_import_export(
             scope=[VideoDataLayer.C, VideoDataLayer.D],

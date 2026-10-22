@@ -1,3 +1,13 @@
+"""Module for model; implements concrete processing and I/O behind application-facing contracts.
+
+See Also:
+    - [`BaseDetectionModel`][app.infrastructure.detection.model.base.BaseDetectionModel] — common model contract
+    - [`MTCNNModelLoaderFactory`][app.infrastructure.detection.model.mtcnn_tf.loader_factory.MTCNNModelLoaderFactory] — loads the underlying model
+
+Layer: Infrastructure.
+Context: Implements concrete processing and i/o behind application-facing contracts at this architectural boundary.
+"""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -30,20 +40,37 @@ class MTCNNTFDetectionModel(BaseDetectionModel):
     Attributes:
         _model: Loaded MTCNN instance.
         _loader (MTCNNModelLoaderFactory): Factory for loading model.
-        _mapper (MTCNNTFDetectionMapper): Mapper for converting raw output to DetectionPayload.
+        _mapper (MTCNNTFDetectionMapper): Applies the face confidence threshold and maps face-result dictionaries.
 
     Note:
-        Confidence threshold: ``DEFAULT_MTCNN_TF_CONFIDENCE_THRESHOLD`` (0.90).
-        IoU threshold: 0.45 for NMS.
-        Supported versions: YOLOv3, v5, v8, v9, v10, v11, v12, v26, and their
-        variants (tiny, nano, small, medium, large, extra).
-    """
+        Face detections are filtered using
+        `DEFAULT_MTCNN_TF_CONFIDENCE_THRESHOLD` (0.90); returned labels are
+        `"person"`.
+
+
+Layer: Infrastructure.
+Context: Implements concrete processing or I/O behind application-facing contracts.
+
+
+    Args:
+        loader: Backend-specific model loader.
+        mapper: TensorFlow MTCNN mapper that filters face scores and converts boxes to person detections.
+"""
     def __init__(
         self,
         loader: MTCNNModelLoaderFactory | None = None,
         mapper: MTCNNTFDetectionMapper | None = None,
     ) -> None:
-        """Initialize MTCNN model."""
+        """Load the TensorFlow MTCNN model and prepare its result mapper.
+
+        Args:
+            loader: Optional MTCNN loader override.
+            mapper: Optional `MTCNNTFDetectionMapper` override for face-result mappings.
+
+        Note:
+            Default loader and mapper instances are created when these arguments
+            are omitted; model loading occurs during initialization.
+        """
         self._loader = loader or MTCNNModelLoaderFactory()
         self._mapper = mapper or MTCNNTFDetectionMapper()
         self._model = self._load_model()
@@ -57,7 +84,16 @@ class MTCNNTFDetectionModel(BaseDetectionModel):
         frame: np.ndarray,
         chosen_labels: list[str] | None = None,
     ) -> list[DetectionResult]:
-        """Run MTCNN inference, filter by confidence and optional label list."""
+        """Run MTCNN inference, filter by confidence and optional label list.
+
+        Args:
+            frame: RGB image array to process.
+            chosen_labels: Optional labels to retain in the mapped detections.
+
+        Returns:
+            MTCNN detections meeting the confidence threshold and label filter.
+            Returns an empty list if inference fails.
+        """
         from mtcnn import MTCNN
         try:
             results = MTCNN.detect_faces(image=frame, threshold=DEFAULT_MTCNN_TF_CONFIDENCE_THRESHOLD)

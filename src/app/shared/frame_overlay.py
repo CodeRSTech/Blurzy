@@ -1,3 +1,13 @@
+"""Module for frame overlay; provides reusable helpers across application layers.
+
+See Also:
+    - [`UIHandler`][app.ui.handlers.ui_handler.UIHandler] — composes overlays for displayed frames
+    - [`BBoxViewModel`][app.domain.views.bounding_box_view_model.BBoxViewModel] — provides annotation geometry and styling
+
+Layer: Shared utilities.
+Context: Provides reusable helpers across application layers at this architectural boundary.
+"""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -21,14 +31,14 @@ def draw_frame_overlays(
 
     Args:
         frame: RGB frame to annotate.
-        boxes: Boxes displayed in the current editor tab, or ``None`` for none.
+        boxes: Boxes displayed in the current editor tab, or `None` for none.
         border_width: Border width in pixels from 1 to 10.
 
     Returns:
         A frame with overlays, or the original frame if there are no boxes.
 
     Raises:
-        ValueError: If ``border_width`` is outside the inclusive range 1..10.
+        ValueError: If `border_width` is outside the inclusive range 1..10.
 
     Note:
         This helper is editor-only; exported video rendering never calls it.

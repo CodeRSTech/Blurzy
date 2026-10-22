@@ -1,4 +1,12 @@
-"""Detection model registry and confidence thresholds for Torch and YOLO variants."""
+"""Detection model registry and confidence thresholds for Torch and YOLO variants.
+
+See Also:
+    - [`get_available_detection_model_names_as_str`][app.infrastructure.detection.model.helpers.get_available_detection_model_names_as_str] — exposes registered model names
+    - [`load_detection_model`][app.infrastructure.detection.model.loader.load_detection_model] — resolves registry entries to implementations
+
+Layer: Infrastructure.
+Context: Implements concrete processing and I/O behind application-facing contracts.
+"""
 
 from __future__ import annotations
 

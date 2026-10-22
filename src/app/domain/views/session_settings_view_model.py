@@ -1,3 +1,13 @@
+"""Module for session settings view model; defines application concepts without UI or infrastructure dependencies.
+
+See Also:
+    - [`ProcessingSettings`][app.domain.export.processing_settings.ProcessingSettings] — underlying session processing options
+    - [`PreferencesHandler`][app.ui.handlers.preferences_handler.PreferencesHandler] — coordinates settings presented to the user
+
+Layer: Domain.
+Context: Defines application concepts without ui or infrastructure dependencies at this architectural boundary.
+"""
+
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -35,12 +45,16 @@ class SessionSettingsViewModel:
         blur_strength (float): Blur intensity used for rendering.
 
     Note:
-        Unlike ``ProcessingSettings``, ``chosen_labels`` is pre-joined into a
-        comma-separated string such as ``"person, cat, dog"`` so it can be
+        Unlike `ProcessingSettings`, `chosen_labels` is pre-joined into a
+        comma-separated string such as `"person, cat, dog"` so it can be
         assigned directly to UI widgets without parsing. Created when a session
         is opened or switched, treated as read-only by domain code, and rebuilt
-        from ``ProcessingSettings`` whenever the UI needs a fresh snapshot.
-    """
+        from `ProcessingSettings` whenever the UI needs a fresh snapshot.
+
+
+Layer: Domain.
+Context: Represents application concepts without UI or infrastructure dependencies.
+"""
 
     # --- Detection ---
     detection_model_name: str = "None"

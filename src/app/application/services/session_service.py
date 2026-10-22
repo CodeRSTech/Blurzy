@@ -1,4 +1,12 @@
-"""Session lifecycle management and worker coordination service."""
+"""Session lifecycle management and worker coordination service.
+
+See Also:
+    - [`SessionManager`][app.application.managers.session.SessionManager] — manages session creation and selection
+    - [`VideoDecodeWorkerManager`][app.application.managers.video_decode_worker.VideoDecodeWorkerManager] — coordinates decode-worker lifecycle
+
+Layer: Application.
+Context: Coordinates domain state and infrastructure to complete application use cases.
+"""
 
 from __future__ import annotations
 
@@ -32,12 +40,12 @@ logger = get_logger("Application->SessionService")
 # Recommendation: Move inside SessionService as @staticmethod or to a Settings utility class.
 # This improves cohesion and makes dependencies explicit.
 def _is_settings_type_compatible(existing_value: object, new_value: object) -> bool:
-    """Return ``True`` when *new_value* can safely replace *existing_value* in settings.
+    """Return `True` when *new_value* can safely replace *existing_value* in settings.
 
     Rules (in priority order):
 
     1. Identical types are always compatible.
-    2. An ``int`` (non-bool) may replace a ``float`` — Python's implicit numeric
+    2. An `int` (non-bool) may replace a `float` — Python's implicit numeric
        widening makes this safe and common from UI sliders.
     3. All other type differences are considered incompatible and should be
        logged as warnings rather than silently applied.
@@ -59,25 +67,33 @@ class SessionService(QObject):
     **Responsibilities:**
 
     - Open videos and create sessions from file paths
-    - Handle active session switching (delegates worker lifecycle to ``VideoDecodeWorkerManager``)
-    - Check worker states (detection, tracking, buffering) via ``Session`` properties
+    - Handle active session switching (delegates worker lifecycle to `VideoDecodeWorkerManager`)
+    - Check worker states (detection, tracking, buffering) via `Session` properties
     - Update session settings with type validation
 
     **Architecture:**
 
     - Owned by App (via parent relationship)
     - Delegates actual session creation to App
-    - Delegates ``VideoDecodeWorker`` activation/deactivation to ``VideoDecodeWorkerManager``
+    - Delegates `VideoDecodeWorker` activation/deactivation to `VideoDecodeWorkerManager`
     - Does NOT create detection/tracking workers (delegates to respective services)
 
     **Worker Management:**
 
-    - ``VideoDecodeWorkerManager.switch_active_session`` is the single canonical
+    - `VideoDecodeWorkerManager.switch_active_session` is the single canonical
       entry-point for worker view_state transitions.
-    - Only active session's ``VideoDecodeWorker`` is truly active (buffering frames)
+    - Only active session's `VideoDecodeWorker` is truly active (buffering frames)
     - Inactive sessions' workers are paused to save CPU/memory
     - When switching sessions: old worker paused → new worker resumed
-    """
+
+
+Layer: Application.
+Context: Coordinates use-case behavior through domain services and application contracts.
+
+
+    Args:
+        app: Application that owns this Qt service and receives active-session change notifications.
+"""
 
     def __init__(self, app: Application):
         super().__init__(parent=app)
@@ -100,19 +116,20 @@ class SessionService(QObject):
 
         **Parameters:**
 
-        - ``old_s_id`` — Previously active session ID (may be None on startup)
-        - ``new_s_id`` — New active session ID
+        - `old_s_id` — Previously active session ID (may be None on startup)
+        - `new_s_id` — New active session ID
 
         **Flow:**
 
-        Delegates entirely to ``VideoDecodeWorkerManager.switch_active_session``,
+        Delegates entirely to `VideoDecodeWorkerManager.switch_active_session`,
         which is the canonical owner of the old→new decode-worker transition:
 
-        ``switch_active_session(old_s_id, new_s_id)`` ::
-
+        ```text
+        switch_active_session(old_s_id, new_s_id)
           ├── Guard: if old == new, return immediately (no duplicate churn)
           ├── If old session exists: pause its VideoDecodeWorker
           └──> Resume VideoDecodeWorker for new session
+        ```
 
         **Purpose:**
 
@@ -130,7 +147,7 @@ class SessionService(QObject):
 
         **Parameters:**
 
-        - ``paths`` — Iterable of file path strings (e.g., list of absolute paths)
+        - `paths` — Iterable of file path strings (e.g., list of absolute paths)
 
         **Returns:**
 
@@ -139,13 +156,13 @@ class SessionService(QObject):
         **Behavior:**
 
         - Iterates through provided paths
-        - Skips paths that are already open (``SessionAlreadyExistsException``)
+        - Skips paths that are already open (`SessionAlreadyExistsException`)
         - Raises error if NO new sessions were opened
         - Sets first new session as active if none currently active
 
         **Error Handling:**
 
-        - Raises ``NoNewOpenedSessionsException`` if all paths are duplicates
+        - Raises `NoNewOpenedSessionsException` if all paths are duplicates
         - Logs info/warning for skipped paths, does not stop processing
         """
         # ====================================================================
@@ -180,11 +197,11 @@ class SessionService(QObject):
 
         **Parameters:**
 
-        - ``s_id`` — Session ID to check
+        - `s_id` — Session ID to check
 
         **Returns:**
 
-        ``True`` if next frame is buffered and ready, ``False`` if buffer miss (worker behind)
+        `True` if next frame is buffered and ready, `False` if buffer miss (worker behind)
 
         **Use Case:**
 
@@ -198,11 +215,11 @@ class SessionService(QObject):
 
         **Parameters:**
 
-        - ``s_id`` — Session ID to check
+        - `s_id` — Session ID to check
 
         **Returns:**
 
-        ``True`` if ``DetectionWorker`` exists and is actively running, ``False`` otherwise
+        `True` if `DetectionWorker` exists and is actively running, `False` otherwise
 
         **Use Case:**
 
@@ -216,11 +233,11 @@ class SessionService(QObject):
 
         **Parameters:**
 
-        - ``s_id`` — Session ID to check
+        - `s_id` — Session ID to check
 
         **Returns:**
 
-        ``True`` if ``TrackingWorker`` exists and is actively running, ``False`` otherwise
+        `True` if `TrackingWorker` exists and is actively running, `False` otherwise
 
         **Use Case:**
 
@@ -234,23 +251,23 @@ class SessionService(QObject):
 
         **Parameters:**
 
-        - ``s_id`` — Session ID
-        - ``**kwargs`` — Keyword arguments where key is setting name, value is new value
-          Examples: ``min_detection_confidence=0.5``, ``blur_enabled=True``, ``draw_boxes=False``
+        - `s_id` — Session ID
+        - `**kwargs` — Keyword arguments where key is setting name, value is new value
+          Examples: `min_detection_confidence=0.5`, `blur_enabled=True`, `draw_boxes=False`
 
         **Behavior:**
 
         - Validates that the setting key exists; logs a warning and skips unknown keys.
         - Validates that the value type is compatible with the existing field type;
           logs a warning and skips type-mismatched updates.
-        - ``int`` values are accepted for ``float`` fields (numeric widening).
-        - Applies the update via ``setattr`` when all checks pass.
+        - `int` values are accepted for `float` fields (numeric widening).
+        - Applies the update via `setattr` when all checks pass.
 
         **Example:**
 
         python
         service.update_session_settings(s_id, blur_strength=25, draw_boxes=True)
-        
+
         """
         logger.info("Updating session settings for session ID: {}, settings={}  ", s_id, kwargs)
         session_settings = self._app_adapter.get_session_by_id(s_id).state.settings
@@ -275,5 +292,10 @@ class SessionService(QObject):
             logger.trace("Session {} setting '{}' = {}", s_id, key, value)
 
     def start_session_playback(self, s_id: SessionId) -> None:
+        """Start session playback.
+
+        Args:
+            s_id: Identifier of the session whose playback state should become active.
+        """
         self._app_adapter.get_session_by_id(s_id).is_playing_video = True
         logger.trace("Session {} playback started", s_id)

@@ -2,10 +2,15 @@
 
 Source: `src/app/application/services/detection/`
 
-Detection services validate and coordinate single-frame or background
-inference, filter/process results, and write batches into session data.
-`DetectionService` collaborates with the engine manager and worker factory.
+Detection services split current-frame inference from video-wide work.
+`DetectionExecutionService` uses the per-session engine manager for a
+single-frame request. `DetectionService` validates and starts background
+detection through the worker factory; `DetectionBatchProcessor` stores selected
+results in Layer A and filtered editable copies in Layer B. The layer service
+owns Layer B edits, and import/export collaborators handle annotation files
+separately from video rendering.
 
-**Expand this stub with:** current layer flow, batch handling, error paths, and
-model lifecycle.
-
+The worker and model implementations are in
+[detection infrastructure](../../infrastructure/detection/index.md); their
+contracts are in [Detection interfaces](../interfaces/detection.md). The
+broader A/B/C/D layer roles are summarized in [Architecture](../../../architecture.md).

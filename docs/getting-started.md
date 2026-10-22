@@ -59,14 +59,25 @@ to that metadata.
 ???+ example "Typical workflow"
 
     1. Open a video.
-    2. Select a model and start background detection.
-    3. Select a tracking strategy and run tracking.
-    4. Review the resulting bounding-box annotations.
-    5. Edit annotations as needed and select subjects to blur.
-    6. Export output file.
+    2. Select an available YOLO, TorchVision, or MTCNN model and run detection.
+    3. Review detections in the editable detection layer, then choose Hungarian,
+       ByteTrack, DeepSORT, or BoT-SORT and run tracking.
+    4. Review and edit the resulting tracks in the editable tracking layer.
+    5. Adjust Preview controls for editor overlays and Render controls for
+       exported-video blur.
+    6. Save the project when you want to preserve session state. Import or export
+       detection/tracking layers as JSON or CSV when exchanging annotations.
+    7. Export the processed video and review the result.
 
 ???+ info
 
     Long-running operations use background workers and report progress in the UI.
     If a provider is unavailable, consult its installation guidance and verify its
     model weights and hardware requirements.
+
+Appearance-aware tracking uses frame-derived 128-, 256-, or 512-dimensional
+embeddings when a readable video path is available. Offline post-processing can
+stitch compatible tracklets in both temporal directions and apply Gaussian
+Smoothed Interpolation (GSI) across accepted gaps. Privacy Shield (Paranoid Mode)
+adds conservative track-box sizing and temporal padding; it supplements, but
+does not replace, review of the final result.

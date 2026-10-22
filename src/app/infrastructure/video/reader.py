@@ -1,4 +1,12 @@
-"""PyAV-based video reader with GPU acceleration, rotation extraction, and frame seeking."""
+"""PyAV-based video reader with GPU acceleration, rotation extraction, and frame seeking.
+
+See Also:
+    - [`VideoMetadata`][app.domain.video.metadata.VideoMetadata] — describes the opened video stream
+    - [`VideoDecodeWorker`][app.infrastructure.video.decode_worker.VideoDecodeWorker] — reads frames asynchronously
+
+Layer: Infrastructure.
+Context: Implements concrete processing and I/O behind application-facing contracts.
+"""
 
 from __future__ import annotations
 
@@ -35,6 +43,16 @@ logger = get_logger("Infrastructure->Video->Reader")
 
 
 class ZeroStreamsInVideoException(VideoStreamStateException):
+    """Signal the zero streams in video error condition.
+
+Layer: Infrastructure.
+Context: Implements concrete processing or I/O behind application-facing contracts.
+
+
+    Args:
+        msg: Error message to include in the exception.
+        path: Filesystem path of the video or resource.
+"""
     def __init__(self, msg: str, path: str) -> None:
         super().__init__(path=path, detail=msg)
 
@@ -57,26 +75,26 @@ class VideoReader:
 
     Note:
         Rotation extraction fallback order:
-            1. ``stream.metadata.get("rotate")``.
-            2. ``stream.side_data[...].rotation``.
-            3. Android MP4 fallback via ``_get_mp4_rotation()``.
+            1. `stream.metadata.get("rotate")`.
+            2. `stream.side_data[...].rotation`.
+            3. Android MP4 fallback via `_get_mp4_rotation()`.
 
         Frame seeking modes:
             - Sequential path: buffer-friendly for playback or batch processing.
             - Hard seek path: fast jump to an arbitrary frame via FFmpeg seek.
             - Post-seek anchor: single-use frame timestamp recovery after a seek.
             - Initial sequential read: a newly opened reader starts at zero, so the
-              first ``read_next_frame()`` returns ``actual_index == 0``.
+              first `read_next_frame()` returns `actual_index == 0`.
 
         Rotation handling:
             - Metadata rotation is extracted when the reader opens.
-            - Additional rotation can be applied through ``manual_rotation``.
-            - Final dimensions use ``(base_rot + manual_rot) % 360`` and swap width and
+            - Additional rotation can be applied through `manual_rotation`.
+            - Final dimensions use `(base_rot + manual_rot) % 360` and swap width and
               height for 90 or 270 degrees.
-            - Each frame is rotated with ``np.rot90()`` and normalized with
-              ``ascontiguousarray()``.
+            - Each frame is rotated with `np.rot90()` and normalized with
+              `ascontiguousarray()`.
 
-        ``VideoReader`` is not thread-safe. Use a separate instance per decoding thread.
+        `VideoReader` is not thread-safe. Use a separate instance per decoding thread.
 
     Example:
         ```
@@ -86,9 +104,17 @@ class VideoReader:
         metadata = reader.metadata
         reader.close()
         ```
-    """
+
+
+Layer: Infrastructure.
+Context: Implements concrete processing or I/O behind application-facing contracts.
+
+
+    Args:
+        path: Filesystem path of the video or resource.
+"""
     def __init__(self, path: str) -> None:
-        """Open video file at ``path`` using PyAV (calls ``open()`` automatically)."""
+        """Open video file at `path` using PyAV (calls `open()` automatically)."""
         self._path: str = path
         logger.debug("Initializing AvVideoReader for: {}", self.path_file_name)
         self._current_index: int = 0
@@ -105,7 +131,7 @@ class VideoReader:
         self.open()
 
     def open(self) -> None:
-        """Open ``_path`` via ``av.open()`` with GPU acceleration (``hwaccel=auto``)."""
+        """Open `_path` via `av.open()` with GPU acceleration (`hwaccel=auto`)."""
         try:
             # Using {"hwaccel": "auto"} to take advantage of GPU if available
             self.container = av.open(self._path, options={"hwaccel": "auto"})
@@ -127,11 +153,11 @@ class VideoReader:
 
         Note:
             This fallback is used for Android videos or MP4 files where PyAV cannot read
-            rotation metadata. It parses MP4 detection headers, locates the ``tkhd`` detection,
+            rotation metadata. It parses MP4 detection headers, locates the `tkhd` detection,
             extracts the 9-element transformation matrix, and decodes the angle.
 
         Returns:
-            int: Rotation in degrees, or ``0`` if no rotation is found or parsing fails.
+            int: Rotation in degrees, or `0` if no rotation is found or parsing fails.
         """
         try:
             with open(file_path, "rb") as f:
@@ -186,14 +212,29 @@ class VideoReader:
 
     @property
     def container(self) -> InputContainer:
-        """Get PyAV ``InputContainer`` (video file handle)."""
+        """Get PyAV `InputContainer` (video file handle).
+
+        Returns:
+            Open PyAV container associated with this reader.
+
+        Raises:
+            VideoStreamStateException: If no container has been assigned.
+        """
         if self._container is None:
             raise VideoStreamStateException(path=self._path, detail="Video container is not initialized")
         return self._container
 
     @container.setter
     def container(self, container: InputContainer) -> None:
-        """Set container and extract video stream (calls 3-tier rotation extraction)."""
+        """Set the container, select its video stream, and extract rotation metadata.
+
+        Args:
+            container: Open PyAV input container to attach to this reader.
+
+        Raises:
+            ZeroStreamsInVideoException: If the container has no video stream.
+            VideoStreamStateException: If assigning the stream raises a `ValueError`.
+        """
         try:
             self.stream = container.streams.video[0]
         except IndexError:
@@ -242,14 +283,25 @@ class VideoReader:
 
     @property
     def stream(self) -> VideoStream:
-        """Get PyAV ``VideoStream`` (first video track)."""
+        """Get PyAV `VideoStream` (first video track).
+
+        Returns:
+            Selected PyAV video stream.
+
+        Raises:
+            VideoStreamStateException: If no video stream has been assigned.
+        """
         if self._stream is None:
             raise VideoStreamStateException(path=self._path, detail="Video stream is not initialized")
         return self._stream
 
     @stream.setter
     def stream(self, stream: VideoStream) -> None:
-        """Set the video stream."""
+        """Set the current video stream.
+
+        Args:
+            stream: PyAV video stream selected from the input container.
+        """
         self._stream = stream
 
     @stream.deleter
@@ -259,27 +311,43 @@ class VideoReader:
 
     @property
     def path(self) -> str:
-        """Return full file path."""
+        """Return full file path.
+
+        Returns:
+            Source path supplied when this reader was created.
+        """
         return self._path
 
     @property
     def path_file_name(self) -> str:
-        """Return filename only (split on `/`)."""
+        """Return filename only (split on `/`).
+
+        Returns:
+            Final slash-separated component of the source path.
+        """
         return self._path.split("/")[-1]
 
     @property
     def manual_rotation(self) -> int:
-        """Get user-applied rotation (0, 90, 180, 270 degrees)."""
+        """Return the user-applied rotation in degrees, normalized to `[0, 360)`.
+
+        Returns:
+            Manual rotation offset currently applied to decoded frames.
+        """
         return self._manual_rotation
 
     @manual_rotation.setter
     def manual_rotation(self, value: int) -> None:
-        """Set user rotation, recalculate dimensions based on total rotation."""
+        """Set user rotation modulo 360 degrees and recalculate display dimensions.
+
+        Args:
+            value: User-requested rotation in degrees.
+        """
         self._manual_rotation = value % 360
         self._recalculate_dimensions()
 
     def _recalculate_dimensions(self) -> None:
-        """Update ``_w`` and ``_h`` by applying total rotation (base + manual)."""
+        """Update `_w` and `_h` by applying total rotation (base + manual)."""
         if self._stream is None:
             return
 
@@ -294,29 +362,53 @@ class VideoReader:
 
     @property
     def frame_count(self) -> int:
-        """Total frames in video (or 0 if unknown)."""
+        """Total frames in video (or 0 if unknown).
+
+        Returns:
+            Frame count reported by the selected stream, or `0` when unavailable.
+        """
         return self.stream.frames or 0
 
     @property
     def fps(self) -> float:
-        """Frames per second (playback speed)."""
+        """Frames per second (playback speed).
+
+        Returns:
+            Average frame rate of the selected video stream.
+
+        Raises:
+            VideoStreamStateException: If the stream has no average frame rate.
+        """
         if self.stream.average_rate is None:
             raise VideoStreamStateException(path=self._path, detail="Video stream average rate is None")
         return float(self.stream.average_rate)
 
     @property
     def width(self) -> int:
-        """Final width after rotation applied (may be swapped with height)."""
+        """Final width after rotation applied (may be swapped with height).
+
+        Returns:
+            Decoded frame width after base and manual rotations are applied.
+        """
         return self._w
 
     @property
     def height(self) -> int:
-        """Final height after rotation applied (may be swapped with width)."""
+        """Final height after rotation applied (may be swapped with width).
+
+        Returns:
+            Decoded frame height after base and manual rotations are applied.
+        """
         return self._h
 
     @property
     def metadata(self) -> VideoMetadata:
-        """Return ``VideoMetadata`` snapshot (static; immutable after creation)."""
+        """Return `VideoMetadata` snapshot (static; immutable after creation).
+
+        Returns:
+            Snapshot containing the source path, rotated dimensions, frame rate,
+            and stream frame count.
+        """
         return VideoMetadata(
             _path=self._path,
             _width=self.width,
@@ -336,11 +428,11 @@ class VideoReader:
 
         Note:
             Steps:
-                1. Calculate total rotation with ``(base_rot + manual_rot) % 360``.
-                2. Apply ``np.rot90(k=...)`` when rotation is needed.
-                3. Call ``ascontiguousarray()`` to remove padding artifacts.
+                1. Calculate total rotation with `(base_rot + manual_rot) % 360`.
+                2. Apply `np.rot90(k=...)` when rotation is needed.
+                3. Call `ascontiguousarray()` to remove padding artifacts.
 
-            ``ascontiguousarray()`` avoids PySide6 ``QImage`` crashes caused by padding
+            `ascontiguousarray()` avoids PySide6 `QImage` crashes caused by padding
             bytes that PyAV may add.
         """
         total_rot = (self._base_rotation + self._manual_rotation) % 360
@@ -359,26 +451,26 @@ class VideoReader:
 
     def read_frame_at_index(self, frame_index: int) -> RGBFrame | None:
         """
-        Read frame at ``frame_index`` (0-based), using fast or hard seek path.
+        Read frame at `frame_index` (0-based), using fast or hard seek path.
 
         Note:
             Three-path logic:
                 - Path 1: sequential buffer iteration when the target is within ±60 frames.
                 - Path 2: hard seek to PTS, then anchor on the first decoded frame timestamp.
-                - Fallback: return ``None`` if the frame cannot be reached.
+                - Fallback: return `None` if the frame cannot be reached.
                 A request for index zero decodes and returns the first frame, which
                 is also the frame used by the first export iteration.
 
             Implementation details:
-                - ``_current_index`` tracks a pure sequential count and ignores variable
+                - `_current_index` tracks a pure sequential count and ignores variable
                   frame rate timestamps.
                 - After a seek, timestamp data is used once to re-anchor
-                  ``_current_index``.
+                  `_current_index`.
                 - Subsequent frames switch back to sequential counting.
                 - Permission errors trigger a close, reopen, and retry path.
 
         Returns:
-            RGBFrame | None: The requested RGB frame, or ``None`` on failure.
+            RGBFrame | None: The requested RGB frame, or `None` on failure.
         """
         # 1. Initialize stream if fresh
         if self._frame_iter is None:
@@ -453,15 +545,15 @@ class VideoReader:
 
     def read_next_frame(self) -> tuple[int, RGBFrame]:
         """
-        Read next frame sequentially, return ``(frame_index, rgb_frame)``.
+        Read next frame sequentially, return `(frame_index, rgb_frame)`.
 
         Note:
-            Increments ``_current_index`` by 1, uses pure sequential counting, and
-            returns the current index before incrementing. Since ``open()`` resets
+            Increments `_current_index` by 1, uses pure sequential counting, and
+            returns the current index before incrementing. Since `open()` resets
             the counter to zero, the first call returns frame index zero.
 
         Raises:
-            ValueError: If the stream ends and ``StopIteration`` is raised.
+            ValueError: If the stream ends and `StopIteration` is raised.
         """
         if self._frame_iter is None:
             self._frame_iter = self.container.decode(self._stream)

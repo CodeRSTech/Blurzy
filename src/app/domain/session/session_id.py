@@ -1,4 +1,12 @@
-"""Session identifier — unique key for a video processing session."""
+"""Session identifier — unique key for a video processing session.
+
+See Also:
+    - [`Session`][app.infrastructure.session.session.Session] — runtime container identified by a session ID
+    - [`SessionManager`][app.application.managers.session.SessionManager] — creates and manages session lifecycles
+
+Layer: Domain.
+Context: Defines application concepts independently of UI and infrastructure implementations.
+"""
 
 import os
 from dataclasses import dataclass
@@ -24,7 +32,11 @@ class SessionId:
         s_id = SessionId(path="/home/user/video.mp4")
         print(s_id.basename)  # "video.mp4"
         print(s_id.basename_without_extension)  # "video"
-    """
+
+
+Layer: Domain.
+Context: Represents application concepts without UI or infrastructure dependencies.
+"""
     path: str
 
     def __bool__(self) -> bool:
@@ -50,8 +62,10 @@ class SessionId:
 
     @property
     def basename(self):
+        """Return the video filename without its parent directories."""
         return os.path.basename(self.path)
 
     @property
     def basename_without_extension(self):
+        """Return the video filename without its extension."""
         return os.path.splitext(self.basename)[0]

@@ -1,4 +1,12 @@
-"""Tracking configuration and execution handler for multi-object tracking."""
+"""Tracking configuration and execution handler for multi-object tracking.
+
+See Also:
+    - [`TrackingService`][app.application.services.tracking.service.TrackingService] — coordinates tracking workflows
+    - [`TrackingStrategy`][app.domain.tracking.tracking_strategy.TrackingStrategy] — defines selectable tracking algorithms
+
+Layer: Presentation.
+Context: Converts user actions and worker signals into application calls and UI feedback.
+"""
 
 from __future__ import annotations
 
@@ -48,7 +56,15 @@ class TrackingHandler(QObject):
         Validates that active session matches selected session before starting.
         Prevents tracking if detection worker is running.
         Shows configuration warning if tracking overlaps with detections.
-    """
+
+
+Layer: Presentation.
+Context: Supports user interaction and delegates application work through presentation contracts.
+
+
+    Args:
+        controller exposing tracking settings, worker controls, and the active window to this handler.
+"""
 
     def __init__(self, controller: UIController) -> None:
         super().__init__(parent=controller)
@@ -140,10 +156,10 @@ class TrackingHandler(QObject):
     def on_start_tracking(self, strategy_name: str, source_layer_name: VideoDataLayer) -> None:
         """
         Start background tracking for detected objects.
-    
+
         Note:
-            Triggered by right panel ``start_tracking_requested`` signal.
-    
+            Triggered by right panel `start_tracking_requested` signal.
+
             Flow:
                 on_start_tracking(strategy, source) [this slot]
                   ├── Validate selected and active sessions match
@@ -151,7 +167,7 @@ class TrackingHandler(QObject):
                   ├── Set UI to loading view_state
                   ├── Start TrackingWorker in background
                   └──> Connect worker signals for progress/completion
-    
+
             Safety Checks:
                 Session ID must be selected.
                 Active session must match selected session.
@@ -230,10 +246,10 @@ class TrackingHandler(QObject):
     def on_strategy_changed(self, strategy: str) -> None:
         """
         Update tracking strategy and adjust UI visibility accordingly.
-    
+
         Note:
-            Triggered by right panel ``tracking_strategy_changed`` signal.
-    
+            Triggered by right panel `tracking_strategy_changed` signal.
+
             Action:
                 Show/hide IoU threshold controls (only for Hungarian strategy).
                 Update session settings and show warning if tracking data exists.
@@ -255,10 +271,10 @@ class TrackingHandler(QObject):
     def on_source_changed(self, source: str) -> None:
         """
         Update tracking source layer and reapply tracking configuration.
-    
+
         Note:
-            Triggered by right panel ``tracking_source_changed`` signal.
-    
+            Triggered by right panel `tracking_source_changed` signal.
+
             Action: Update session settings and warn if tracking overlaps detection.
         """
         logger.trace("Tracking source changed to: {}", source)
@@ -282,9 +298,9 @@ class TrackingHandler(QObject):
     def on_min_iou_changed(self, value: float) -> None:
         """
         Update minimum IoU threshold for Hungarian strategy.
-    
+
         Note:
-            Triggered by right panel ``min_iou_spinbox.valueChanged`` signal.
+            Triggered by right panel `min_iou_spinbox.valueChanged` signal.
         """
         logger.trace("Tracking min_iou changed to: {}", value)
         self._update_processing_settings_and_warn(min_iou=value)
@@ -293,9 +309,9 @@ class TrackingHandler(QObject):
     def on_min_tracker_confidence_changed(self, value: float) -> None:
         """
         Update minimum tracker confidence threshold.
-    
+
         Note:
-            Triggered by right panel ``min_tracker_confidence_spinbox.valueChanged`` signal.
+            Triggered by right panel `min_tracker_confidence_spinbox.valueChanged` signal.
         """
         logger.trace("Tracking min_tracker_confidence changed to: {}", value)
         self._update_processing_settings_and_warn(min_tracker_confidence=value)
@@ -304,9 +320,9 @@ class TrackingHandler(QObject):
     def on_confidence_decay_changed(self, value: float) -> None:
         """
         Update confidence decay rate for tracker.
-    
+
         Note:
-            Triggered by right panel ``confidence_decay_spinbox.valueChanged`` signal.
+            Triggered by right panel `confidence_decay_spinbox.valueChanged` signal.
         """
         logger.trace("Tracking confidence_decay changed to: {}", value)
         self._update_processing_settings_and_warn(confidence_decay=value)
@@ -439,10 +455,10 @@ class TrackingHandler(QObject):
     def _on_tracking_finished(self, s_id: SessionId) -> None:
         """
         Handle successful completion of tracking worker.
-    
+
         Note:
-            Triggered by ``TrackingWorker.finished_processing`` signal.
-    
+            Triggered by `TrackingWorker.finished_processing` signal.
+
             Flow:
                 _on_tracking_finished(s_id) [this slot]
                   ├── Synchronize tracking cache with session
@@ -486,10 +502,10 @@ class TrackingHandler(QObject):
     def _on_tracking_failed(self, error: str) -> None:
         """
         Handle tracking worker failure.
-    
+
         Note:
-            Triggered by ``TrackingWorker.error_occurred`` signal.
-    
+            Triggered by `TrackingWorker.error_occurred` signal.
+
             Action: Clear loading view_state and show error dialog to user.
         """
         logger.debug("Tracking failed signal received: {}", error)

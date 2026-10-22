@@ -1,3 +1,13 @@
+"""Module for icons; implements the Qt presentation components.
+
+See Also:
+    - [`TransportControlsPanel`][app.ui.qt.sections.transport_controls_panel.TransportControlsPanel] — uses tinted icons for playback controls
+    - [`bundled_resource_path`][app.shared.distribution.bundled_resource_path] — resolves packaged icon assets
+
+Layer: Presentation.
+Context: Implements the qt presentation components at this architectural boundary.
+"""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -14,7 +24,17 @@ if TYPE_CHECKING:
 
 
 def create_tinted_icon(icon_path: Path, icon_size: QSize, normal_tint, disabled_tint) -> QIcon:
-    """Tint a monochrome icon so it matches active light/dark palettes."""
+    """Create normal, active, and disabled icon pixmaps tinted for the UI palette.
+
+Args:
+    icon_path: Path to the source icon.
+    icon_size: Size at which to load the source pixmap.
+    normal_tint: Color applied to normal and active icon states.
+    disabled_tint: Color applied to the disabled icon state.
+
+Returns:
+    Tinted icon, or an empty icon if the source pixmap cannot be loaded.
+"""
     base_icon = QIcon(str(icon_path))
     source = base_icon.pixmap(icon_size)
     if source.isNull():

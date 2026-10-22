@@ -1,4 +1,12 @@
-"""Centralizes tracking worker lifecycle transitions per session."""
+"""Centralizes tracking worker lifecycle transitions per session.
+
+See Also:
+    - [`TrackingWorkerFactoryAdapter`][app.application.adapters.tracking_worker_factory_adapter.TrackingWorkerFactoryAdapter] — constructs workers behind the application contract
+    - [`TrackingService`][app.application.services.tracking.service.TrackingService] — requests tracking workers for use cases
+
+Layer: Application.
+Context: Coordinates session-scoped lifecycles for application workers and resources.
+"""
 
 from __future__ import annotations
 
@@ -26,7 +34,16 @@ logger = get_logger("Application->TrackingWorkerManager")
 
 
 class TrackingWorkerManager:
-    """Canonical owner for tracking worker start/stop/switch transitions."""
+    """Canonical owner for tracking worker start/stop/switch transitions.
+
+Layer: Application.
+Context: Coordinates use-case behavior through domain services and application contracts.
+
+
+    Args:
+        app_adapter: Adapter that exposes application operations through the expected interface.
+        worker_factory: Factory used to create the worker managed by this class.
+"""
 
     def __init__(
         self,
@@ -40,6 +57,18 @@ class TrackingWorkerManager:
         return f"<{self.__class__.__name__}>"
 
     def start(self, s_id: SessionId, strategy_name: str, source_layer_name: str) -> None:
+        """Start tracking for a session using detections from a supported source layer.
+
+        Args:
+            s_id: Identifier of the session to track.
+            strategy_name: Tracking algorithm to run.
+            source_layer_name: Source layer A or B containing detections.
+
+        Raises:
+            TrackingWorkerAlreadyRunningException: If the session already has an active tracker.
+            EmptyLayerException: If the selected source layer contains no detections.
+            UnsupportedLayerException: If the source layer is not A or B.
+        """
         session = self._app_adapter.get_session_by_id(s_id)
 
         if session.has_running_tracking_worker:
@@ -74,6 +103,11 @@ class TrackingWorkerManager:
         )
 
     def stop(self, s_id: SessionId) -> None:
+        """Stop and detach the session's tracking worker, if present.
+
+        Args:
+            s_id: Identifier of the session whose tracking worker should stop.
+        """
         session = self._app_adapter.get_session_by_id(s_id)
         worker = session.tracking_worker
 
@@ -100,6 +134,14 @@ class TrackingWorkerManager:
         strategy_name: str,
         source_layer_name: str,
     ) -> None:
+        """Switch the tracking worker to the active session.
+
+        Args:
+            old_s_id: Previously active session, or `None` if there was none.
+            new_s_id: Session that should become active.
+            strategy_name: Tracking algorithm to use for the new active session.
+            source_layer_name: Detection layer from which tracking should start.
+        """
         if old_s_id is not None and old_s_id == new_s_id:
             logger.trace(
                 "switch_active_session: old and new are the same ({}), skipping.",
@@ -113,6 +155,17 @@ class TrackingWorkerManager:
         self.start(new_s_id, strategy_name, source_layer_name)
 
     def get_tracked_data(self, s_id: SessionId) -> ListOfBoxesByFrameIndexAsDict:
+        """Return the tracking worker's results for a session.
+
+        Args:
+            s_id: Identifier of the session whose results are requested.
+
+        Returns:
+            Tracked boxes grouped by frame index.
+
+        Raises:
+            TrackingWorkerNotFoundException: If the session has no tracking worker.
+        """
         session = self._app_adapter.get_session_by_id(s_id)
         worker = session.tracking_worker
         if worker is None:

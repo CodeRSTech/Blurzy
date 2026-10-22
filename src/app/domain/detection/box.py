@@ -1,4 +1,12 @@
-"""Base bounding-detection domain dataclass — base core for detection and tracking results."""
+"""Base bounding-detection domain dataclass — base core for detection and tracking results.
+
+See Also:
+    - [`DetectionResult`][app.domain.detection.result.DetectionResult] — specializes boxes for inference output
+    - [`BBoxViewModel`][app.domain.views.bounding_box_view_model.BBoxViewModel] — presents box data to the UI
+
+Layer: Domain.
+Context: Defines application concepts independently of UI and infrastructure implementations.
+"""
 
 from __future__ import annotations
 
@@ -15,14 +23,14 @@ class Box:
     Shared bounding-detection base for detection and tracking domain results.
 
     Attributes:
-        item_id (str): Unique identifier for this detection, e.g. ``"yolo-42"`` or ``"track-7"``.
-        label (str): Class name of the annotated object, such as ``"person"`` or ``"car"``.
-        bbox_xyxy (BBoxXYXYTuple): Bounding detection ``(x1, y1, x2, y2)`` in pixel coordinates.
+        item_id (str): Unique identifier for this detection, e.g. `"yolo-42"` or `"track-7"`.
+        label (str): Class name of the annotated object, such as `"person"` or `"car"`.
+        bbox_xyxy (BBoxXYXYTuple): Bounding detection `(x1, y1, x2, y2)` in pixel coordinates.
         confidence (float): Confidence score from 0.0 to 1.0.
-        color_hex (str): Display color in ``#RRGGBB`` format; defaults to gray ``"#808080"``.
+        color_hex (str): Display color in `#RRGGBB` format; defaults to gray `"#808080"`.
 
     Note:
-        Common fields base by ``DetectionResult`` and any future tracking result
+        Common fields base by `DetectionResult` and any future tracking result
         domain types.  Introducing this base eliminates field duplication while
         preserving clean domain → view boundaries.
 
@@ -35,7 +43,11 @@ class Box:
             confidence=0.9,
         )
         ```
-    """
+
+
+Layer: Domain.
+Context: Represents application concepts without UI or infrastructure dependencies.
+"""
 
     item_id: str
     label: str

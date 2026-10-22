@@ -1,4 +1,12 @@
-"""Session management handler for UI layer."""
+"""Session management handler for UI layer.
+
+See Also:
+    - [`SessionManager`][app.application.managers.session.SessionManager] — manages the active session collection
+    - [`SessionFileListViewModel`][app.domain.views.session_file_list_view_model.SessionFileListViewModel] — supplies session entries for display
+
+Layer: Presentation.
+Context: Converts user actions and worker signals into application calls and UI feedback.
+"""
 
 from __future__ import annotations
 
@@ -40,11 +48,19 @@ class SessionHandler(QObject):
 
     Notes:
         Signal flow:
-            - Receives signals from ``MainWindow`` (file selection/menu) and
-              ``BottomPanel`` (session selection).
-            - Delegates to ``Application`` and ``UIController`` to perform actions.
+            - Receives signals from `MainWindow` (file selection/menu) and
+              `BottomPanel` (session selection).
+            - Delegates to `Application` and `UIController` to perform actions.
             - Triggers UI updates to reflect session view_state changes.
-    """
+
+
+Layer: Presentation.
+Context: Supports user interaction and delegates application work through presentation contracts.
+
+
+    Args:
+        controller supplying session lifecycle operations and the window and panel to refresh.
+"""
 
     def __init__(self, controller: UIController) -> None:
         """Initialize the session handler with UI controller dependencies."""
@@ -81,6 +97,7 @@ class SessionHandler(QObject):
         )
 
     def refresh_session_views(self) -> None:
+        """Refresh session views."""
         sessions = list(self._controller.app.sm.all_sessions)
         self._controller.window.bottom_panel.update_session_file_list(
             list_of_session_list_view_models(sessions=sessions)
@@ -99,6 +116,7 @@ class SessionHandler(QObject):
         self._controller.render_frame_for_session_id(active.s_id)
 
     def prepare_active_session_initial_frame_render(self) -> None:
+        """Handle prepare active session initial frame render."""
         active = self._controller.app.active_session
         if active is None:
             return
@@ -119,18 +137,18 @@ class SessionHandler(QObject):
 
         Notes:
             Signal cascade (complete flow):
-                1. ``MainWindow`` File menu ``Open Videos`` action triggers file selection UI.
-                2. ``MainWindow._choose_video_files()`` emits ``open_videos_requested(paths)``.
-                3. ``SessionHandler.on_open_videos(paths)`` receives the signal.
+                1. `MainWindow` File menu `Open Videos` action triggers file selection UI.
+                2. `MainWindow._choose_video_files()` emits `open_videos_requested(paths)`.
+                3. `SessionHandler.on_open_videos(paths)` receives the signal.
                 4. Existing playback is stopped.
-                5. ``App.open_videos(paths)`` creates sessions via session manager.
+                5. `App.open_videos(paths)` creates sessions via session manager.
                 6. New sessions are adopted for parent-managed cleanup.
                 7. Session list widget is refreshed.
                 8. Video-related widgets are enabled.
                 9. Active session is selected and seek-complete hookup is attached.
 
             Triggered by:
-                ``MainWindow.open_videos_requested`` carrying ``list[str]``.
+                `MainWindow.open_videos_requested` carrying `list[str]`.
 
             Effects:
                 - Prevents playback conflicts.
@@ -138,7 +156,7 @@ class SessionHandler(QObject):
                 - Synchronizes newly created sessions into UI view_state.
 
             Downstream:
-                May indirectly trigger ``on_session_selected()`` when active
+                May indirectly trigger `on_session_selected()` when active
                 session view_state updates.
         """
         try:
@@ -197,7 +215,7 @@ class SessionHandler(QObject):
 
         Notes:
             Triggered by:
-                ``BottomPanel.session_selected`` carrying ``SessionId``.
+                `BottomPanel.session_selected` carrying `SessionId`.
 
             Effects:
                 - Stops playback in the previously active session.
@@ -258,8 +276,8 @@ class SessionHandler(QObject):
 
         Notes:
             Triggered by:
-                ``VideoDecodeWorker.signals.seek_completed`` connected with
-                ``Qt.ConnectionType.SingleShotConnection``.
+                `VideoDecodeWorker.signals.seek_completed` connected with
+                `Qt.ConnectionType.SingleShotConnection`.
 
             Effects:
                 - If playback is paused, forces one manual frame render.

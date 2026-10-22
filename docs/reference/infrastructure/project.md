@@ -2,10 +2,13 @@
 
 Source: `src/app/infrastructure/project/`
 
-`ProjectStore` reads and writes project documents as JSON and validates the
-supported file format version. The Application project service coordinates
-restoring live sessions from those documents.
+`ProjectStore` is the file boundary for versioned project JSON: it serializes
+domain project documents on save and validates supported format data on load.
+It does not reopen videos or assemble runtime sessions. The Application
+project service coordinates those steps and reports sessions that cannot be
+restored.
 
-**Expand this stub with:** format compatibility, corruption handling, and
-future migration strategy.
-
+The persisted data shape is documented in [Project domain](../domain/project.md);
+the live session container and layer storage are described in
+[session infrastructure](session.md). Annotation JSON/CSV import and export
+use separate [Application service helpers](../application/services/helpers.md).

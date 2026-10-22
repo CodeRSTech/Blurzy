@@ -1,4 +1,12 @@
-"""Type aliases and callback signatures for domain layer."""
+"""Type aliases and callback signatures for domain layer.
+
+See Also:
+    - [`ProcessingSettings`][app.domain.export.processing_settings.ProcessingSettings] — defines the settings shape used by session updates
+    - [`UIApplicationInterface`][app.application.interfaces.application_interface.UIApplicationInterface] — consumes typed settings updates
+
+Layer: Domain.
+Context: Defines application concepts independently of UI and infrastructure implementations.
+"""
 
 from __future__ import annotations
 
@@ -39,7 +47,11 @@ class ProcessingSettingsKwargs(TypedDict):
 
     Note:
         Each field is optional so callers can update a subset of session settings.
-    """
+
+
+Layer: Domain.
+Context: Represents application concepts without UI or infrastructure dependencies.
+"""
     # --- Detection ---
     detection_model_name: NotRequired[str]
     min_detection_confidence: NotRequired[float]

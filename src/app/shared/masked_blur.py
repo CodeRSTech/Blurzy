@@ -1,4 +1,12 @@
-"""Shared alpha-mask and Gaussian blur rendering used by preview and export."""
+"""Shared alpha-mask and Gaussian blur rendering used by preview and export.
+
+See Also:
+    - [`UIHandler`][app.ui.handlers.ui_handler.UIHandler] — applies masked blur to the preview frame
+    - [`ExportService`][app.application.services.export_service.ExportService] — uses the same blur operation when exporting
+
+Layer: Shared utilities.
+Context: Provides reusable cross-layer helpers without owning application workflow state.
+"""
 
 from __future__ import annotations
 
@@ -24,7 +32,7 @@ def _clipped_boxes(
     """Return valid box coordinates clipped to the frame bounds.
 
     Args:
-        frame_shape: Image shape beginning with ``(height, width)``.
+        frame_shape: Image shape beginning with `(height, width)`.
         boxes: Boxes to clip.
 
     Returns:
@@ -64,7 +72,7 @@ def _roi_alpha_mask(
         feather_radius: Number of pixels over which alpha reaches zero.
 
     Returns:
-        Float alpha values with shape ``roi_shape``.
+        Float alpha values with shape `roi_shape`.
 
     Note:
         The distance transform expands the union mask smoothly beyond box edges.
@@ -91,24 +99,34 @@ def compute_blur_alpha_mask(
     boxes: Sequence[BBoxViewModel],
     feather_radius: int = _FEATHER_RADIUS,
 ) -> np.ndarray:
-    """Compute the combined interior-plus-outward-feather alpha mask.
+    r"""Compute the combined interior-plus-outward-feather alpha mask.
 
     Args:
-        frame_shape: Image shape beginning with ``(height, width)``.
+        frame_shape: Image shape beginning with `(height, width)`.
         boxes: Bounding boxes whose interiors will be blurred.
         feather_radius: Outward feather distance in pixels.
 
     Returns:
-        A float32 alpha mask of shape ``(height, width)`` with values from 0 to 1.
+        A float32 alpha mask of shape `(height, width)` with values from 0 to 1.
 
     Raises:
         ValueError: If the frame shape or feather radius is invalid.
 
     Note:
         Distance transform measures each outside pixel's distance to the union of
-        box interiors. Alpha reaches zero at ``feather_radius``; with the default
+        box interiors. Alpha reaches zero at `feather_radius`; with the default
         value, the preview footprint includes the same 10-pixel outward zone as
         exported blur.
+
+        For outside distance $d$ and feather radius $r$, the mask uses
+
+        $$
+        u = \operatorname{clip}\!\left(1-\frac{d}{r},0,1\right),\qquad
+        \alpha = \operatorname{smoothstep}(u)=u^2(3-2u).
+        $$
+
+        Box interiors have $\alpha=1$; alpha reaches zero at or beyond the
+        feather radius.
 
     Example:
         mask = compute_blur_alpha_mask(frame.shape, frame_boxes)
@@ -143,23 +161,59 @@ def apply_masked_blur(
     strength: float,
     feather_radius: int = _FEATHER_RADIUS,
 ) -> np.ndarray:
-    """Blur the union of box interiors with a smooth outward alpha feather.
+    r"""Blur the union of box interiors with a smooth outward alpha feather.
 
     Args:
         frame: RGB or BGR image to process.
         boxes: Bounding boxes to blur.
-        strength: Gaussian kernel width in pixels.
+        strength: Requested Gaussian kernel width; converted to an odd width of at least three pixels.
         feather_radius: Outward feather distance in pixels.
 
     Returns:
         The processed frame. The input frame is blurred in place.
 
     Raises:
-        ValueError: If ``strength`` or ``feather_radius`` is invalid.
+        ValueError: If `strength` or `feather_radius` is invalid.
 
     Note:
         Processing is limited to a padded region of interest; padding includes
         both feather distance and Gaussian context to avoid seams at ROI edges.
+        The non-negative strength is truncated to an integer, changed to the
+        next odd width when even, and clamped to at least three pixels; call
+        this width $k$. OpenCV infers the Gaussian standard deviation from $k$
+        because `GaussianBlur` receives `sigmaX=0` (and the default zero
+        `sigmaY`). For $h=(k-1)/2$, the ROI blur is the discrete Gaussian
+        convolution
+
+        $$
+        G(I)_{x,y,c} =
+        \sum_{i=-h}^{h}\sum_{j=-h}^{h}
+        K_\sigma(i,j)I_{x-i,y-j,c},\qquad
+        K_\sigma(i,j)=\frac{1}{Z}
+        \exp\!\left(-\frac{i^2+j^2}{2\sigma^2}\right),
+        $$
+
+        where $Z$ normalizes the finite kernel to sum to one. For distance
+        $d$ outside the union of box interiors and feather radius $r$, the
+        feather alpha is
+
+        $$
+        u=\operatorname{clip}\!\left(1-\frac{d}{r},0,1\right),\qquad
+        \alpha=\operatorname{smoothstep}(u)=u^2(3-2u).
+        $$
+
+        Box interiors have $\alpha=1$. Each output channel is
+
+        $$
+        O_{x,y,c} =
+        \operatorname{astype}_{\operatorname{dtype}(I)}
+        \!\left(\operatorname{rint}\!\left(
+        (1-\alpha_{x,y})I_{x,y,c}+
+        \alpha_{x,y}G(I)_{x,y,c}\right)\right).
+        $$
+
+        The input frame is updated in place, and pixels with zero alpha are
+        left unchanged.
 
     Example:
         blurred = apply_masked_blur(frame, tracked_boxes, strength=15.0)
@@ -209,10 +263,10 @@ def overlay_alpha_mask(
         opacity: Maximum overlay opacity from 0 to 1.
 
     Returns:
-        A copy of ``frame`` with the mask highlight.
+        A copy of `frame` with the mask highlight.
 
     Raises:
-        ValueError: If dimensions differ or opacity is outside ``0..1``.
+        ValueError: If dimensions differ or opacity is outside `0..1`.
 
     Note:
         Mask alpha modulates the maximum color opacity, so the feather remains

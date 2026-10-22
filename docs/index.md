@@ -22,11 +22,18 @@ before relying on the result; automated detection can miss subjects.
 
 - [Getting started](getting-started.md): install and launch the desktop app.
 - [Development](development.md): run tests, build packages, and preview this site.
-- [Architecture](architecture.md): understand the layers and detection flow.
+- [Architecture](architecture.md): understand the Clean Architecture layers, four data layers, and processing workflows.
 - [Engineering conventions](engineering/documentation-style.md): follow the
   project's documentation style.
 - [Planning notes](planning/README.md): read proposals, not implemented features
   or a committed roadmap.
+
+The current workflow includes detection with YOLO, TorchVision, or MTCNN
+providers; Hungarian, ByteTrack, DeepSORT, and BoT-SORT tracking; editable
+annotation layers; project save/load; JSON/CSV layer interchange; and separate
+preview and rendered-video blur controls. Provider availability and hardware
+requirements vary. Review annotations and exported video before relying on
+automated redaction.
 
 [Project homepage](https://CodeRSTech.github.io/Blurzy/) ·
 [Source repository](https://github.com/CodeRSTech/Blurzy)

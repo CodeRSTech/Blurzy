@@ -1,4 +1,12 @@
-"""Batch export orchestrator — detects, tracks, and exports multiple sessions sequentially."""
+"""Batch export orchestrator — detects, tracks, and exports multiple sessions sequentially.
+
+See Also:
+    - [`ExportService`][app.application.services.export_service.ExportService] — configures export workflows
+    - [`ExportWorker`][app.infrastructure.export.export_worker.ExportWorker] — processes individual session exports
+
+Layer: Infrastructure.
+Context: Implements concrete processing and I/O behind application-facing contracts.
+"""
 
 from __future__ import annotations
 
@@ -30,29 +38,29 @@ class ExportAllWorker(QThread):
         _s_ids (list[SessionId]): Session IDs to process.
         _output_dir (str): Output directory for exported videos.
         _prefix (str): Filename prefix applied to each export.
-        _suffix (str): Filename suffix applied before the ``.mp4`` extension.
+        _suffix (str): Filename suffix applied before the `.mp4` extension.
         _stop_requested (bool): True when batch cancellation is requested.
         _current_s_id (SessionId | None): Session currently being processed.
 
     Note:
         Signals emitted by this worker:
-            | ``session_started(s_id)``: Emitted when session processing begins.
-            | ``session_finished(s_id)``: Emitted when a session succeeds.
-            | ``session_failed(s_id, error_msg)``: Emitted when a session fails.
-            | ``progress_updated(sessions_done, total_sessions)``: Per-session progress.
-            | ``session_export_progress_updated(s_id, current_frame, total_frames)``: Per-frame export progress.
-            | ``finished_processing()``: Emitted when all sessions are done or cancelled.
-            | ``cancelled()``: Emitted if the batch is cancelled.
+            | `session_started(s_id)`: Emitted when session processing begins.
+            | `session_finished(s_id)`: Emitted when a session succeeds.
+            | `session_failed(s_id, error_msg)`: Emitted when a session fails.
+            | `progress_updated(sessions_done, total_sessions)`: Per-session progress.
+            | `session_export_progress_updated(s_id, current_frame, total_frames)`: Per-frame export progress.
+            | `finished_processing()`: Emitted when all sessions are done or cancelled.
+            | `cancelled()`: Emitted if the batch is cancelled.
 
         Pipeline per session:
-            1. Detection: if Layer A is empty, run ``start_detection_worker()``, wait,
+            1. Detection: if Layer A is empty, run `start_detection_worker()`, wait,
                and sync the cache.
-            2. Tracking: if Layer C is empty, run ``start_tracking_worker()`` and wait.
-            3. Export: call ``export_session()`` with progress callbacks.
+            2. Tracking: if Layer C is empty, run `start_tracking_worker()` and wait.
+            3. Export: call `export_session()` with progress callbacks.
             4. Repeat sequentially for the next session.
 
         Cancellation stops current workers but does not abort an in-progress export.
-        Session identifiers use Python-object signal payloads to preserve ``SessionId``
+        Session identifiers use Python-object signal payloads to preserve `SessionId`
         across queued Qt connections without QString conversion.
 
     Example:
@@ -61,7 +69,20 @@ class ExportAllWorker(QThread):
         worker.session_finished.connect(on_session_done)
         worker.start()
         worker.stop()
-    """
+
+
+Layer: Infrastructure.
+Context: Implements concrete processing or I/O behind application-facing contracts.
+
+
+    Args:
+        app: Application used to look up sessions, prepare detection/tracking output, and export each video.
+        s_ids: Session identifiers to export.
+        output_dir: Directory receiving exported videos.
+        prefix: Prefix added to output filenames.
+        suffix: Suffix added to output filenames.
+        parent: Optional Qt parent object.
+"""
 
     session_started = Signal(object)  # s_id
     session_finished = Signal(object)  # s_id
@@ -80,7 +101,7 @@ class ExportAllWorker(QThread):
         suffix: str,
         parent: QObject | None = None,
     ) -> None:
-        """Initialize batch export for ``s_ids`` to ``output_dir`` with naming prefix/suffix."""
+        """Initialize batch export for `s_ids` to `output_dir` with naming prefix/suffix."""
         super().__init__(parent)
         self._app = app
         self._s_ids = s_ids
@@ -110,13 +131,13 @@ class ExportAllWorker(QThread):
 
         Note:
             Workflow per session:
-                1. Emit ``session_started(s_id)``.
-                2. Call ``_process_session(s_id)``.
-                3. Emit ``session_finished(s_id)`` or ``session_failed(s_id, error)``.
-                4. Emit ``progress_updated(idx + 1, total)``.
+                1. Emit `session_started(s_id)`.
+                2. Call `_process_session(s_id)`.
+                3. Emit `session_finished(s_id)` or `session_failed(s_id, error)`.
+                4. Emit `progress_updated(idx + 1, total)`.
                 5. Repeat for the next session.
-                6. If stopped early, emit ``cancelled()`` before
-                   ``finished_processing()``.
+                6. If stopped early, emit `cancelled()` before
+                   `finished_processing()`.
         """
         total = len(self._s_ids)
         logger.info("ExportAllWorker started: {} session(s)", total)
@@ -156,7 +177,7 @@ class ExportAllWorker(QThread):
         Process a single session: detect (if needed), track (if needed), then export.
 
         Returns:
-            bool: ``False`` if cancelled, otherwise ``True``. Errors are surfaced to the
+            bool: `False` if cancelled, otherwise `True`. Errors are surfaced to the
             caller, which emits the failure signal.
         """
         app = self._app
@@ -232,7 +253,7 @@ class ExportAllWorker(QThread):
         return not self._stop_requested
 
     def _emit_export_progress_or_cancel(self, s_id: SessionId, current_frame: int, total_frames: int) -> None:
-        """Progress callback for export service — raise ``RuntimeError`` if batch stopped."""
+        """Progress callback for export service — raise `RuntimeError` if batch stopped."""
         if self._stop_requested:
             raise RuntimeError("Batch export cancelled.")
         self.session_export_progress_updated.emit(s_id, current_frame, total_frames)
