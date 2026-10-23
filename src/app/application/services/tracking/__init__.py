@@ -1,4 +1,5 @@
-"""Package for tracking; implements use cases by coordinating domain and infrastructure operations.
+"""
+Package for tracking; implements use cases by coordinating domain and infrastructure operations.
 
 See Also:
     - [`TrackingService`][app.application.services.tracking.service.TrackingService] — coordinates tracking workflows

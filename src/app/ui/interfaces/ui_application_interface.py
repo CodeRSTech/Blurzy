@@ -1,4 +1,5 @@
-"""UI-owned application facade contract consumed by UI handlers.
+"""
+UI-owned application facade contract consumed by UI handlers.
 
 This protocol lives in the UI layer on purpose: it describes the subset of the
 concrete `Application` facade that UI handlers need. It is *not* a duplicate
@@ -22,22 +23,23 @@ if TYPE_CHECKING:
 
 
 
-
 if TYPE_CHECKING:
     from app.domain import ProcessingSettingsKwargs
     from app.infrastructure.session.session import Session as InfraSession
 
 
 class UIApplicationInterface(Protocol):
-    """Narrow application facade exposed to UI handlers.
+    """
+    Narrow application facade exposed to UI handlers.
 
-Layer: Presentation.
-Context: Supports user interaction and delegates application work through presentation contracts.
-"""
+    Layer: Presentation.
+    Context: Supports user interaction and delegates application work through presentation contracts.
+    """
 
     @property
     def active_session(self) -> InfraSession | None:
-        """Return the currently active session, if any.
+        """
+        Return the currently active session, if any.
 
         Returns:
             Active session object, or `None` when no session is active.
@@ -46,7 +48,8 @@ Context: Supports user interaction and delegates application work through presen
 
     @property
     def active_session_id(self) -> SessionId | None:
-        """Return the active session identifier, if any.
+        """
+        Return the active session identifier, if any.
 
         Returns:
             Active session identifier, or `None` when no session is active.
@@ -55,7 +58,8 @@ Context: Supports user interaction and delegates application work through presen
 
     @active_session_id.setter
     def active_session_id(self, s_id: SessionId) -> None:
-        """Set the active session identifier.
+        """
+        Set the active session identifier.
 
         Args:
             s_id: Identifier of the session to activate.
@@ -63,7 +67,8 @@ Context: Supports user interaction and delegates application work through presen
         ...
 
     def detect_current_frame(self, s_id: SessionId) -> None:
-        """Run detection on the session's current video frame.
+        """
+        Run detection on the session's current video frame.
 
         Args:
             s_id: Identifier of the session to process.
@@ -71,7 +76,8 @@ Context: Supports user interaction and delegates application work through presen
         ...
 
     def start_detection_worker(self, s_id: SessionId) -> None:
-        """Start background detection for all frames in a session.
+        """
+        Start background detection for all frames in a session.
 
         Args:
             s_id: Identifier of the session to process.
@@ -84,7 +90,8 @@ Context: Supports user interaction and delegates application work through presen
         strategy_name: str,
         source_layer_name: VideoDataLayer,
     ) -> None:
-        """Start background tracking for a session using a selected source layer.
+        """
+        Start background tracking for a session using a selected source layer.
 
         Args:
             s_id: Identifier of the session to track.
@@ -94,7 +101,8 @@ Context: Supports user interaction and delegates application work through presen
         ...
 
     def get_session_by_id(self, s_id: SessionId) -> InfraSession:
-        """Return the session identified by `s_id`.
+        """
+        Return the session identified by `s_id`.
 
         Args:
             s_id: Identifier of the session to retrieve.
@@ -109,7 +117,8 @@ Context: Supports user interaction and delegates application work through presen
         s_id: SessionId,
         **kwargs: Unpack[ProcessingSettingsKwargs],
     ) -> None:
-        """Update processing settings for a session.
+        """
+        Update processing settings for a session.
 
         Args:
             s_id: Identifier of the session to update.
@@ -118,7 +127,8 @@ Context: Supports user interaction and delegates application work through presen
         ...
 
     def apply_filters_to_layer(self, layer_name: VideoDataLayer, s_id: SessionId) -> None:
-        """Reapply confidence and size filters to an editable detection or tracking layer.
+        """
+        Reapply confidence and size filters to an editable detection or tracking layer.
 
         Args:
             layer_name: Editable layer B or D to filter.
@@ -127,7 +137,8 @@ Context: Supports user interaction and delegates application work through presen
         ...
 
     def session_has_running_tracking_worker(self, s_id: SessionId) -> bool:
-        """Check whether a session's tracking worker is active.
+        """
+        Check whether a session's tracking worker is active.
 
         Args:
             s_id: Identifier of the session to check.
@@ -138,7 +149,8 @@ Context: Supports user interaction and delegates application work through presen
         ...
 
     def sync_tracking_cache(self, s_id: SessionId) -> None:
-        """Synchronize completed tracking results into the session's tracking layers.
+        """
+        Synchronize completed tracking results into the session's tracking layers.
 
         Args:
             s_id: Identifier of the session whose tracking results are synchronized.

@@ -1,4 +1,5 @@
-"""Video export infrastructure — single-session and batch export workers with progress callbacks.
+"""
+Video export infrastructure — single-session and batch export workers with progress callbacks.
 
 See Also:
     - [`ExportWorker`][app.infrastructure.export.export_worker.ExportWorker] — performs a single-session export

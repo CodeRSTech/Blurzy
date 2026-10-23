@@ -1,4 +1,5 @@
-"""ByteTrack strategy adapter.
+"""
+ByteTrack strategy adapter.
 
 Simple explanation:
 ByteTrack links boxes from one frame to the next by looking at overlap and
@@ -49,7 +50,8 @@ def _generalized_iou(
     first: tuple[int, int, int, int],
     second: tuple[int, int, int, int],
 ) -> float:
-    """Calculate generalized intersection-over-union for two xyxy boxes.
+    """
+    Calculate generalized intersection-over-union for two xyxy boxes.
 
     Args:
         first: Predicted track box.
@@ -83,7 +85,8 @@ def _generalized_iou(
 
 
 class ByteTrackStrategy:
-    """Track objects using ByteTrack while preserving the app's output contract.
+    """
+    Track objects using ByteTrack while preserving the app's output contract.
 
     Simple runtime note:
     Ultralytics ByteTrack expects a `Boxes`/results-like object (with fields
@@ -92,9 +95,9 @@ class ByteTrackStrategy:
     into `BBoxViewModel` objects.
 
 
-Layer: Infrastructure.
-Context: Implements concrete processing or I/O behind application-facing contracts.
-"""
+    Layer: Infrastructure.
+    Context: Implements concrete processing or I/O behind application-facing contracts.
+    """
 
     uses_appearance = False
 
@@ -105,7 +108,8 @@ Context: Implements concrete processing or I/O behind application-facing contrac
         min_detection_confidence: float = 0.25,
         confidence_decay: float = 0.05,
     ) -> None:
-        """Initialize ByteTrack and app-side labels and coast confidence.
+        """
+        Initialize ByteTrack and app-side labels and coast confidence.
 
         Args:
             min_iou: IoU similarity used to configure tracker association.
@@ -172,7 +176,8 @@ Context: Implements concrete processing or I/O behind application-facing contrac
         frame: RGBFrame | None = None,
         embeddings: Sequence[np.ndarray | None] | None = None,
     ) -> list[BBoxViewModel]:
-        """Update ByteTrack with one frame of detections.
+        """
+        Update ByteTrack with one frame of detections.
 
         Args:
             frame_idx: Zero-based frame index.
@@ -334,7 +339,8 @@ Context: Implements concrete processing or I/O behind application-facing contrac
         *,
         excluded_ids: set[int],
     ) -> int | None:
-        """Find a recently observed track by GIoU and predicted-center distance.
+        """
+        Find a recently observed track by GIoU and predicted-center distance.
 
         Args:
             frame_idx: Current zero-based frame index.
@@ -397,7 +403,8 @@ Context: Implements concrete processing or I/O behind application-facing contrac
         bbox: tuple[int, int, int, int],
         label: str,
     ) -> None:
-        """Update constant-velocity center and size estimates for a matched track.
+        """
+        Update constant-velocity center and size estimates for a matched track.
 
         Args:
             track_id: Canonical track identifier.
@@ -446,7 +453,8 @@ Context: Implements concrete processing or I/O behind application-facing contrac
         source_data: ListOfBoxesByFrameIndexAsDict,
         total_frames: int = 0,
     ) -> ListOfBoxesByFrameIndexAsDict:
-        """Run the incremental strategy over a complete detection frame map.
+        """
+        Run the incremental strategy over a complete detection frame map.
 
         Args:
             source_data: Per-frame detections to associate.

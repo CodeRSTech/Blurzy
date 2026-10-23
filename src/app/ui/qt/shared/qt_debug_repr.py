@@ -1,4 +1,5 @@
-"""Module for qt debug repr; implements the Qt presentation components.
+"""
+Module for qt debug repr; implements the Qt presentation components.
 
 See Also:
     - [`apply_custom_qt_reprs`][app.ui.qt.shared.debug_repr.apply_custom_qt_reprs] — implementation re-exported by this compatibility module

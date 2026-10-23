@@ -1,4 +1,5 @@
-"""UI-layer protocols for handler dependencies.
+"""
+UI-layer protocols for handler dependencies.
 
 See Also:
     - [`UIControllerInterface`][app.ui.interfaces.controller_interface.UIControllerInterface] — describes controller operations used by handlers

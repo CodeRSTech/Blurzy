@@ -1,4 +1,5 @@
-"""Detection layer export service — serialises layers A or B to JSON / CSV.
+"""
+Detection layer export service — serialises layers A or B to JSON / CSV.
 
 See Also:
     - [`IDataExporter`][app.application.interfaces.data_export_interface.IDataExporter] — defines the export contract
@@ -56,13 +57,13 @@ class DetectionExportService(QObject):
         which is useful for long videos.
 
 
-Layer: Application.
-Context: Coordinates use-case behavior through domain services and application contracts.
+    Layer: Application.
+    Context: Coordinates use-case behavior through domain services and application contracts.
 
 
     Args:
         app: Application adapted for session lookup and reading detection-layer boxes for export.
-"""
+    """
 
     def __init__(self, app: Application) -> None:
         super().__init__(parent=app)

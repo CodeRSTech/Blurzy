@@ -1,4 +1,5 @@
-"""Package for qt; implements the Qt presentation components.
+"""
+Package for qt; implements the Qt presentation components.
 
 See Also:
     - [`Window`][app.ui.qt.window.window.Window] — main Qt application window

@@ -1,4 +1,5 @@
-"""Interface contract for background single-session export worker implementations.
+"""
+Interface contract for background single-session export worker implementations.
 
 See Also:
     - [`ExportWorkerAdapter`][app.infrastructure.adapters.export_worker_adapter.ExportWorkerAdapter] — adapts worker signals and controls to this contract
@@ -16,11 +17,12 @@ from PySide6.QtCore import SignalInstance
 
 
 class ExportWorkerInterface(Protocol):
-    """Abstraction boundary for single-session export workers.
+    """
+    Abstraction boundary for single-session export workers.
 
-Layer: Application.
-Context: Coordinates use-case behavior through domain services and application contracts.
-"""
+    Layer: Application.
+    Context: Coordinates use-case behavior through domain services and application contracts.
+    """
 
     progress_updated = SignalInstance
     succeeded = SignalInstance
@@ -29,15 +31,20 @@ Context: Coordinates use-case behavior through domain services and application c
     error_occurred = SignalInstance
 
     def start(self) -> None:
-        """Start the export thread."""
+        """
+        Start the export thread.
+"""
         ...
 
     def stop(self) -> None:
-        """Request the export thread to stop."""
+        """
+        Request the export thread to stop.
+"""
         ...
 
     def isRunning(self) -> bool:
-        """Return `True` while the worker thread is active.
+        """
+        Return `True` while the worker thread is active.
 
         Returns:
             `True` while the export worker thread is running.
@@ -45,10 +52,14 @@ Context: Coordinates use-case behavior through domain services and application c
         ...
 
     def deleteLater(self) -> None:
-        """Schedule worker object deletion on the Qt event loop."""
+        """
+        Schedule worker object deletion on the Qt event loop.
+"""
         ...
 
     def wait(self) -> None:
-        """Wait for the export thread to finish."""
+        """
+        Wait for the export thread to finish.
+"""
         ...
     

@@ -1,4 +1,5 @@
-"""Playback control handler for video playback operations.
+"""
+Playback control handler for video playback operations.
 
 See Also:
     - [`PlaybackState`][app.domain.video.playback_state.PlaybackState] — stores playback position and status
@@ -55,16 +56,18 @@ class PlaybackHandler(QObject):
             Uses QTimer to trigger periodic `on_playback_tick()` calls during playback.
 
 
-Layer: Presentation.
-Context: Supports user interaction and delegates application work through presentation contracts.
+    Layer: Presentation.
+    Context: Supports user interaction and delegates application work through presentation contracts.
 
 
     Args:
         controller: Provides playback operations, transport controls, and frame rendering.
-"""
+    """
 
     render_frame_requested = Signal(object)
-    """Emitted when a frame needs to be rendered. Payload: ``SessionId``."""
+    """
+    Emitted when a frame needs to be rendered. Payload: ``SessionId``.
+"""
 
     def __init__(self, controller: UIController) -> None:
         super().__init__()
@@ -95,7 +98,8 @@ Context: Supports user interaction and delegates application work through presen
 
     @property
     def selected_s_id(self) -> SessionId:
-        """Retrieves the selected session ID from the session list.
+        """
+        Retrieves the selected session ID from the session list.
 
 Returns:
     Identifier of the selected session, or the empty identifier when none is selected.
@@ -222,7 +226,8 @@ Returns:
 
     @Slot(int)
     def on_rotate_requested(self, delta_degrees: int) -> None:
-        """Rotate the selected video's preview by the requested number of degrees.
+        """
+        Rotate the selected video's preview by the requested number of degrees.
 
         Args:
             delta_degrees: Rotation increment requested by a transport control.
@@ -249,7 +254,9 @@ Returns:
 
     @Slot()
     def on_fit_view_requested(self) -> None:
-        """Reset the preview viewport to fit the image within its available area."""
+        """
+        Reset the preview viewport to fit the image within its available area.
+"""
         self._window.preview_container.reset_viewport()
 
     @Slot()

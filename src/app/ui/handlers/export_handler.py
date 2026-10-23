@@ -1,4 +1,5 @@
-"""Video export handler for exporting annotated videos.
+"""
+Video export handler for exporting annotated videos.
 
 See Also:
     - [`ExportService`][app.application.services.export_service.ExportService] — prepares export operations
@@ -57,15 +58,16 @@ class ExportHandler(QObject):
         Cleans up workers after completion via `deleteLater()`.
 
 
-Layer: Presentation.
-Context: Supports user interaction and delegates application work through presentation contracts.
-
-
-    Args:
-        controller supplying export operations, export workers, and progress/status widgets.
-"""
+    Layer: Presentation.
+    Context: Supports user interaction and delegates application work through presentation contracts.
+    """
 
     def __init__(self, controller: UIController) -> None:
+        """
+        Initialize the ExportHandler.
+        Args:
+            controller: UIController supplying export operations, export workers, and progress/status widgets.
+        """
         super().__init__()
         self.setParent(controller)
         self._controller = controller
@@ -105,7 +107,8 @@ Context: Supports user interaction and delegates application work through presen
 
     @property
     def is_exporting(self) -> bool:
-        """Return whether any export worker is currently running.
+        """
+        Return whether any export worker is currently running.
 
         Returns:
             `True` while a single-session or all-session export is running.
@@ -118,7 +121,8 @@ Context: Supports user interaction and delegates application work through presen
 
     @property
     def has_export_worker(self) -> bool:
-        """Return whether a single-session export worker has been assigned.
+        """
+        Return whether a single-session export worker has been assigned.
 
         Returns:
             `True` when an export worker is available.
@@ -127,7 +131,8 @@ Context: Supports user interaction and delegates application work through presen
 
     @property
     def has_export_all_worker(self) -> bool:
-        """Return whether an all-session export worker has been assigned.
+        """
+        Return whether an all-session export worker has been assigned.
 
         Returns:
             `True` when an all-session export worker is available.
@@ -135,7 +140,8 @@ Context: Supports user interaction and delegates application work through presen
         return self.__export_all_worker is not None
 
     def stop_exports(self, wait: bool = False) -> None:
-        """Request cancellation of active exports and optionally wait for workers to finish.
+        """
+        Request cancellation of active exports and optionally wait for workers to finish.
 
         Args:
             wait: Whether to block until each active worker has stopped.
@@ -176,7 +182,8 @@ Context: Supports user interaction and delegates application work through presen
 
     @Slot(int)
     def on_box_border_width_changed(self, value: int) -> None:
-        """Update preview-only box outline width.
+        """
+        Update preview-only box outline width.
 
         Args:
             value: Outline width in pixels, constrained by the panel to 1..10.
@@ -194,7 +201,8 @@ Context: Supports user interaction and delegates application work through presen
 
     @Slot(bool)
     def on_show_preview_mask_changed(self, enabled: bool) -> None:
-        """Toggle the editor overlay for the export blur footprint.
+        """
+        Toggle the editor overlay for the export blur footprint.
 
         Args:
             enabled: Whether to show the semi-transparent alpha mask.
@@ -212,7 +220,8 @@ Context: Supports user interaction and delegates application work through presen
 
     @Slot(bool)
     def on_preview_blur_changed(self, enabled: bool) -> None:
-        """Toggle live Gaussian blur in the editor independently of export blur.
+        """
+        Toggle live Gaussian blur in the editor independently of export blur.
 
         Args:
             enabled: Whether to render blur in the editor when master blur is enabled.

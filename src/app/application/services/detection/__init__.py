@@ -1,4 +1,5 @@
-"""Package for detection; implements use cases by coordinating domain and infrastructure operations.
+"""
+Package for detection; implements use cases by coordinating domain and infrastructure operations.
 
 See Also:
     - [`DetectionService`][app.application.services.detection.service.DetectionService] — orchestrates model-based detection

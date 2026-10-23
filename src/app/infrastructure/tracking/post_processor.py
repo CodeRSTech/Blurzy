@@ -1,4 +1,5 @@
-"""Offline tracklet stitching and bounded Gaussian interpolation.
+"""
+Offline tracklet stitching and bounded Gaussian interpolation.
 
 See Also:
     - [`TrackingWorker`][app.infrastructure.tracking.track_worker.TrackingWorker] — applies post-processing to produced tracks
@@ -33,7 +34,9 @@ _AMBIGUITY_MARGIN = 0.05
 
 
 def _normalized_mean(vectors: list[np.ndarray]) -> np.ndarray | None:
-    """Return the normalized mean of available embedding vectors."""
+    """
+    Return the normalized mean of available embedding vectors.
+"""
     if not vectors:
         return None
     mean = np.mean(np.stack(vectors).astype(np.float32), axis=0)
@@ -51,7 +54,8 @@ class _Tracklet:
 
     @property
     def frames(self) -> list[int]:
-        """Return the sorted frame indices containing observations.
+        """
+        Return the sorted frame indices containing observations.
 
         Returns:
             Observed frame indices for this tracklet.
@@ -60,7 +64,8 @@ class _Tracklet:
 
     @property
     def start_frame(self) -> int:
-        """Return the first observed frame index.
+        """
+        Return the first observed frame index.
 
         Returns:
             Earliest frame containing an observation.
@@ -69,7 +74,8 @@ class _Tracklet:
 
     @property
     def end_frame(self) -> int:
-        """Return the last observed frame index.
+        """
+        Return the last observed frame index.
 
         Returns:
             Latest frame containing an observation.
@@ -77,7 +83,8 @@ class _Tracklet:
         return max(self.boxes)
 
     def velocity(self, *, at_end: bool, window: int = 5) -> np.ndarray:
-        """Estimate box-coordinate velocity near a tracklet endpoint.
+        """
+        Estimate box-coordinate velocity near a tracklet endpoint.
 
         Args:
             at_end: Use final observations when true; otherwise use initial ones.
@@ -96,7 +103,8 @@ class _Tracklet:
 
 
 class TrackingPostProcessor:
-    """Optionally stitch tracklets and generate confidence-bounded coast estimates.
+    """
+    Optionally stitch tracklets and generate confidence-bounded coast estimates.
 
     Args:
         max_gap: Maximum number of missed frames bridged by offline stitching.
@@ -128,9 +136,9 @@ class TrackingPostProcessor:
         results = processor.process(track_data, total_frames=300)
 
 
-Layer: Infrastructure.
-Context: Implements concrete processing or I/O behind application-facing contracts.
-"""
+    Layer: Infrastructure.
+    Context: Implements concrete processing or I/O behind application-facing contracts.
+    """
 
     def __init__(
         self,
@@ -192,7 +200,8 @@ Context: Implements concrete processing or I/O behind application-facing contrac
         total_frames: int | None = None,
         appearance_embeddings_by_frame: dict[int, dict[str, np.ndarray]] | None = None,
     ) -> ListOfBoxesByFrameIndexAsDict:
-        """Post-process observations into stitched or causal tracking output.
+        """
+        Post-process observations into stitched or causal tracking output.
 
         Args:
             tracked_data: Tracker output keyed by zero-based frame index.
@@ -231,7 +240,8 @@ Context: Implements concrete processing or I/O behind application-facing contrac
         predecessors = {target: source for source, target in links}
 
         def root_key(key: tuple[str, int]) -> tuple[str, int]:
-            """Follow predecessor links to the earliest tracklet in a chain.
+            """
+            Follow predecessor links to the earliest tracklet in a chain.
 
             Args:
                 key: Key identifying the starting tracklet.
@@ -313,7 +323,8 @@ Context: Implements concrete processing or I/O behind application-facing contrac
         output: ListOfBoxesByFrameIndexAsDict,
         total_frames: int,
     ) -> ListOfBoxesByFrameIndexAsDict:
-        """Apply size protection, temporal padding, and safety inflation.
+        """
+        Apply size protection, temporal padding, and safety inflation.
 
         Args:
             output: Stitched boxes keyed by zero-based frame index.
@@ -502,7 +513,8 @@ Context: Implements concrete processing or I/O behind application-facing contrac
         *,
         at_end: bool,
     ) -> tuple[float, float]:
-        """Estimate and clamp center velocity from up to five detections.
+        """
+        Estimate and clamp center velocity from up to five detections.
 
         Args:
             detections: Ordered detection-backed observations for one track.
@@ -549,7 +561,8 @@ Context: Implements concrete processing or I/O behind application-facing contrac
         age: int,
         total_padding: int,
     ) -> float:
-        """Return a gradual padding confidence no lower than the configured floor.
+        """
+        Return a gradual padding confidence no lower than the configured floor.
 
         Args:
             source: Endpoint observation used to seed the padding box.
@@ -581,7 +594,8 @@ Context: Implements concrete processing or I/O behind application-facing contrac
         confidence: float,
         age: int,
     ) -> None:
-        """Insert a cloned temporal padding box unless that track already exists.
+        """
+        Insert a cloned temporal padding box unless that track already exists.
 
         Args:
             output: Mutable output frame mapping.
@@ -615,7 +629,8 @@ Context: Implements concrete processing or I/O behind application-facing contrac
         self,
         bbox: tuple[int, int, int, int],
     ) -> tuple[int, int, int, int]:
-        """Clamp a rectangle to non-negative coordinates and known frame bounds.
+        """
+        Clamp a rectangle to non-negative coordinates and known frame bounds.
 
         Args:
             bbox: Candidate rectangle in xyxy pixel coordinates.
@@ -635,7 +650,8 @@ Context: Implements concrete processing or I/O behind application-facing contrac
         return x1, y1, max(x1, x2), max(y1, y2)
 
     def _center_outside_frame(self, center_x: float, center_y: float) -> bool:
-        """Return whether a projected center lies outside known frame bounds.
+        """
+        Return whether a projected center lies outside known frame bounds.
 
         Args:
             center_x: Projected horizontal center in pixels.
@@ -662,7 +678,8 @@ Context: Implements concrete processing or I/O behind application-facing contrac
         *,
         total_frames: int,
     ) -> None:
-        """Add bounded forward predictions wherever no accepted GSI bridge exists.
+        """
+        Add bounded forward predictions wherever no accepted GSI bridge exists.
 
         Args:
             output: Mutable output frame map receiving coast estimates.
@@ -777,7 +794,8 @@ Context: Implements concrete processing or I/O behind application-facing contrac
     def _assign_links(
         self, tracklets: dict[tuple[str, int], _Tracklet]
     ) -> list[tuple[tuple[str, int], tuple[str, int]]]:
-        """Assign non-ambiguous temporal links between tracklets.
+        """
+        Assign non-ambiguous temporal links between tracklets.
 
         Args:
             tracklets: Candidate tracklets keyed by original ID and start frame.
@@ -849,7 +867,8 @@ Context: Implements concrete processing or I/O behind application-facing contrac
         return links
 
     def _link_cost(self, source: _Tracklet, target: _Tracklet) -> float | None:
-        """Compute a geometry and scale cost for temporally ordered tracklets.
+        """
+        Compute a geometry and scale cost for temporally ordered tracklets.
 
         Args:
             source: Earlier tracklet with an observed endpoint.
@@ -934,7 +953,8 @@ Context: Implements concrete processing or I/O behind application-facing contrac
         template: BBoxViewModel,
         smoothness: float,
     ) -> int:
-        r"""Interpolate missing frames with two endpoint predictions and GSI weights.
+        r"""
+Interpolate missing frames with two endpoint predictions and GSI weights.
 
         Args:
             output: Mutable output frame map.
@@ -1022,7 +1042,8 @@ Context: Implements concrete processing or I/O behind application-facing contrac
     def _coast_box(
         self, tracklet: _Tracklet, age: int, template: BBoxViewModel
     ) -> BBoxViewModel | None:
-        """Create one forward coast estimate and apply the configured decay.
+        """
+        Create one forward coast estimate and apply the configured decay.
 
         Args:
             tracklet: Detection-backed source segment.

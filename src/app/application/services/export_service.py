@@ -1,4 +1,5 @@
-"""Video export service for rendering blurred videos and detection exports.
+"""
+Video export service for rendering blurred videos and detection exports.
 
 See Also:
     - [`ExportWorkerFactoryAdapter`][app.application.adapters.export_worker_factory_adapter.ExportWorkerFactoryAdapter] — creates session export workers
@@ -27,12 +28,10 @@ from app.shared.masked_blur import apply_masked_blur
 if TYPE_CHECKING:
     from app.domain import SessionId, BBoxViewModel
     from app.infrastructure.session.session import Session
+    from app.application.application import Application
 
 
 logger = get_logger("Application->ExportService")
-
-if TYPE_CHECKING:
-    from app.application.application import Application
 
 type ExportProgressCallback = Callable[[int, int], None]
 
@@ -67,13 +66,13 @@ class ExportService(QObject):
         Selected box interiors remain fully blurred; editor preview is unchanged.
 
 
-Layer: Application.
-Context: Coordinates use-case behavior through domain services and application contracts.
+    Layer: Application.
+    Context: Coordinates use-case behavior through domain services and application contracts.
 
 
     Args:
         app: Application used to resolve the session, read its frames, and coordinate video export.
-"""
+    """
 
     def __init__(self, app: Application) -> None:
         super().__init__(parent=app)
@@ -240,11 +239,14 @@ Context: Coordinates use-case behavior through domain services and application c
     def _apply_masked_blur(
         frame: np.ndarray, boxes: list[BBoxViewModel], strength: float
     ) -> np.ndarray:
-        """Apply shared feathered Gaussian blur to export pixels."""
+        """
+        Apply shared feathered Gaussian blur to export pixels.
+"""
         return apply_masked_blur(frame, boxes, strength)
 
     def export_annotations_csv(self, s_id: SessionId, output_path: str) -> None:
-        """Write the session's stored boxes to a CSV file.
+        """
+        Write the session's stored boxes to a CSV file.
 
         Args:
             s_id: Identifier of the session whose boxes should be exported.

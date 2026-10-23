@@ -1,4 +1,5 @@
-"""Package for model; implements concrete processing and I/O behind application-facing contracts.
+"""
+Package for model; implements concrete processing and I/O behind application-facing contracts.
 
 See Also:
     - [`BaseDetectionModel`][app.infrastructure.detection.model.base.BaseDetectionModel] — common implementation contract

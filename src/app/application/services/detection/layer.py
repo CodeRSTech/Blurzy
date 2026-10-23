@@ -1,4 +1,5 @@
-"""Detection layer (Layer B) CRUD operations and filtering.
+"""
+Detection layer (Layer B) CRUD operations and filtering.
 
 See Also:
     - [`DetectionResult`][app.domain.detection.result.DetectionResult] — represents machine-generated boxes
@@ -52,13 +53,13 @@ class DetectionLayerService(QObject):
             Export `DataLayer.B` to video.
 
 
-Layer: Application.
-Context: Coordinates use-case behavior through domain services and application contracts.
+    Layer: Application.
+    Context: Coordinates use-case behavior through domain services and application contracts.
 
 
     Args:
         app: Application adapted for session lookup and manual or filtered detection-layer updates.
-"""
+    """
 
     def __init__(self, app: Application) -> None:
         super().__init__(parent=app)

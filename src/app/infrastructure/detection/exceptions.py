@@ -1,4 +1,5 @@
-"""Module for exceptions; implements concrete processing and I/O behind application-facing contracts.
+"""
+Module for exceptions; implements concrete processing and I/O behind application-facing contracts.
 
 See Also:
     - [`load_detection_model`][app.infrastructure.detection.model.loader.load_detection_model] — reports model-loading failures
@@ -12,9 +13,10 @@ from __future__ import annotations
 
 
 class DetectionModelError(Exception):
-    """Raised when model loading or inference fails.
+    """
+    Raised when model loading or inference fails.
 
-Layer: Infrastructure.
-Context: Implements concrete processing or I/O behind application-facing contracts.
-"""
+    Layer: Infrastructure.
+    Context: Implements concrete processing or I/O behind application-facing contracts.
+    """
     pass

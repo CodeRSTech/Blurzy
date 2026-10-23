@@ -1,4 +1,5 @@
-"""Module for project handler; translates user actions into application calls and UI feedback.
+"""
+Module for project handler; translates user actions into application calls and UI feedback.
 
 See Also:
     - [`ProjectService`][app.application.services.project_service.ProjectService] — loads and saves project state
@@ -28,15 +29,16 @@ logger = get_logger("UI->ProjectHandler")
 
 @final
 class ProjectHandler(QObject):
-    """Represent project handler.
+    """
+    Represent project handler.
 
-Layer: Presentation.
-Context: Supports user interaction and delegates application work through presentation contracts.
+    Layer: Presentation.
+    Context: Supports user interaction and delegates application work through presentation contracts.
 
 
     Args:
         controller supplying project operations, the project window, and session-list refresh callbacks.
-"""
+    """
     def __init__(self, controller: UIController) -> None:
         super().__init__()
         self.setParent(controller)
@@ -83,7 +85,9 @@ Context: Supports user interaction and delegates application work through presen
 
     @Slot()
     def on_new_project(self) -> None:
-        """Clear the current project and its sessions, then reset project-related UI state."""
+        """
+        Clear the current project and its sessions, then reset project-related UI state.
+"""
         logger.debug("Starting a new project")
         self._app.clear_project()
         self._window.bottom_panel.update_session_file_list([])
@@ -93,7 +97,9 @@ Context: Supports user interaction and delegates application work through presen
 
     @Slot()
     def on_open_project(self) -> None:
-        """Prompt for a project file, restore it, and refresh the session and project UI."""
+        """
+        Prompt for a project file, restore it, and refresh the session and project UI.
+"""
         start_dir = self._project_dialog_directory()
         path, _ = QFileDialog.getOpenFileName(
             self._window,
@@ -117,7 +123,9 @@ Context: Supports user interaction and delegates application work through presen
 
     @Slot()
     def on_save_project(self) -> None:
-        """Save to the current project path, prompting for a path when none is set."""
+        """
+        Save to the current project path, prompting for a path when none is set.
+"""
         path = self._app.current_project_path
         if not path:
             self.on_save_project_as()
@@ -133,7 +141,9 @@ Context: Supports user interaction and delegates application work through presen
 
     @Slot()
     def on_save_project_as(self) -> None:
-        """Prompt for a `.blurzy` destination and save the current project there."""
+        """
+        Prompt for a `.blurzy` destination and save the current project there.
+"""
         start_dir = self._project_dialog_directory()
         path, _ = QFileDialog.getSaveFileName(
             self._window,

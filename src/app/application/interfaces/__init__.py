@@ -1,4 +1,5 @@
-"""Application-layer interface contracts (Phase 1 abstraction seams).
+"""
+Application-layer interface contracts (Phase 1 abstraction seams).
 
 These `Protocol`-based interfaces decouple services and managers from
 concrete infrastructure implementations.  Concrete classes satisfy them

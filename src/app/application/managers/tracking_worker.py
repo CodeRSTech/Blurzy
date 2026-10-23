@@ -1,4 +1,5 @@
-"""Centralizes tracking worker lifecycle transitions per session.
+"""
+Centralizes tracking worker lifecycle transitions per session.
 
 See Also:
     - [`TrackingWorkerFactoryAdapter`][app.application.adapters.tracking_worker_factory_adapter.TrackingWorkerFactoryAdapter] — constructs workers behind the application contract
@@ -34,16 +35,17 @@ logger = get_logger("Application->TrackingWorkerManager")
 
 
 class TrackingWorkerManager:
-    """Canonical owner for tracking worker start/stop/switch transitions.
+    """
+    Canonical owner for tracking worker start/stop/switch transitions.
 
-Layer: Application.
-Context: Coordinates use-case behavior through domain services and application contracts.
+    Layer: Application.
+    Context: Coordinates use-case behavior through domain services and application contracts.
 
 
     Args:
         app_adapter: Adapter that exposes application operations through the expected interface.
         worker_factory: Factory used to create the worker managed by this class.
-"""
+    """
 
     def __init__(
         self,
@@ -57,7 +59,8 @@ Context: Coordinates use-case behavior through domain services and application c
         return f"<{self.__class__.__name__}>"
 
     def start(self, s_id: SessionId, strategy_name: str, source_layer_name: str) -> None:
-        """Start tracking for a session using detections from a supported source layer.
+        """
+        Start tracking for a session using detections from a supported source layer.
 
         Args:
             s_id: Identifier of the session to track.
@@ -103,7 +106,8 @@ Context: Coordinates use-case behavior through domain services and application c
         )
 
     def stop(self, s_id: SessionId) -> None:
-        """Stop and detach the session's tracking worker, if present.
+        """
+        Stop and detach the session's tracking worker, if present.
 
         Args:
             s_id: Identifier of the session whose tracking worker should stop.
@@ -134,7 +138,8 @@ Context: Coordinates use-case behavior through domain services and application c
         strategy_name: str,
         source_layer_name: str,
     ) -> None:
-        """Switch the tracking worker to the active session.
+        """
+        Switch the tracking worker to the active session.
 
         Args:
             old_s_id: Previously active session, or `None` if there was none.
@@ -155,7 +160,8 @@ Context: Coordinates use-case behavior through domain services and application c
         self.start(new_s_id, strategy_name, source_layer_name)
 
     def get_tracked_data(self, s_id: SessionId) -> ListOfBoxesByFrameIndexAsDict:
-        """Return the tracking worker's results for a session.
+        """
+        Return the tracking worker's results for a session.
 
         Args:
             s_id: Identifier of the session whose results are requested.

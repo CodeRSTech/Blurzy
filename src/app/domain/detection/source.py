@@ -1,4 +1,5 @@
-"""Origin classification for bounding boxes (detection/tracking/manual).
+"""
+Origin classification for bounding boxes (detection/tracking/manual).
 
 See Also:
     - [`Box`][app.domain.detection.box.Box] — carries the source value with box data
@@ -29,9 +30,9 @@ class BoxSource(str, Enum):
         detection.source = BoxSource.MANUAL     # User-created (never filtered)
 
 
-Layer: Domain.
-Context: Represents application concepts without UI or infrastructure dependencies.
-"""
+    Layer: Domain.
+    Context: Represents application concepts without UI or infrastructure dependencies.
+    """
     DETECTION = "Detection"
     MANUAL = "Manual"
     TRACKING = "Tracking"

@@ -1,4 +1,5 @@
-"""Module for transport controls panel; implements the Qt presentation components.
+"""
+Module for transport controls panel; implements the Qt presentation components.
 
 See Also:
     - [`PlaybackState`][app.domain.video.playback_state.PlaybackState] — stores the playback state displayed by the controls
@@ -32,15 +33,16 @@ logger = get_logger("UI-> Transport Control Panel")
 
 @final
 class TransportControlsPanel(QVBoxLayout):
-    """Provide the transport controls panel presentation component.
+    """
+    Provide the transport controls panel presentation component.
 
-Layer: Presentation.
-Context: Supports user interaction and delegates application work through presentation contracts.
+    Layer: Presentation.
+    Context: Supports user interaction and delegates application work through presentation contracts.
 
 
     Args:
         parent: Optional Qt parent object.
-"""
+    """
     seek_pos_changed = Signal(int)
     rotate_requested = Signal(int)
     fit_view_requested = Signal()
@@ -114,7 +116,9 @@ Context: Supports user interaction and delegates application work through presen
             )
 
     def _configure_icon_buttons(self) -> None:
-        """Make transport buttons icon-only with a minimal hoverable surface."""
+        """
+        Make transport buttons icon-only with a minimal hoverable surface.
+"""
         for button in (
             self.play_btn,
             self.pause_btn,
@@ -147,7 +151,9 @@ Context: Supports user interaction and delegates application work through presen
         self.fit_view_btn.setCursor(Qt.CursorShape.PointingHandCursor)
 
     def _apply_transport_icons(self) -> None:
-        """Apply bundled icons to transport controls using palette-aware tint colors."""
+        """
+        Apply bundled icons to transport controls using palette-aware tint colors.
+"""
         palette = self.play_btn.palette()
         normal_tint = palette.color(QPalette.ColorGroup.Active, QPalette.ColorRole.ButtonText)
         disabled_tint = palette.color(QPalette.ColorGroup.Disabled, QPalette.ColorRole.ButtonText)
@@ -181,9 +187,10 @@ Context: Supports user interaction and delegates application work through presen
             button.setIconSize(icon_size)
 
 
-
     def refresh_theme_icons(self) -> None:
-        """Recompute transport icons after runtime palette/style changes."""
+        """
+        Recompute transport icons after runtime palette/style changes.
+"""
         self._apply_transport_icons()
 
     def _build_ui(self) -> None:
@@ -229,7 +236,8 @@ Context: Supports user interaction and delegates application work through presen
 
     @Slot(bool)
     def update_video_related_widgets_state(self, is_enabled: bool = False) -> None:
-        """Enable or disable playback, seeking, rotation, and fit-view controls.
+        """
+        Enable or disable playback, seeking, rotation, and fit-view controls.
 
         Args:
             is_enabled: Whether video controls should be enabled.
@@ -247,7 +255,8 @@ Context: Supports user interaction and delegates application work through presen
             widget.setEnabled(is_enabled)
 
     def set_seek_value(self, frame_index: int) -> None:
-        """Set the seek position to the given frame index.
+        """
+        Set the seek position to the given frame index.
 
 Args:
     frame_index: Zero-based frame index.
@@ -256,7 +265,8 @@ Args:
             self.seek_slider.setValue(max(0, frame_index))
 
     def set_seek_range(self, maximum_frame_index: int) -> None:
-        """Set the seek slider range from frame zero through the final frame.
+        """
+        Set the seek slider range from frame zero through the final frame.
 
 Args:
     maximum_frame_index: Index of the final frame; negative values produce a zero-only range.
@@ -265,7 +275,8 @@ Args:
         self.seek_slider.setMaximum(max(0, maximum_frame_index))
 
     def set_frame_label_text(self, text: str):
-        """Update the text shown beside the transport controls.
+        """
+        Update the text shown beside the transport controls.
 
         Args:
             text: Frame-position text to display.
@@ -274,7 +285,8 @@ Args:
 
     @Slot(float, float, float)
     def set_viewport_state(self, zoom_factor: float, pan_x: float, pan_y: float) -> None:
-        """Update the zoom and whether the viewport label should report a panned view.
+        """
+        Update the zoom and whether the viewport label should report a panned view.
 
         Args:
             zoom_factor: Current zoom multiplier.
@@ -286,7 +298,8 @@ Args:
         self._refresh_view_state_label()
 
     def set_rotation_degrees(self, rotation_degrees: int) -> None:
-        """Store rotation modulo 360 degrees and refresh the viewport summary.
+        """
+        Store rotation modulo 360 degrees and refresh the viewport summary.
 
         Args:
             rotation_degrees: Current image rotation in degrees.

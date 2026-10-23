@@ -1,4 +1,5 @@
-"""Module for image utils; provides reusable helpers across application layers.
+"""
+Module for image utils; provides reusable helpers across application layers.
 
 See Also:
     - [`UIHandler`][app.ui.handlers.ui_handler.UIHandler] — converts displayed frames for the UI
@@ -20,9 +21,9 @@ if TYPE_CHECKING:
 
 
 
-
 def rgb_frame_to_q_image(frame: RGBFrame) -> QImage:
-    """Copy an RGB frame into a Qt image.
+    """
+    Copy an RGB frame into a Qt image.
 
     Args:
         frame: Three-channel RGB pixel array.

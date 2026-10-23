@@ -1,4 +1,5 @@
-"""Module for app preferences; provides reusable helpers across application layers.
+"""
+Module for app preferences; provides reusable helpers across application layers.
 
 See Also:
     - [`PreferencesHandler`][app.ui.handlers.preferences_handler.PreferencesHandler] — applies user preference changes
@@ -64,7 +65,8 @@ def _coerce_float(value: object, default: float) -> float:
 
 
 def _coerce_int(value: object, default: int) -> int:
-    """Convert a stored value to an integer, falling back for invalid input.
+    """
+    Convert a stored value to an integer, falling back for invalid input.
 
     Args:
         value: Raw QSettings value.
@@ -90,7 +92,8 @@ def _coerce_int(value: object, default: int) -> int:
 
 
 def _coerce_reid_embedding_dim(value: object, default: int) -> int:
-    """Load a persisted embedding size or fall back to a supported default.
+    """
+    Load a persisted embedding size or fall back to a supported default.
 
     Args:
         value: Raw preference value.
@@ -113,7 +116,8 @@ def _coerce_str(value: object, default: str) -> str:
 
 class _SettingsBackend(Protocol):
     def value(self, key: str, defaultValue: object | None = None) -> object:
-        """Read a setting or return its default.
+        """
+        Read a setting or return its default.
 
         Args:
             key: Settings key to read.
@@ -125,7 +129,8 @@ class _SettingsBackend(Protocol):
         ...
 
     def setValue(self, key: str, value: object) -> None:
-        """Store a value under a settings key.
+        """
+        Store a value under a settings key.
 
         Args:
             key: Settings key to update.
@@ -134,22 +139,25 @@ class _SettingsBackend(Protocol):
         ...
 
     def sync(self) -> None:
-        """Flush pending settings changes to the backend."""
+        """
+        Flush pending settings changes to the backend.
+"""
         ...
 
 
 @dataclass(slots=True)
 class AppPreferences:
-    """Persisted application defaults and last-used locations.
+    """
+    Persisted application defaults and last-used locations.
 
     Note:
         Default processing options are copied into sessions when they are created;
         edits to a session do not mutate these global preferences.
 
 
-Layer: Shared utilities.
-Context: Provides reusable cross-layer behavior without owning workflow state.
-"""
+    Layer: Shared utilities.
+    Context: Provides reusable cross-layer behavior without owning workflow state.
+    """
     startup_fullscreen: bool = False
     default_detection_model_name: str = DEFAULT_DETECTION_MODEL_NAME
     default_min_detection_confidence: float = DEFAULT_MIN_DETECTION_CONFIDENCE
@@ -176,7 +184,8 @@ Context: Provides reusable cross-layer behavior without owning workflow state.
 
     @property
     def chosen_labels_text(self) -> str:
-        """Return the chosen labels as display text.
+        """
+        Return the chosen labels as display text.
 
         Returns:
             Configured default labels joined with comma-space separators.
@@ -184,7 +193,8 @@ Context: Provides reusable cross-layer behavior without owning workflow state.
         return ", ".join(self.default_chosen_labels)
 
     def to_processing_settings_kwargs(self) -> dict[str, object]:
-        """Map persisted defaults to settings accepted by a new session.
+        """
+        Map persisted defaults to settings accepted by a new session.
 
 
         Returns:
@@ -221,15 +231,16 @@ Context: Provides reusable cross-layer behavior without owning workflow state.
 
 @final
 class AppPreferencesStore:
-    """Load and persist `AppPreferences` through a settings backend.
+    """
+    Load and persist `AppPreferences` through a settings backend.
 
     Note:
         Stored key names are stable across launches and support injected test backends.
 
 
-Layer: Shared utilities.
-Context: Provides reusable cross-layer behavior without owning workflow state.
-"""
+    Layer: Shared utilities.
+    Context: Provides reusable cross-layer behavior without owning workflow state.
+    """
     _KEYS = {
         "startup_fullscreen": "preferences/startup_fullscreen",
         "default_detection_model_name": "preferences/default_detection_model_name",
@@ -257,7 +268,8 @@ Context: Provides reusable cross-layer behavior without owning workflow state.
     }
 
     def __init__(self, settings: _SettingsBackend | None = None) -> None:
-        """Create a preference store over an injected or Qt settings backend.
+        """
+        Create a preference store over an injected or Qt settings backend.
 
         Args:
             settings: Optional backend, defaulting to `QSettings`.
@@ -277,7 +289,8 @@ Context: Provides reusable cross-layer behavior without owning workflow state.
         self._settings = settings
 
     def load(self) -> AppPreferences:
-        """Load preferences and coerce raw backend values to field types.
+        """
+        Load preferences and coerce raw backend values to field types.
 
 
         Returns:
@@ -404,7 +417,8 @@ Context: Provides reusable cross-layer behavior without owning workflow state.
         )
 
     def save(self, preferences: AppPreferences) -> None:
-        """Persist all preferences and synchronize the backend.
+        """
+        Persist all preferences and synchronize the backend.
 
         Args:
             preferences: Values to write under the store's stable preference keys.

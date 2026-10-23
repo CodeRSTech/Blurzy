@@ -1,4 +1,5 @@
-"""Frame-aware background tracking worker and strategy dispatch.
+"""
+Frame-aware background tracking worker and strategy dispatch.
 
 See Also:
     - [`TrackingStrategy`][app.domain.tracking.tracking_strategy.TrackingStrategy] — exposes strategy choices to the application
@@ -39,16 +40,17 @@ if TYPE_CHECKING:
 logger = get_logger("Infrastructure->Tracking Worker")
 
 class TrackerStrategy(Protocol):
-    """Incremental strategy contract shared by frame-based trackers.
+    """
+    Incremental strategy contract shared by frame-based trackers.
 
     Note:
         Strategies may ignore frame pixels and appearance features, but must
         accept them to keep worker dispatch independent of the selected tracker.
 
 
-Layer: Infrastructure.
-Context: Implements concrete processing or I/O behind application-facing contracts.
-"""
+    Layer: Infrastructure.
+    Context: Implements concrete processing or I/O behind application-facing contracts.
+    """
 
     uses_appearance: bool
 
@@ -59,7 +61,8 @@ Context: Implements concrete processing or I/O behind application-facing contrac
         frame: RGBFrame | None = None,
         embeddings: Sequence[np.ndarray | None] | None = None,
     ) -> list[BBoxViewModel]:
-        """Update tracker state from detections and optional appearance data.
+        """
+        Update tracker state from detections and optional appearance data.
 
         Args:
             frame_idx: Zero-based frame index.
@@ -117,16 +120,17 @@ class TrackingWorker(QThread):
         results = worker.get_tracked_data()
 
 
-Layer: Infrastructure.
-Context: Implements concrete processing or I/O behind application-facing contracts.
-"""
+    Layer: Infrastructure.
+    Context: Implements concrete processing or I/O behind application-facing contracts.
+    """
     progress_updated = Signal(int, int)
     finished_processing = Signal()
     error_occurred = Signal(str)
 
     def __init__(self, strategy_name: str, source_data: ListOfBoxesByFrameIndexAsDict, session_state: SessionState,
                  parent: QObject | None = None, start: bool = False) -> None:
-        """Prepare a strategy worker with a stable detection snapshot.
+        """
+        Prepare a strategy worker with a stable detection snapshot.
 
         Args:
             strategy_name: Registered tracker strategy key.
@@ -209,11 +213,14 @@ Context: Implements concrete processing or I/O behind application-facing contrac
         return f"<{self.__class__.__name__}(strategy={self._strategy_name}, frames={len(self._source_data)}, complete={self._is_complete})>"
 
     def stop(self) -> None:
-        """Request early stop (reserved for future use)."""
+        """
+        Request early stop (reserved for future use).
+"""
         self._stop_requested = True
 
     def isRunning(self) -> bool:
-        """Return True while the underlying QThread is active.
+        """
+        Return True while the underlying QThread is active.
 
         Returns:
             `True` while the tracking worker thread is running.
@@ -221,7 +228,8 @@ Context: Implements concrete processing or I/O behind application-facing contrac
         return super().isRunning()
 
     def is_complete(self) -> bool:
-        """Return True if tracking finished successfully.
+        """
+        Return True if tracking finished successfully.
 
         Returns:
             `True` when tracking completed successfully.
@@ -229,7 +237,8 @@ Context: Implements concrete processing or I/O behind application-facing contrac
         return self._is_complete
 
     def get_tracked_data(self) -> ListOfBoxesByFrameIndexAsDict:
-        """Return deep copy of tracked results (thread-safe via `_mutex`).
+        """
+        Return deep copy of tracked results (thread-safe via `_mutex`).
 
         Returns:
             Deep copy of boxes grouped by frame index.
@@ -360,7 +369,9 @@ Context: Implements concrete processing or I/O behind application-facing contrac
 
     @staticmethod
     def _isolated_detection_indices(frame_boxes: list[BBoxViewModel]) -> set[int]:
-        """Return boxes whose IoU with every other same-frame box is below 0.25."""
+        """
+        Return boxes whose IoU with every other same-frame box is below 0.25.
+"""
         isolated: set[int] = set()
         for index, box in enumerate(frame_boxes):
             if all(
@@ -376,7 +387,9 @@ Context: Implements concrete processing or I/O behind application-facing contrac
         tracked_box: BBoxViewModel,
         frame_boxes: list[BBoxViewModel],
     ) -> int | None:
-        """Find the input detection matching a detection-backed tracker output."""
+        """
+        Find the input detection matching a detection-backed tracker output.
+"""
         candidates = [
             (index, TrackingWorker._iou(tracked_box.bbox_xyxy, box.bbox_xyxy))
             for index, box in enumerate(frame_boxes)
@@ -392,7 +405,9 @@ Context: Implements concrete processing or I/O behind application-facing contrac
         first: tuple[int, int, int, int],
         second: tuple[int, int, int, int],
     ) -> float:
-        """Return box intersection-over-union for two xyxy rectangles."""
+        """
+        Return box intersection-over-union for two xyxy rectangles.
+"""
         x1 = max(first[0], second[0])
         y1 = max(first[1], second[1])
         x2 = min(first[2], second[2])

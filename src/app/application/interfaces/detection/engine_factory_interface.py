@@ -1,4 +1,5 @@
-"""Module for engine factory interface; defines contracts independent of concrete adapters.
+"""
+Module for engine factory interface; defines contracts independent of concrete adapters.
 
 See Also:
     - [`DetectionEngineAdapterFactory`][app.infrastructure.detection.engine.detection_engine_factory.DetectionEngineAdapterFactory] — implements engine construction
@@ -18,7 +19,6 @@ if TYPE_CHECKING:
     from app.application.interfaces.detection.engine_interface import DetectionEngineInterface
 
 
-
 class DetectionEngineFactoryInterface(Protocol):
     """
     The `DetectionEngineFactoryInterface`
@@ -28,11 +28,12 @@ class DetectionEngineFactoryInterface(Protocol):
     which is then used by the `DetectionEngineManager`.
 
 
-Layer: Application.
-Context: Coordinates use-case behavior through domain services and application contracts.
-"""
+    Layer: Application.
+    Context: Coordinates use-case behavior through domain services and application contracts.
+    """
     def create(self, model_name: str) -> DetectionEngineInterface:
-        """Create a detection engine configured for the requested model.
+        """
+        Create a detection engine configured for the requested model.
 
         Args:
             model_name: Registry name of the detection model.

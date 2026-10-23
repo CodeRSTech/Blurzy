@@ -1,4 +1,5 @@
-"""Interface contract for creating export worker instances.
+"""
+Interface contract for creating export worker instances.
 
 See Also:
     - [`ExportWorkerFactoryAdapter`][app.application.adapters.export_worker_factory_adapter.ExportWorkerFactoryAdapter] — creates concrete export workers
@@ -16,7 +17,6 @@ if TYPE_CHECKING:
 
 
 
-
 if TYPE_CHECKING:
     from PySide6.QtCore import QObject
     from app.application.services.export_service import ExportService
@@ -24,11 +24,12 @@ if TYPE_CHECKING:
 
 
 class ExportWorkerFactoryInterface(Protocol):
-    """Create start-ready export workers behind an interface seam.
+    """
+    Create start-ready export workers behind an interface seam.
 
-Layer: Application.
-Context: Coordinates use-case behavior through domain services and application contracts.
-"""
+    Layer: Application.
+    Context: Coordinates use-case behavior through domain services and application contracts.
+    """
 
     def create(
         self,
@@ -37,7 +38,8 @@ Context: Coordinates use-case behavior through domain services and application c
         output_path: str,
         parent: QObject | None = None,
     ) -> ExportWorkerInterface:
-        """Create a worker that exports one session to a video file.
+        """
+        Create a worker that exports one session to a video file.
 
         Args:
             export_service: Service that renders the session's frames and annotations.

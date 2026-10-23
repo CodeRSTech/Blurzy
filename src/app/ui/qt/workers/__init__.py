@@ -1,4 +1,5 @@
-"""Package for workers; implements the Qt presentation components.
+"""
+Package for workers; implements the Qt presentation components.
 
 See Also:
     - [`ModelLoadWorker`][app.ui.qt.workers.model_loader.ModelLoadWorker] — loads detection models asynchronously

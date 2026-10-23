@@ -36,7 +36,7 @@ claim a stable release or a model-independent detection experience.
 
 The documentation is generated with MkDocs Material, with dark and light modes.
 API reference pages are generated from Python source; see the
-[reference documentation guide](docs/engineering/reference-documentation.md).
+[reference documentation guide](docs/development/reference-documentation.md).
 To preview it:
 
 ```bash
@@ -47,7 +47,7 @@ python -m mkdocs serve
 The Pages workflow checks documentation builds on pull requests and deploys
 the homepage and documentation on `master`. Select **GitHub Actions** under
 **Settings → Pages → Build and deployment** to enable publication. See the
-[documentation development guide](docs/development.md) for the complete site
+[documentation development guide](docs/development/development.md) for the complete site
 build and preview commands.
 
 ## Get started
@@ -114,7 +114,7 @@ cross-cutting `shared` package:
 A typical detection flow starts in a UI handler, delegates through the
 application facade and detection service, then runs in an infrastructure
 worker. Worker signals carry progress and results back to the UI. See
-[`docs/architecture.md`](docs/architecture.md) for a guided code map and
+[`docs/architecture/overview.md`](docs/architecture/overview.md) for a guided code map and
 [`tests/README.md`](tests/README.md) for the test layout.
 
 The annotation pipeline keeps raw detections in Layer A, editable detections

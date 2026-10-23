@@ -1,4 +1,5 @@
-"""Session view_state management — playback, settings, and frame data.
+"""
+Session view_state management — playback, settings, and frame data.
 
 See Also:
     - [`PlaybackState`][app.domain.video.playback_state.PlaybackState] — tracks the active frame and playback status
@@ -47,9 +48,9 @@ class SessionState:
         during playback and settings changes, and cleared when the session ends.
 
 
-Layer: Domain.
-Context: Represents application concepts without UI or infrastructure dependencies.
-"""
+    Layer: Domain.
+    Context: Represents application concepts without UI or infrastructure dependencies.
+    """
 
     s_id: SessionId
     metadata: VideoMetadata
@@ -69,7 +70,8 @@ Context: Represents application concepts without UI or infrastructure dependenci
 
     @property
     def is_at_last_frame(self) -> bool:
-        """Return whether playback is at or beyond the final video frame.
+        """
+        Return whether playback is at or beyond the final video frame.
 
         Returns:
             `True` when no frames are reported or the current index reaches the last frame.
@@ -80,7 +82,8 @@ Context: Represents application concepts without UI or infrastructure dependenci
 
     @property
     def is_playing_video(self) -> bool:
-        """Return whether video playback is active.
+        """
+        Return whether video playback is active.
 
         Returns:
             `True` while playback is active; otherwise `False`.
@@ -89,7 +92,8 @@ Context: Represents application concepts without UI or infrastructure dependenci
 
     @property
     def settings_view_model(self) -> SessionSettingsViewModel:
-        """Return the session settings as a view model.
+        """
+        Return the session settings as a view model.
 
         Returns:
             View model built from the current processing settings.
@@ -104,7 +108,8 @@ Context: Represents application concepts without UI or infrastructure dependenci
         # - set_playback_frame_index(idx) — updates position
         # - cache_frame_data(frame) — caches display data
         # This improves intent clarity and follows Single Responsibility Principle.
-        """Update current frame data and index.
+        """
+        Update current frame data and index.
 
         Args:
             idx: Zero-based index of the displayed frame.

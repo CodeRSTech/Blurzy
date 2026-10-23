@@ -1,4 +1,5 @@
-"""Module for bottom data panel; implements the Qt presentation components.
+"""
+Module for bottom data panel; implements the Qt presentation components.
 
 See Also:
     - [`FrameBoxesViewModel`][app.domain.views.frame_boxes_view_model.FrameBoxesViewModel] — supplies box data for frame tables
@@ -32,15 +33,16 @@ logger = get_logger("UI->Bottom Data Panel")
 class BottomDataPanelContainer(QWidget):
 
     # --- Signals echoed up to the Controller and MainWindow ---
-    """Represent bottom data panel container.
+    """
+    Represent bottom data panel container.
 
-Layer: Presentation.
-Context: Supports user interaction and delegates application work through presentation contracts.
+    Layer: Presentation.
+    Context: Supports user interaction and delegates application work through presentation contracts.
 
 
     Args:
         parent: Optional Qt parent object.
-"""
+    """
     session_selected = Signal(object)  # Connected to SessionHandler.on_session_selected() method via Controller.
     tab_changed = Signal(int)       # Connected to MainWindow._on_tab_changed() method via MainWindow itself.
 
@@ -135,7 +137,8 @@ Context: Supports user interaction and delegates application work through presen
 
     @property
     def active_tab_index(self) -> VideoDataLayerGroup:
-        """Return the index of the active data tab.
+        """
+        Return the index of the active data tab.
 
         Returns:
             Active detection or tracking tab identifier.
@@ -144,7 +147,8 @@ Context: Supports user interaction and delegates application work through presen
 
     @property
     def active_data_table_for_current_frame(self) -> QTableWidget:
-        """Return the data table for the active layer and frame.
+        """
+        Return the data table for the active layer and frame.
 
         Returns:
             Table for the selected detection or tracking layer; raises for an unsupported tab.
@@ -171,7 +175,8 @@ Context: Supports user interaction and delegates application work through presen
 
     @selected_s_id.setter
     def selected_s_id(self, s_id: SessionId) -> None:
-        """Select the session-list entry matching the supplied identifier.
+        """
+        Select the session-list entry matching the supplied identifier.
 
         Args:
             s_id: Session identifier to select; empty identifiers are ignored.
@@ -189,7 +194,8 @@ Context: Supports user interaction and delegates application work through presen
 
     @property
     def get_selected_box_keys_from_active_tab(self) -> list[str]:
-        """Return unique box keys from the selected rows of the active table.
+        """
+        Return unique box keys from the selected rows of the active table.
 
         Returns:
             Selected box keys in table-row order, or an empty list if no selection model exists.
@@ -222,7 +228,9 @@ Context: Supports user interaction and delegates application work through presen
         self.session_selected.emit(s_id)
 
     def _get_current_selection_keys(self, prefer_shared_selection: bool = False) -> list[str]:
-        """Resolve the current selection from the active table, or from the shared state when requested."""
+        """
+        Resolve the current selection from the active table, or from the shared state when requested.
+"""
         from app.ui.qt.window.window import Window
 
         window = self.window()
@@ -290,10 +298,12 @@ Context: Supports user interaction and delegates application work through presen
             self._sync_selection_to_active_table(selected_keys)
 
     def select_session(self, s_id: SessionId) -> None:
-        """Select session.
+        """
+        Select session.
 
         Args:
-            s_id: Identifier of the target session. (SessionId)."""
+            s_id: Identifier of the target session. (SessionId).
+"""
         for index in range(self.session_file_list.count()):
             item = self.session_file_list.item(index)
             if item.data(Qt.ItemDataRole.UserRole) == s_id:
@@ -301,7 +311,8 @@ Context: Supports user interaction and delegates application work through presen
                 break
 
     def update_session_file_list(self, session_list: list[SessionFileListViewModel]) -> None:
-        """Replace the session list contents with the supplied session entries.
+        """
+        Replace the session list contents with the supplied session entries.
 
 Args:
     session_list: Session entries to display, including title and subtitle.
@@ -313,7 +324,8 @@ Args:
             self.add_session_file_to_list(session_file)
 
     def add_session_file_to_list(self, session_file: SessionFileListViewModel) -> None:
-        """Append one session entry with its subtitle tooltip and ID data.
+        """
+        Append one session entry with its subtitle tooltip and ID data.
 
         Args:
             session_file: Session details used to populate the list item.
@@ -329,7 +341,8 @@ Args:
             self.session_file_list.addItem(item)
 
     def set_tracker_data_boxes(self, boxes: ListOfBoxes) -> None:
-        """Populate the tracking table while preserving shared selection and focus.
+        """
+        Populate the tracking table while preserving shared selection and focus.
 
         Args:
             boxes: Tracking boxes to display.
@@ -380,7 +393,8 @@ Args:
         self._update_frame_box_buttons_state(prefer_shared_selection=True)
 
     def get_all_box_keys_from_active_tab(self) -> list[str]:
-        """Return all box keys visible in the active data table.
+        """
+        Return all box keys visible in the active data table.
 
 Returns:
     Unique box keys in the order of their table rows.
@@ -402,7 +416,9 @@ Returns:
         return box_keys
 
     def _sync_selection_to_active_table(self, selected_box_keys: list[str] | None = None) -> None:
-        """Mirror the shared selection to the currently active data table."""
+        """
+        Mirror the shared selection to the currently active data table.
+"""
         if selected_box_keys is None:
             selected_box_keys = self.get_selected_box_keys_from_active_tab
 
@@ -428,7 +444,8 @@ Returns:
 
     @staticmethod
     def set_data_table_boxes(boxes: ListOfBoxes, data_table: QTableWidget, selected_box_keys: set[str]):
-        """Replace table rows with box fields and select rows matching the supplied keys.
+        """
+        Replace table rows with box fields and select rows matching the supplied keys.
 
         Args:
             boxes: Boxes whose ID, source, label, confidence, coordinates, and color are displayed.
@@ -467,7 +484,8 @@ Returns:
                 data_table.setCurrentCell(rows_to_select[0], 0)
 
     def update_video_related_widgets_state(self, is_enabled: bool = False) -> None:
-        """Compatibility hook for video-control state; currently performs no updates.
+        """
+        Compatibility hook for video-control state; currently performs no updates.
 
         Args:
             is_enabled: Requested enabled state (currently unused).

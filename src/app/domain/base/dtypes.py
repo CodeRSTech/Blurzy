@@ -1,4 +1,5 @@
-"""Type aliases and callback signatures for domain layer.
+"""
+Type aliases and callback signatures for domain layer.
 
 See Also:
     - [`ProcessingSettings`][app.domain.export.processing_settings.ProcessingSettings] — defines the settings shape used by session updates
@@ -10,17 +11,11 @@ Context: Defines application concepts independently of UI and infrastructure imp
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
-
-from typing import TypedDict, Callable
-if TYPE_CHECKING:
-    from typing import NotRequired
-
-
+from typing import TYPE_CHECKING, TypedDict, Callable
 if TYPE_CHECKING:
     # Import only for the type alias below; runtime imports this module before
     # view model in several paths.
+    from typing import NotRequired
     from app.domain.session.session_id import SessionId
     from app.domain.views.bounding_box_view_model import BBoxViewModel
 
@@ -43,15 +38,16 @@ type StopPlaybackFunction = Callable[[], None]
 
 
 class ProcessingSettingsKwargs(TypedDict):
-    """Optional keyword fields accepted when updating ProcessingSettings.
+    """
+    Optional keyword fields accepted when updating ProcessingSettings.
 
     Note:
         Each field is optional so callers can update a subset of session settings.
 
 
-Layer: Domain.
-Context: Represents application concepts without UI or infrastructure dependencies.
-"""
+    Layer: Domain.
+    Context: Represents application concepts without UI or infrastructure dependencies.
+    """
     # --- Detection ---
     detection_model_name: NotRequired[str]
     min_detection_confidence: NotRequired[float]

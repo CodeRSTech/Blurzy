@@ -24,11 +24,12 @@ logger = get_logger("Infrastructure->Detection->Models->MTCNN TF ModelMapper")
 
 
 class MTCNNTFDetectionMapper:
-    """Maps raw MTCNN detection results to DetectionPayload format.
+    """
+    Maps raw MTCNN detection results to DetectionPayload format.
 
-Layer: Infrastructure.
-Context: Implements concrete processing or I/O behind application-facing contracts.
-"""
+    Layer: Infrastructure.
+    Context: Implements concrete processing or I/O behind application-facing contracts.
+    """
 
     @staticmethod
     def map(

@@ -1,4 +1,5 @@
-"""Interface contract for controlling the video decode worker (activate/deactivate).
+"""
+Interface contract for controlling the video decode worker (activate/deactivate).
 
 See Also:
     - [`VideoDecodeWorkerControlAdapter`][app.infrastructure.adapters.video_decode_worker_control_adapter.VideoDecodeWorkerControlAdapter] — adapts decode-worker controls
@@ -25,9 +26,9 @@ class VideoDecodeWorkerControlInterface(Protocol):
     concrete `VideoDecodeWorker` class.
 
 
-Layer: Application.
-Context: Coordinates use-case behavior through domain services and application contracts.
-"""
+    Layer: Application.
+    Context: Coordinates use-case behavior through domain services and application contracts.
+    """
 
     def set_active(self, active: bool, resume_idx: int = 0) -> None:
         """
@@ -40,11 +41,14 @@ Context: Coordinates use-case behavior through domain services and application c
         ...
 
     def stop(self) -> None:
-        """Shut down the worker thread cleanly."""
+        """
+        Shut down the worker thread cleanly.
+"""
         ...
 
     def get_cached_frame_at_index(self, idx: int) -> RGBFrame | None:
-        """Return the cached frame at `idx`, or `None` if not in the buffer.
+        """
+        Return the cached frame at `idx`, or `None` if not in the buffer.
 
         Args:
             idx: Zero-based frame index to look up.

@@ -1,4 +1,5 @@
-"""Export configuration — processing settings for detection, tracking, rendering.
+"""
+Export configuration — processing settings for detection, tracking, rendering.
 
 See Also:
     - [`ProcessingSettings`][app.domain.export.processing_settings.ProcessingSettings] — settings record exposed by this package

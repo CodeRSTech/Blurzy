@@ -1,4 +1,5 @@
-"""Package for engine; implements concrete processing and I/O behind application-facing contracts.
+"""
+Package for engine; implements concrete processing and I/O behind application-facing contracts.
 
 See Also:
     - [`DetectionEngine`][app.infrastructure.detection.engine.detection_engine.DetectionEngine] — wraps model inference

@@ -1,4 +1,5 @@
-"""Playback view_state management — frame position and playback status.
+"""
+Playback view_state management — frame position and playback status.
 
 See Also:
     - [`SessionState`][app.domain.session.session_state.SessionState] — aggregates playback with session settings
@@ -29,15 +30,16 @@ class PlaybackState:
         progress indicators, and synchronizing buffered data with user position.
 
 
-Layer: Domain.
-Context: Represents application concepts without UI or infrastructure dependencies.
-"""
+    Layer: Domain.
+    Context: Represents application concepts without UI or infrastructure dependencies.
+    """
     _current_frame_index: int = 0
     _is_playing: bool = False
 
     @property
     def current_frame_index(self) -> int:
-        """Return the zero-based frame index stored in this state.
+        """
+        Return the zero-based frame index stored in this state.
 
         Returns:
             Current playback frame index.
@@ -46,7 +48,8 @@ Context: Represents application concepts without UI or infrastructure dependenci
 
     @current_frame_index.setter
     def current_frame_index(self, value: int) -> None:
-        """Set the zero-based frame index represented by this state.
+        """
+        Set the zero-based frame index represented by this state.
 
         Args:
             value: Frame index to store.
@@ -55,7 +58,8 @@ Context: Represents application concepts without UI or infrastructure dependenci
 
     @property
     def is_playing(self) -> bool:
-        """Return whether playback is active.
+        """
+        Return whether playback is active.
 
         Returns:
             `True` when playback is active; otherwise `False`.
@@ -64,7 +68,8 @@ Context: Represents application concepts without UI or infrastructure dependenci
 
     @is_playing.setter
     def is_playing(self, value: bool) -> None:
-        """Set whether playback is active.
+        """
+        Set whether playback is active.
 
         Args:
             value: `True` when playback should be active.
@@ -80,5 +85,7 @@ Context: Represents application concepts without UI or infrastructure dependenci
         return f"PlaybackState: Frame {self.current_frame_index}, Playing: {self.is_playing}"
 
     def stop_playback(self) -> None:
-        """Stop playback."""
+        """
+        Stop playback.
+"""
         self._is_playing = False

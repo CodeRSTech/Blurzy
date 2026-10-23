@@ -1,4 +1,5 @@
-"""Dialog management handler for UI interactions.
+"""
+Dialog management handler for UI interactions.
 
 See Also:
     - [`EditAnnotationDialog`][app.ui.qt.dialogs.annotation.EditAnnotationDialog] — edits annotation details
@@ -39,15 +40,16 @@ class DialogueHandler(QObject):
         Centralizes dialog creation logic.
 
 
-Layer: Presentation.
-Context: Supports user interaction and delegates application work through presentation contracts.
-
-
-    Args:
-        controller providing the parent window and application queries needed to construct dialogs.
-"""
+    Layer: Presentation.
+    Context: Supports user interaction and delegates application work through presentation contracts.
+    """
 
     def __init__(self, controller: UIController):
+        """
+        Initialize the DialogueHandler
+        Args:
+            controller: UIController supplying the parent window and application queries needed to construct dialogs.
+        """
         super().__init__()
         self._controller = controller
         self._window = controller.window

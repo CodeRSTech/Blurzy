@@ -1,4 +1,5 @@
-"""Mapper for converting MTCNN (facenet-pytorch) output to DetectionResult.
+"""
+Mapper for converting MTCNN (facenet-pytorch) output to DetectionResult.
 
 See Also:
     - [`DetectionResult`][app.domain.detection.result.DetectionResult] — normalized detection record produced by the mapper
@@ -23,7 +24,8 @@ logger = get_logger("Infrastructure->Detection->Models->MTCNN Torch ModelMapper"
 
 
 class MTCNNTorchDetectionMapper:
-    """Maps raw MTCNN (facenet-pytorch) detection output to DetectionResult format.
+    """
+    Maps raw MTCNN (facenet-pytorch) detection output to DetectionResult format.
 
     `facenet_pytorch.MTCNN.detect()` returns a pair `(boxes, probs)` where:
 
@@ -33,9 +35,9 @@ class MTCNNTorchDetectionMapper:
       `[0, 1]`, or `None` when no face is found.
 
 
-Layer: Infrastructure.
-Context: Implements concrete processing or I/O behind application-facing contracts.
-"""
+    Layer: Infrastructure.
+    Context: Implements concrete processing or I/O behind application-facing contracts.
+    """
 
     @staticmethod
     def map(

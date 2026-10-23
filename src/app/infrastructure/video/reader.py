@@ -1,4 +1,5 @@
-"""PyAV-based video reader with GPU acceleration, rotation extraction, and frame seeking.
+"""
+PyAV-based video reader with GPU acceleration, rotation extraction, and frame seeking.
 
 See Also:
     - [`VideoMetadata`][app.domain.video.metadata.VideoMetadata] — describes the opened video stream
@@ -43,16 +44,17 @@ logger = get_logger("Infrastructure->Video->Reader")
 
 
 class ZeroStreamsInVideoException(VideoStreamStateException):
-    """Signal the zero streams in video error condition.
+    """
+    Signal the zero streams in video error condition.
 
-Layer: Infrastructure.
-Context: Implements concrete processing or I/O behind application-facing contracts.
+    Layer: Infrastructure.
+    Context: Implements concrete processing or I/O behind application-facing contracts.
 
 
     Args:
         msg: Error message to include in the exception.
         path: Filesystem path of the video or resource.
-"""
+    """
     def __init__(self, msg: str, path: str) -> None:
         super().__init__(path=path, detail=msg)
 
@@ -106,15 +108,17 @@ class VideoReader:
         ```
 
 
-Layer: Infrastructure.
-Context: Implements concrete processing or I/O behind application-facing contracts.
+    Layer: Infrastructure.
+    Context: Implements concrete processing or I/O behind application-facing contracts.
 
 
     Args:
         path: Filesystem path of the video or resource.
-"""
+    """
     def __init__(self, path: str) -> None:
-        """Open video file at `path` using PyAV (calls `open()` automatically)."""
+        """
+        Open video file at `path` using PyAV (calls `open()` automatically).
+"""
         self._path: str = path
         logger.debug("Initializing AvVideoReader for: {}", self.path_file_name)
         self._current_index: int = 0
@@ -131,7 +135,9 @@ Context: Implements concrete processing or I/O behind application-facing contrac
         self.open()
 
     def open(self) -> None:
-        """Open `_path` via `av.open()` with GPU acceleration (`hwaccel=auto`)."""
+        """
+        Open `_path` via `av.open()` with GPU acceleration (`hwaccel=auto`).
+"""
         try:
             # Using {"hwaccel": "auto"} to take advantage of GPU if available
             self.container = av.open(self._path, options={"hwaccel": "auto"})
@@ -207,12 +213,15 @@ Context: Implements concrete processing or I/O behind application-facing contrac
 
     @property
     def basename(self):
-        """Return filename only (no directory path)."""
+        """
+        Return filename only (no directory path).
+"""
         return os.path.basename(self._path)
 
     @property
     def container(self) -> InputContainer:
-        """Get PyAV `InputContainer` (video file handle).
+        """
+        Get PyAV `InputContainer` (video file handle).
 
         Returns:
             Open PyAV container associated with this reader.
@@ -226,7 +235,8 @@ Context: Implements concrete processing or I/O behind application-facing contrac
 
     @container.setter
     def container(self, container: InputContainer) -> None:
-        """Set the container, select its video stream, and extract rotation metadata.
+        """
+        Set the container, select its video stream, and extract rotation metadata.
 
         Args:
             container: Open PyAV input container to attach to this reader.
@@ -274,7 +284,9 @@ Context: Implements concrete processing or I/O behind application-facing contrac
 
     @container.deleter
     def container(self) -> None:
-        """Close and release video container."""
+        """
+        Close and release video container.
+"""
         if self._container is not None:
             self._container.close()
             self._container = None
@@ -283,7 +295,8 @@ Context: Implements concrete processing or I/O behind application-facing contrac
 
     @property
     def stream(self) -> VideoStream:
-        """Get PyAV `VideoStream` (first video track).
+        """
+        Get PyAV `VideoStream` (first video track).
 
         Returns:
             Selected PyAV video stream.
@@ -297,7 +310,8 @@ Context: Implements concrete processing or I/O behind application-facing contrac
 
     @stream.setter
     def stream(self, stream: VideoStream) -> None:
-        """Set the current video stream.
+        """
+        Set the current video stream.
 
         Args:
             stream: PyAV video stream selected from the input container.
@@ -306,12 +320,15 @@ Context: Implements concrete processing or I/O behind application-facing contrac
 
     @stream.deleter
     def stream(self) -> None:
-        """Clear stream reference."""
+        """
+        Clear stream reference.
+"""
         self._stream = None
 
     @property
     def path(self) -> str:
-        """Return full file path.
+        """
+        Return full file path.
 
         Returns:
             Source path supplied when this reader was created.
@@ -320,7 +337,8 @@ Context: Implements concrete processing or I/O behind application-facing contrac
 
     @property
     def path_file_name(self) -> str:
-        """Return filename only (split on `/`).
+        """
+        Return filename only (split on `/`).
 
         Returns:
             Final slash-separated component of the source path.
@@ -329,7 +347,8 @@ Context: Implements concrete processing or I/O behind application-facing contrac
 
     @property
     def manual_rotation(self) -> int:
-        """Return the user-applied rotation in degrees, normalized to `[0, 360)`.
+        """
+        Return the user-applied rotation in degrees, normalized to `[0, 360)`.
 
         Returns:
             Manual rotation offset currently applied to decoded frames.
@@ -338,7 +357,8 @@ Context: Implements concrete processing or I/O behind application-facing contrac
 
     @manual_rotation.setter
     def manual_rotation(self, value: int) -> None:
-        """Set user rotation modulo 360 degrees and recalculate display dimensions.
+        """
+        Set user rotation modulo 360 degrees and recalculate display dimensions.
 
         Args:
             value: User-requested rotation in degrees.
@@ -347,7 +367,9 @@ Context: Implements concrete processing or I/O behind application-facing contrac
         self._recalculate_dimensions()
 
     def _recalculate_dimensions(self) -> None:
-        """Update `_w` and `_h` by applying total rotation (base + manual)."""
+        """
+        Update `_w` and `_h` by applying total rotation (base + manual).
+"""
         if self._stream is None:
             return
 
@@ -362,7 +384,8 @@ Context: Implements concrete processing or I/O behind application-facing contrac
 
     @property
     def frame_count(self) -> int:
-        """Total frames in video (or 0 if unknown).
+        """
+        Total frames in video (or 0 if unknown).
 
         Returns:
             Frame count reported by the selected stream, or `0` when unavailable.
@@ -371,7 +394,8 @@ Context: Implements concrete processing or I/O behind application-facing contrac
 
     @property
     def fps(self) -> float:
-        """Frames per second (playback speed).
+        """
+        Frames per second (playback speed).
 
         Returns:
             Average frame rate of the selected video stream.
@@ -385,7 +409,8 @@ Context: Implements concrete processing or I/O behind application-facing contrac
 
     @property
     def width(self) -> int:
-        """Final width after rotation applied (may be swapped with height).
+        """
+        Final width after rotation applied (may be swapped with height).
 
         Returns:
             Decoded frame width after base and manual rotations are applied.
@@ -394,7 +419,8 @@ Context: Implements concrete processing or I/O behind application-facing contrac
 
     @property
     def height(self) -> int:
-        """Final height after rotation applied (may be swapped with width).
+        """
+        Final height after rotation applied (may be swapped with width).
 
         Returns:
             Decoded frame height after base and manual rotations are applied.
@@ -403,7 +429,8 @@ Context: Implements concrete processing or I/O behind application-facing contrac
 
     @property
     def metadata(self) -> VideoMetadata:
-        """Return `VideoMetadata` snapshot (static; immutable after creation).
+        """
+        Return `VideoMetadata` snapshot (static; immutable after creation).
 
         Returns:
             Snapshot containing the source path, rotated dimensions, frame rate,
@@ -418,7 +445,9 @@ Context: Implements concrete processing or I/O behind application-facing contrac
         )
 
     def close(self) -> None:
-        """Close and release video file handle."""
+        """
+        Close and release video file handle.
+"""
         logger.debug("Closing AvVideoReader for: {}", self._path)
         del self.container
 
@@ -572,5 +601,7 @@ Context: Implements concrete processing or I/O behind application-facing contrac
 
     @override
     def __str__(self) -> str:
-        """Return string representation showing path, frame count, and FPS."""
+        """
+        Return string representation showing path, frame count, and FPS.
+"""
         return f"AvVideoReader(path={self._path}: {self.frame_count} frames, {self.fps} fps)"

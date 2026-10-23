@@ -1,4 +1,5 @@
-"""Module for bounding box view model; defines application concepts without UI or infrastructure dependencies.
+"""
+Module for bounding box view model; defines application concepts without UI or infrastructure dependencies.
 
 See Also:
     - [`Box`][app.domain.detection.box.Box] — domain geometry represented by the view model
@@ -11,15 +12,11 @@ Context: Defines application concepts without ui or infrastructure dependencies 
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
-
-
 from dataclasses import dataclass
-
 
 from app.domain.detection import BoxSource
 if TYPE_CHECKING:
     from app.domain.base.dtypes import BBoxXYXYTuple
-
 
 
 @dataclass(slots=True)
@@ -44,21 +41,14 @@ class BBoxViewModel:
         display values, and `clone()` provides a fast shallow copy.
 
 
-Layer: Domain.
-Context: Represents application concepts without UI or infrastructure dependencies.
-"""
-
+    Layer: Domain.
+    Context: Represents application concepts without UI or infrastructure dependencies.
+    """
     id: str
     source: BoxSource
     label: str
     bbox_xyxy: BBoxXYXYTuple
     color_hex: str
-    # [AUDIT] TYPE SAFETY: Type detection doesn't match reality
-    # Attribute documented as "Score... or None for manual boxes" (line 28)
-    # but type hint is `float` not `float | None`.
-    # This creates potential None-checking bugs if confidence is treated as float.
-    # Fix: Change to `confidence: float | None` to match actual usage and enable type checking.
-    # See confidence_txt property (line 47) which handles None case.
     confidence: float
     key: str = ""
     detection_backed: bool = True
@@ -66,7 +56,8 @@ Context: Represents application concepts without UI or infrastructure dependenci
 
     @property
     def confidence_txt(self) -> str:
-        """Format confidence for display in the annotation table.
+        """
+        Format confidence for display in the annotation table.
 
         Returns:
             Confidence rounded to two decimal places, or `"N/A"` when absent.
@@ -75,7 +66,8 @@ Context: Represents application concepts without UI or infrastructure dependenci
 
     @property
     def bbox_txt(self) -> str:
-        """Format box coordinates for display.
+        """
+        Format box coordinates for display.
 
         Returns:
             Coordinate string in `(x1, y1), (x2, y2)` format.
@@ -84,7 +76,8 @@ Context: Represents application concepts without UI or infrastructure dependenci
 
     @property
     def is_manual(self) -> bool:
-        """Return whether the box was created manually.
+        """
+        Return whether the box was created manually.
 
         Returns:
             `True` when the box source is manual.
@@ -93,7 +86,8 @@ Context: Represents application concepts without UI or infrastructure dependenci
 
     @property
     def is_detection(self) -> bool:
-        """Return whether the box originated from detection.
+        """
+        Return whether the box originated from detection.
 
         Returns:
             `True` when the box source is detection.
@@ -101,12 +95,11 @@ Context: Represents application concepts without UI or infrastructure dependenci
         return self.source == BoxSource.DETECTION
 
     def clone(self) -> "BBoxViewModel":
-        """Create an independent shallow copy of this bounding box.
-
+        """
+        Create an independent shallow copy of this bounding box.
 
         Returns:
             A box with identical identity, geometry, and tracking observation metadata.
-
 
         Note:
             The tuple geometry and scalar metadata are immutable values and are copied

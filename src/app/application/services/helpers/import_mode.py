@@ -1,4 +1,5 @@
-"""Import merge-strategy enum shared by all layer import services.
+"""
+Import merge-strategy enum shared by all layer import services.
 
 See Also:
     - [`DetectionImportService`][app.application.services.detection.importing.DetectionImportService] — applies the selected mode to detection layers
@@ -35,9 +36,9 @@ class ImportMode(str, Enum):
         via `_layer_io.apply_import_to_layer()`.
 
 
-Layer: Application.
-Context: Coordinates use-case behavior through domain services and application contracts.
-"""
+    Layer: Application.
+    Context: Coordinates use-case behavior through domain services and application contracts.
+    """
 
     OVERWRITE = "overwrite"
     MERGE_REPLACE = "merge_replace"
@@ -49,7 +50,8 @@ Context: Coordinates use-case behavior through domain services and application c
     # ---------------------------------------------------------------------------
     @property
     def display_label(self) -> str:
-        """Return the user-facing label for this import mode.
+        """
+        Return the user-facing label for this import mode.
 
         Returns:
             Label describing the import mode's merge or overwrite behavior.

@@ -1,4 +1,5 @@
-"""Tracking layer (Layer C/D) CRUD operations and track management.
+"""
+Tracking layer (Layer C/D) CRUD operations and track management.
 
 See Also:
     - [`Direction`][app.domain.video.direction.Direction] — selects the direction for track propagation
@@ -53,13 +54,13 @@ class TrackingLayerService(QObject):
             Layer C is immutable reference point.
 
 
-Layer: Application.
-Context: Coordinates use-case behavior through domain services and application contracts.
+    Layer: Application.
+    Context: Coordinates use-case behavior through domain services and application contracts.
 
 
     Args:
         app: Application adapted for session lookup and tracking-layer reads and mutations.
-"""
+    """
 
     def __init__(self, app: Application) -> None:
         super().__init__(parent=app)
@@ -86,7 +87,8 @@ Context: Coordinates use-case behavior through domain services and application c
         # ============================================================
         # Get session
         # ============================================================
-        """Delete tracks by id and direction.
+        """
+        Delete tracks by id and direction.
 
         Args:
             s_id: Identifier of the session whose tracks are edited.

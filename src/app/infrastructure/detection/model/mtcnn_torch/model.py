@@ -1,4 +1,5 @@
-"""Module for model; implements concrete processing and I/O behind application-facing contracts.
+"""
+Module for model; implements concrete processing and I/O behind application-facing contracts.
 
 See Also:
     - [`BaseDetectionModel`][app.infrastructure.detection.model.base.BaseDetectionModel] — common model contract
@@ -11,7 +12,6 @@ Context: Implements concrete processing and i/o behind application-facing contra
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
-
 
 
 
@@ -45,20 +45,21 @@ class MTCNNTorchDetectionModel(BaseDetectionModel):
         Returns detections with label `"person"`.
 
 
-Layer: Infrastructure.
-Context: Implements concrete processing or I/O behind application-facing contracts.
+    Layer: Infrastructure.
+    Context: Implements concrete processing or I/O behind application-facing contracts.
 
 
     Args:
         loader: Backend-specific model loader.
         mapper: MTCNN mapper that filters face scores and converts boxes to person detections.
-"""
+    """
     def __init__(
         self,
         loader: MTCNNTorchModelLoaderFactory | None = None,
         mapper: MTCNNTorchDetectionMapper | None = None,
     ) -> None:
-        """Load the facenet-pytorch MTCNN model and prepare its result mapper.
+        """
+        Load the facenet-pytorch MTCNN model and prepare its result mapper.
 
         Args:
             loader: Optional MTCNN loader override.
@@ -73,7 +74,9 @@ Context: Implements concrete processing or I/O behind application-facing contrac
         self._model = self._load_model()
 
     def _load_model(self) -> "MTCNN":
-        """Load MTCNN model using factory."""
+        """
+        Load MTCNN model using factory.
+"""
         return self._loader.create()
 
     def detect(

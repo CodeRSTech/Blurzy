@@ -1,4 +1,5 @@
-"""Module for model loader; implements the Qt presentation components.
+"""
+Module for model loader; implements the Qt presentation components.
 
 See Also:
     - [`load_detection_model`][app.infrastructure.detection.model.loader.load_detection_model] — loads the selected model
@@ -37,8 +38,8 @@ class ModelLoadWorker(QThread):
     Background worker to load a detection model without freezing the UI.
 
 
-Layer: Presentation.
-Context: Supports user interaction and delegates application work through presentation contracts.
+    Layer: Presentation.
+    Context: Supports user interaction and delegates application work through presentation contracts.
 
 
     Args:
@@ -47,7 +48,7 @@ Context: Supports user interaction and delegates application work through presen
         model_name: Registered name of the detection model.
         keep_manual: Preserve existing manual annotations when changing the model and refreshing model-generated boxes.
         parent: Optional Qt parent object.
-"""
+    """
 
     finished = Signal(object, str)  # s_id, model_name
     failed = Signal(object, str, str)  # s_id, model_name, error_message
@@ -67,7 +68,9 @@ Context: Supports user interaction and delegates application work through presen
         self._keep_manual: bool = keep_manual
 
     def run(self) -> None:
-        """Load the requested model in the worker thread."""
+        """
+        Load the requested model in the worker thread.
+"""
         try:
             logger.info(
                 "Starting `ModelLoadWorker(QThread)` for session: '{}' with model: '{}'",

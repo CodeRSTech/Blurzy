@@ -1,4 +1,5 @@
-"""Module for constants; implements the Qt presentation components.
+"""
+Module for constants; implements the Qt presentation components.
 
 See Also:
     - [`AnnotationOverlayWidget`][app.ui.qt.widgets.preview.layer_bbox.layer_bbox.AnnotationOverlayWidget]

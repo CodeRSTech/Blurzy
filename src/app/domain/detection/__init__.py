@@ -1,4 +1,5 @@
-"""Annotation domain model — detections, layers, detection sources, context actions.
+"""
+Annotation domain model — detections, layers, detection sources, context actions.
 
 See Also:
     - [`Box`][app.domain.detection.box.Box] — shared detection and tracking geometry

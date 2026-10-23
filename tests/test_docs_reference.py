@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import ast
 import importlib.util
 from html import unescape
 from pathlib import Path, PurePosixPath
@@ -40,20 +41,21 @@ class ReferenceTests(unittest.TestCase):
         self.addCleanup(self.temp.cleanup)
         self.root = Path(self.temp.name)
         self.write("src/app/__init__.py", '"""Application package."""\n')
-        self.write("docs/reference/index.md", "# Reference\n")
+        self.write("docs/architecture/index.md", "# Package notes\n")
+        self.write("docs/architecture/overview.md", "# Architecture\n\n[Package notes](index.md)\n")
         self.note = "# Package notes\n\nSource: `src/app/`\n\nKeep this prose.\n"
-        self.write("docs/reference/app.md", self.note)
+        self.write("docs/architecture/app.md", self.note)
         settings = yaml.load((ROOT / "mkdocs.yml").read_text(encoding="utf-8"), Loader=yaml.Loader)
         settings["hooks"] = [str(ROOT / "scripts" / "docs_reference.py")]
         settings["plugins"] = [
             item for item in settings["plugins"] if isinstance(item, dict) and "mkdocstrings" in item
         ]
         settings["nav"] = [
-            {"Reference": ["reference/index.md"]},
+            {"Architecture": [{"Overview": "architecture/overview.md"}]},
             {"API reference": ["reference/api/index.md"]},
-            {"Engineering": [{"Reference documentation": "engineering/reference-documentation.md"}]},
+            {"Development": [{"Reference documentation": "development/reference-documentation.md"}]},
         ]
-        self.write("docs/engineering/reference-documentation.md", "# Reference documentation\n")
+        self.write("docs/development/reference-documentation.md", "# Reference documentation\n")
         self.write(
             "docs/javascripts/mathjax.js",
             (ROOT / "docs" / "javascripts" / "mathjax.js").read_text(encoding="utf-8"),
@@ -165,16 +167,23 @@ except Exception:
         config = self.config()
         for _ in range(2):
             files = config.plugins.on_files(get_files(config), config=config)
-            content = files.get_file_from_path("reference/app.md").content_string
+            content = files.get_file_from_path("architecture/app.md").content_string
             self.assertTrue(content.startswith(self.note))
             self.assertEqual(content.count("## API reference"), 1)
-            self.assertEqual((self.root / "docs" / "reference" / "app.md").read_text(), self.note)
-            self.assertEqual(config.nav[0]["Reference"], ["reference/index.md", {"Package notes": "reference/app.md"}])
+            self.assertEqual((self.root / "docs" / "architecture" / "app.md").read_text(), self.note)
+            self.assertEqual(
+                config.nav[0]["Architecture"],
+                [{"Overview": "architecture/overview.md"}, {"Package notes": "architecture/app.md"}],
+            )
             self.assertEqual(config.nav[1]["API reference"], ["reference/api/index.md"])
+            self.assertEqual(
+                config.nav[2],
+                {"Development": [{"Reference documentation": "development/reference-documentation.md"}]},
+            )
         self.assertFalse((self.root / "docs" / "reference" / "api").exists())
 
     def test_missing_note_package_is_an_error(self):
-        self.write("docs/reference/broken.md", "# Broken\n\nSource: `src/app/missing/`\n")
+        self.write("docs/architecture/broken.md", "# Broken\n\nSource: `src/app/missing/`\n")
         config = self.config()
         with self.assertRaisesRegex(PluginError, "missing package"):
             config.plugins.on_files(get_files(config), config=config)
@@ -184,6 +193,71 @@ except Exception:
         config = self.config()
         with self.assertRaisesRegex(PluginError, "reserved"):
             config.plugins.on_files(get_files(config), config=config)
+
+    def test_page_relative_source_mapping_adds_api_link(self):
+        note = "# Application\n\nSource: `../../../src/app/`\n"
+        self.write("docs/architecture/application/index.md", note)
+        config = self.config()
+        for _ in range(2):
+            files = config.plugins.on_files(get_files(config), config=config)
+            content = files.get_file_from_path("architecture/application/index.md").content_string
+            self.assertEqual(content.count("## API reference"), 1)
+            self.assertIn("../../reference/api/app/index.md", content)
+        self.assertEqual((self.root / "docs" / "architecture" / "application" / "index.md").read_text(), note)
+
+    def test_invalid_page_relative_source_mapping_fails(self):
+        self.write("docs/architecture/broken.md", "# Broken\n\nSource: `../../src/app/missing/`\n")
+        config = self.config()
+        with self.assertRaisesRegex(PluginError, "missing package"):
+            config.plugins.on_files(get_files(config), config=config)
+
+    def test_missing_required_navigation_is_explicit(self):
+        for label in ("Architecture", "API reference"):
+            with self.subTest(label=label):
+                config = self.config()
+                config.nav = [entry for entry in config.nav if label not in entry]
+                with self.assertRaisesRegex(PluginError, f"{label} navigation entry"):
+                    config.plugins.on_files(get_files(config), config=config)
+
+    def test_architecture_navigation_order_and_discovery(self):
+        (self.root / "docs" / "architecture" / "app.md").unlink()
+        for package in ("application", "domain", "infrastructure", "shared", "ui", "additional"):
+            title = "UI" if package == "ui" else package.capitalize()
+            self.write(f"docs/architecture/{package}/index.md", f"# {title}\n")
+        self.write("docs/architecture/shared/index.md", "# Shared utilities\n")
+        self.write("docs/architecture/ui/widgets/index.md", "# Widgets\n")
+        self.write("docs/architecture/ui/widgets/preview.md", "# Preview\n")
+        config = self.config()
+        files = config.plugins.on_files(get_files(config), config=config)
+        self.assertEqual(
+            [next(iter(entry)) for entry in config.nav[0]["Architecture"]],
+            ["Overview", "UI", "Application", "Infrastructure", "Additional", "Domain", "Shared"],
+        )
+        self.assertEqual(
+            config.nav[0]["Architecture"][1]["UI"],
+            [
+                "architecture/ui/index.md",
+                {
+                    "Widgets": [
+                        "architecture/ui/widgets/index.md",
+                        {"Preview": "architecture/ui/widgets/preview.md"},
+                    ]
+                },
+            ],
+        )
+        from mkdocs.structure.files import InclusionLevel
+
+        self.assertEqual(files.get_file_from_path("architecture/index.md").inclusion, InclusionLevel.NOT_IN_NAV)
+        self.assertIn(
+            "../../development/reference-documentation.md",
+            files.get_file_from_path("reference/api/index.md").content_string,
+        )
+        (self.root / "docs" / "architecture" / "additional" / "index.md").unlink()
+        config.plugins.on_files(get_files(config), config=config)
+        self.assertEqual(
+            [next(iter(entry)) for entry in config.nav[0]["Architecture"]],
+            ["Overview", "UI", "Application", "Infrastructure", "Domain", "Shared"],
+        )
 
     def test_generated_pages_have_no_markdown_edit_url(self):
         from types import SimpleNamespace
@@ -320,6 +394,65 @@ class Worker(QObject):
         self.assertFalse(html_path.exists())
         self.assertTrue(html_path.parent.parent.joinpath("renamed", "index.html").exists())
 
+    def test_class_docstring_indentation(self):
+        for path in sorted((ROOT / "src" / "app").rglob("*.py")):
+            source = path.read_text(encoding="utf-8")
+            lines = source.splitlines()
+            for node in ast.walk(ast.parse(source)):
+                if not isinstance(node, ast.ClassDef) or ast.get_docstring(node, clean=False) is None:
+                    continue
+                statement = node.body[0]
+                with self.subTest(path=str(path.relative_to(ROOT)), class_name=node.name):
+                    for line in ast.get_docstring(node, clean=False).splitlines()[1:]:
+                        if line.strip():
+                            self.assertGreaterEqual(
+                                len(line) - len(line.lstrip()),
+                                statement.col_offset,
+                                "Class docstring continuation lines must retain the body indentation",
+                            )
+                    closing = lines[statement.end_lineno - 1]
+                    if statement.end_lineno > statement.lineno and closing.strip() in ('"""', "'''"):
+                        self.assertEqual(len(closing) - len(closing.lstrip()), statement.col_offset)
+
+    def test_real_class_docstrings_render_as_prose_and_sections(self):
+        classes = (
+            (
+                "domain/views/bounding_box_view_model.py",
+                "BBoxViewModel",
+                "Bounding detection display model",
+                "Stored in",
+            ),
+            (
+                "domain/base/dtypes.py",
+                "ProcessingSettingsKwargs",
+                "Optional keyword fields accepted when updating ProcessingSettings.",
+                "Each field is optional",
+            ),
+        )
+        declarations = []
+        for path, name, _, _ in classes:
+            source = ROOT.joinpath("src", "app", *PurePosixPath(path).parts).read_text(encoding="utf-8")
+            node = next(node for node in ast.walk(ast.parse(source)) if isinstance(node, ast.ClassDef) and node.name == name)
+            declarations.append(ast.get_source_segment(source, node))
+        self.write("src/app/example.py", "\n\n".join(declarations) + "\n")
+        build(self.config())
+        html = (self.root / "site" / "docs" / "reference" / "api" / "app" / "example" / "index.html").read_text(
+            encoding="utf-8"
+        )
+        code_blocks = [
+            unescape(re.sub(r"<[^>]+>", "", block))
+            for block in re.findall(r"<pre\b[^>]*>.*?</pre>", html, flags=re.DOTALL)
+        ]
+        for _, name, summary, note in classes:
+            with self.subTest(class_name=name):
+                self.assertRegex(html, rf"<p>{re.escape(summary)}")
+                self.assertIn(note, html)
+                for block in code_blocks:
+                    self.assertNotIn(summary, block)
+                    self.assertNotIn(note, block)
+        self.assertIn('class="doc-section-title">Attributes', html)
+        self.assertIn('class="admonition-title">Note', html)
+
     def test_detection_engine_page_renders_model_names_from_literal_registries(self):
         self.write(
             "src/app/infrastructure/detection/engine/detection_engine.py",
@@ -410,9 +543,9 @@ OMIT_ME = create_singleton()
         for package in ("application", "domain", "infrastructure", "shared", "ui"):
             self.write(f"src/app/{package}/__init__.py", "")
         self.write("src/app/domain/box.py", "class Box: pass\n")
-        self.write("docs/reference/domain/index.md", "# Domain\n\nSource: `src/app/domain/`\n")
-        self.write("docs/reference/domain/box.md", "# Box\n")
-        self.write("docs/reference/shared/index.md", "# Shared\n\nSource: `src/app/shared/`\n")
+        self.write("docs/architecture/domain/index.md", "# Domain\n\nSource: `src/app/domain/`\n")
+        self.write("docs/architecture/domain/box.md", "# Box\n")
+        self.write("docs/architecture/shared/index.md", "# Shared\n\nSource: `src/app/shared/`\n")
         config = self.config()
         files = config.plugins.on_files(get_files(config), config=config)
         api = config.nav[1]["API reference"]
@@ -433,9 +566,9 @@ OMIT_ME = create_singleton()
                 {"box": "reference/api/app/domain/box/index.md"},
             ],
         )
-        self.assertIn({"Shared": "reference/shared/index.md"}, config.nav[0]["Reference"])
+        self.assertIn({"Shared": ["architecture/shared/index.md"]}, config.nav[0]["Architecture"])
+        self.assertNotIn("Overview", repr(config.nav[1]))
         for menu in config.nav[:2]:
-            self.assertNotIn("Overview", repr(menu))
             self.assertNotIn("'app':", repr(menu))
             self.assertNotIn("'API':", repr(menu))
         from mkdocs.structure.files import InclusionLevel

@@ -1,4 +1,5 @@
-"""Thin UI-layer facade over the concrete `UIController` object.
+"""
+Thin UI-layer facade over the concrete `UIController` object.
 
 See Also:
     - [`UIControllerInterface`][app.ui.interfaces.controller_interface.UIControllerInterface] — defines the handler-facing contract
@@ -23,15 +24,16 @@ if TYPE_CHECKING:
 
 
 class UIControllerAdapter(UIControllerInterface):
-	"""Expose only controller operations currently needed by migrated handlers.
+	"""
+Expose only controller operations currently needed by migrated handlers.
 
-Layer: Presentation.
-Context: Supports user interaction and delegates application work through presentation contracts.
+ Layer: Presentation.
+ Context: Supports user interaction and delegates application work through presentation contracts.
 
 
     Args:
         controller: Controller whose window, application facade, and rendering callbacks are exposed to handlers.
-"""
+ """
 
 	def __init__(self, controller: UIController) -> None:
 		self._controller = controller
@@ -40,12 +42,16 @@ Context: Supports user interaction and delegates application work through presen
 		return f"<UIControllerAdapter wrapping={self._controller!r}>"
 
 	def render_frame_for_session_id(self, s_id: SessionId) -> None:
-		"""Render frame for session id.
+		"""
+Render frame for session id.
 
 		Args:
-		    s_id: Identifier of the target session. (SessionId)."""
+		    s_id: Identifier of the target session. (SessionId).
+"""
 		self._controller.render_frame_for_session_id(s_id)
 
 	def update_ui_status_bar(self) -> None:
-		"""Update ui status bar."""
+		"""
+Update ui status bar.
+"""
 		self._controller.update_ui_status_bar()

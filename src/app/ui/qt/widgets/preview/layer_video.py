@@ -1,4 +1,5 @@
-"""Module for layer video; implements the Qt presentation components.
+"""
+Module for layer video; implements the Qt presentation components.
 
 See Also:
     - [`PreviewContainer`][app.ui.qt.widgets.preview.preview_container.PreviewContainer] — embeds the video view with annotation overlays
@@ -20,17 +21,17 @@ if TYPE_CHECKING:
     from PySide6.QtGui import QImage, QPaintEvent, QResizeEvent
 
 
-
 class VideoDisplayWidget(QWidget):
-    """Provide the video display widget presentation component.
+    """
+    Provide the video display widget presentation component.
 
-Layer: Presentation.
-Context: Supports user interaction and delegates application work through presentation contracts.
+    Layer: Presentation.
+    Context: Supports user interaction and delegates application work through presentation contracts.
 
 
     Args:
         parent: Optional Qt parent object.
-"""
+    """
     pixmap_rect_changed = Signal(QRect, QSize)
 
     def __init__(self, parent: QWidget | None = None) -> None:
@@ -48,7 +49,8 @@ Context: Supports user interaction and delegates application work through presen
 
     # --- Viewport API ---
     def set_zoom(self, factor: float) -> None:
-        """Set the display zoom, clamped to the range 1×–10×, and redraw.
+        """
+        Set the display zoom, clamped to the range 1×–10×, and redraw.
 
         Args:
             factor: Requested zoom multiplier.
@@ -58,7 +60,8 @@ Context: Supports user interaction and delegates application work through presen
         self.update()
 
     def set_pan(self, dx: float, dy: float) -> None:
-        """Set the display offset in widget coordinates and redraw.
+        """
+        Set the display offset in widget coordinates and redraw.
 
         Args:
             dx: Horizontal offset in pixels.
@@ -69,7 +72,9 @@ Context: Supports user interaction and delegates application work through presen
         self.update()
 
     def reset_viewport(self) -> None:
-        """Restore 1× zoom and zero pan, then recompute and redraw the image."""
+        """
+        Restore 1× zoom and zero pan, then recompute and redraw the image.
+"""
         self._zoom_factor = 1.0
         self._pan_offset = QPointF(0.0, 0.0)
         self._update_pixmap_rect()
@@ -77,7 +82,8 @@ Context: Supports user interaction and delegates application work through presen
 
     # --- Existing API ---
     def set_image(self, image: QImage) -> None:
-        """Display an image, recompute its fitted rectangle, and redraw.
+        """
+        Display an image, recompute its fitted rectangle, and redraw.
 
         Args:
             image: Image to display.
@@ -87,7 +93,8 @@ Context: Supports user interaction and delegates application work through presen
         self.update()
 
     def set_message(self, message: str) -> None:
-        """Clear the image and display a centered placeholder message.
+        """
+        Clear the image and display a centered placeholder message.
 
         Args:
             message: Text to show when no image is available.
@@ -98,7 +105,8 @@ Context: Supports user interaction and delegates application work through presen
         self.update()
 
     def get_pixmap_rect(self) -> QRect:
-        """Return the image rectangle currently used for drawing.
+        """
+        Return the image rectangle currently used for drawing.
 
         Returns:
             Current image rectangle in widget coordinates.
@@ -107,10 +115,12 @@ Context: Supports user interaction and delegates application work through presen
 
     # --- Rendering ---
     def paintEvent(self, event: QPaintEvent) -> None:
-        """Paint the current video frame or status message.
+        """
+        Paint the current video frame or status message.
 
         Args:
-            event: Qt event being handled. (QPaintEvent)."""
+            event: Qt event being handled. (QPaintEvent).
+"""
         painter = QPainter(self)
         painter.setRenderHint(QPainter.RenderHint.SmoothPixmapTransform)
         painter.fillRect(self.rect(), QColor(30, 30, 30))
@@ -127,15 +137,19 @@ Context: Supports user interaction and delegates application work through presen
         painter.end()
 
     def resizeEvent(self, event: QResizeEvent) -> None:
-        """Update the viewport after the widget is resized.
+        """
+        Update the viewport after the widget is resized.
 
         Args:
-            event: Qt event being handled. (QResizeEvent)."""
+            event: Qt event being handled. (QResizeEvent).
+"""
         super().resizeEvent(event)
         self._update_pixmap_rect()
 
     def _update_pixmap_rect(self) -> None:
-        """Calculates the absolute position of the video on the screen, applying pan & zoom."""
+        """
+        Calculates the absolute position of the video on the screen, applying pan & zoom.
+"""
         if self._image is None:
             new_rect = QRect()
             img_size = QSize()

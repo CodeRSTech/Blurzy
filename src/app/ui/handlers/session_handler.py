@@ -1,4 +1,5 @@
-"""Session management handler for UI layer.
+"""
+Session management handler for UI layer.
 
 See Also:
     - [`SessionManager`][app.application.managers.session.SessionManager] — manages the active session collection
@@ -38,7 +39,8 @@ logger = get_logger("UI->SessionHandler")
 
 @final
 class SessionHandler(QObject):
-    """Orchestrate session lifecycle events and UI synchronization.
+    """
+    Orchestrate session lifecycle events and UI synchronization.
 
     Responsibilities:
         - Handle video file loading and session creation.
@@ -54,16 +56,18 @@ class SessionHandler(QObject):
             - Triggers UI updates to reflect session view_state changes.
 
 
-Layer: Presentation.
-Context: Supports user interaction and delegates application work through presentation contracts.
+    Layer: Presentation.
+    Context: Supports user interaction and delegates application work through presentation contracts.
 
 
     Args:
         controller supplying session lifecycle operations and the window and panel to refresh.
-"""
+    """
 
     def __init__(self, controller: UIController) -> None:
-        """Initialize the session handler with UI controller dependencies."""
+        """
+        Initialize the session handler with UI controller dependencies.
+"""
         super().__init__()
         self.setParent(controller)
         self._controller = controller
@@ -75,11 +79,15 @@ Context: Supports user interaction and delegates application work through presen
 
     @override
     def __repr__(self) -> str:
-        """Return a concise representation of the SessionHandler instance."""
+        """
+        Return a concise representation of the SessionHandler instance.
+"""
         return f"<{self.__class__.__name__}>"
 
     def _connect_signals(self) -> None:
-        """Wire all upstream signals to their corresponding slots."""
+        """
+        Wire all upstream signals to their corresponding slots.
+"""
         # ====================================================================
         # 1. CONNECT MAIN WINDOW SIGNALS
         # ====================================================================
@@ -97,7 +105,9 @@ Context: Supports user interaction and delegates application work through presen
         )
 
     def refresh_session_views(self) -> None:
-        """Refresh session views."""
+        """
+        Refresh session views.
+"""
         sessions = list(self._controller.app.sm.all_sessions)
         self._controller.window.bottom_panel.update_session_file_list(
             list_of_session_list_view_models(sessions=sessions)
@@ -116,7 +126,9 @@ Context: Supports user interaction and delegates application work through presen
         self._controller.render_frame_for_session_id(active.s_id)
 
     def prepare_active_session_initial_frame_render(self) -> None:
-        """Handle prepare active session initial frame render."""
+        """
+        Handle prepare active session initial frame render.
+"""
         active = self._controller.app.active_session
         if active is None:
             return
@@ -130,7 +142,8 @@ Context: Supports user interaction and delegates application work through presen
 
     @Slot(list)
     def on_open_videos(self, paths: list[str]) -> None:
-        """Receive file paths and create new sessions for each video.
+        """
+        Receive file paths and create new sessions for each video.
 
         Args:
             paths (list[str]): Video file paths selected by the user.
@@ -208,7 +221,8 @@ Context: Supports user interaction and delegates application work through presen
 
     @Slot(object)
     def on_session_selected(self, s_id: SessionId) -> None:
-        """Switch active session and restore UI view_state for the selected session.
+        """
+        Switch active session and restore UI view_state for the selected session.
 
         Args:
             s_id (SessionId): Identifier for the session to activate.
@@ -269,7 +283,8 @@ Context: Supports user interaction and delegates application work through presen
 
     @Slot(int)
     def on_video_seek_completed(self, index: int) -> None:
-        """Render initial frame after seek completion if playback is paused.
+        """
+        Render initial frame after seek completion if playback is paused.
 
         Args:
             index (int): Frame index emitted by decode worker on seek completion.
@@ -307,7 +322,8 @@ Context: Supports user interaction and delegates application work through presen
     # ═══════════════════════════════════════════════════════════════
 
     def update_video_related_widgets_state(self, is_enabled: bool = False) -> None:
-        """Enable or disable video-related widgets across UI panels.
+        """
+        Enable or disable video-related widgets across UI panels.
 
         Args:
             is_enabled (bool): True to enable controls, False to disable.

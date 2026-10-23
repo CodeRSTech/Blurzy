@@ -1,4 +1,5 @@
-"""Application-layer managers for Phase 1 lifecycle seams.
+"""
+Application-layer managers for Phase 1 lifecycle seams.
 
 Managers centralise infrastructure lifecycle operations (engine creation,
 worker activation) that previously lived inline inside service methods.

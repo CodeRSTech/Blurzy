@@ -1,4 +1,5 @@
-"""Incremental BoT-SORT-style tracking with conservative appearance updates.
+"""
+Incremental BoT-SORT-style tracking with conservative appearance updates.
 
 See Also:
     - [`TrackingWorker`][app.infrastructure.tracking.track_worker.TrackingWorker] — dispatches frames to this strategy
@@ -86,7 +87,8 @@ class _Track:
 
     @classmethod
     def create(cls, uid: int, box: BBoxViewModel, frame_idx: int) -> _Track:
-        """Initialize a Kalman track from one detection.
+        """
+        Initialize a Kalman track from one detection.
 
         Args:
             uid: Unique identifier assigned to the track.
@@ -109,7 +111,9 @@ class _Track:
         )
 
     def predict(self) -> None:
-        """Advance the Kalman position and covariance by one frame."""
+        """
+        Advance the Kalman position and covariance by one frame.
+"""
         transition = np.eye(8)
         transition[:4, 4:] = np.eye(4)
         scale = np.maximum(self.mean[[2, 3, 2, 3]], 1.0)
@@ -119,7 +123,8 @@ class _Track:
         self.mean[2:4] = np.maximum(self.mean[2:4], 1.0)
 
     def correct(self, box: BBoxViewModel, frame_idx: int, *, relocate: bool = False) -> None:
-        """Correct the track state from a matched detection.
+        """
+        Correct the track state from a matched detection.
 
         Args:
             box: Detection matched to this track.
@@ -145,7 +150,8 @@ class _Track:
 
 
 class BotSortStrategy:
-    """Track boxes incrementally, with optional real appearance descriptors.
+    """
+    Track boxes incrementally, with optional real appearance descriptors.
 
     Attributes:
         uses_appearance: Whether the strategy consumes appearance vectors.
@@ -174,9 +180,9 @@ class BotSortStrategy:
         strategy = BotSortStrategy(min_confidence=0.2)
 
 
-Layer: Infrastructure.
-Context: Implements concrete processing or I/O behind application-facing contracts.
-"""
+    Layer: Infrastructure.
+    Context: Implements concrete processing or I/O behind application-facing contracts.
+    """
 
     uses_appearance: bool = True
 
@@ -190,7 +196,8 @@ Context: Implements concrete processing or I/O behind application-facing contrac
         ema_alpha: float = 0.9,
         appearance_extractor: ReIDExtractorProtocol | None = None,
     ) -> None:
-        """Configure Kalman motion, confidence thresholds, and appearance memory.
+        """
+        Configure Kalman motion, confidence thresholds, and appearance memory.
 
         Args:
             min_iou: Minimum overlap required for local spatial association.
@@ -294,7 +301,8 @@ Context: Implements concrete processing or I/O behind application-facing contrac
         frame: np.ndarray | None = None,
         embeddings: Sequence[np.ndarray | None] | None = None,
     ) -> list[BBoxViewModel]:
-        """Advance to one frame and return observed and bounded coasted boxes.
+        """
+        Advance to one frame and return observed and bounded coasted boxes.
 
         Args:
             frame_idx: Nonnegative, strictly increasing frame index.
@@ -390,7 +398,8 @@ Context: Implements concrete processing or I/O behind application-facing contrac
         matches.extend((remaining_rows[row], index) for row, index in motion_low)
 
         def update_appearance(track: _Track, index: int) -> None:
-            """Update a track's appearance EMA from an isolated high-confidence detection.
+            """
+            Update a track's appearance EMA from an isolated high-confidence detection.
 
             Args:
                 track: Track whose appearance prototype is updated.
@@ -460,7 +469,8 @@ Context: Implements concrete processing or I/O behind application-facing contrac
         frames: Mapping[int, np.ndarray] | Sequence[np.ndarray] | None = None,
         embeddings_by_frame: Mapping[int, Sequence[np.ndarray | None]] | None = None,
     ) -> ListOfBoxesByFrameIndexAsDict:
-        """Track a fresh batch by calling update_frame in chronological order.
+        """
+        Track a fresh batch by calling update_frame in chronological order.
 
         Args:
             source_data: Sparse per-frame detections.

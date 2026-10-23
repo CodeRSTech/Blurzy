@@ -1,4 +1,5 @@
-"""Module for tracking strategy; implements concrete processing and I/O behind application-facing contracts.
+"""
+Module for tracking strategy; implements concrete processing and I/O behind application-facing contracts.
 
 See Also:
     - [`TrackingStrategy`][app.domain.tracking.tracking_strategy.TrackingStrategy] — lists the strategies selected by the application
@@ -36,7 +37,8 @@ _TRACK_PALETTE: list[str] = [
 ]
 
 def uid_to_color(uid: int) -> str:
-    """Map track UID to color (wraps around palette for >20 tracks).
+    """
+    Map track UID to color (wraps around palette for >20 tracks).
 
     Args:
         uid: Positive track identifier used to select a palette entry.
@@ -48,11 +50,12 @@ def uid_to_color(uid: int) -> str:
 
 
 class HungarianStrategy:
-    """Tracking strategy using Hungarian algorithm with IoU matching (see `HungarianIoUTracker`).
+    """
+    Tracking strategy using Hungarian algorithm with IoU matching (see `HungarianIoUTracker`).
 
-Layer: Infrastructure.
-Context: Implements concrete processing or I/O behind application-facing contracts.
-"""
+    Layer: Infrastructure.
+    Context: Implements concrete processing or I/O behind application-facing contracts.
+    """
 
     uses_appearance = False
 
@@ -62,7 +65,8 @@ Context: Implements concrete processing or I/O behind application-facing contrac
             confidence_decay: float = 0.05,
             min_confidence: float = 0.1,
     ) -> None:
-        """Initialize the tracker with match and coast thresholds.
+        """
+        Initialize the tracker with match and coast thresholds.
 
         Args:
             iou_threshold: Minimum IoU accepted for a detection-track match.
@@ -88,7 +92,8 @@ Context: Implements concrete processing or I/O behind application-facing contrac
         frame: RGBFrame | None = None,
         embeddings: Sequence[np.ndarray | None] | None = None,
     ) -> list[BBoxViewModel]:
-        """Update state with one frame and return active detection/coast boxes.
+        """
+        Update state with one frame and return active detection/coast boxes.
 
         Args:
             frame_idx: Zero-based frame index.
@@ -130,7 +135,8 @@ Context: Implements concrete processing or I/O behind application-facing contrac
         source_data: ListOfBoxesByFrameIndexAsDict,
         total_frames: int,
     ) -> ListOfBoxesByFrameIndexAsDict:
-        """Run the incremental strategy over a complete frame map.
+        """
+        Run the incremental strategy over a complete frame map.
 
         Args:
             source_data: Per-frame detection input.
@@ -152,11 +158,12 @@ Context: Implements concrete processing or I/O behind application-facing contrac
 
 
 class DummyTracker:
-    """No-op tracker — passes through detections as-is, marks with magenta (#ff00ff).
+    """
+    No-op tracker — passes through detections as-is, marks with magenta (#ff00ff).
 
-Layer: Infrastructure.
-Context: Implements concrete processing or I/O behind application-facing contracts.
-"""
+    Layer: Infrastructure.
+    Context: Implements concrete processing or I/O behind application-facing contracts.
+    """
 
     uses_appearance = False
 
@@ -167,7 +174,8 @@ Context: Implements concrete processing or I/O behind application-facing contrac
         frame: RGBFrame | None = None,
         embeddings: Sequence[np.ndarray | None] | None = None,
     ) -> list[BBoxViewModel]:
-        """Copy and retag detections for one frame.
+        """
+        Copy and retag detections for one frame.
 
         Args:
             frame_idx: Zero-based frame index.
@@ -189,7 +197,8 @@ Context: Implements concrete processing or I/O behind application-facing contrac
 
     @staticmethod
     def track(source_data: ListOfBoxesByFrameIndexAsDict, total_frames: int = 0) -> ListOfBoxesByFrameIndexAsDict:
-        """Return detections unchanged, just update source/color/key labels.
+        """
+        Return detections unchanged, just update source/color/key labels.
 
         Args:
             source_data: Detection boxes grouped by frame index.

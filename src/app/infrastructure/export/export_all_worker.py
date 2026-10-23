@@ -1,4 +1,5 @@
-"""Batch export orchestrator — detects, tracks, and exports multiple sessions sequentially.
+"""
+Batch export orchestrator — detects, tracks, and exports multiple sessions sequentially.
 
 See Also:
     - [`ExportService`][app.application.services.export_service.ExportService] — configures export workflows
@@ -71,8 +72,8 @@ class ExportAllWorker(QThread):
         worker.stop()
 
 
-Layer: Infrastructure.
-Context: Implements concrete processing or I/O behind application-facing contracts.
+    Layer: Infrastructure.
+    Context: Implements concrete processing or I/O behind application-facing contracts.
 
 
     Args:
@@ -82,7 +83,7 @@ Context: Implements concrete processing or I/O behind application-facing contrac
         prefix: Prefix added to output filenames.
         suffix: Suffix added to output filenames.
         parent: Optional Qt parent object.
-"""
+    """
 
     session_started = Signal(object)  # s_id
     session_finished = Signal(object)  # s_id
@@ -101,7 +102,9 @@ Context: Implements concrete processing or I/O behind application-facing contrac
         suffix: str,
         parent: QObject | None = None,
     ) -> None:
-        """Initialize batch export for `s_ids` to `output_dir` with naming prefix/suffix."""
+        """
+        Initialize batch export for `s_ids` to `output_dir` with naming prefix/suffix.
+"""
         super().__init__(parent)
         self._app = app
         self._s_ids = s_ids
@@ -112,7 +115,9 @@ Context: Implements concrete processing or I/O behind application-facing contrac
         self._current_s_id: SessionId | None = None
 
     def stop(self) -> None:
-        """Request early stop (stops current workers, doesn't cancel in-progress export)."""
+        """
+        Request early stop (stops current workers, doesn't cancel in-progress export).
+"""
         self._stop_requested = True
         if self._current_s_id is None:
             return
@@ -253,7 +258,9 @@ Context: Implements concrete processing or I/O behind application-facing contrac
         return not self._stop_requested
 
     def _emit_export_progress_or_cancel(self, s_id: SessionId, current_frame: int, total_frames: int) -> None:
-        """Progress callback for export service — raise `RuntimeError` if batch stopped."""
+        """
+        Progress callback for export service — raise `RuntimeError` if batch stopped.
+"""
         if self._stop_requested:
             raise RuntimeError("Batch export cancelled.")
         self.session_export_progress_updated.emit(s_id, current_frame, total_frames)

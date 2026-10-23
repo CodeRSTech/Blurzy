@@ -1,4 +1,5 @@
-"""Session lifecycle management and worker coordination service.
+"""
+Session lifecycle management and worker coordination service.
 
 See Also:
     - [`SessionManager`][app.application.managers.session.SessionManager] — manages session creation and selection
@@ -40,7 +41,8 @@ logger = get_logger("Application->SessionService")
 # Recommendation: Move inside SessionService as @staticmethod or to a Settings utility class.
 # This improves cohesion and makes dependencies explicit.
 def _is_settings_type_compatible(existing_value: object, new_value: object) -> bool:
-    """Return `True` when *new_value* can safely replace *existing_value* in settings.
+    """
+    Return `True` when *new_value* can safely replace *existing_value* in settings.
 
     Rules (in priority order):
 
@@ -87,13 +89,13 @@ class SessionService(QObject):
     - When switching sessions: old worker paused → new worker resumed
 
 
-Layer: Application.
-Context: Coordinates use-case behavior through domain services and application contracts.
+    Layer: Application.
+    Context: Coordinates use-case behavior through domain services and application contracts.
 
 
     Args:
         app: Application that owns this Qt service and receives active-session change notifications.
-"""
+    """
 
     def __init__(self, app: Application):
         super().__init__(parent=app)
@@ -292,7 +294,8 @@ Context: Coordinates use-case behavior through domain services and application c
             logger.trace("Session {} setting '{}' = {}", s_id, key, value)
 
     def start_session_playback(self, s_id: SessionId) -> None:
-        """Start session playback.
+        """
+        Start session playback.
 
         Args:
             s_id: Identifier of the session whose playback state should become active.

@@ -1,6 +1,7 @@
 # [AUDIT] DOCUMENTATION: Copy-paste error in module docstring
 # Says "tracking workers" but this adapter is for "detection workers"
-"""Adapt the detection-worker factory contract to infrastructure.
+"""
+Adapt the detection-worker factory contract to infrastructure.
 
 See Also:
     - [`DetectionWorkerFactoryInterface`][app.application.interfaces.detection.worker_factory_interface.DetectionWorkerFactoryInterface] — defines the factory contract
@@ -16,7 +17,6 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 
-
 from app.application.interfaces.detection.worker_factory_interface import DetectionWorkerFactoryInterface
 if TYPE_CHECKING:
     from app.application.interfaces import DetectionWorkerInterface, DetectionEngineInterface
@@ -24,20 +24,21 @@ if TYPE_CHECKING:
 
 
 
-
 class DetectionWorkerFactoryAdapter(DetectionWorkerFactoryInterface):
-    """Create concrete `DetectionWorker` instances behind an interface seam.
+    """
+    Create concrete `DetectionWorker` instances behind an interface seam.
 
-Layer: Application.
-Context: Coordinates use-case behavior through domain services and application contracts.
-"""
+    Layer: Application.
+    Context: Coordinates use-case behavior through domain services and application contracts.
+    """
 
     def create(
         self,
         session_id: SessionId,
         detection_engine: DetectionEngineInterface
     ) -> DetectionWorkerInterface:
-        """Create an infrastructure detection worker behind its interface.
+        """
+        Create an infrastructure detection worker behind its interface.
 
         Args:
             session_id: Session that owns the detection work.

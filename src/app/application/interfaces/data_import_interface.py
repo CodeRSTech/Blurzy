@@ -1,4 +1,5 @@
-"""Protocol interface for layer data importers.
+"""
+Protocol interface for layer data importers.
 
 See Also:
     - [`DetectionImportService`][app.application.services.detection.importing.DetectionImportService] — imports detection layers
@@ -44,9 +45,9 @@ class IDataImporter(Protocol):
         committing to the import.
 
 
-Layer: Application.
-Context: Coordinates use-case behavior through domain services and application contracts.
-"""
+    Layer: Application.
+    Context: Coordinates use-case behavior through domain services and application contracts.
+    """
 
     def import_layer(
         self,

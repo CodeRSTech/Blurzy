@@ -1,4 +1,5 @@
-"""Background YOLO detection worker — thread-safe batch frame inference.
+"""
+Background YOLO detection worker — thread-safe batch frame inference.
 
 See Also:
     - [`DetectionExecutionService`][app.application.services.detection.execution.DetectionExecutionService] — coordinates detection execution
@@ -17,7 +18,6 @@ import time
 from typing import final, override
 
 from PySide6.QtCore import QThread, QMutex, QMutexLocker, Signal
-
 
 
 
@@ -79,15 +79,15 @@ class DetectionWorker(QThread):
         worker.start()
 
 
-Layer: Infrastructure.
-Context: Implements concrete processing or I/O behind application-facing contracts.
+    Layer: Infrastructure.
+    Context: Implements concrete processing or I/O behind application-facing contracts.
 
 
     Args:
         s_id: Identifier of the session associated with this object.
         detection_engine: Detection engine used to process video frames.
         parent: Optional Qt parent object.
-"""
+    """
     # Added signals to match Qt paradigms while keeping your original methods intact
     progress_updated = Signal(int, int, float)  # current_frame, total_frames, eta_msecs
     finished_processing = Signal()
@@ -99,7 +99,9 @@ Context: Implements concrete processing or I/O behind application-facing contrac
     def __init__(
         self, s_id: SessionId, detection_engine: DetectionEngineInterface, parent: QObject | None = None
     ) -> None:
-        """Initialize worker for `s_id` using the given `detection_engine`."""
+        """
+        Initialize worker for `s_id` using the given `detection_engine`.
+"""
         super().__init__(parent)
         self._s_id = s_id  # Store the SessionId object
         self._video_path = s_id.path  # Extract path for the reader
@@ -122,7 +124,8 @@ Context: Implements concrete processing or I/O behind application-facing contrac
 
     @override
     def start(self, priority: QThread.Priority = QThread.Priority.InheritPriority) -> None:
-        """Start the detection thread (calls `run()` in background).
+        """
+        Start the detection thread (calls `run()` in background).
 
         Args:
             priority: Qt thread scheduling priority passed to `QThread.start`.
@@ -142,12 +145,15 @@ Context: Implements concrete processing or I/O behind application-facing contrac
         logger.info("Detection worker started for {}", self._video_path)
 
     def stop(self) -> None:
-        """Request thread to stop (sets `_stop_requested` flag)."""
+        """
+        Request thread to stop (sets `_stop_requested` flag).
+"""
         self._stop_requested = True
         logger.info("Detection worker stop requested for {}", self._video_path)
 
     def isRunning(self) -> bool:
-        """Return True if thread is currently processing frames.
+        """
+        Return True if thread is currently processing frames.
 
         Returns:
             `True` while the underlying `QThread` is running.
@@ -156,7 +162,8 @@ Context: Implements concrete processing or I/O behind application-facing contrac
         return super().isRunning()
 
     def is_complete(self) -> bool:
-        """Return True if stream reached end (all frames processed).
+        """
+        Return True if stream reached end (all frames processed).
 
         Returns:
             `True` after the worker reaches the end of the video stream.
@@ -165,7 +172,8 @@ Context: Implements concrete processing or I/O behind application-facing contrac
         return self._is_complete
 
     def get_detections(self, frame_index: int) -> list[DetectionResult] | None:
-        """Retrieve cached detections for `frame_index`, or None if not yet processed.
+        """
+        Retrieve cached detections for `frame_index`, or None if not yet processed.
 
         Args:
             frame_index: Zero-based index of the frame to query.
@@ -181,7 +189,8 @@ Context: Implements concrete processing or I/O behind application-facing contrac
             return list(detections)
 
     def get_all_detections(self) -> dict[int, list[DetectionResult]]:
-        """Return copy of all cached detections (thread-safe via `_mutex`).
+        """
+        Return copy of all cached detections (thread-safe via `_mutex`).
 
         Returns:
             New mapping of frame indices to new detection lists.

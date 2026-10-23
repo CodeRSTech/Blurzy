@@ -1,4 +1,5 @@
-"""Module for table key filter; stores transient interaction state.
+"""
+Module for table key filter; stores transient interaction state.
 
 See Also:
     - [`BottomDataPanelContainer`][app.ui.qt.sections.bottom_data_panel.BottomDataPanelContainer] — uses the filter for table keyboard events
@@ -19,22 +20,22 @@ if TYPE_CHECKING:
 
 
 
-
 if TYPE_CHECKING:
     from app.ui.handlers import AnnotationHandler
 
 
 class FrameTableKeyFilter(QObject):
-    """Represent frame table key filter.
+    """
+    Represent frame table key filter.
 
-Layer: Presentation.
-Context: Supports user interaction and delegates application work through presentation contracts.
+    Layer: Presentation.
+    Context: Supports user interaction and delegates application work through presentation contracts.
 
 
     Args:
         annotation_handler: Handler that applies annotation interactions.
         render_fn: Callback used to render the selected frame.
-"""
+    """
     def __init__(self, annotation_handler: AnnotationHandler, render_fn: RenderFunction) -> None:
         super().__init__()
         self._handler: AnnotationHandler = annotation_handler
@@ -42,7 +43,8 @@ Context: Supports user interaction and delegates application work through presen
 
     @override
     def eventFilter(self, watched: QObject, event: QEvent) -> bool:
-        """Handle annotation shortcuts and consume recognized key-press events.
+        """
+        Handle annotation shortcuts and consume recognized key-press events.
 
         Args:
             watched: Object watched by this event filter (unused).

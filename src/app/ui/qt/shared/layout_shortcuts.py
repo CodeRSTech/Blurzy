@@ -1,4 +1,5 @@
-"""Module for layout shortcuts; implements the Qt presentation components.
+"""
+Module for layout shortcuts; implements the Qt presentation components.
 
 See Also:
     - [`widget_factories`][app.ui.qt.shared.widget_factories] — combines reusable layouts with widget constructors
@@ -51,7 +52,8 @@ def create_hbox_layout(
     spacing: int | None = None,
     widgets: OrderedWidgets | None = None,
 ) -> QtWidgets.QHBoxLayout:
-    """Create a horizontal layout with optional margins, spacing, and widgets.
+    """
+    Create a horizontal layout with optional margins, spacing, and widgets.
 
     Args:
         parent: Widget that owns the layout, if any.
@@ -75,7 +77,8 @@ def create_vbox_layout(
     spacing: int | None = None,
     widgets: OrderedWidgets | None = None,
 ) -> QtWidgets.QVBoxLayout:
-    """Create a vertical layout with optional margins, spacing, and widgets.
+    """
+    Create a vertical layout with optional margins, spacing, and widgets.
 
     Args:
         parent: Widget that owns the layout, if any.

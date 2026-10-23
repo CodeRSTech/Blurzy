@@ -1,4 +1,5 @@
-"""UI layer for EazyBlur — PySide6 Qt-based graphical interface.
+"""
+UI layer for EazyBlur — PySide6 Qt-based graphical interface.
 
 See Also:
     - [`UIController`][app.ui.uicontroller.UIController] — coordinates UI handlers

@@ -1,4 +1,5 @@
-"""Detection service orchestration for model-based object detection across sessions.
+"""
+Detection service orchestration for model-based object detection across sessions.
 
 See Also:
     - [`DetectionEngineManager`][app.application.managers.detection_engine.DetectionEngineManager] — manages per-session inference engines
@@ -56,13 +57,13 @@ class DetectionService:
         `start_detection_worker_for_session_id()` — Background detection (threading).
 
 
-Layer: Application.
-Context: Coordinates use-case behavior through domain services and application contracts.
+    Layer: Application.
+    Context: Coordinates use-case behavior through domain services and application contracts.
 
 
     Args:
         app: Application adapted for session access, model management, detection, and worker coordination.
-"""
+    """
 
     def __init__(self, app: Application) -> None:
         # [AUDIT] TESTABILITY & SRP ISSUE: Services created inline without factory abstraction
@@ -92,7 +93,8 @@ Context: Coordinates use-case behavior through domain services and application c
         # - Callers already know it's the "current" frame (from context)
         # - Layer/index details are implementation details suitable for docstring
         # Benefits: Improves readability, easier to read call sites
-        """Run selected current-frame detection via the execution collaborator.
+        """
+        Run selected current-frame detection via the execution collaborator.
 
         Args:
             s_id: Session whose current frame should be detected.
@@ -214,7 +216,8 @@ Context: Coordinates use-case behavior through domain services and application c
     # Slot for detection worker progress update
     @Slot(int, int, float)
     def on_detection_progress_updated(self, processed_frames: int, total_frames: int, eta_msecs: float | None) -> None:
-        """Forward detection progress updates to the UI-facing callback.
+        """
+        Forward detection progress updates to the UI-facing callback.
 
         Args:
             processed_frames: Number of frames processed so far.

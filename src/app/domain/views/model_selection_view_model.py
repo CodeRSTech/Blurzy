@@ -1,4 +1,5 @@
-"""Module for model selection view model; defines application concepts without UI or infrastructure dependencies.
+"""
+Module for model selection view model; defines application concepts without UI or infrastructure dependencies.
 
 See Also:
     - [`get_detection_model_names_as_view_model_by_provider_id`][app.infrastructure.detection.model.helpers.get_detection_model_names_as_view_model_by_provider_id] — builds model choices by provider
@@ -30,9 +31,9 @@ class ModelSelectionViewModel:
         `model_id` available for the actual model selection.
 
 
-Layer: Domain.
-Context: Represents application concepts without UI or infrastructure dependencies.
-"""
+    Layer: Domain.
+    Context: Represents application concepts without UI or infrastructure dependencies.
+    """
 
     model_id: str
     display_name: str

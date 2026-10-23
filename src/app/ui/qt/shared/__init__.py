@@ -1,4 +1,5 @@
-"""Package for shared; implements the Qt presentation components.
+"""
+Package for shared; implements the Qt presentation components.
 
 See Also:
     - [`create_hbox_layout`][app.ui.qt.shared.layout_shortcuts.create_hbox_layout] — supplies common layout construction

@@ -1,4 +1,5 @@
-"""Protocol for frame-indexed annotation storage owned by a video session.
+"""
+Protocol for frame-indexed annotation storage owned by a video session.
 
 Layer: Application interface.
 Context: The application depends on this data-only contract rather than the
@@ -14,7 +15,6 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 
-
 from typing import Protocol
 if TYPE_CHECKING:
     from collections.abc import Callable, Iterable
@@ -23,9 +23,9 @@ if TYPE_CHECKING:
 
 
 
-
 class SessionDataStoreInterface(Protocol):
-    """Contract for reading and mutating a session's annotation layers.
+    """
+    Contract for reading and mutating a session's annotation layers.
 
     Layer: Application interface.
     Context: Defines the storage seam used by application services; the
@@ -37,7 +37,8 @@ class SessionDataStoreInterface(Protocol):
     def get_boxes_for_layer_at_frame_index_as_list(
         self, layer: VideoDataLayer, frame_index: int
     ) -> ListOfBoxes:
-        """Return the boxes stored for one layer and frame.
+        """
+        Return the boxes stored for one layer and frame.
 
         Args:
             layer: Domain layer to read.
@@ -49,7 +50,8 @@ class SessionDataStoreInterface(Protocol):
         ...
 
     def get_all_boxes_for_layer_as_dict_of_lists(self, layer: VideoDataLayer) -> dict[int, ListOfBoxes]:
-        """Return a layer's frame-indexed box lists.
+        """
+        Return a layer's frame-indexed box lists.
 
         Args:
             layer: Domain layer to read.
@@ -65,7 +67,8 @@ class SessionDataStoreInterface(Protocol):
         ...
 
     def has_boxes_for_layer(self, layer: VideoDataLayer) -> bool:
-        """Check whether a layer contains any boxes.
+        """
+        Check whether a layer contains any boxes.
 
         Args:
             layer: Domain layer to inspect.
@@ -76,7 +79,8 @@ class SessionDataStoreInterface(Protocol):
         ...
 
     def has_boxes_for_layer_at_frame_index(self, layer: VideoDataLayer, frame_index: int) -> bool:
-        """Check whether a layer contains boxes at a particular frame.
+        """
+        Check whether a layer contains boxes at a particular frame.
 
         Args:
             layer: Domain layer to inspect.
@@ -88,7 +92,8 @@ class SessionDataStoreInterface(Protocol):
         ...
 
     def has_frame_for_layer_at_frame_index(self, layer: VideoDataLayer, frame_index: int) -> bool:
-        """Check whether a frame entry exists for a layer, even if it is empty.
+        """
+        Check whether a frame entry exists for a layer, even if it is empty.
 
         Args:
             layer: Domain layer to inspect.
@@ -104,7 +109,8 @@ class SessionDataStoreInterface(Protocol):
     def add_box_to_layer_at_frame_index(
         self, layer: VideoDataLayer, frame_index: int, box: BBoxViewModel
     ) -> None:
-        """Add one box to a layer at the given frame.
+        """
+        Add one box to a layer at the given frame.
 
         Args:
             layer: Destination domain layer.
@@ -116,7 +122,8 @@ class SessionDataStoreInterface(Protocol):
     def add_boxes_to_layer_at_frame_index(
         self, layer: VideoDataLayer, frame_index: int, boxes: Iterable[BBoxViewModel]
     ) -> None:
-        """Add multiple boxes to a layer at the given frame.
+        """
+        Add multiple boxes to a layer at the given frame.
 
         Args:
             layer: Destination domain layer.
@@ -128,7 +135,8 @@ class SessionDataStoreInterface(Protocol):
     def purge_boxes_in_layer_by_minimum_confidence_at_frame_index(
         self, layer: VideoDataLayer, min_conf: float, frame_index: int
     ) -> None:
-        """Remove low-confidence machine boxes from one frame.
+        """
+        Remove low-confidence machine boxes from one frame.
 
         Args:
             layer: Layer whose frame data is filtered.
@@ -141,7 +149,8 @@ class SessionDataStoreInterface(Protocol):
     def move_boxes_in_layer_at_frame_index_by_delta(
         self, layer: VideoDataLayer, frame_index: int, keys: set[str], delta_x: float, delta_y: float
     ) -> int:
-        """Translate selected boxes in a frame by a coordinate delta.
+        """
+        Translate selected boxes in a frame by a coordinate delta.
 
         Args:
             layer: Layer containing the selected boxes.
@@ -158,7 +167,8 @@ class SessionDataStoreInterface(Protocol):
     def move_manual_boxes_in_layer_at_frame_index_by_delta(
         self, layer: VideoDataLayer, frame_index: int, keys: set[str], delta_x: float, delta_y: float
     ) -> int:
-        """Translate selected manual boxes while leaving machine boxes unchanged.
+        """
+        Translate selected manual boxes while leaving machine boxes unchanged.
 
         Args:
             layer: Layer containing the selected boxes.
@@ -175,7 +185,8 @@ class SessionDataStoreInterface(Protocol):
     # ============================== DELETE ==============================
 
     def purge_boxes_in_layer_by_minimum_confidence(self, layer: VideoDataLayer, min_conf: float) -> None:
-        """Remove low-confidence machine boxes from every frame.
+        """
+        Remove low-confidence machine boxes from every frame.
 
         Args:
             layer: Layer whose data is filtered.
@@ -187,7 +198,8 @@ class SessionDataStoreInterface(Protocol):
     def apply_filters_to_layers(
         self, source_layer_name: VideoDataLayer, target_layer_name: VideoDataLayer, session_settings: ProcessingSettings
     ) -> int:
-        """Apply session filters from a source layer to its target layer.
+        """
+        Apply session filters from a source layer to its target layer.
 
         Args:
             source_layer_name: Layer providing boxes for filtering.
@@ -200,7 +212,8 @@ class SessionDataStoreInterface(Protocol):
         ...
 
     def clear_all_layers(self, keep_manual: bool = False) -> None:
-        """Clear all layers, optionally retaining editable manual annotations.
+        """
+        Clear all layers, optionally retaining editable manual annotations.
 
         Args:
             keep_manual: When true, retain manual boxes in editable layers B/D.
@@ -209,7 +222,8 @@ class SessionDataStoreInterface(Protocol):
         ...
 
     def clear_layer_by_name(self, layer: VideoDataLayer, keep_manual: bool = False) -> None:
-        """Clear one layer, optionally retaining manual annotations.
+        """
+        Clear one layer, optionally retaining manual annotations.
 
         Args:
             layer: Layer to clear.
@@ -218,7 +232,8 @@ class SessionDataStoreInterface(Protocol):
         ...
 
     def clear_layers_by_name(self, layers: list[VideoDataLayer]) -> None:
-        """Clear each named layer.
+        """
+        Clear each named layer.
 
         Args:
             layers: Domain layers to clear.
@@ -226,7 +241,8 @@ class SessionDataStoreInterface(Protocol):
         ...
 
     def delete_boxes_from_layer_by_id(self, layer: VideoDataLayer, box_ids: Iterable[str]) -> None:
-        """Delete boxes with matching identifiers throughout a layer.
+        """
+        Delete boxes with matching identifiers throughout a layer.
 
         Args:
             layer: Layer to update.
@@ -237,7 +253,8 @@ class SessionDataStoreInterface(Protocol):
     def delete_boxes_from_layer_by_id_at_frame_index(
         self, layer: VideoDataLayer, box_ids: Iterable[str], frame_index: int
     ) -> bool:
-        """Delete matching boxes from one frame.
+        """
+        Delete matching boxes from one frame.
 
         Args:
             layer: Layer to update.
@@ -252,7 +269,8 @@ class SessionDataStoreInterface(Protocol):
     def overwrite_source_to_target_layer_at_index(
         self, source_layer: VideoDataLayer, target_layer: VideoDataLayer, index: int
     ) -> None:
-        """Replace target-layer boxes at one frame with source-layer boxes.
+        """
+        Replace target-layer boxes at one frame with source-layer boxes.
 
         Args:
             source_layer: Layer whose frame data is copied.
@@ -267,7 +285,8 @@ class SessionDataStoreInterface(Protocol):
         target_layer: VideoDataLayer,
         filter_fn: Callable[[BBoxViewModel], bool] | None = None,
     ) -> None:
-        """Replace target-layer content with source boxes, optionally filtered.
+        """
+        Replace target-layer content with source boxes, optionally filtered.
 
         Args:
             source_layer: Layer providing replacement boxes.
@@ -279,7 +298,8 @@ class SessionDataStoreInterface(Protocol):
     def overwrite_layer_with_dict_of_boxes(
         self, layer: VideoDataLayer, boxes_dict: dict[int, ListOfBoxes]
     ) -> None:
-        """Replace a layer's complete frame-to-box mapping.
+        """
+        Replace a layer's complete frame-to-box mapping.
 
         Args:
             layer: Layer whose stored data is replaced.
@@ -290,7 +310,8 @@ class SessionDataStoreInterface(Protocol):
     def overwrite_layer_at_index_with_boxes(
         self, layer: VideoDataLayer, frame_index: int, boxes: ListOfBoxes
     ) -> None:
-        """Replace all boxes for one frame in a layer.
+        """
+        Replace all boxes for one frame in a layer.
 
         Args:
             layer: Layer to update.
@@ -306,7 +327,8 @@ class SessionDataStoreInterface(Protocol):
         boxes: Iterable[BBoxViewModel],
         filter_fn: Callable[[BBoxViewModel], bool] | None = None,
     ) -> None:
-        """Replace machine output for one frame while preserving manual boxes.
+        """
+        Replace machine output for one frame while preserving manual boxes.
 
 Args:
     layer: Target layer whose machine boxes are refreshed.
@@ -323,7 +345,8 @@ Args:
         frame_count: int,
         filter_fn: Callable[[BBoxViewModel], bool] | None = None,
     ) -> None:
-        """Refresh machine output over a frame range under one storage lock.
+        """
+        Refresh machine output over a frame range under one storage lock.
 
         Args:
             layer: Target layer whose machine boxes are refreshed.

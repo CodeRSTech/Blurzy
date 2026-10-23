@@ -1,4 +1,5 @@
-"""Compatibility shim for the renamed UI application protocol.
+"""
+Compatibility shim for the renamed UI application protocol.
 
 See Also:
     - [`UIApplicationInterface`][app.ui.interfaces.ui_application_interface.UIApplicationInterface]

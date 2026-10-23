@@ -1,4 +1,5 @@
-"""View model factories for converting domain objects to UI representations.
+"""
+View model factories for converting domain objects to UI representations.
 
 See Also:
     - [`list_of_session_list_view_models`][app.infrastructure.views.view_models.list_of_session_list_view_models] — builds session-list entries

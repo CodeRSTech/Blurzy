@@ -1,12 +1,13 @@
-"""Annotation creation and editing handler for bounding detection management.
+"""
+Annotation creation and editing handler for bounding detection management.
 
 See Also:
     - [`AnnotationContextActions`][app.domain.detection.context_actions.AnnotationContextActions] — describes supported annotation operations
     - [`AnnotationOverlayWidget`][app.ui.qt.widgets.preview.layer_bbox.layer_bbox.AnnotationOverlayWidget] — captures box-editing interactions
 
-Layer: Presentation.
-Context: Converts user actions and worker signals into application calls and UI feedback.
-"""
+    Layer: Presentation.
+    Context: Converts user actions and worker signals into application calls and UI feedback.
+    """
 
 # [10-08-26 05:00 PM] `AnnotationHandler` has a lot of responsibilities, we must create a module
 # `annotation_handler` or just `annotation` under `src/app/ui/handlers` and move all the related logic there.
@@ -67,16 +68,17 @@ class AnnotationHandler(QObject):
             Handles keyboard events for detection nudging with acceleration.
             Emits frame render requests after detection changes.
 
-
-Layer: Presentation.
-Context: Supports user interaction and delegates application work through presentation contracts.
-
-
-    Args:
-        controller supplying annotation mutations, selection widgets, and preview rendering.
-"""
+    Layer: Presentation.
+    Context: Supports user interaction and delegates application work through presentation contracts.
+    """
 
     def __init__(self, controller: UIController) -> None:
+        """
+        Initialize the AnnotationHandler.
+
+        Args:
+            controller: UIController supplying annotation mutations, selection widgets, and preview rendering.
+        """
         super().__init__()
         self.setParent(controller)
 
@@ -207,7 +209,8 @@ Context: Supports user interaction and delegates application work through presen
             box_key: str,
             new_coords: BBoxXYXYTuple | None = None,
     ) -> None:
-        """Handles both visual drags (new_coords) and table 'Edit' clicks (dialog).
+        """
+        Handles both visual drags (new_coords) and table 'Edit' clicks (dialog).
 
 Args:
     s_id: Identifier of the target session.
@@ -254,7 +257,9 @@ Args:
             self._window.show_error("Edit Failed", str(exc))
 
     def _get_effective_selection_keys(self, fallback_box_key: str | None = None) -> list[str]:
-        """Return the current shared selection, falling back to a clicked box key if needed."""
+        """
+        Return the current shared selection, falling back to a clicked box key if needed.
+"""
         selected_keys = self._window.selected_frame_box_keys
         if selected_keys:
             return selected_keys
@@ -285,7 +290,9 @@ Args:
         )
 
     def _get_current_frame_boxes_snapshot(self, frame_index: int | None = None) -> list:
-        """Clone active-tab boxes so a mutation can be restored exactly."""
+        """
+        Clone active-tab boxes so a mutation can be restored exactly.
+"""
         s_id = self._window.selected_s_id
         if not s_id:
             return []
@@ -499,7 +506,8 @@ Args:
         return True
 
     def handle_delete_key(self, event: QKeyEvent) -> bool:
-        """Delete the current selection for an unmodified Delete key press.
+        """
+        Delete the current selection for an unmodified Delete key press.
 
         Args:
             event: Key event to inspect.
@@ -521,7 +529,8 @@ Args:
         return True
 
     def handle_selection_shortcut(self, event: QKeyEvent) -> bool:
-        """Apply a supported Ctrl selection, history, clipboard, or cut shortcut.
+        """
+        Apply a supported Ctrl selection, history, clipboard, or cut shortcut.
 
         Args:
             event: Key event to inspect.
@@ -562,7 +571,8 @@ Args:
         return False
 
     def handle_nudge_key(self, event: QKeyEvent) -> bool:
-        """Move selected boxes by one nudge increment for an unmodified arrow key.
+        """
+        Move selected boxes by one nudge increment for an unmodified arrow key.
 
         Args:
             event: Key event to inspect.
@@ -672,7 +682,9 @@ Args:
 
     @Slot()
     def on_relabel_selected(self) -> None:
-        """Relabel the currently selected boxes using a dialog."""
+        """
+        Relabel the currently selected boxes using a dialog.
+"""
         s_id = self._window.selected_s_id
         keys = self._window.selected_frame_box_keys
         if not s_id or not keys:
@@ -729,7 +741,9 @@ Args:
 
     @Slot()
     def on_reset_frame(self) -> None:
-        """Reset editable detection layer B on the current frame and rerender it."""
+        """
+        Reset editable detection layer B on the current frame and rerender it.
+"""
         s_id = self._window.selected_s_id
         if not s_id:
             return
@@ -742,7 +756,9 @@ Args:
 
     @Slot()
     def on_reset_all(self) -> None:
-        """Reset editable detection layer B across all frames and rerender the current frame."""
+        """
+        Reset editable detection layer B across all frames and rerender the current frame.
+"""
         s_id = self._window.selected_s_id
         if not s_id:
             return
@@ -754,7 +770,9 @@ Args:
 
     @Slot()
     def on_reset_tracker_frame(self) -> None:
-        """Reset editable tracking layer D on the current frame and rerender it."""
+        """
+        Reset editable tracking layer D on the current frame and rerender it.
+"""
         s_id = self._window.selected_s_id
         if not s_id:
             return
@@ -767,7 +785,9 @@ Args:
 
     @Slot()
     def on_reset_all_trackers(self) -> None:
-        """Reset editable tracking layer D across all frames and rerender the current frame."""
+        """
+        Reset editable tracking layer D across all frames and rerender the current frame.
+"""
         s_id = self._window.selected_s_id
         if not s_id:
             return
@@ -779,12 +799,16 @@ Args:
 
     @Slot()
     def on_delete_next_occurrences(self) -> None:
-        """Delete the selected boxes' later-frame occurrences."""
+        """
+        Delete the selected boxes' later-frame occurrences.
+"""
         self._delete_occurrences(direction=Direction.NEXT)
 
     @Slot()
     def on_delete_prev_occurrences(self) -> None:
-        """Delete the selected boxes' earlier-frame occurrences."""
+        """
+        Delete the selected boxes' earlier-frame occurrences.
+"""
         self._delete_occurrences(direction=Direction.PREV)
 
     @Slot(object, str, int, int, int, int)
@@ -812,7 +836,8 @@ Args:
 
     @Slot(int, int, int, int)
     def on_preview_bbox_drawn(self, x1: int, y1: int, x2: int, y2: int) -> None:
-        """Forward newly drawn preview coordinates to the selected session's annotation flow.
+        """
+        Forward newly drawn preview coordinates to the selected session's annotation flow.
 
         Args:
             x1: Left coordinate of the drawn box.
@@ -829,7 +854,8 @@ Args:
     # NEW: Moved few slots from the controller to here.
     @Slot(str, int, int, int, int)
     def on_preview_bbox_edited(self, box_key: str, x1: int, y1: int, x2: int, y2: int) -> None:
-        """Forward edited preview coordinates to the selected session's annotation flow.
+        """
+        Forward edited preview coordinates to the selected session's annotation flow.
 
         Args:
             box_key: Key of the box being edited.
@@ -846,7 +872,8 @@ Args:
 
     @Slot(str)
     def on_preview_bbox_deleted(self, box_key: str) -> None:
-        """Delete the box from the active layer, update selection history, and rerender.
+        """
+        Delete the box from the active layer, update selection history, and rerender.
 
         Args:
             box_key: Key of the box to delete.
@@ -869,7 +896,8 @@ Args:
 
     @Slot(str)
     def on_preview_bbox_selected(self, box_key: str) -> None:
-        """Handle canvas-originated selection and sync to table and shared state.
+        """
+        Handle canvas-originated selection and sync to table and shared state.
 
 Args:
     box_key: Key of the box selected on the preview canvas.
@@ -879,7 +907,8 @@ Args:
 
     @Slot(str, bool)
     def on_preview_bbox_selection_requested(self, box_key: str, additive: bool) -> None:
-        """Apply a canvas click to the shared selection, toggling when Ctrl is held.
+        """
+        Apply a canvas click to the shared selection, toggling when Ctrl is held.
 
 Args:
     box_key: Key of the box clicked on the canvas.
@@ -898,12 +927,15 @@ Args:
 
     @Slot()
     def on_preview_bbox_selection_cleared(self) -> None:
-        """Clear shared selection after a click on empty canvas space."""
+        """
+        Clear shared selection after a click on empty canvas space.
+"""
         self._apply_selection_keys([], record_history=True)
 
     @Slot(list)
     def on_preview_bbox_marquee_selected(self, box_keys: list[str]) -> None:
-        """Add marquee-contained boxes to the current shared selection.
+        """
+        Add marquee-contained boxes to the current shared selection.
 
 Args:
     box_keys: Keys of boxes contained by the marquee rectangle.
@@ -915,7 +947,8 @@ Args:
 
     @Slot(list, int, int)
     def on_preview_bboxes_moved(self, box_keys: list[str], dx: int, dy: int) -> None:
-        """Apply an overlay group-drag delta to every selected editable box.
+        """
+        Apply an overlay group-drag delta to every selected editable box.
 
 Args:
     box_keys: Keys of boxes moved by the drag.
@@ -953,7 +986,8 @@ Args:
 
     @Slot(str, str)
     def on_preview_context_action(self, action: str, box_key: str) -> None:
-        """Apply the requested context-menu action to the target or selected boxes.
+        """
+        Apply the requested context-menu action to the target or selected boxes.
 
         Args:
             action: Context-action identifier emitted by the preview menu.
@@ -1095,7 +1129,8 @@ Args:
             self._window.show_error("Delete Occurrences Failed", str(exc))
 
     def copy_to_direction(self, direction: Direction, keys: list[str] | None = None) -> None:
-        """Copy the specified boxes to the adjacent frame in the selected direction.
+        """
+        Copy the specified boxes to the adjacent frame in the selected direction.
 
         Args:
             direction: `Direction.NEXT` or `Direction.PREV`.

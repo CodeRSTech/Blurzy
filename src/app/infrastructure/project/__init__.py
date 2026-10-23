@@ -1,4 +1,5 @@
-"""Project persistence infrastructure.
+"""
+Project persistence infrastructure.
 
 See Also:
     - [`ProjectStore`][app.infrastructure.project.project_store.ProjectStore] — persists project documents

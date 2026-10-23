@@ -1,4 +1,5 @@
-"""Module for label; implements the Qt presentation components.
+"""
+Module for label; implements the Qt presentation components.
 
 See Also:
     - [`BBoxViewModel`][app.domain.views.bounding_box_view_model.BBoxViewModel] — carries the label displayed for a box
@@ -18,18 +19,18 @@ if TYPE_CHECKING:
     from PySide6.QtWidgets import QWidget
 
 
-
 class LabelDialog(QDialog):
-    """Simple dialog to collect a label string after a bbox has been drawn interactively.
+    """
+    Simple dialog to collect a label string after a bbox has been drawn interactively.
 
-Layer: Presentation.
-Context: Supports user interaction and delegates application work through presentation contracts.
+    Layer: Presentation.
+    Context: Supports user interaction and delegates application work through presentation contracts.
 
 
     Args:
         parent: Optional Qt parent object.
         initial_label: Label initially shown in the editor.
-"""
+    """
 
     def __init__(self, parent: QWidget | None = None, *, initial_label: str = "") -> None:
         super().__init__(parent)
@@ -57,7 +58,8 @@ Context: Supports user interaction and delegates application work through presen
         self._label_edit.returnPressed.connect(self.accept)
 
     def get_label(self) -> str:
-        """Return the entered label with surrounding whitespace removed.
+        """
+        Return the entered label with surrounding whitespace removed.
 
         Returns:
             Stripped label text.

@@ -1,4 +1,5 @@
-"""Rendering primitives for drawing active bbox visuals.
+"""
+Rendering primitives for drawing active bbox visuals.
 
 This module contains paint-only helpers and does not mutate widget state.
 
@@ -32,9 +33,9 @@ if TYPE_CHECKING:
     from PySide6.QtGui import QPainter
 
 
-
 def draw_active_bbox(painter: QPainter, rect: QRect, border_width: int = 2) -> None:
-    """Draw the active bbox with center marker and drag handles.
+    """
+    Draw the active bbox with center marker and drag handles.
 
 Args:
     painter: Active Qt painter to draw with.
@@ -58,7 +59,8 @@ Args:
 
 
 def draw_selected_bbox(painter: QPainter, rect: QRect, border_width: int = 2) -> None:
-    """Draw a selection outline without edit handles.
+    """
+    Draw a selection outline without edit handles.
 
 Args:
     painter: Active Qt painter to draw with.

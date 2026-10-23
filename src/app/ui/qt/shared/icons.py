@@ -1,4 +1,5 @@
-"""Module for icons; implements the Qt presentation components.
+"""
+Module for icons; implements the Qt presentation components.
 
 See Also:
     - [`TransportControlsPanel`][app.ui.qt.sections.transport_controls_panel.TransportControlsPanel] — uses tinted icons for playback controls
@@ -12,29 +13,27 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-
-
-
-
 from PySide6.QtGui import QPixmap, QIcon, Qt, QPainter
+
 if TYPE_CHECKING:
     from pathlib import Path
     from PySide6.QtCore import QSize
+    from PySide6.QtWidgets import QColor
 
 
+def create_tinted_icon(icon_path: Path, icon_size: QSize, normal_tint: QColor, disabled_tint:QColor) -> QIcon:
+    """
+    Create normal, active, and disabled icon pixmaps tinted for the UI palette.
 
-def create_tinted_icon(icon_path: Path, icon_size: QSize, normal_tint, disabled_tint) -> QIcon:
-    """Create normal, active, and disabled icon pixmaps tinted for the UI palette.
+    Args:
+        icon_path: Path to the source icon.
+        icon_size: Size at which to load the source pixmap.
+        normal_tint: Color applied to normal and active icon states.
+        disabled_tint: Color applied to the disabled icon state.
 
-Args:
-    icon_path: Path to the source icon.
-    icon_size: Size at which to load the source pixmap.
-    normal_tint: Color applied to normal and active icon states.
-    disabled_tint: Color applied to the disabled icon state.
-
-Returns:
-    Tinted icon, or an empty icon if the source pixmap cannot be loaded.
-"""
+    Returns:
+        Tinted icon, or an empty icon if the source pixmap cannot be loaded.
+    """
     base_icon = QIcon(str(icon_path))
     source = base_icon.pixmap(icon_size)
     if source.isNull():

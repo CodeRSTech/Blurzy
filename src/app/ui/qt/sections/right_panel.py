@@ -1,4 +1,5 @@
-"""Module for right panel; implements the Qt presentation components.
+"""
+Module for right panel; implements the Qt presentation components.
 
 See Also:
     - [`VideoDataLayerGroup`][app.domain.video.layer_group.VideoDataLayerGroup] — groups layer controls shown in the panel
@@ -48,7 +49,8 @@ if TYPE_CHECKING:
 
 @final
 class RightControlPanel(QScrollArea):
-    """Scrollable panel containing Detection, Tracking, Preview, and Render controls.
+    """
+    Scrollable panel containing Detection, Tracking, Preview, and Render controls.
 
     Controls emit state changes and execution requests.
 
@@ -70,9 +72,9 @@ class RightControlPanel(QScrollArea):
         alt="Sample preview of the right panel, some components are not shown.">
 
 
-Layer: Presentation.
-Context: Supports user interaction and delegates application work through presentation contracts.
-"""
+    Layer: Presentation.
+    Context: Supports user interaction and delegates application work through presentation contracts.
+    """
 
     # --- Signals ---
     # PySide Rule: Signals must be declared at the class level.
@@ -105,7 +107,8 @@ Context: Supports user interaction and delegates application work through presen
         self.setWidget(self._container)
 
     def _init_widgets(self) -> None:
-        """Create every control and label before layout construction.
+        """
+        Create every control and label before layout construction.
 
 
         Note:
@@ -496,7 +499,8 @@ Context: Supports user interaction and delegates application work through presen
         self.export_all_action = QAction("Export All...", self)
 
     def _build_ui(self) -> None:
-        """Arrange controls into independent collapsible sections.
+        """
+        Arrange controls into independent collapsible sections.
 
         Note:
             Export actions remain in Render; editor-only controls are in Preview.
@@ -565,7 +569,8 @@ Context: Supports user interaction and delegates application work through presen
         self._layout.addStretch()
 
     def _connect_signals(self) -> None:
-        """Connect locally handled input signals to panel actions.
+        """
+        Connect locally handled input signals to panel actions.
 
         Note:
             Session-setting updates are connected by TrackingHandler and ExportHandler.
@@ -637,7 +642,8 @@ Context: Supports user interaction and delegates application work through presen
         self.start_tracking_requested.emit(strategy_id, source_id)
 
     def update_video_related_widgets_state(self, is_enabled: bool = False) -> None:
-        """Enable or disable the video-dependent controls as a group.
+        """
+        Enable or disable the video-dependent controls as a group.
 
         Args:
             is_enabled: Whether those controls should be enabled.
@@ -647,7 +653,8 @@ Context: Supports user interaction and delegates application work through presen
     # --- Public API ---
 
     def restore_session_settings(self, vm: SessionSettingsViewModel) -> None:
-        """Restore widgets from a session snapshot without emitting edits.
+        """
+        Restore widgets from a session snapshot without emitting edits.
 
         Args:
             vm: Settings view model for the active session.
@@ -740,7 +747,8 @@ Context: Supports user interaction and delegates application work through presen
         self.set_tracking_config_warning_visible(False)
 
     def set_iou_widgets_visible(self, visible: bool) -> None:
-        """Show or hide the minimum-IoU label and spin box.
+        """
+        Show or hide the minimum-IoU label and spin box.
 
         Args:
             visible: Whether the controls should be visible.
@@ -749,7 +757,8 @@ Context: Supports user interaction and delegates application work through presen
         self.min_iou_spinbox.setVisible(visible)
 
     def set_blur_strength_visible(self, visible: bool) -> None:
-        """Show or hide the blur-strength label and spin box.
+        """
+        Show or hide the blur-strength label and spin box.
 
         Args:
             visible: Whether the controls should be visible.
@@ -758,7 +767,8 @@ Context: Supports user interaction and delegates application work through presen
         self.blur_strength_spinbox.setVisible(visible)
 
     def set_stitching_controls_enabled(self, enabled: bool) -> None:
-        """Enable gap-bridging parameters only while offline stitching is active.
+        """
+        Enable gap-bridging parameters only while offline stitching is active.
 
         Args:
             enabled: Whether the stitching checkbox is checked.
@@ -779,7 +789,8 @@ Context: Supports user interaction and delegates application work through presen
         privacy_enabled: bool,
         resist_shrinking: bool,
     ) -> None:
-        """Enable privacy options according to the master and anti-shrink toggles.
+        """
+        Enable privacy options according to the master and anti-shrink toggles.
 
         Args:
             privacy_enabled: Whether the Privacy Shield is active.
@@ -807,7 +818,8 @@ Context: Supports user interaction and delegates application work through presen
 
     @Slot(bool)
     def _on_privacy_features_toggled(self, enabled: bool) -> None:
-        """Update child-control enablement and emit the master setting change.
+        """
+        Update child-control enablement and emit the master setting change.
 
         Args:
             enabled: New Privacy Shield state.
@@ -823,7 +835,8 @@ Context: Supports user interaction and delegates application work through presen
 
     @Slot(bool)
     def _on_resist_box_shrinking_toggled(self, enabled: bool) -> None:
-        """Update shrink-control enablement and emit the anti-shrink setting.
+        """
+        Update shrink-control enablement and emit the anti-shrink setting.
 
         Args:
             enabled: New anti-shrink state.
@@ -839,7 +852,8 @@ Context: Supports user interaction and delegates application work through presen
 
     @Slot(float)
     def _emit_box_safety_padding_pct_changed(self, value: float) -> None:
-        """Emit the UI percentage as a proportional setting value.
+        """
+        Emit the UI percentage as a proportional setting value.
 
         Args:
             value: Percentage displayed in the 0–50 range.
@@ -850,7 +864,8 @@ Context: Supports user interaction and delegates application work through presen
         self.box_safety_padding_pct_changed.emit(value / 100.0)
 
     def set_preview_blur_enabled(self, enabled: bool) -> None:
-        """Gate live preview blur on the Render panel's master blur setting.
+        """
+        Gate live preview blur on the Render panel's master blur setting.
 
         Args:
             enabled: Whether export blur is enabled.
@@ -865,7 +880,8 @@ Context: Supports user interaction and delegates application work through presen
         self.preview_blur_checkbox.setEnabled(enabled)
 
     def set_tracking_config_warning_visible(self, visible: bool) -> None:
-        """Show or hide the tracking configuration warning.
+        """
+        Show or hide the tracking configuration warning.
 
         Args:
             visible: Whether the warning label should be visible.
@@ -873,7 +889,8 @@ Context: Supports user interaction and delegates application work through presen
         self.tracking_config_warning_label.setVisible(visible)
 
     def set_detection_loading_state(self, is_loading: bool) -> None:
-        """Disable detection controls and show the model-loading spinner while loading.
+        """
+        Disable detection controls and show the model-loading spinner while loading.
 
 Args:
     is_loading: Whether a detection model is currently loading.
@@ -888,7 +905,8 @@ Args:
             self.model_loading_spinner.stop()
 
     def set_tracking_loading_state(self, is_loading: bool) -> None:
-        """Disable tracking controls while the tracking worker is running.
+        """
+        Disable tracking controls while the tracking worker is running.
 
         Args:
             is_loading: Whether tracking is currently loading or running.
@@ -899,7 +917,8 @@ Args:
         self.tracking_source_combo_box.setEnabled(not is_loading)
 
     def set_detection_progress_busy(self, is_busy: bool) -> None:
-        """Show or hide detection progress and reset it when work starts.
+        """
+        Show or hide detection progress and reset it when work starts.
 
         Args:
             is_busy: Whether detection work is active.
@@ -909,7 +928,8 @@ Args:
             self._reset_detection_progress_bar()
 
     def set_detection_progress(self, current: int, total: int, label: str = "Detection", eta_msecs: float | None = None) -> None:
-        """Display detection completion percentage and optional elapsed-time estimate.
+        """
+        Display detection completion percentage and optional elapsed-time estimate.
 
         Args:
             current: Number of items completed.
@@ -930,7 +950,8 @@ Args:
             self.detection_progress_bar.setFormat(f"{label}: {percent_formatted}")
 
     def set_tracking_progress_busy(self, is_busy: bool, indeterminate: bool = False) -> None:
-        """Show tracking progress, selecting indeterminate or initial determinate mode.
+        """
+        Show tracking progress, selecting indeterminate or initial determinate mode.
 
         Args:
             is_busy: Whether tracking work is active.
@@ -949,7 +970,8 @@ Args:
         self.tracking_progress_bar.setFormat("Tracking: starting...")
 
     def set_tracking_progress(self, current: int, total: int, label: str = "Tracking") -> None:
-        """Display the completed/total tracking count and corresponding percentage.
+        """
+        Display the completed/total tracking count and corresponding percentage.
 
         Args:
             current: Number of items completed.
@@ -975,7 +997,8 @@ Args:
         progress_bar.setFormat(label)
 
     def set_detection_model_boxes(self, boxes: list[ModelSelectionViewModel]) -> None:
-        """Replace the available detection models and refresh the provider-filtered list.
+        """
+        Replace the available detection models and refresh the provider-filtered list.
 
         Args:
             boxes: Model choices to make available in the detection model selector.
@@ -1018,7 +1041,8 @@ Args:
             self.model_changed.emit(current_model_id)
 
     def set_selected_detection_model(self, model_id: str) -> None:
-        """Select the model's provider and model entry without emitting a model-change signal.
+        """
+        Select the model's provider and model entry without emitting a model-change signal.
 
         Args:
             model_id: Model identifier, or `"None"` to select the all-providers entry.
@@ -1036,7 +1060,8 @@ Args:
         self._apply_model_provider_filter(selected_model_id=model_id, emit_model_signal=False)
 
     def connect_signals_to_export_handler(self, export_handler: ExportHandler) -> None:
-        """Connect preview/render and export actions to the export handler.
+        """
+        Connect preview/render and export actions to the export handler.
 
         Args:
             export_handler: Handler updating session settings and starting exports.

@@ -1,4 +1,5 @@
-"""Module for bbox state; implements the Qt presentation components.
+"""
+Module for bbox state; implements the Qt presentation components.
 
 See Also:
     - [`DragMode`][app.ui.qt.widgets.preview.layer_bbox.bbox_drag.DragMode] — identifies the active drag interaction
@@ -19,7 +20,8 @@ from app.ui.qt.widgets.preview.layer_bbox.bbox_drag import DragMode
 
 @dataclass
 class BBoxState:
-    """Represent bbox state.
+    """
+    Represent bbox state.
 
     Attributes:
         rect: Stored rect value.
@@ -27,9 +29,9 @@ class BBoxState:
         drag_origin: Stored drag origin value.
         rect_at_drag_start: Stored rect at drag start value.
 
-Layer: Presentation.
-Context: Supports user interaction and delegates application work through presentation contracts.
-"""
+    Layer: Presentation.
+    Context: Supports user interaction and delegates application work through presentation contracts.
+    """
     rect: QRect = field(default_factory=QRect)
     drag_mode: DragMode = DragMode.NONE
     drag_origin: QPoint = field(default_factory=QPoint)
@@ -37,7 +39,8 @@ Context: Supports user interaction and delegates application work through presen
 
     @property
     def has_valid_rect(self) -> bool:
-        """Return whether the rectangle has positive width and height.
+        """
+        Return whether the rectangle has positive width and height.
 
         Returns:
             `True` when the rectangle is non-null and has positive dimensions.

@@ -1,4 +1,5 @@
-"""Circular frame buffer with thread-safe O(1) lookup for video playback buffering.
+"""
+Circular frame buffer with thread-safe O(1) lookup for video playback buffering.
 
 See Also:
     - [`VideoDecodeWorker`][app.infrastructure.video.decode_worker.VideoDecodeWorker] — fills the buffer with decoded frames
@@ -40,16 +41,18 @@ class VideoRingBuffer:
         buffer.clear()  # Free memory for inactive session
 
 
-Layer: Domain.
-Context: Represents application concepts without UI or infrastructure dependencies.
+    Layer: Domain.
+    Context: Represents application concepts without UI or infrastructure dependencies.
 
 
     Args:
         capacity: Number of frame slots allocated in the ring buffer.
-"""
+    """
 
     def __init__(self, capacity: int = 90):
-        """Initialize ring buffer with `capacity` pre-allocated slots."""
+        """
+        Initialize ring buffer with `capacity` pre-allocated slots.
+"""
         self.capacity = capacity
         # Pre-allocate physical memory slots
         self._frames: list[RGBFrame | None] = [None] * capacity
@@ -90,7 +93,8 @@ Context: Represents application concepts without UI or infrastructure dependenci
                 self._start_idx = self._end_idx - self.capacity + 1
 
     def get(self, idx: int) -> RGBFrame | None:
-        """Return cached frame at `idx`, or None if cache miss (out of bounds).
+        """
+        Return cached frame at `idx`, or None if cache miss (out of bounds).
 
         Args:
             idx: Absolute frame index to look up in the buffer.
@@ -105,7 +109,9 @@ Context: Represents application concepts without UI or infrastructure dependenci
             return None
 
     def clear(self) -> None:
-        """Reset buffer bounds and clear all slots (frees memory for inactive sessions)."""
+        """
+        Reset buffer bounds and clear all slots (frees memory for inactive sessions).
+"""
         with self._lock:
             self._start_idx = -1
             self._end_idx = -1

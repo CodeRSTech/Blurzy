@@ -1,4 +1,5 @@
-"""Package for widgets; implements the Qt presentation components.
+"""
+Package for widgets; implements the Qt presentation components.
 
 See Also:
     - [`PreviewContainer`][app.ui.qt.widgets.preview.preview_container.PreviewContainer] — combines video and annotation widgets

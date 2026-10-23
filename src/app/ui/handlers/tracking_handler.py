@@ -1,4 +1,5 @@
-"""Tracking configuration and execution handler for multi-object tracking.
+"""
+Tracking configuration and execution handler for multi-object tracking.
 
 See Also:
     - [`TrackingService`][app.application.services.tracking.service.TrackingService] — coordinates tracking workflows
@@ -58,15 +59,16 @@ class TrackingHandler(QObject):
         Shows configuration warning if tracking overlaps with detections.
 
 
-Layer: Presentation.
-Context: Supports user interaction and delegates application work through presentation contracts.
-
-
-    Args:
-        controller exposing tracking settings, worker controls, and the active window to this handler.
-"""
+    Layer: Presentation.
+    Context: Supports user interaction and delegates application work through presentation contracts.
+    """
 
     def __init__(self, controller: UIController) -> None:
+        """
+        Initialize the TrackingHandler.
+        Args:
+            controller: UIController supplying tracking settings, worker controls, and the active window to this handler.
+        """
         super().__init__(parent=controller)
         self._owner = controller
         self._controller: UIControllerInterface = controller.ui_controller
@@ -80,7 +82,8 @@ Context: Supports user interaction and delegates application work through presen
         return f"<{self.__class__.__name__}>"
 
     def _connect_signals(self) -> None:
-        """Connect tracking controls to session-setting and worker actions.
+        """
+        Connect tracking controls to session-setting and worker actions.
 
 
         Note:
@@ -282,7 +285,8 @@ Context: Supports user interaction and delegates application work through presen
 
     @Slot(int)
     def on_reid_embedding_dim_changed(self, dimension: int) -> None:
-        """Update the Re-ID embedding dimension for the selected session.
+        """
+        Update the Re-ID embedding dimension for the selected session.
 
         Args:
             dimension: Embedding vector size selected in the tracking panel.
@@ -329,7 +333,8 @@ Context: Supports user interaction and delegates application work through presen
 
     @Slot(bool)
     def on_offline_stitching_toggled(self, enabled: bool) -> None:
-        """Update whether post-tracking tracklet stitching is enabled.
+        """
+        Update whether post-tracking tracklet stitching is enabled.
 
         Args:
             enabled: True to enable bidirectional stitching and GSI.
@@ -347,7 +352,8 @@ Context: Supports user interaction and delegates application work through presen
 
     @Slot(int)
     def on_max_stitch_gap_changed(self, value: int) -> None:
-        """Update the maximum number of missed frames eligible for stitching.
+        """
+        Update the maximum number of missed frames eligible for stitching.
 
         Args:
             value: Gap length from 1 to 60 frames.
@@ -364,7 +370,8 @@ Context: Supports user interaction and delegates application work through presen
 
     @Slot(float)
     def on_gsi_smoothness_changed(self, value: float) -> None:
-        """Update the Gaussian interpolation lengthscale.
+        """
+        Update the Gaussian interpolation lengthscale.
 
         Args:
             value: Kernel lengthscale from 1.0 to 30.0.
@@ -381,7 +388,8 @@ Context: Supports user interaction and delegates application work through presen
 
     @Slot(bool)
     def on_privacy_features_enabled_changed(self, enabled: bool) -> None:
-        """Update the Privacy Shield master setting for the selected session.
+        """
+        Update the Privacy Shield master setting for the selected session.
 
         Args:
             enabled: Whether conservative privacy post-processing is active.
@@ -393,7 +401,8 @@ Context: Supports user interaction and delegates application work through presen
 
     @Slot(bool)
     def on_resist_box_shrinking_changed(self, enabled: bool) -> None:
-        """Update whether track boxes resist sudden size contractions.
+        """
+        Update whether track boxes resist sudden size contractions.
 
         Args:
             enabled: Whether the anti-shrink size envelope is active.
@@ -405,7 +414,8 @@ Context: Supports user interaction and delegates application work through presen
 
     @Slot(float)
     def on_shrink_resistance_changed(self, value: float) -> None:
-        """Update the damping factor used by anti-shrink box processing.
+        """
+        Update the damping factor used by anti-shrink box processing.
 
         Args:
             value: Contraction damping factor between 0.0 and 0.99.
@@ -417,7 +427,8 @@ Context: Supports user interaction and delegates application work through presen
 
     @Slot(float)
     def on_pre_detection_padding_sec_changed(self, value: float) -> None:
-        """Update the backward pre-detection padding duration.
+        """
+        Update the backward pre-detection padding duration.
 
         Args:
             value: Backfill duration in seconds, from 0.0 to 5.0.
@@ -429,7 +440,8 @@ Context: Supports user interaction and delegates application work through presen
 
     @Slot(float)
     def on_post_detection_padding_sec_changed(self, value: float) -> None:
-        """Update the forward post-detection hold duration.
+        """
+        Update the forward post-detection hold duration.
 
         Args:
             value: Hold duration in seconds, from 0.0 to 5.0.
@@ -441,7 +453,8 @@ Context: Supports user interaction and delegates application work through presen
 
     @Slot(float)
     def on_box_safety_padding_pct_changed(self, value: float) -> None:
-        """Update outward safety-margin inflation for privacy boxes.
+        """
+        Update outward safety-margin inflation for privacy boxes.
 
         Args:
             value: Proportional inflation between 0.0 and 0.50.

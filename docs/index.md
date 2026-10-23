@@ -21,9 +21,9 @@ before relying on the result; automated detection can miss subjects.
 ## Explore the project
 
 - [Getting started](getting-started.md): install and launch the desktop app.
-- [Development](development.md): run tests, build packages, and preview this site.
-- [Architecture](architecture.md): understand the Clean Architecture layers, four data layers, and processing workflows.
-- [Engineering conventions](engineering/documentation-style.md): follow the
+- [Development](development/development.md): run tests, build packages, and preview this site.
+- [Architecture](architecture/overview.md): understand the Clean Architecture layers, four data layers, and processing workflows.
+- [Engineering conventions](development/documentation-style.md): follow the
   project's documentation style.
 - [Planning notes](planning/README.md): read proposals, not implemented features
   or a committed roadmap.

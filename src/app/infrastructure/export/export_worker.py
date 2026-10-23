@@ -1,4 +1,5 @@
-"""Background video export worker with progress callbacks and cancellation support.
+"""
+Background video export worker with progress callbacks and cancellation support.
 
 See Also:
     - [`ExportService`][app.application.services.export_service.ExportService] — configures export requests
@@ -26,11 +27,12 @@ logger = get_logger("Infrastructure->ExportWorker")
 
 
 class ExportCancelled(Exception):
-    """Raised inside the export callback when the user cancels export (via `stop()`).
+    """
+    Raised inside the export callback when the user cancels export (via `stop()`).
 
-Layer: Infrastructure.
-Context: Implements concrete processing or I/O behind application-facing contracts.
-"""
+    Layer: Infrastructure.
+    Context: Implements concrete processing or I/O behind application-facing contracts.
+    """
 
 
 class ExportWorker(QThread):
@@ -67,8 +69,8 @@ class ExportWorker(QThread):
         worker.stop()
 
 
-Layer: Infrastructure.
-Context: Implements concrete processing or I/O behind application-facing contracts.
+    Layer: Infrastructure.
+    Context: Implements concrete processing or I/O behind application-facing contracts.
 
 
     Args:
@@ -76,7 +78,7 @@ Context: Implements concrete processing or I/O behind application-facing contrac
         s_id: Identifier of the session associated with this object.
         output_path: Destination path for the exported video.
         parent: Optional Qt parent object.
-"""
+    """
 
     progress_updated = Signal(int, int)   # (current_frame, total_frames)
     succeeded = Signal()
@@ -91,7 +93,9 @@ Context: Implements concrete processing or I/O behind application-facing contrac
         output_path: str,
         parent: QObject | None = None,
     ) -> None:
-        """Initialize export worker for `s_id` to `output_path`."""
+        """
+        Initialize export worker for `s_id` to `output_path`.
+"""
         super().__init__(parent)
         self._export_service = export_service
         self._s_id = s_id
@@ -99,7 +103,9 @@ Context: Implements concrete processing or I/O behind application-facing contrac
         self._stop_requested = False
 
     def stop(self) -> None:
-        """Request early stop (next progress callback will raise `ExportCancelled`)."""
+        """
+        Request early stop (next progress callback will raise `ExportCancelled`).
+"""
         self._stop_requested = True
 
     def run(self) -> None:
@@ -133,7 +139,9 @@ Context: Implements concrete processing or I/O behind application-facing contrac
             self.finished_processing.emit()
 
     def _emit_progress_or_cancel(self, current_frame: int, total_frames: int) -> None:
-        """Progress callback for export service — raise `ExportCancelled` if stop requested."""
+        """
+        Progress callback for export service — raise `ExportCancelled` if stop requested.
+"""
         if self._stop_requested:
             raise ExportCancelled
         self.progress_updated.emit(current_frame, total_frames)

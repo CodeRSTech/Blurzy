@@ -1,4 +1,5 @@
-"""Result processing collaborator for worker-produced tracking outputs.
+"""
+Result processing collaborator for worker-produced tracking outputs.
 
 See Also:
     - [`TrackingPostProcessor`][app.infrastructure.tracking.post_processor.TrackingPostProcessor] — refines raw tracking output
@@ -21,15 +22,16 @@ if TYPE_CHECKING:
 
 
 class TrackingResultProcessor:
-    """Refresh Layer C and replace Layer D machine boxes while preserving edits.
+    """
+    Refresh Layer C and replace Layer D machine boxes while preserving edits.
 
-Layer: Application.
-Context: Coordinates use-case behavior through domain services and application contracts.
+    Layer: Application.
+    Context: Coordinates use-case behavior through domain services and application contracts.
 
 
     Args:
         session_repo: Interface used to retrieve a session and persist post-processed tracking boxes.
-"""
+    """
 
     def __init__(self, session_repo: UIApplicationInterface) -> None:
         self._app_adapter = session_repo
@@ -39,7 +41,8 @@ Context: Coordinates use-case behavior through domain services and application c
         s_id: SessionId,
         tracked_data: ListOfBoxesByFrameIndexAsDict,
     ) -> None:
-        """Overwrite Layer C and refresh Layer D across the session frame range.
+        """
+        Overwrite Layer C and refresh Layer D across the session frame range.
 
         Args:
             s_id: Session identifier receiving tracking results.

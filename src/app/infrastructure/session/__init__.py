@@ -1,4 +1,5 @@
-"""Session infrastructure — Session container, thread-safe data store.
+"""
+Session infrastructure — Session container, thread-safe data store.
 
 See Also:
     - [`Session`][app.infrastructure.session.session.Session] — owns per-session runtime collaborators

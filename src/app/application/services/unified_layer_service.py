@@ -1,4 +1,5 @@
-"""Unified layer service facade for cross-layer operations.
+"""
+Unified layer service facade for cross-layer operations.
 
 See Also:
     - [`DetectionLayerService`][app.application.services.detection.layer.DetectionLayerService] — manages detection-layer operations
@@ -69,13 +70,13 @@ class UnifiedLayerService:
         - `Tracking` Tab ↔ `DataLayer.D` (editable, seeded from `DataLayer.C`).
 
 
-Layer: Application.
-Context: Coordinates use-case behavior through domain services and application contracts.
+    Layer: Application.
+    Context: Coordinates use-case behavior through domain services and application contracts.
 
 
     Args:
         app: Application providing detection/tracking layer services and session access for this facade.
-"""
+    """
 
     def __init__(self, app: Application):
         # self._app = app
@@ -256,7 +257,8 @@ Context: Coordinates use-case behavior through domain services and application c
             tab: VideoDataLayerGroup,
             boxes: Iterable[tuple[str, BBoxXYXYTuple, str]],
     ) -> list[str]:
-        """Create clipboard boxes as manual boxes in Detection or Tracking editable layers.
+        """
+        Create clipboard boxes as manual boxes in Detection or Tracking editable layers.
 
         Args:
             s_id: Identifier of the session receiving the boxes.
@@ -298,7 +300,8 @@ Context: Coordinates use-case behavior through domain services and application c
             frame_index: int,
             boxes: list[BBoxViewModel],
     ) -> None:
-        """Replace one editable frame with cloned history snapshot boxes.
+        """
+        Replace one editable frame with cloned history snapshot boxes.
 
         Args:
             s_id: Identifier of the session whose frame is being restored.
@@ -314,7 +317,8 @@ Context: Coordinates use-case behavior through domain services and application c
     def get_tab_frame_boxes_at_frame_index(
             self, s_id: SessionId, tab: VideoDataLayerGroup, frame_index: int
     ) -> list[BBoxViewModel]:
-        """Return cloned editable-layer boxes without changing playback state.
+        """
+        Return cloned editable-layer boxes without changing playback state.
 
         Args:
             s_id: Identifier of the session to query.
@@ -332,7 +336,8 @@ Context: Coordinates use-case behavior through domain services and application c
         ]
 
     def get_tab_frame_boxes_for_session_id(self, s_id: SessionId, tab: VideoDataLayerGroup) -> FrameBoxesViewModel:
-        """Return boxes for the session's current frame in the selected tab.
+        """
+        Return boxes for the session's current frame in the selected tab.
 
         Args:
             s_id: Identifier of the session to query.
@@ -371,7 +376,8 @@ Context: Coordinates use-case behavior through domain services and application c
     def get_layer_box_by_key(
             self, s_id: SessionId, layer_name: VideoDataLayer, key: str
     ) -> BBoxViewModel | None:
-        """Find a box by key in the specified layer at the current frame.
+        """
+        Find a box by key in the specified layer at the current frame.
 
         Args:
             s_id: Identifier of the session to query.
@@ -398,7 +404,8 @@ Context: Coordinates use-case behavior through domain services and application c
             raise UnsupportedLayerOperationException("get_layer_box_by_key", layer_name)
 
     def reset_all_for_layer(self, s_id: SessionId, layer_name: VideoDataLayer) -> None:
-        """Rebuild an editable layer from its source layer across all frames.
+        """
+        Rebuild an editable layer from its source layer across all frames.
 
         Args:
             s_id: Identifier of the session to update.
@@ -436,7 +443,8 @@ Context: Coordinates use-case behavior through domain services and application c
             raise UnsupportedLayerOperationException("reset_all_for_layer", layer_name)
 
     def reset_frame_for_layer(self, s_id: SessionId, layer_name: VideoDataLayer, frame_index: int) -> None:
-        """Rebuild one editable-layer frame from its corresponding source frame.
+        """
+        Rebuild one editable-layer frame from its corresponding source frame.
 
         Args:
             s_id: Identifier of the session to update.
@@ -489,7 +497,8 @@ Context: Coordinates use-case behavior through domain services and application c
         # ============================================================
         # Get session
         # ============================================================
-        """Translate selected boxes on the current frame by a pixel offset.
+        """
+        Translate selected boxes on the current frame by a pixel offset.
 
         Args:
             s_id: Identifier of the session to update.
@@ -522,7 +531,8 @@ Context: Coordinates use-case behavior through domain services and application c
                                       label: str,
                                       bbox_xyxy: BBoxXYXYTuple,
                                       ) -> None:
-        """Update a box's label and coordinates on the current frame.
+        """
+        Update a box's label and coordinates on the current frame.
 
         Args:
             s_id: Identifier of the session containing the box.
@@ -553,7 +563,9 @@ Context: Coordinates use-case behavior through domain services and application c
 def _seed_layer_frame_from_layer(
         source: VideoDataLayer, target: VideoDataLayer, session: Session, frame_index: int
 ) -> None:
-    """Compatibility seeder for editable-layer frames not populated by current writers."""
+    """
+    Compatibility seeder for editable-layer frames not populated by current writers.
+"""
     logger.trace("Seeding Layer {} from Layer {} for frame {}", target, source, frame_index)
 
     # A frame remains initialized after its final box is deleted. This must not

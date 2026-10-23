@@ -1,4 +1,5 @@
-"""Protocol interface for layer data exporters.
+"""
+Protocol interface for layer data exporters.
 
 See Also:
     - [`DetectionExportService`][app.application.services.detection.exporting.DetectionExportService] — exports detection layers
@@ -42,9 +43,9 @@ class IDataExporter(Protocol):
         `["json", "csv"]` on the UI side.
 
 
-Layer: Application.
-Context: Coordinates use-case behavior through domain services and application contracts.
-"""
+    Layer: Application.
+    Context: Coordinates use-case behavior through domain services and application contracts.
+    """
 
     def export_layer(
         self,

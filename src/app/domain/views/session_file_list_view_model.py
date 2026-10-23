@@ -1,4 +1,5 @@
-"""Module for session file list view model; defines application concepts without UI or infrastructure dependencies.
+"""
+Module for session file list view model; defines application concepts without UI or infrastructure dependencies.
 
 See Also:
     - [`SessionId`][app.domain.session.session_id.SessionId] — identifies each listed session
@@ -20,7 +21,6 @@ if TYPE_CHECKING:
 
 
 
-
 @dataclass(slots=True)
 class SessionFileListViewModel:
     """
@@ -35,9 +35,9 @@ class SessionFileListViewModel:
         Populated by the `list_of_session_list_view_models()` factory.
 
 
-Layer: Domain.
-Context: Represents application concepts without UI or infrastructure dependencies.
-"""
+    Layer: Domain.
+    Context: Represents application concepts without UI or infrastructure dependencies.
+    """
 
     s_id: SessionId
     title: str

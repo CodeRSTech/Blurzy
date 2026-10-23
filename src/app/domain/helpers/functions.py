@@ -1,4 +1,5 @@
-"""Domain utility functions for string handling and validation.
+"""
+Domain utility functions for string handling and validation.
 
 See Also:
     - [`VideoDataLayer`][app.domain.video.layer.VideoDataLayer] — layer values used by detection helpers
@@ -13,7 +14,6 @@ from typing import TYPE_CHECKING
 
 
 
-
 from app.domain import VideoDataLayer
 
 from app.domain.base.exceptions import EmptySetGeneratedFromKeysError
@@ -22,7 +22,6 @@ if TYPE_CHECKING:
     from app.domain import BBoxViewModel, ProcessingSettings
     from app.domain.base.dtypes import ListOfBoxes
     from app.domain.detection.result import DetectionResult
-
 
 
 

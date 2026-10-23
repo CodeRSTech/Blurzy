@@ -1,4 +1,5 @@
-"""Package for mtcnn tf; implements concrete processing and I/O behind application-facing contracts.
+"""
+Package for mtcnn tf; implements concrete processing and I/O behind application-facing contracts.
 
 See Also:
     - [`MTCNNTFDetectionModel`][app.infrastructure.detection.model.mtcnn_tf.model.MTCNNTFDetectionModel] — implements TensorFlow-backed MTCNN inference

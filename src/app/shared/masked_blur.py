@@ -1,4 +1,5 @@
-"""Shared alpha-mask and Gaussian blur rendering used by preview and export.
+"""
+Shared alpha-mask and Gaussian blur rendering used by preview and export.
 
 See Also:
     - [`UIHandler`][app.ui.handlers.ui_handler.UIHandler] — applies masked blur to the preview frame
@@ -29,7 +30,8 @@ def _clipped_boxes(
     frame_shape: tuple[int, ...],
     boxes: Sequence[BBoxViewModel],
 ) -> list[tuple[int, int, int, int]]:
-    """Return valid box coordinates clipped to the frame bounds.
+    """
+    Return valid box coordinates clipped to the frame bounds.
 
     Args:
         frame_shape: Image shape beginning with `(height, width)`.
@@ -63,7 +65,8 @@ def _roi_alpha_mask(
     roi_origin: tuple[int, int],
     feather_radius: int,
 ) -> np.ndarray:
-    """Create the feather alpha values for a padded region of interest.
+    """
+    Create the feather alpha values for a padded region of interest.
 
     Args:
         roi_shape: Region height and width.
@@ -99,7 +102,8 @@ def compute_blur_alpha_mask(
     boxes: Sequence[BBoxViewModel],
     feather_radius: int = _FEATHER_RADIUS,
 ) -> np.ndarray:
-    r"""Compute the combined interior-plus-outward-feather alpha mask.
+    r"""
+Compute the combined interior-plus-outward-feather alpha mask.
 
     Args:
         frame_shape: Image shape beginning with `(height, width)`.
@@ -161,7 +165,8 @@ def apply_masked_blur(
     strength: float,
     feather_radius: int = _FEATHER_RADIUS,
 ) -> np.ndarray:
-    r"""Blur the union of box interiors with a smooth outward alpha feather.
+    r"""
+Blur the union of box interiors with a smooth outward alpha feather.
 
     Args:
         frame: RGB or BGR image to process.
@@ -254,7 +259,8 @@ def overlay_alpha_mask(
     color_rgb: tuple[int, int, int] = (255, 48, 48),
     opacity: float = 0.32,
 ) -> np.ndarray:
-    """Draw a semi-transparent RGB highlight for a blur alpha mask.
+    """
+    Draw a semi-transparent RGB highlight for a blur alpha mask.
 
     Args:
         frame: RGB image to overlay.

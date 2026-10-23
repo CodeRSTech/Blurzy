@@ -1,4 +1,5 @@
-"""Module for annotation; implements the Qt presentation components.
+"""
+Module for annotation; implements the Qt presentation components.
 
 See Also:
     - [`AnnotationHandler`][app.ui.handlers.annotation_handler.AnnotationHandler] — handles annotation edits submitted by the dialog
@@ -23,20 +24,20 @@ if TYPE_CHECKING:
 
 
 
-
 @final
 class EditAnnotationDialog(QDialog):
-    """Full edit dialog shown when modifying an existing detection (label + bbox coords).
+    """
+    Full edit dialog shown when modifying an existing detection (label + bbox coords).
 
-Layer: Presentation.
-Context: Supports user interaction and delegates application work through presentation contracts.
+    Layer: Presentation.
+    Context: Supports user interaction and delegates application work through presentation contracts.
 
 
     Args:
         parent: Optional Qt parent object.
         initial_label: Label initially shown in the editor.
         initial_bbox_xyxy: Initial box coordinates in `(x1, y1, x2, y2)` order.
-"""
+    """
 
     def __init__(
             self,
@@ -82,7 +83,8 @@ Context: Supports user interaction and delegates application work through presen
         layout.addWidget(buttons)
 
     def get_annotation_data(self) -> tuple[str, BBoxXYXYTuple]:
-        """Read the edited label and four bounding-box coordinates.
+        """
+        Read the edited label and four bounding-box coordinates.
 
         Returns:
             Stripped label and coordinates in `(x1, y1, x2, y2)` order.

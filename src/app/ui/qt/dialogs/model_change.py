@@ -1,12 +1,13 @@
-"""Module for model change; implements the Qt presentation components.
+"""
+Module for model change; implements the Qt presentation components.
 
 See Also:
     - [`ModelHandler`][app.ui.handlers.model_handler.ModelHandler] — initiates model changes
     - [`DetectionEngineManager`][app.application.managers.detection_engine.DetectionEngineManager] — replaces per-session detection engines
 
-Layer: Presentation.
-Context: Implements the qt presentation components at this architectural boundary.
-"""
+    Layer: Presentation.
+    Context: Implements the qt presentation components at this architectural boundary.
+    """
 
 # app/ui/qt/model_change.py
 from __future__ import annotations
@@ -19,20 +20,19 @@ if TYPE_CHECKING:
     from PySide6.QtWidgets import QWidget
 
 
-
 class ModelChangeWarningDialog(QDialog):
     """
     Warns the user that changing model clears detections,
     and offers to retain manual annotations.
 
 
-Layer: Presentation.
-Context: Supports user interaction and delegates application work through presentation contracts.
+    Layer: Presentation.
+    Context: Supports user interaction and delegates application work through presentation contracts.
 
 
     Args:
         parent: Optional Qt parent object.
-"""
+    """
     def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
         self.setWindowTitle("Change Detection Model")
@@ -62,7 +62,8 @@ Context: Supports user interaction and delegates application work through presen
         layout.addWidget(self.buttons)
 
     def get_results(self) -> tuple[bool, bool]:
-        """Return the manual-annotation and future-warning checkbox states.
+        """
+        Return the manual-annotation and future-warning checkbox states.
 
 Returns:
     `(keep_manual, dont_ask_again)` boolean values.

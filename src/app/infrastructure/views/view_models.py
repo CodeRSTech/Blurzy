@@ -1,4 +1,5 @@
-"""Factory for converting Session objects to UI view model (list display).
+"""
+Factory for converting Session objects to UI view model (list display).
 
 See Also:
     - [`SessionFileListViewModel`][app.domain.views.session_file_list_view_model.SessionFileListViewModel] — returned representation for each session

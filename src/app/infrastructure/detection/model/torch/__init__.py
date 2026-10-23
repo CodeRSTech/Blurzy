@@ -1,4 +1,5 @@
-"""Package for torch; implements concrete processing and I/O behind application-facing contracts.
+"""
+Package for torch; implements concrete processing and I/O behind application-facing contracts.
 
 See Also:
     - [`TorchDetectionModel`][app.infrastructure.detection.model.torch.model.TorchDetectionModel] — implements TorchVision inference

@@ -1,4 +1,5 @@
-"""User-configurable settings for detection, tracking, and rendering pipelines.
+"""
+User-configurable settings for detection, tracking, and rendering pipelines.
 
 See Also:
     - [`SessionState`][app.domain.session.session_state.SessionState] — owns the settings used by an active session
@@ -62,9 +63,9 @@ class ProcessingSettings:
         view_model = settings.as_view_model()  # For UI binding
 
 
-Layer: Domain.
-Context: Represents application concepts without UI or infrastructure dependencies.
-"""
+    Layer: Domain.
+    Context: Represents application concepts without UI or infrastructure dependencies.
+    """
 
     # --- Detection ---
     detection_model_name: str = "None"
@@ -101,7 +102,8 @@ Context: Represents application concepts without UI or infrastructure dependenci
     blur_strength: float = 15.0
 
     def __post_init__(self) -> None:
-        """Validate user-configurable limits before a session uses the settings.
+        """
+        Validate user-configurable limits before a session uses the settings.
 
         Raises:
             ValueError: If a bounded setting is outside its documented range or
@@ -132,7 +134,8 @@ Context: Represents application concepts without UI or infrastructure dependenci
             raise ValueError("box_safety_padding_pct must be between 0.0 and 0.50.")
 
     def as_view_model(self) -> SessionSettingsViewModel:
-        """Create the widget-ready view of this session's processing settings.
+        """
+        Create the widget-ready view of this session's processing settings.
 
         Returns:
             A view model with labels joined for direct text-field assignment.
@@ -174,7 +177,8 @@ Context: Represents application concepts without UI or infrastructure dependenci
 
     @property
     def model_name_is_null(self) -> bool:
-        """Return whether no detection model is selected.
+        """
+        Return whether no detection model is selected.
 
         Returns:
             `True` when the model name is empty or the literal `"None"`.

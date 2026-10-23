@@ -1,4 +1,5 @@
-"""Video infrastructure — PyAV reader with rotation support, background decode worker with ring buffer.
+"""
+Video infrastructure — PyAV reader with rotation support, background decode worker with ring buffer.
 
 See Also:
     - [`VideoReader`][app.infrastructure.video.reader.VideoReader] — reads video streams

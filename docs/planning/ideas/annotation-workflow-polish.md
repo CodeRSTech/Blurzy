@@ -13,8 +13,8 @@ This includes:
 The table records areas for continued workflow review. The application already
 provides canvas/table selection and annotation actions; the entries identify
 consistency and edge-case validation rather than implying those workflows are
-entirely absent. See [UI handlers](../../reference/ui/handlers.md) and
-[preview widgets](../../reference/ui/qt/widgets/preview.md) for the current
+entirely absent. See [UI handlers](../../architecture/ui/handlers.md) and
+[preview widgets](../../architecture/ui/qt/widgets/preview.md) for the current
 interaction boundaries.
 
 | Area                     | Goal                                                               | Progress so far                                     | Key issues so far                                                                                |

@@ -1,4 +1,5 @@
-"""Module for geometry ui; implements the Qt presentation components.
+"""
+Module for geometry ui; implements the Qt presentation components.
 
 See Also:
     - [`draw_active_bbox`][app.ui.qt.widgets.preview.layer_bbox.rendering.draw_active_bbox] — draws geometry using widget-space handles
@@ -18,9 +19,9 @@ if TYPE_CHECKING:
     from PySide6.QtCore import QRect
 
 
-
 def get_handle_points_from_rect(rect: QRect) -> list[QPoint]:
-    """Return the eight corner and edge-midpoint handles of a rectangle.
+    """
+    Return the eight corner and edge-midpoint handles of a rectangle.
 
     Args:
         rect: Rectangle whose handle positions are calculated.

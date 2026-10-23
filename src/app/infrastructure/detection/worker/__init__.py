@@ -1,4 +1,5 @@
-"""Package for worker; implements concrete processing and I/O behind application-facing contracts.
+"""
+Package for worker; implements concrete processing and I/O behind application-facing contracts.
 
 See Also:
     - [`DetectionWorker`][app.infrastructure.detection.worker.detection_worker.DetectionWorker] — implements background inference

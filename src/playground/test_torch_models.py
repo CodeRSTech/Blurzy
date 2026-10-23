@@ -5,7 +5,8 @@ from app.infrastructure.detection.model.names import TORCH_MODELS
 
 
 def test_torch_model_registry_drives_engine_switching(monkeypatch):
-    """Documented unit contract for torch-model iteration without heavyweight model loads.
+    """
+    Documented unit contract for torch-model iteration without heavyweight model loads.
 
     This replaces the old playground integration behaviour (real model boot + image IO)
     with a deterministic unit test that still validates the intended control flow:

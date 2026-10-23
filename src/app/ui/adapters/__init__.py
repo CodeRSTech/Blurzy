@@ -1,4 +1,5 @@
-"""UI-layer adapters for handler dependency protocols.
+"""
+UI-layer adapters for handler dependency protocols.
 
 See Also:
     - [`UIControllerInterface`][app.ui.interfaces.controller_interface.UIControllerInterface] — contract adapted by the controller facade

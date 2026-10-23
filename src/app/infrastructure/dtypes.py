@@ -1,4 +1,5 @@
-"""Module for dtypes; implements concrete processing and I/O behind application-facing contracts.
+"""
+Module for dtypes; implements concrete processing and I/O behind application-facing contracts.
 
 See Also:
     - [`VideoReader`][app.infrastructure.video.reader.VideoReader] — produces RGB frame data

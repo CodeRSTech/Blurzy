@@ -1,4 +1,5 @@
-"""Package for mtcnn torch; implements concrete processing and I/O behind application-facing contracts.
+"""
+Package for mtcnn torch; implements concrete processing and I/O behind application-facing contracts.
 
 See Also:
     - [`MTCNNTorchDetectionModel`][app.infrastructure.detection.model.mtcnn_torch.model.MTCNNTorchDetectionModel] — implements PyTorch-backed MTCNN inference

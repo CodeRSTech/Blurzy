@@ -1,4 +1,5 @@
-"""Detection model registry and confidence thresholds for Torch and YOLO variants.
+"""
+Detection model registry and confidence thresholds for Torch and YOLO variants.
 
 See Also:
     - [`get_available_detection_model_names_as_str`][app.infrastructure.detection.model.helpers.get_available_detection_model_names_as_str] — exposes registered model names

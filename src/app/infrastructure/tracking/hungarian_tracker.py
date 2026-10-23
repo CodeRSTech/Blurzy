@@ -77,11 +77,12 @@ logger = get_logger("Infrastructure->HungarianTracker")
 
 @dataclass
 class TrackInput:
-    """One detection handed to the tracker for a single frame.
+    """
+    One detection handed to the tracker for a single frame.
 
-Layer: Infrastructure.
-Context: Implements concrete processing or I/O behind application-facing contracts.
-"""
+    Layer: Infrastructure.
+    Context: Implements concrete processing or I/O behind application-facing contracts.
+    """
     bbox_xyxy: BBoxXYXYTuple  # (x1, y1, x2, y2)
     confidence: float
     label: str
@@ -89,11 +90,12 @@ Context: Implements concrete processing or I/O behind application-facing contrac
 
 @dataclass
 class TrackState:
-    """The live view_state of one confirmed track, returned per frame.
+    """
+    The live view_state of one confirmed track, returned per frame.
 
-Layer: Infrastructure.
-Context: Implements concrete processing or I/O behind application-facing contracts.
-"""
+    Layer: Infrastructure.
+    Context: Implements concrete processing or I/O behind application-facing contracts.
+    """
     uid: int
     bbox_xyxy: BBoxXYXYTuple
     confidence: float
@@ -119,7 +121,8 @@ class _Track:
     time_since_update: int = 0
 
     def centroid(self) -> tuple[float, float]:
-        """Return the center point of the track's `xyxy` box.
+        """
+        Return the center point of the track's `xyxy` box.
 
         Returns:
             `(x, y)` centroid coordinates in pixels.
@@ -128,7 +131,8 @@ class _Track:
         return (x1 + x2) / 2.0, (y1 + y2) / 2.0
 
     def coast(self, confidence_decay: float) -> None:
-        """Advance a missed track and record its coast age.
+        """
+        Advance a missed track and record its coast age.
 
         Args:
             confidence_decay: Confidence reduction per unmatched frame.
@@ -152,7 +156,8 @@ class _Track:
         self.time_since_update += 1
 
     def to_state(self) -> TrackState:
-        """Copy the current record into its public track-state value.
+        """
+        Copy the current record into its public track-state value.
 
         Returns:
             Snapshot including velocity, observation status, and track age.
@@ -176,7 +181,9 @@ def _iou_matrix(
         tracks: list[_Track],
         detections: list[TrackInput],
 ) -> np.ndarray:
-    """Return an (n_tracks × n_detections) IoU matrix."""
+    """
+    Return an (n_tracks × n_detections) IoU matrix.
+"""
     n_t = len(tracks)
     n_d = len(detections)
     mat = np.zeros((n_t, n_d), dtype=np.float32)
@@ -210,7 +217,8 @@ def _iou_matrix(
 
 @final
 class HungarianIoUTracker:
-    """Associate frame detections with active tracks by global IoU assignment.
+    """
+    Associate frame detections with active tracks by global IoU assignment.
 
     Layer: Infrastructure tracking.
     Context: Owns the live track set used by a tracking strategy adapter.
@@ -219,7 +227,7 @@ class HungarianIoUTracker:
         iou_threshold: Minimum IoU required to accept a detection-track match.
         confidence_decay: Confidence decrease applied to a track per missed frame.
         min_confidence: Minimum confidence at which an unmatched track remains active.
-"""
+    """
     def __init__(
             self,
             iou_threshold: float = 0.3,
@@ -237,13 +245,16 @@ class HungarianIoUTracker:
                      min_confidence)
 
     def reset(self) -> None:
-        """Clear all live tracks and reset the UID counter."""
+        """
+        Clear all live tracks and reset the UID counter.
+"""
         logger.debug("HungarianIoUTracker internal view_state reset")
         self._tracks = []
         self._next_uid = 1
 
     def update(self, detections: list[TrackInput]) -> list[TrackState]:
-        """Associate one frame of detections and advance unmatched tracks.
+        """
+        Associate one frame of detections and advance unmatched tracks.
 
         Args:
             detections: Detection boxes for the current frame.

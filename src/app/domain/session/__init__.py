@@ -1,4 +1,5 @@
-"""Session domain model — session ID, view_state, playback, data layer selection.
+"""
+Session domain model — session ID, view_state, playback, data layer selection.
 
 See Also:
     - [`Session`][app.infrastructure.session.session.Session] — infrastructure container for runtime session state

@@ -1,4 +1,5 @@
-"""Low-level bbox helper math for hit-testing and clamping.
+"""
+Low-level bbox helper math for hit-testing and clamping.
 
 These helpers are intentionally primitive operations reused by higher-level
 interaction and widget facade logic.
@@ -20,7 +21,8 @@ from app.ui.qt.widgets.preview.layer_bbox.constants import _HANDLE_RADIUS
 
 
 def get_drag_mode_for_rect_at_pos(rect: QRect, pos: QPoint) -> DragMode:
-    """Identify the resize handle nearest to a pointer position.
+    """
+    Identify the resize handle nearest to a pointer position.
 
     Args:
         rect: Bounding rectangle whose handles are hit-tested.
@@ -51,7 +53,8 @@ def get_drag_mode_for_rect_at_pos(rect: QRect, pos: QPoint) -> DragMode:
 
 
 def clamp_rect_to_pixmap(rect: QRect, pixmap_rect: QRect) -> QRect:
-    """Clamp a rectangle to the pixmap bounds.
+    """
+    Clamp a rectangle to the pixmap bounds.
 
     Args:
         rect: Rectangle to keep inside the displayed image area.
@@ -91,7 +94,8 @@ def clamp_rect_to_pixmap(rect: QRect, pixmap_rect: QRect) -> QRect:
 
 
 def apply_clamped_drag_deltas(mode: DragMode, pr: QRect, x1: int, x2: int, y1: int, y2: int, dx: int, dy: int) -> QRect:
-    """Apply clamped drag deltas.
+    """
+    Apply clamped drag deltas.
 
     Args:
         mode: Active handle being dragged.
@@ -107,7 +111,8 @@ def apply_clamped_drag_deltas(mode: DragMode, pr: QRect, x1: int, x2: int, y1: i
         Normalized rectangle after moving the selected edge or corner, clamped to `pr`.
     """
     def clamp_x(v: int) -> int:
-        """Clamp a horizontal coordinate to the preview rectangle.
+        """
+        Clamp a horizontal coordinate to the preview rectangle.
 
         Args:
             v: Horizontal coordinate to clamp.
@@ -118,7 +123,8 @@ def apply_clamped_drag_deltas(mode: DragMode, pr: QRect, x1: int, x2: int, y1: i
         return max(pr.left(), min(v, pr.right()))
 
     def clamp_y(v: int) -> int:
-        """Clamp a vertical coordinate to the preview rectangle.
+        """
+        Clamp a vertical coordinate to the preview rectangle.
 
         Args:
             v: Vertical coordinate to clamp.
@@ -149,7 +155,8 @@ def apply_clamped_drag_deltas(mode: DragMode, pr: QRect, x1: int, x2: int, y1: i
 
 
 def clamp_point_to_rect(point: QPoint, r: QRect) -> QPoint:
-    """Clamp a point to the rectangle bounds.
+    """
+    Clamp a point to the rectangle bounds.
 
     Args:
         point: Point to constrain.

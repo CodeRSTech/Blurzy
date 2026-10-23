@@ -1,4 +1,5 @@
-"""Session runtime bootstrapper.
+"""
+Session runtime bootstrapper.
 
 This helper keeps `Session` construction side-effect free by moving the
 expensive runtime setup out of `Session.__init__` and into the application
@@ -29,7 +30,8 @@ logger = get_logger("Application->SessionInitializer")
 
 @final
 class SessionInitializer:
-    """Build and attach the runtime collaborators for a `Session`.
+    """
+    Build and attach the runtime collaborators for a `Session`.
 
     Responsibilities:
         - Open the video reader for the session path.
@@ -41,15 +43,16 @@ class SessionInitializer:
     files or starting threads.
 
 
-Layer: Application.
-Context: Coordinates use-case behavior through domain services and application contracts.
-"""
+    Layer: Application.
+    Context: Coordinates use-case behavior through domain services and application contracts.
+    """
 
     def __repr__(self) -> str:
         return f"<{self.__class__.__name__}>"
 
     def initialize(self, session: Session) -> Session:
-        """Attach the video reader, runtime view_state, and decode worker.
+        """
+        Attach the video reader, runtime view_state, and decode worker.
 
         Args:
             session: The bare `Session` shell created by `SessionManager`.

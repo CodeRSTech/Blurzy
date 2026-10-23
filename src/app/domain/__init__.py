@@ -1,12 +1,13 @@
-"""Package for domain; defines application concepts without UI or infrastructure dependencies.
+"""
+Package for domain; defines application concepts without UI or infrastructure dependencies.
 
 See Also:
     - [`SessionState`][app.domain.session.session_state.SessionState] — aggregates active-session state
     - [`VideoDataLayer`][app.domain.video.layer.VideoDataLayer] — identifies annotation layers
 
-Layer: Domain.
-Context: Defines application concepts without ui or infrastructure dependencies at this architectural boundary.
-"""
+    Layer: Domain.
+    Context: Defines application concepts without ui or infrastructure dependencies at this architectural boundary.
+    """
 
 # Basic types and enums
 from .base import BBoxXYXYTuple, ListOfBoxes, ListOfBoxesByFrameIndexAsDict, RenderFunction, StopPlaybackFunction, \

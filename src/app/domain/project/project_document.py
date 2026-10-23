@@ -1,4 +1,5 @@
-"""Defines serializable domain records used by project files.
+"""
+Defines serializable domain records used by project files.
 
 See Also:
     - [`ProjectService`][app.application.services.project_service.ProjectService] — coordinates project loading and saving
@@ -15,7 +16,8 @@ from dataclasses import dataclass, field
 
 @dataclass(slots=True)
 class ProjectDirectories:
-    """Remember project-scoped import/export locations and filename affixes.
+    """
+    Remember project-scoped import/export locations and filename affixes.
 
     Layer: Domain.
     Context: A value object persisted with a project, separate from application
@@ -36,7 +38,8 @@ class ProjectDirectories:
 
 @dataclass(slots=True)
 class ProjectSessionDocument:
-    """Persist the reopenable state for one video session.
+    """
+    Persist the reopenable state for one video session.
 
     Layer: Domain.
     Context: Project serialization stores paths and plain-data settings/layers;
@@ -59,7 +62,8 @@ class ProjectSessionDocument:
 
 @dataclass(slots=True)
 class ProjectDocument:
-    """Top-level, versioned document for saving and restoring a project.
+    """
+    Top-level, versioned document for saving and restoring a project.
 
     Layer: Domain.
     Context: This data-only object is the boundary between project

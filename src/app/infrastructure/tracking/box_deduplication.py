@@ -1,4 +1,5 @@
-"""Containment-based duplicate suppression for per-frame tracker inputs.
+"""
+Containment-based duplicate suppression for per-frame tracker inputs.
 
 See Also:
     - [`TrackingWorker`][app.infrastructure.tracking.track_worker.TrackingWorker] — applies suppression before strategy updates
@@ -18,7 +19,8 @@ if TYPE_CHECKING:
 
 
 def _area(box: BBoxViewModel) -> int:
-    """Return non-negative pixel area for one box.
+    """
+    Return non-negative pixel area for one box.
 
     Args:
         box: Bounding box whose area is measured.
@@ -37,7 +39,8 @@ def _area(box: BBoxViewModel) -> int:
 
 
 def _intersection_area(box_a: BBoxViewModel, box_b: BBoxViewModel) -> int:
-    """Return the intersection area of two axis-aligned boxes.
+    """
+    Return the intersection area of two axis-aligned boxes.
 
     Args:
         box_a: First bounding box.
@@ -63,7 +66,8 @@ def suppress_nested_same_class_boxes(
     boxes: ListOfBoxes,
     iomin_threshold: float = 0.80,
 ) -> ListOfBoxes:
-    r"""Suppress duplicate same-class boxes mostly contained by a stronger box.
+    r"""
+Suppress duplicate same-class boxes mostly contained by a stronger box.
 
     A stronger box is at least as large and as confident as the candidate;
     manual boxes are prioritized and retained. “Mostly contained” means the

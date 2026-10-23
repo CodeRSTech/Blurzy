@@ -1,4 +1,5 @@
-"""Frame retrieval orchestration for session decode workers.
+"""
+Frame retrieval orchestration for session decode workers.
 
 This module isolates cache lookup + seek + timeout polling from `Session` so
 the QObject container remains focused on view_state ownership.
@@ -29,7 +30,8 @@ logger = get_logger("Infrastructure->SessionFrameAccessor")
 
 @final
 class SessionFrameAccessor:
-    """Resolve requested frames through the decode worker cache.
+    """
+    Resolve requested frames through the decode worker cache.
 
     The accessor preserves the existing playback semantics:
       1. Clamp frame index to valid metadata range.
@@ -39,14 +41,14 @@ class SessionFrameAccessor:
       5. Synchronize session view_state on successful retrieval.
 
 
-Layer: Infrastructure.
-Context: Implements concrete processing or I/O behind application-facing contracts.
+    Layer: Infrastructure.
+    Context: Implements concrete processing or I/O behind application-facing contracts.
 
 
     Args:
         timeout_seconds: Maximum time to wait for a decoded frame.
         poll_interval_seconds: Delay between checks for a decoded frame.
-"""
+    """
 
     def __init__(self, timeout_seconds: float = 2.0, poll_interval_seconds: float = 0.01) -> None:
         if timeout_seconds <= 0:
@@ -64,7 +66,8 @@ Context: Implements concrete processing or I/O behind application-facing contrac
         decode_worker: VideoDecodeWorker,
         frame_index: int,
     ) -> RGBFrame | None:
-        """Return a clamped frame index from cache, seeking and polling on a cache miss.
+        """
+        Return a clamped frame index from cache, seeking and polling on a cache miss.
 
         Args:
             session_state: Session state providing frame-count bounds and playback cache.
@@ -114,7 +117,8 @@ Context: Implements concrete processing or I/O behind application-facing contrac
         session_state: SessionState,
         decode_worker: VideoDecodeWorker,
     ) -> RGBFrame | None:
-        """Return the cached frame at the current playback position, loading it if absent.
+        """
+        Return the cached frame at the current playback position, loading it if absent.
 
         Args:
             session_state: Session playback state and current-frame cache.
@@ -142,7 +146,8 @@ Context: Implements concrete processing or I/O behind application-facing contrac
         session_state: SessionState,
         decode_worker: VideoDecodeWorker,
     ) -> RGBFrame | None:
-        """Request the frame one index after the current playback position.
+        """
+        Request the frame one index after the current playback position.
 
         Args:
             session_state: Playback state whose index and frame cache are updated.
@@ -168,7 +173,8 @@ Context: Implements concrete processing or I/O behind application-facing contrac
         session_state: SessionState,
         decode_worker: VideoDecodeWorker,
     ) -> RGBFrame | None:
-        """Request the frame one index before the current playback position.
+        """
+        Request the frame one index before the current playback position.
 
         Args:
             session_state: Playback state whose index and frame cache are updated.
@@ -194,7 +200,8 @@ Context: Implements concrete processing or I/O behind application-facing contrac
         session_state: SessionState,
         decode_worker: VideoDecodeWorker,
     ) -> RGBFrame | None:
-        """Return lookahead frame (current index + 1) from decode cache flow.
+        """
+        Return lookahead frame (current index + 1) from decode cache flow.
 
         Args:
             session_state: Playback state whose index and frame cache are updated.

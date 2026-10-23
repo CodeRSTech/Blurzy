@@ -1,4 +1,5 @@
-"""Module for uicontroller; presents application behavior to users.
+"""
+Module for uicontroller; presents application behavior to users.
 
 See Also:
     - [`Application`][app.application.application.Application] — supplies application workflows
@@ -55,15 +56,15 @@ class UIController(QObject):
             Controller triggers frame renders, status updates, dialog creation.
 
 
-Layer: Presentation.
-Context: Supports user interaction and delegates application work through presentation contracts.
+    Layer: Presentation.
+    Context: Supports user interaction and delegates application work through presentation contracts.
 
 
     Args:
         q_app: Qt application instance.
         window: Window instance used by this component.
         app: Application facade exposed to UI handlers and adapters for session and settings operations.
-"""
+    """
 
     def __init__(self, q_app: QApplication, window: Window, app: Application, ) -> None:
         logger.info("Initializing UI Controller...")
@@ -147,7 +148,8 @@ Context: Supports user interaction and delegates application work through presen
 
     @property
     def active_session(self) -> Session | None:
-        """Return the currently active session, if any.
+        """
+        Return the currently active session, if any.
 
         Returns:
             Active session, or `None` when no session is selected.
@@ -156,7 +158,8 @@ Context: Supports user interaction and delegates application work through presen
 
     @property
     def detection_tab_data_table(self) -> QTableWidget:
-        """Return the detection-layer table shown in the bottom panel.
+        """
+        Return the detection-layer table shown in the bottom panel.
 
         Returns:
             Detection table widget.
@@ -165,7 +168,8 @@ Context: Supports user interaction and delegates application work through presen
 
     @property
     def tracker_tab_data_table(self) -> QTableWidget:
-        """Return the tracking-layer table shown in the bottom panel.
+        """
+        Return the tracking-layer table shown in the bottom panel.
 
         Returns:
             Tracking table widget.
@@ -185,7 +189,8 @@ Context: Supports user interaction and delegates application work through presen
         )
 
     def create_model_change_warning_dialog(self, s_id: SessionId) -> ModelChangeWarningDialog:
-        """Create model change warning dialog.
+        """
+        Create model change warning dialog.
 
         Args:
             s_id: Session whose detection model would be changed.
@@ -304,7 +309,8 @@ Context: Supports user interaction and delegates application work through presen
         self.ui_handler.render_saved_frame(s_id)
 
     def set_ui_data_tab_frame_boxes(self, tab: VideoDataLayerGroup, boxes: ListOfBoxes) -> None:
-        """Display frame boxes in the specified detection or tracking table.
+        """
+        Display frame boxes in the specified detection or tracking table.
 
         Args:
             tab: Data-layer table to update.
@@ -313,5 +319,7 @@ Context: Supports user interaction and delegates application work through presen
         self.ui_handler.set_boxes_for_tab(boxes, tab)
 
     def update_ui_status_bar(self):
-        """Update ui status bar."""
+        """
+        Update ui status bar.
+"""
         self.ui_handler.update_status_bar()

@@ -1,4 +1,5 @@
-"""Enum coercion workers for Qt QVariant round-trips.
+"""
+Enum coercion workers for Qt QVariant round-trips.
 
 The `VideoDataLayer` and `ImportMode` enums are both `str`-based.
 

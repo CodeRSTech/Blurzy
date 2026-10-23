@@ -29,7 +29,7 @@ later, or hand the job to someone else.
 
 The implemented project workflow addresses that need by saving session data
 and restoring available sessions. Exact behavior for unavailable or invalid
-sessions is described in [Architecture](../../architecture.md#projects-and-persistence).
+sessions is described in [Architecture](../../architecture/overview.md#projects-and-persistence).
 
 ## Simple example
 

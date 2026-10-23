@@ -1,4 +1,5 @@
-"""Factory for loading TorchVision detection model with pretrained weights.
+"""
+Factory for loading TorchVision detection model with pretrained weights.
 
 See Also:
     - [`TorchDetectionModel`][app.infrastructure.detection.model.torch.model.TorchDetectionModel] — consumes the loaded model
@@ -23,21 +24,23 @@ logger = get_logger("Infrastructure->Detection->Models->TorchModelLoaderFactory"
 
 
 class LoadedTorchModel(NamedTuple):
-    """Result of successful TorchVision model loading.
+    """
+    Result of successful TorchVision model loading.
 
-Layer: Infrastructure.
-Context: Implements concrete processing or I/O behind application-facing contracts.
-"""
+    Layer: Infrastructure.
+    Context: Implements concrete processing or I/O behind application-facing contracts.
+    """
     model: Module
     labels: list[str]
 
 
 class TorchModelLoaderFactory:
-    """Factory for loading TorchVision detection model.
+    """
+    Factory for loading TorchVision detection model.
 
-Layer: Infrastructure.
-Context: Implements concrete processing or I/O behind application-facing contracts.
-"""
+    Layer: Infrastructure.
+    Context: Implements concrete processing or I/O behind application-facing contracts.
+    """
 
     @staticmethod
     def create(model_name: str, weights_name: str) -> LoadedTorchModel:

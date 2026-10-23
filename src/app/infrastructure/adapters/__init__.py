@@ -1,4 +1,5 @@
-"""Infrastructure-layer adapters — explicit wrappers to application interface contracts.
+"""
+Infrastructure-layer adapters — explicit wrappers to application interface contracts.
 
 Each adapter wraps a concrete infrastructure class and exposes the corresponding
 application-layer interface.  Concrete classes already satisfy their Protocol

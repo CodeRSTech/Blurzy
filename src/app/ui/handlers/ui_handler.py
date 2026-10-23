@@ -1,4 +1,5 @@
-"""Frame rendering and UI view_state management handler.
+"""
+Frame rendering and UI view_state management handler.
 
 See Also:
     - [`UIController`][app.ui.uicontroller.UIController] — coordinates the UI handlers
@@ -14,7 +15,6 @@ from typing import TYPE_CHECKING, final, override
 
 from PySide6.QtCore import Slot
 
-
 from app.shared.frame_overlay import draw_frame_overlays
 from app.shared.image_utils import rgb_frame_to_q_image
 from app.shared.logging_cfg import get_logger
@@ -26,9 +26,6 @@ from app.shared.masked_blur import (
 from app.domain import VideoDataLayer
 if TYPE_CHECKING:
     from app.domain import SessionId, VideoDataLayerGroup
-
-
-if TYPE_CHECKING:
     from app.infrastructure.dtypes import RGBFrame, ListOfBoxes
     from app.ui.uicontroller import UIController
 
@@ -37,12 +34,6 @@ logger = get_logger("UI->UIHandler")
 
 @final
 class UIHandler:
-    # [AUDIT] Qt CONVENTIONS: UIHandler doesn't inherit from QObject
-    # This handler delegates frame rendering and doesn't use Qt signals/slots directly.
-    # Current design appears intentional: pure logic handler without Qt dependencies.
-    # Note: If future requirements involve signals, inherit from QObject:
-    #   class UIHandler(QObject): ...
-    # Verify this doesn't prevent signal connections elsewhere in the codebase.
     """
     Manages frame rendering and UI view_state updates.
 
@@ -60,33 +51,28 @@ class UIHandler:
         Works with `RGBFrame` data from session cache.
         Converts frames and generates overlays for preview container.
 
-
-Layer: Presentation.
-Context: Supports user interaction and delegates application work through presentation contracts.
-
-
-    Args:
-        controller supplying the selected session, preview widgets, and frame-rendering operations.
-"""
+    Layer: Presentation.
+    Context: Supports user interaction and delegates application work through presentation contracts.
+    """
 
     def __init__(self, controller: UIController) -> None:
+        """
+        Initialize the UIHandler.
+        Args:
+            controller: The UIController instance that coordinates the UI handlers.
+        """
         self._controller = controller
         self._window = controller.window
         self._app = controller.app
         self._win = controller.window
 
-        self._connect_signals()
-
     @override
     def __repr__(self) -> str:
         return f"<{self.__class__.__name__}>"
 
-    def _connect_signals(self):
-        pass
-
-    # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
     #                           PUBLIC METHODS
-    # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
     def set_boxes_for_tab(self, boxes: ListOfBoxes, tab: VideoDataLayerGroup) -> None:
         """
@@ -150,9 +136,9 @@ Context: Supports user interaction and delegates application work through presen
         # ====================================================================
         self._window.set_status_text(status_text)
 
-    # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
     #                           SLOTS
-    # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
     @Slot(object)
     def render_saved_frame(self, s_id: SessionId) -> None:
@@ -202,25 +188,22 @@ Context: Supports user interaction and delegates application work through presen
         )
         self.update_status_bar()
 
-    # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
     #                           PRIVATE METHODS
-    # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
     def _draw_boxes_on_frame_for_session_id(self, s_id: SessionId, frame: RGBFrame) -> None:
         """
         Fetch boxes for the current frame and prepare frame for rendering.
 
-        Note:
-            Flow:
-                _draw_boxes_on_frame_for_session_id(s_id, frame)
-                  ├── Get detection boxes for current frame
-                  ├── Get tracking boxes for current frame
-                  ├── Determine which boxes to display (based on active tab)
-                  └──> Call _update_frame_with_bboxes() to render
+        ???+ abstract "Flow"
+            _draw_boxes_on_frame_for_session_id(s_id, frame)
+              ├── Get detection boxes for current frame
+              ├── Get tracking boxes for current frame
+              ├── Determine which boxes to display (based on active tab)
+              └──> Call _update_frame_with_bboxes() to render
 
-            Only draws preview outlines if `draw_boxes` is True; table data is
-            always populated independently of outline visibility.
-            Displays detection boxes if Detection tab active, tracking boxes if Tracking tab active.
+
 
         Args:
             s_id: Session whose frame is being rendered.
@@ -228,23 +211,22 @@ Context: Supports user interaction and delegates application work through presen
         Raises:
             Exception: Propagates failures fetching session data or applying overlays.
 
-        Note:
-            Live Gaussian blur requires both export `blur_enabled` and the
+        ???+ note "Notes"
+            - Preview outlines are drawn only if `draw_boxes` is True; table data is
+            always populated independently of outline visibility.
+            - Displays detection boxes if Detection tab active, tracking boxes if Tracking tab active.
+            - Live Gaussian blur requires both export `blur_enabled` and the
             editor-only `preview_blur_enabled` setting.
 
         Example:
+            ```python
             handler._draw_boxes_on_frame_for_session_id(session_id, frame)
+            ```
         """
         session = self._app.get_session_by_id(s_id)
-        # ====================================================================
-        # 1. GET DETECTION AND TRACKING BOXES FOR CURRENT FRAME
-        # ====================================================================
-        # TODO: ACTIVE TAB BOXES ARE SUFFICIENT
-        # detections = self._app.get_tab_frame_boxes_for_session_id(s_id, DataBox.DETECTION).frame_data_boxes
-        # trackers = self._app.get_tab_frame_boxes_for_session_id(s_id, DataBox.TRACKING).frame_data_boxes
 
         # ====================================================================
-        # 2. DETERMINE WHICH BOXES TO DISPLAY
+        # 1. DETERMINE WHICH BOXES TO DISPLAY
         # ====================================================================
         active_tab = self._window.active_tab_index
         frame_boxes = self._app.get_tab_frame_boxes_for_session_id(s_id, active_tab).frame_data_boxes
@@ -265,7 +247,7 @@ Context: Supports user interaction and delegates application work through presen
             frame = overlay_alpha_mask(frame, alpha_mask)
 
         # ====================================================================
-        # 3. UPDATE FRAME WITH BOXES
+        # 2. UPDATE FRAME WITH BOXES
         # ====================================================================
         self._update_frame_with_bboxes(
             frame,

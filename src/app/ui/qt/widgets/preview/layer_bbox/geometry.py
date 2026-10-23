@@ -1,4 +1,5 @@
-"""Geometry and coordinate-space helpers for bbox overlay interactions.
+"""
+Geometry and coordinate-space helpers for bbox overlay interactions.
 
 This module converts between image space and widget space, and provides proximity
 lookup for selecting the nearest bbox around the cursor.
@@ -29,7 +30,8 @@ def image_rect_to_widget_space(
     pixmap_rect: QRect,
     image_size: QSize | None,
 ) -> QRect:
-    """Convert image-space coordinates into a widget-space rectangle.
+    """
+    Convert image-space coordinates into a widget-space rectangle.
 
     Args:
         x1: Left image-space coordinate.
@@ -63,7 +65,8 @@ def widget_rect_to_image_space(
     pixmap_rect: QRect,
     image_size: QSize | None,
 ) -> BBoxXYXYTuple:
-    """Convert a widget-space rectangle into clamped image-space coordinates.
+    """
+    Convert a widget-space rectangle into clamped image-space coordinates.
 
     Args:
         rect: Bounding rectangle in widget coordinates.
@@ -93,7 +96,8 @@ def find_bbox_at_pos(
     image_size: QSize | None,
     snap_radius_sq: int = 2500,
 ) -> tuple[str | None, QRect | None]:
-    """Find a bbox at the cursor or snap to the nearest bbox center within radius.
+    """
+    Find a bbox at the cursor or snap to the nearest bbox center within radius.
 
     Args:
         active_bboxes: Box keys mapped to image-space coordinate tuples.
@@ -141,7 +145,8 @@ def image_rect_to_widget_space_with_transforms(
     pan_x: float = 0.0,
     pan_y: float = 0.0,
 ) -> QRect:
-    """Convert image-space box coordinates using the displayed image rectangle.
+    """
+    Convert image-space box coordinates using the displayed image rectangle.
 
     The video widget already applies zoom/pan to the displayed image, so the overlay
     should use that same pixmap rect rather than re-scaling the bbox rectangle again.
@@ -173,7 +178,8 @@ def find_bbox_at_pos_with_transforms(
     pan_y: float = 0.0,
     snap_radius_sq: int = 2500,
 ) -> tuple[str | None, QRect | None]:
-    """Find a bbox at the cursor using the viewport-aligned widget-space rect.
+    """
+    Find a bbox at the cursor using the viewport-aligned widget-space rect.
 
     Args:
         active_bboxes: Box keys mapped to image-space coordinate tuples.
@@ -221,7 +227,8 @@ def find_bbox_keys_intersecting_rect(
     pixmap_rect: QRect,
     image_size: QSize | None,
 ) -> list[str]:
-    """Return box keys whose widget-space bounds intersect a marquee rectangle.
+    """
+    Return box keys whose widget-space bounds intersect a marquee rectangle.
 
     Args:
         active_bboxes: Box keys mapped to image-space coordinate tuples.

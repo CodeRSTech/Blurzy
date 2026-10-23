@@ -1,4 +1,5 @@
-"""Tracking algorithm strategy enumeration.
+"""
+Tracking algorithm strategy enumeration.
 
 See Also:
     - [`TrackingService`][app.application.services.tracking.service.TrackingService] — coordinates tracking use cases
@@ -27,9 +28,9 @@ class TrackingStrategy(str, Enum):
         `HUNGARIAN`.
 
 
-Layer: Domain.
-Context: Represents application concepts without UI or infrastructure dependencies.
-"""
+    Layer: Domain.
+    Context: Represents application concepts without UI or infrastructure dependencies.
+    """
     DUMMY = "dummy"
     HUNGARIAN = "hungarian"
     BOT_SORT = "botsort"

@@ -1,4 +1,5 @@
-"""Shared JSON/CSV serialisation helpers for BBoxViewModel layer data.
+"""
+Shared JSON/CSV serialisation helpers for BBoxViewModel layer data.
 
 This module is an *internal* utility — it is not exposed through any `__init__.py`.
 Both the detection and tracking import/export services import from here so that
@@ -80,7 +81,8 @@ def serialize_layer_to_json(
     data: dict[int, ListOfBoxes],
     file_path: str,
 ) -> int:
-    """Write `data` as a JSON file.  Returns the number of boxes written.
+    """
+    Write `data` as a JSON file.  Returns the number of boxes written.
 
     Args:
         layer_name_str: Layer name recorded in the JSON metadata.
@@ -121,7 +123,8 @@ def serialize_layer_to_csv(
     data: dict[int, ListOfBoxes],
     file_path: str,
 ) -> int:
-    """Write `data` as a CSV file.  Returns the number of boxes written.
+    """
+    Write `data` as a CSV file.  Returns the number of boxes written.
 
     Args:
         layer_name_str: Unused compatibility argument retained to match the JSON helper.
@@ -164,7 +167,8 @@ def serialize_layer_to_csv(
 # ──────────────────────────────────────────────────────────────────────────────
 
 def deserialize_layer_from_json(file_path: str) -> dict[int, ListOfBoxes]:
-    """Read a JSON file and return `{frame_index: [BBoxViewModel, ...]}`.
+    """
+    Read a JSON file and return `{frame_index: [BBoxViewModel, ...]}`.
 
     Note:
         Unknown `source` values that are not registered in `BoxSource` will
@@ -179,7 +183,8 @@ def deserialize_layer_from_json(file_path: str) -> dict[int, ListOfBoxes]:
 
 
 def deserialize_layer_from_csv(file_path: str) -> dict[int, ListOfBoxes]:
-    """Read a CSV file and return `{frame_index: [BBoxViewModel, ...]}`.
+    """
+    Read a CSV file and return `{frame_index: [BBoxViewModel, ...]}`.
 
     Note:
         Rows with an empty `confidence` field are loaded with `confidence=None`.
@@ -214,7 +219,8 @@ def apply_import_to_layer(
     incoming: dict[int, ListOfBoxes],
     mode: ImportMode,
 ) -> int:
-    """Apply `incoming` data into `store`'s `layer` according to `mode`.
+    """
+    Apply `incoming` data into `store`'s `layer` according to `mode`.
 
     Returns:
         int: Total number of boxes written into the layer.

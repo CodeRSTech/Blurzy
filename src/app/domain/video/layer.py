@@ -1,4 +1,5 @@
-"""Annotation layer enumeration for managing bounding detection data.
+"""
+Annotation layer enumeration for managing bounding detection data.
 
 See Also:
     - [`VideoDataLayerGroup`][app.domain.video.layer_group.VideoDataLayerGroup] — groups layers for UI selection
@@ -30,9 +31,9 @@ class VideoDataLayer(str, Enum):
         original = session.get_layer_by_name(VideoDataLayer.A)
 
 
-Layer: Domain.
-Context: Represents application concepts without UI or infrastructure dependencies.
-"""
+    Layer: Domain.
+    Context: Represents application concepts without UI or infrastructure dependencies.
+    """
     A = "a"
     B = "b"
     C = "c"

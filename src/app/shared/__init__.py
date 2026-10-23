@@ -1,4 +1,5 @@
-"""Package for shared; provides reusable helpers across application layers.
+"""
+Package for shared; provides reusable helpers across application layers.
 
 See Also:
     - [`configure_logging`][app.shared.logging_cfg.configure_logging] — configures application logging

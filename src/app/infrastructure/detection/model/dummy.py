@@ -1,13 +1,13 @@
-"""Module for dummy; implements concrete processing and I/O behind application-facing contracts.
+"""
+Module for dummy; implements concrete processing and I/O behind application-facing contracts.
 
 See Also:
     - [`BaseDetectionModel`][app.infrastructure.detection.model.base.BaseDetectionModel] — contract implemented by this model
     - [`load_detection_model`][app.infrastructure.detection.model.loader.load_detection_model] — selects the dummy model when detection is disabled
 
-Layer: Infrastructure.
-Context: Implements concrete processing and i/o behind application-facing contracts at this architectural boundary.
-"""
-
+    Layer: Infrastructure.
+    Context: Implements concrete processing and i/o behind application-facing contracts at this architectural boundary.
+    """
 
 
 
@@ -22,19 +22,20 @@ if TYPE_CHECKING:
     from app.domain.detection.result import DetectionResult
 
 
-
 class DummyDetectionModel(BaseDetectionModel):
-    """No-op detection model — always returns empty list (used when model is "None").
+    """
+    No-op detection model — always returns empty list (used when model is "None").
 
-Layer: Infrastructure.
-Context: Implements concrete processing or I/O behind application-facing contracts.
-"""
+    Layer: Infrastructure.
+    Context: Implements concrete processing or I/O behind application-facing contracts.
+    """
     def detect(
         self,
         frame: np.ndarray,
         chosen_labels: list[str] | None = None,
     ) -> list[DetectionResult]:
-        """Return empty list (no detections).
+        """
+        Return empty list (no detections).
 
         Args:
             frame: RGB image array; unused by this no-op model.

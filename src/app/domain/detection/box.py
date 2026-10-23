@@ -1,4 +1,5 @@
-"""Base bounding-detection domain dataclass — base core for detection and tracking results.
+"""
+Base bounding-detection domain dataclass — base core for detection and tracking results.
 
 See Also:
     - [`DetectionResult`][app.domain.detection.result.DetectionResult] — specializes boxes for inference output
@@ -44,10 +45,9 @@ class Box:
         )
         ```
 
-
-Layer: Domain.
-Context: Represents application concepts without UI or infrastructure dependencies.
-"""
+    Layer: Domain.
+    Context: Represents application concepts without UI or infrastructure dependencies.
+    """
 
     item_id: str
     label: str

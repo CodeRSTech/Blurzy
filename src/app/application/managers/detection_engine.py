@@ -1,4 +1,5 @@
-"""Centralizes detection engine lifecycle (create / update / remove) per session.
+"""
+Centralizes detection engine lifecycle (create / update / remove) per session.
 
 See Also:
     - [`DetectionEngineAdapterFactory`][app.infrastructure.detection.engine.detection_engine_factory.DetectionEngineAdapterFactory] — creates engine adapters
@@ -39,13 +40,13 @@ class DetectionEngineManager:
     unit-testable without a live `Application` instance.
 
 
-Layer: Application.
-Context: Coordinates use-case behavior through domain services and application contracts.
+    Layer: Application.
+    Context: Coordinates use-case behavior through domain services and application contracts.
 
 
     Args:
         session_repo: Interface used to find a session and assign its detection engine.
-"""
+    """
 
     def __init__(self, session_repo: UIApplicationInterface) -> None:
         self._app_adapter = session_repo

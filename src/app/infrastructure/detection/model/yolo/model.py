@@ -1,4 +1,5 @@
-"""Module for model; implements concrete processing and I/O behind application-facing contracts.
+"""
+Module for model; implements concrete processing and I/O behind application-facing contracts.
 
 See Also:
     - [`BaseDetectionModel`][app.infrastructure.detection.model.base.BaseDetectionModel] — common model contract
@@ -11,7 +12,6 @@ Context: Implements concrete processing and i/o behind application-facing contra
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
-
 
 
 
@@ -48,22 +48,23 @@ class YoloDetectionModel(BaseDetectionModel):
         variants (tiny, nano, small, medium, large, extra).
 
 
-Layer: Infrastructure.
-Context: Implements concrete processing or I/O behind application-facing contracts.
+    Layer: Infrastructure.
+    Context: Implements concrete processing or I/O behind application-facing contracts.
 
 
     Args:
         model_file_name: Model file name or path used to load weights.
         loader: Backend-specific model loader.
         mapper: YOLO output mapper that applies confidence/label filtering and creates detection results.
-"""
+    """
     def __init__(
         self,
         model_file_name: str,
         loader: YoloModelLoaderFactory | None = None,
         mapper: YoloDetectionMapper | None = None,
     ) -> None:
-        """Load the Ultralytics model file and prepare its inference mapper.
+        """
+        Load the Ultralytics model file and prepare its inference mapper.
 
         Args:
             model_file_name: Registered model file name or path passed to Ultralytics.
@@ -80,7 +81,9 @@ Context: Implements concrete processing or I/O behind application-facing contrac
         self._model = self._load_model()
 
     def _load_model(self) -> YOLO:
-        """Load YOLO model using factory."""
+        """
+        Load YOLO model using factory.
+"""
         return self._loader.create(self._model_file_name)
 
     def detect(
@@ -88,7 +91,8 @@ Context: Implements concrete processing or I/O behind application-facing contrac
         frame: np.ndarray,
         chosen_labels: list[str] | None = None,
     ) -> list[DetectionResult]:
-        """Run YOLO inference, filter by confidence and optional label list.
+        """
+        Run YOLO inference, filter by confidence and optional label list.
 
         Args:
             frame: RGB image array to pass to the Ultralytics model.

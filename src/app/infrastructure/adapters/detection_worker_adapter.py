@@ -1,4 +1,5 @@
-"""Explicit adapter wrapping `DetectionWorker` to `DetectionWorkerInterface`.
+"""
+Explicit adapter wrapping `DetectionWorker` to `DetectionWorkerInterface`.
 
 See Also:
     - [`DetectionWorkerInterface`][app.application.interfaces.detection.worker_interface.DetectionWorkerInterface] — defines the exposed worker contract
@@ -38,13 +39,13 @@ class DetectionWorkerAdapter(DetectionWorkerInterface):
         reference to the concrete `DetectionWorker` directly.
 
 
-Layer: Infrastructure.
-Context: Implements concrete processing or I/O behind application-facing contracts.
+    Layer: Infrastructure.
+    Context: Implements concrete processing or I/O behind application-facing contracts.
 
 
     Args:
         worker: Concrete detection worker wrapped by this adapter.
-"""
+    """
 
     def __init__(self, worker: DetectionWorker) -> None:
         self._worker = worker
@@ -54,24 +55,33 @@ Context: Implements concrete processing or I/O behind application-facing contrac
 
     @property
     def batch_ready(self):
-        """Expose the Qt signal so existing `connect` call-sites work unchanged."""
+        """
+        Expose the Qt signal so existing `connect` call-sites work unchanged.
+"""
         return self._worker.batch_ready
 
     @property
     def progress_updated(self):
-        """Expose the Qt signal so existing `connect` call-sites work unchanged."""
+        """
+        Expose the Qt signal so existing `connect` call-sites work unchanged.
+"""
         return self._worker.progress_updated
 
     def start(self) -> None:
-        """Start the wrapped detection worker."""
+        """
+        Start the wrapped detection worker.
+"""
         self._worker.start()
 
     def stop(self) -> None:
-        """Stop the wrapped detection worker."""
+        """
+        Stop the wrapped detection worker.
+"""
         self._worker.stop()
 
     def isRunning(self) -> bool:
-        """Return whether the worker thread is running.
+        """
+        Return whether the worker thread is running.
 
         Returns:
             `True` while the wrapped detection worker is active.
@@ -79,7 +89,8 @@ Context: Implements concrete processing or I/O behind application-facing contrac
         return self._worker.isRunning()
 
     def is_complete(self) -> bool:
-        """Return whether the worker has processed all frames.
+        """
+        Return whether the worker has processed all frames.
 
         Returns:
             `True` when detection is complete.
@@ -87,7 +98,8 @@ Context: Implements concrete processing or I/O behind application-facing contrac
         return self._worker.is_complete()
 
     def get_detections(self, frame_index: int) -> list[DetectionResult] | None:
-        """Return cached detections for one frame.
+        """
+        Return cached detections for one frame.
 
         Args:
             frame_index: Zero-based index of the frame whose detections are requested.
@@ -98,7 +110,8 @@ Context: Implements concrete processing or I/O behind application-facing contrac
         return self._worker.get_detections(frame_index)
 
     def get_all_detections(self) -> dict[int, list[DetectionResult]]:
-        """Return all cached detections grouped by frame index.
+        """
+        Return all cached detections grouped by frame index.
 
         Returns:
             New mapping copied from the wrapped worker's cache.

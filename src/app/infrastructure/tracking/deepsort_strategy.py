@@ -1,4 +1,5 @@
-"""Incremental DeepSORT-style tracking with conservative appearance memory.
+"""
+Incremental DeepSORT-style tracking with conservative appearance memory.
 
 See Also:
     - [`TrackingWorker`][app.infrastructure.tracking.track_worker.TrackingWorker] — dispatches frames to this strategy
@@ -70,7 +71,9 @@ def _assign(cost: np.ndarray) -> list[tuple[int, int]]:
 
 
 def _legacy_embedding(box: BBoxViewModel) -> np.ndarray:
-    """Build the historical batch-wrapper feature expected by DeepSORT."""
+    """
+    Build the historical batch-wrapper feature expected by DeepSORT.
+"""
     x1, y1, x2, y2 = box.bbox_xyxy
     width, height = float(x2 - x1), float(y2 - y1)
     center_x, center_y = (float(x1 + x2) / 2, float(y1 + y2) / 2)
@@ -100,7 +103,8 @@ class _Track:
 
     @classmethod
     def create(cls, uid: int, box: BBoxViewModel, frame_idx: int) -> _Track:
-        """Create a track initialized from a detected box.
+        """
+        Create a track initialized from a detected box.
 
         Args:
             uid: Unique track identifier.
@@ -122,7 +126,8 @@ class _Track:
         )
 
     def predict(self, elapsed: int) -> None:
-        """Advance the predicted center by the stored velocity for elapsed frames.
+        """
+        Advance the predicted center by the stored velocity for elapsed frames.
 
         Args:
             elapsed: Number of frames since the track's last prediction.
@@ -131,7 +136,8 @@ class _Track:
         self.position[2:] = np.maximum(self.position[2:], 1.0)
 
     def correct(self, box: BBoxViewModel, frame_idx: int, *, relocated: bool = False) -> None:
-        """Update track geometry, velocity, confidence, and observation age from a detection.
+        """
+        Update track geometry, velocity, confidence, and observation age from a detection.
 
         Args:
             box: Detection matched to this track.
@@ -153,7 +159,8 @@ class _Track:
         self.confirmed = self.confirmed or self.hits >= 2
 
     def remember(self, vector: np.ndarray) -> None:
-        """Store an appearance vector and update the normalized exponential moving average.
+        """
+        Store an appearance vector and update the normalized exponential moving average.
 
         Args:
             vector: Normalized appearance embedding to add to the track gallery.
@@ -168,7 +175,8 @@ class _Track:
 
 
 class DeepSortStrategy:
-    """Associate detections using motion, IoU, and bounded per-track Re-ID memory.
+    """
+    Associate detections using motion, IoU, and bounded per-track Re-ID memory.
 
     Attributes:
         uses_appearance: Whether the strategy consumes appearance vectors.
@@ -185,9 +193,9 @@ class DeepSortStrategy:
         strategy = DeepSortStrategy(min_iou=0.3)
 
 
-Layer: Infrastructure.
-Context: Implements concrete processing or I/O behind application-facing contracts.
-"""
+    Layer: Infrastructure.
+    Context: Implements concrete processing or I/O behind application-facing contracts.
+    """
 
     uses_appearance = True
 
@@ -200,7 +208,8 @@ Context: Implements concrete processing or I/O behind application-facing contrac
         max_age: int | None = None,
         appearance_extractor: ReIDExtractorProtocol | None = None,
     ) -> None:
-        """Create an incremental tracker.
+        """
+        Create an incremental tracker.
 
         Args:
             min_iou: Minimum overlap for the motion/IoU association stage.
@@ -310,7 +319,8 @@ Context: Implements concrete processing or I/O behind application-facing contrac
         frame: RGBFrame | None = None,
         embeddings: Sequence[np.ndarray | None] | None = None,
     ) -> list[BBoxViewModel]:
-        """Advance one frame and return detection-backed and coasted track boxes.
+        """
+        Advance one frame and return detection-backed and coasted track boxes.
 
         Args:
             frame_idx: Nonnegative, strictly increasing frame number.
@@ -439,7 +449,8 @@ Context: Implements concrete processing or I/O behind application-facing contrac
         frames: Mapping[int, np.ndarray] | Sequence[np.ndarray] | None = None,
         embeddings_by_frame: Mapping[int, Sequence[np.ndarray | None]] | None = None,
     ) -> ListOfBoxesByFrameIndexAsDict:
-        """Track a full batch; the incremental API remains the implementation path.
+        """
+        Track a full batch; the incremental API remains the implementation path.
 
         Args:
             source_data: Sparse per-frame detections.

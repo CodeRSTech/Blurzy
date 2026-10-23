@@ -1,4 +1,5 @@
-"""Mapper for converting Ultralytics YOLO model output to DetectionPayload.
+"""
+Mapper for converting Ultralytics YOLO model output to DetectionPayload.
 
 See Also:
     - [`DetectionResult`][app.domain.detection.result.DetectionResult] — normalized detection record produced by the mapper
@@ -18,11 +19,12 @@ logger = get_logger("Infrastructure->Detection->Models->YoloModelMapper")
 
 
 class YoloDetectionMapper:
-    """Maps raw YOLO detection results to DetectionPayload format.
+    """
+    Maps raw YOLO detection results to DetectionPayload format.
 
-Layer: Infrastructure.
-Context: Implements concrete processing or I/O behind application-facing contracts.
-"""
+    Layer: Infrastructure.
+    Context: Implements concrete processing or I/O behind application-facing contracts.
+    """
 
     @staticmethod
     def map(

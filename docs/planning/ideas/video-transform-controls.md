@@ -5,8 +5,8 @@
     Video rotation is implemented: the reader applies source metadata rotation
     and user-requested rotation from the transport controls. Further fit-to-screen,
     zoom/pan, and view-state polish remain possible product improvements. See
-    [video infrastructure](../../reference/infrastructure/video.md) and the
-    [UI handlers](../../reference/ui/handlers.md).
+    [video infrastructure](../../architecture/infrastructure/video.md) and the
+    [UI handlers](../../architecture/ui/handlers.md).
 
 ## What this is
 

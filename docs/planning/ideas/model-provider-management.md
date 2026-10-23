@@ -6,8 +6,8 @@
     supported YOLO, TorchVision, and MTCNN integrations. This proposal remains
     relevant to discoverability and provider-specific guidance; it is not a
     statement that provider selection is absent. See the
-    [detection package notes](../../reference/infrastructure/detection/index.md)
-    and [architecture guide](../../architecture.md).
+    [detection package notes](../../architecture/infrastructure/detection/index.md)
+    and [architecture guide](../../architecture/overview.md).
 
 ## What this is
 

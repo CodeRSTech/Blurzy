@@ -1,4 +1,5 @@
-"""Direction enumeration for frame navigation and copying.
+"""
+Direction enumeration for frame navigation and copying.
 
 See Also:
     - [`PlaybackState`][app.domain.video.playback_state.PlaybackState] — stores the current playback position
@@ -27,8 +28,8 @@ class Direction(Enum):
         target_idx = current_idx + direction.value  # 101
 
 
-Layer: Domain.
-Context: Represents application concepts without UI or infrastructure dependencies.
-"""
+    Layer: Domain.
+    Context: Represents application concepts without UI or infrastructure dependencies.
+    """
     PREV = -1
     NEXT = 1

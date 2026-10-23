@@ -1,4 +1,5 @@
-"""Context menu builders for `AnnotationOverlayWidget`.
+"""
+Context menu builders for `AnnotationOverlayWidget`.
 
 Why this module exists:
 - Keeps UI label text near its emitted backend action string.
@@ -24,7 +25,8 @@ if TYPE_CHECKING:
     from PySide6.QtGui import QAction
     from PySide6.QtWidgets import QMenu
 def build_no_hit_action_map(menu: QMenu) -> dict[QAction, str]:
-    """Build context menu actions used when right-clicking empty canvas space.
+    """
+    Build context menu actions used when right-clicking empty canvas space.
 
 Args:
     menu: Menu to populate with empty-canvas actions.
@@ -59,7 +61,8 @@ Returns:
 
 
 def build_hit_action_map(menu: QMenu, tracker_actions_enabled: bool) -> dict[QAction, str]:
-    """Build context menu actions used when right-clicking over an existing bbox.
+    """
+    Build context menu actions used when right-clicking over an existing bbox.
 
 Args:
     menu: Menu to populate with actions for an existing box.
@@ -105,7 +108,8 @@ Returns:
 
 
 def resolve_selected_action(chosen: QAction | None, action_names: dict[QAction, str]) -> str | None:
-    """Resolve the selected QAction into a context action string payload.
+    """
+    Resolve the selected QAction into a context action string payload.
 
 Args:
     chosen: Action selected by the user, or `None` if the menu was dismissed.

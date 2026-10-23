@@ -1,4 +1,5 @@
-"""Interface contract for creating tracking worker instances.
+"""
+Interface contract for creating tracking worker instances.
 
 See Also:
     - [`TrackingWorkerFactoryAdapter`][app.application.adapters.tracking_worker_factory_adapter.TrackingWorkerFactoryAdapter] — creates concrete tracking workers
@@ -18,11 +19,12 @@ if TYPE_CHECKING:
 
 
 class TrackingWorkerFactoryInterface(Protocol):
-    """Create start-ready tracking workers behind an interface seam.
+    """
+    Create start-ready tracking workers behind an interface seam.
 
-Layer: Application.
-Context: Coordinates use-case behavior through domain services and application contracts.
-"""
+    Layer: Application.
+    Context: Coordinates use-case behavior through domain services and application contracts.
+    """
 
     def create(
         self,
@@ -30,7 +32,8 @@ Context: Coordinates use-case behavior through domain services and application c
         source_data: ListOfBoxesByFrameIndexAsDict,
         session_state: SessionState,
     ) -> TrackingWorkerInterface:
-        """Create a worker that tracks detections across video frames.
+        """
+        Create a worker that tracks detections across video frames.
 
         Args:
             strategy_name: Tracking algorithm to instantiate.

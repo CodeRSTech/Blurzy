@@ -1,4 +1,5 @@
-"""Package for app; groups application source modules.
+"""
+Package for app; groups application source modules.
 
 See Also:
     - [`Application`][app.application.application.Application] — top-level workflow facade

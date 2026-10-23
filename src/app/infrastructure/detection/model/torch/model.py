@@ -1,13 +1,13 @@
-"""Module for model; implements concrete processing and I/O behind application-facing contracts.
+"""
+Module for model; implements concrete processing and I/O behind application-facing contracts.
 
 See Also:
     - [`BaseDetectionModel`][app.infrastructure.detection.model.base.BaseDetectionModel] — common model contract
     - [`TorchModelLoaderFactory`][app.infrastructure.detection.model.torch.loader_factory.TorchModelLoaderFactory] — loads the underlying model
 
-Layer: Infrastructure.
-Context: Implements concrete processing and i/o behind application-facing contracts at this architectural boundary.
-"""
-
+    Layer: Infrastructure.
+    Context: Implements concrete processing and i/o behind application-facing contracts at this architectural boundary.
+    """
 
 
 
@@ -44,8 +44,8 @@ class TorchDetectionModel(BaseDetectionModel):
         Confidence threshold: `DEFAULT_TORCH_CONFIDENCE_THRESHOLD` (0.50).
 
 
-Layer: Infrastructure.
-Context: Implements concrete processing or I/O behind application-facing contracts.
+    Layer: Infrastructure.
+    Context: Implements concrete processing or I/O behind application-facing contracts.
 
 
     Args:
@@ -53,7 +53,7 @@ Context: Implements concrete processing or I/O behind application-facing contrac
         weights_name: Name of the model weights to load.
         loader: Backend-specific model loader.
         mapper: TorchVision output mapper that applies confidence/label filtering and creates detection results.
-"""
+    """
     def __init__(
         self,
         model_name: str,
@@ -61,7 +61,8 @@ Context: Implements concrete processing or I/O behind application-facing contrac
         loader: TorchModelLoaderFactory | None = None,
         mapper: TorchDetectionMapper | None = None,
     ) -> None:
-        """Load the TorchVision model and prepare its inference mapper.
+        """
+        Load the TorchVision model and prepare its inference mapper.
 
         Args:
             model_name: TorchVision model class name selected by the registry.
@@ -82,7 +83,9 @@ Context: Implements concrete processing or I/O behind application-facing contrac
         self._load_model()
 
     def _load_model(self) -> None:
-        """Load TorchVision model using factory."""
+        """
+        Load TorchVision model using factory.
+"""
         loaded = self._loader.create(self._model_name, self._weights_name)
         self._model = loaded.model
         self.labels = loaded.labels
@@ -92,7 +95,8 @@ Context: Implements concrete processing or I/O behind application-facing contrac
         frame: np.ndarray,
         chosen_labels: list[str] | None = None,
     ) -> list[Box]:
-        """Run TorchVision inference, filter by confidence and optional label list.
+        """
+        Run TorchVision inference, filter by confidence and optional label list.
 
         Args:
             frame: RGB image array converted to a tensor before inference.

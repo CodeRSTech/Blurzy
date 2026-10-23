@@ -1,4 +1,5 @@
-"""Data tab enumeration for UI tab selection.
+"""
+Data tab enumeration for UI tab selection.
 
 See Also:
     - [`VideoDataLayer`][app.domain.video.layer.VideoDataLayer] — individual data layers grouped for display
@@ -27,8 +28,8 @@ class VideoDataLayerGroup(int, Enum):
             detection_service.delete_detections(s_id, keys)
 
 
-Layer: Domain.
-Context: Represents application concepts without UI or infrastructure dependencies.
-"""
+    Layer: Domain.
+    Context: Represents application concepts without UI or infrastructure dependencies.
+    """
     DETECTION = 0
     TRACKING = 1

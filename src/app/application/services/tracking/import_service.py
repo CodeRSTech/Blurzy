@@ -1,4 +1,5 @@
-"""Tracking layer import service — loads bounding-box data into layers C or D.
+"""
+Tracking layer import service — loads bounding-box data into layers C or D.
 
 See Also:
     - [`IDataImporter`][app.application.interfaces.data_import_interface.IDataImporter] — defines the import contract
@@ -65,13 +66,13 @@ class TrackingImportService(QObject):
         user to manually re-run tracking.
 
 
-Layer: Application.
-Context: Coordinates use-case behavior through domain services and application contracts.
+    Layer: Application.
+    Context: Coordinates use-case behavior through domain services and application contracts.
 
 
     Args:
         app: Application used to resolve the destination session and replace imported tracking-layer data.
-"""
+    """
 
     def __init__(self, app: Application) -> None:
         super().__init__(parent=app)

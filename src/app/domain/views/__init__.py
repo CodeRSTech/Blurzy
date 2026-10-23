@@ -1,4 +1,5 @@
-"""View model for UI binding — boxes, sessions, settings, model selection.
+"""
+View model for UI binding — boxes, sessions, settings, model selection.
 
 See Also:
     - [`ViewModelService`][app.application.services.view_model_service.ViewModelService] — prepares domain view models for presentation

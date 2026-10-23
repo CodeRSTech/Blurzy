@@ -1,4 +1,5 @@
-"""Domain utility functions and custom exceptions.
+"""
+Domain utility functions and custom exceptions.
 
 See Also:
     - [`new_passes_filter`][app.domain.helpers.functions.new_passes_filter] — applies detection filtering rules

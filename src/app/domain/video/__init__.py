@@ -1,4 +1,5 @@
-"""Video domain model — playback view_state, metadata, ring buffer, direction.
+"""
+Video domain model — playback view_state, metadata, ring buffer, direction.
 
 See Also:
     - [`VideoMetadata`][app.domain.video.metadata.VideoMetadata] — describes the active source video

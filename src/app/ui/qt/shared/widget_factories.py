@@ -1,4 +1,5 @@
-"""Module for widget factories; implements the Qt presentation components.
+"""
+Module for widget factories; implements the Qt presentation components.
 
 See Also:
     - [`create_hbox_layout`][app.ui.qt.shared.layout_shortcuts.create_hbox_layout] — provides layouts used by widget factories
@@ -27,9 +28,9 @@ if TYPE_CHECKING:
     from PySide6.QtWidgets import QWidget, QHBoxLayout
 
 
-
 def create_qhbox_with_widgets(widgets: list[QWidget] | tuple[QWidget, ...]) -> QHBoxLayout:
-    """Create a horizontal layout containing the supplied widgets.
+    """
+    Create a horizontal layout containing the supplied widgets.
 
     Args:
         widgets: Widgets to add to the layout in order.
@@ -43,7 +44,8 @@ def create_qhbox_with_widgets(widgets: list[QWidget] | tuple[QWidget, ...]) -> Q
 def create_progress_bar(
     minimum: int, maximum: int, text_visible: bool = False, visible: bool = True
 ) -> QProgressBar:
-    """Create and configure a Qt progress bar.
+    """
+    Create and configure a Qt progress bar.
 
     Args:
         minimum: Lower end of the displayed progress range.
@@ -64,7 +66,8 @@ def create_progress_bar(
 def create_spinbox(
     min_val: float, max_val: float, step: float, default: float
 ) -> QDoubleSpinBox:
-    """Create a two-decimal floating-point spin box.
+    """
+    Create a two-decimal floating-point spin box.
 
     Args:
         min_val: Minimum permitted value.
@@ -84,7 +87,8 @@ def create_spinbox(
 
 
 def create_int_spinbox(min_val: int, max_val: int, step: int, default: int) -> QSpinBox:
-    """Create an integer spin box with an explicit inclusive range.
+    """
+    Create an integer spin box with an explicit inclusive range.
 
     Args:
         min_val: Smallest accepted integer.
@@ -109,7 +113,8 @@ def create_int_spinbox(min_val: int, max_val: int, step: int, default: int) -> Q
 
 
 def create_blur_strength_spinbox(default: float) -> QDoubleSpinBox:
-    """Create blur strength spinbox.
+    """
+    Create blur strength spinbox.
 
     Args:
         default: Initial blur-strength value, clamped to `[0, 255]`.
@@ -121,7 +126,8 @@ def create_blur_strength_spinbox(default: float) -> QDoubleSpinBox:
 
 
 def post_data_table_init(data_table: QTableWidget) -> None:
-    """Apply standard setup after the data table is created.
+    """
+    Apply standard setup after the data table is created.
 
     Args:
         data_table: Table to configure for read-only extended row selection.

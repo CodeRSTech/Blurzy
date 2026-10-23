@@ -1,4 +1,5 @@
-"""Serializes project documents to JSON and validates them when reading.
+"""
+Serializes project documents to JSON and validates them when reading.
 
 See Also:
     - [`ProjectDocument`][app.domain.project.project_document.ProjectDocument] — document model persisted by this store
@@ -19,7 +20,8 @@ from app.shared.exceptions import ProjectFormatException
 
 
 class ProjectStore:
-    """Read and write versioned project documents as JSON.
+    """
+    Read and write versioned project documents as JSON.
 
     Layer: Infrastructure.
     Context: Encodes domain project data at the filesystem boundary and
@@ -29,7 +31,8 @@ class ProjectStore:
     _SUPPORTED_VERSION = "1.0"
 
     def save(self, file_path: str, project: ProjectDocument) -> None:
-        """Serialize a project document to the specified path.
+        """
+        Serialize a project document to the specified path.
 
         Args:
             file_path: Destination JSON file; its parent directory is created
@@ -50,7 +53,8 @@ class ProjectStore:
             json.dump(asdict(project), fh, indent=2)
 
     def load(self, file_path: str) -> ProjectDocument:
-        """Read JSON from disk and validate it as a supported project.
+        """
+        Read JSON from disk and validate it as a supported project.
 
         Args:
             file_path: Source project JSON file.

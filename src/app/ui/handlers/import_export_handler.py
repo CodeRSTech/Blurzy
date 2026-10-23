@@ -1,4 +1,5 @@
-"""Import / Export handler for detection and tracking layer data.
+"""
+Import / Export handler for detection and tracking layer data.
 
 See Also:
     - [`DetectionImportService`][app.application.services.detection.importing.DetectionImportService] — imports detection-layer data
@@ -66,13 +67,13 @@ class ImportExportHandler(QObject):
         that very large files do not freeze the UI during deserialisation.
 
 
-Layer: Presentation.
-Context: Supports user interaction and delegates application work through presentation contracts.
+    Layer: Presentation.
+    Context: Supports user interaction and delegates application work through presentation contracts.
 
 
     Args:
         controller: Controller supplying import/export actions, the active window, and post-import rendering.
-"""
+    """
 
     def __init__(self, controller: UIController) -> None:
         super().__init__(parent=controller)
@@ -134,7 +135,9 @@ Context: Supports user interaction and delegates application work through presen
         scope: list[VideoDataLayer],
         scope_title: str,
     ) -> None:
-        """Open the dialog, then dispatch import or export to the Application."""
+        """
+        Open the dialog, then dispatch import or export to the Application.
+"""
         # ====================================================================
         # 1. VALIDATE SESSION
         # ====================================================================

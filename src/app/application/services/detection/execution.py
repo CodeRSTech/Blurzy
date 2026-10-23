@@ -1,4 +1,5 @@
-"""Single-frame detection execution collaborator.
+"""
+Single-frame detection execution collaborator.
 
 See Also:
     - [`DetectionEngineManager`][app.application.managers.detection_engine.DetectionEngineManager] — supplies session detection engines
@@ -29,16 +30,17 @@ logger = get_logger("Application->DetectionExecutionService")
 
 
 class DetectionExecutionService:
-    """Run current-frame detection while delegating engine lifecycle to the manager.
+    """
+    Run current-frame detection while delegating engine lifecycle to the manager.
 
-Layer: Application.
-Context: Coordinates use-case behavior through domain services and application contracts.
+    Layer: Application.
+    Context: Coordinates use-case behavior through domain services and application contracts.
 
 
     Args:
         session_repo: Interface used to retrieve the session and its current frame for inference.
         engine_manager: Manager responsible for detection-engine lifecycle.
-"""
+    """
 
     def __init__(
             self, session_repo: UIApplicationInterface, engine_manager: DetectionEngineManager
@@ -47,7 +49,8 @@ Context: Coordinates use-case behavior through domain services and application c
         self._engine_manager = engine_manager
 
     def execute_for_current_frame(self, s_id: SessionId) -> None:
-        """Detect the current frame and refresh its selected and editable detections.
+        """
+        Detect the current frame and refresh its selected and editable detections.
 
         Args:
             s_id: Session identifier whose current frame is processed.
@@ -112,7 +115,8 @@ Context: Coordinates use-case behavior through domain services and application c
     def _filter_boxes(
             boxes: ListOfBoxes, settings: ProcessingSettings
     ) -> list[BBoxViewModel]:
-        """Apply the historical detection selection before storing either layer.
+        """
+        Apply the historical detection selection before storing either layer.
 
         Args:
             boxes: Mapped model detections.

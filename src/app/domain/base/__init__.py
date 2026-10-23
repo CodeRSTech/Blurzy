@@ -1,4 +1,5 @@
-"""Package for base; defines application concepts without UI or infrastructure dependencies.
+"""
+Package for base; defines application concepts without UI or infrastructure dependencies.
 
 See Also:
     - [`ProcessingSettingsKwargs`][app.domain.base.dtypes.ProcessingSettingsKwargs] — typed settings update shape

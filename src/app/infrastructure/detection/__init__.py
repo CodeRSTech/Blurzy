@@ -1,4 +1,5 @@
-"""Object detection infrastructure — YOLO model, detection engine, background worker.
+"""
+Object detection infrastructure — YOLO model, detection engine, background worker.
 
 See Also:
     - [`DetectionEngine`][app.infrastructure.detection.engine.detection_engine.DetectionEngine] — runs model inference

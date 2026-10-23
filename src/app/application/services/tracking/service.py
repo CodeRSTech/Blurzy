@@ -1,4 +1,5 @@
-"""Tracking worker orchestration and multi-object tracking management.
+"""
+Tracking worker orchestration and multi-object tracking management.
 
 See Also:
     - [`TrackingWorkerManager`][app.application.managers.tracking_worker.TrackingWorkerManager] — coordinates worker lifecycle
@@ -57,13 +58,13 @@ class TrackingService:
             `DataLayer.D` — User-editable tracking results (eagerly seeded from C).
 
 
-Layer: Application.
-Context: Coordinates use-case behavior through domain services and application contracts.
+    Layer: Application.
+    Context: Coordinates use-case behavior through domain services and application contracts.
 
 
     Args:
         app: Application adapted for tracking-worker startup and result processing against session data.
-"""
+    """
 
     def __init__(self, app: Application):
         # self._app = app

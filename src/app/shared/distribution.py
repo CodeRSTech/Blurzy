@@ -26,7 +26,8 @@ _RESOURCE_ROOT_PARTS = ("app", "ui", "qt", "resources")
 
 
 def _distribution_root() -> Path:
-    """Return the root path of the application's distribution.
+    """
+    Return the root path of the application's distribution.
 
     Returns:
         Root path used to locate bundled resources.
@@ -38,7 +39,8 @@ def _distribution_root() -> Path:
 
 
 def bundled_resource_path(*relative_parts: str) -> Path:
-    """Return the absolute path to a bundled application resource.
+    """
+    Return the absolute path to a bundled application resource.
 
     Args:
         *relative_parts: Path components appended beneath the resource root.
@@ -50,7 +52,8 @@ def bundled_resource_path(*relative_parts: str) -> Path:
 
 
 def configure_qt_application_metadata(q_app: QApplication) -> None:
-    """Set the Qt application name, version, organization, and optional icon.
+    """
+    Set the Qt application name, version, organization, and optional icon.
 
     Args:
         q_app: Qt application instance to configure.

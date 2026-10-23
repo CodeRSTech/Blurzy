@@ -96,16 +96,17 @@ class Session(QObject):
         tracking_worker: Tracking worker, if initialized.
 
 
-Layer: Infrastructure.
-Context: Implements concrete processing or I/O behind application-facing contracts.
+    Layer: Infrastructure.
+    Context: Implements concrete processing or I/O behind application-facing contracts.
 
 
     Args:
         s_id: Identifier of the session associated with this object.
-"""
+    """
 
     def __init__(self, s_id: SessionId) -> None:
-        """Create a bare session shell.
+        """
+        Create a bare session shell.
 
         The initializer is responsible for attaching the runtime collaborators
         later. This keeps object construction predictable and easy to test.
@@ -126,7 +127,9 @@ Context: Implements concrete processing or I/O behind application-facing contrac
         return f"<Session id={self.s_id.basename}>"
 
     def _require_state(self) -> SessionState:
-        """Return the initialized session view_state or raise a clear error."""
+        """
+        Return the initialized session view_state or raise a clear error.
+"""
         if self.state is None:
             raise RuntimeError(
                 "Session view_state has not been initialized yet. "
@@ -135,7 +138,9 @@ Context: Implements concrete processing or I/O behind application-facing contrac
         return self.state
 
     def _require_video_reader(self) -> VideoReader:
-        """Return the initialized video reader or raise a clear error."""
+        """
+        Return the initialized video reader or raise a clear error.
+"""
         if self.video_reader is None:
             raise RuntimeError(
                 "Session video reader has not been initialized yet. "
@@ -144,7 +149,9 @@ Context: Implements concrete processing or I/O behind application-facing contrac
         return self.video_reader
 
     def _require_video_decode_worker(self) -> VideoDecodeWorker:
-        """Return the initialized decode worker or raise a clear error."""
+        """
+        Return the initialized decode worker or raise a clear error.
+"""
         if self.video_decode_worker is None:
             raise RuntimeError(
                 "Session decode worker has not been initialized yet. "
@@ -153,12 +160,14 @@ Context: Implements concrete processing or I/O behind application-facing contrac
         return self.video_decode_worker
 
     # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    """ ### PROPERTIES """
+    """
+ ### PROPERTIES """
     # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
     @property
     def has_buffered_frame(self) -> bool:
-        """Check if the session has a buffered frame.
+        """
+        Check if the session has a buffered frame.
 
 Returns:
     `True` when the decode worker can provide a buffered frame.
@@ -167,7 +176,8 @@ Returns:
 
     @property
     def has_running_detection_worker(self) -> bool:
-        """Check if the session has a running detection worker.
+        """
+        Check if the session has a running detection worker.
 
 Returns:
     `True` when the detection worker exists and is running.
@@ -176,7 +186,8 @@ Returns:
 
     @property
     def has_running_tracking_worker(self) -> bool:
-        """Check if the session has a running tracking worker.
+        """
+        Check if the session has a running tracking worker.
 
 Returns:
     `True` when the tracking worker exists and is running.
@@ -185,7 +196,8 @@ Returns:
 
     @property
     def is_playing_video(self) -> bool:
-        """Check if the session is currently playing the video.
+        """
+        Check if the session is currently playing the video.
 
 Returns:
     Whether the session is currently playing.
@@ -194,7 +206,8 @@ Returns:
 
     @is_playing_video.setter
     def is_playing_video(self, is_playing: bool) -> None:
-        """Set whether this session's playback is active.
+        """
+        Set whether this session's playback is active.
 
         Args:
             is_playing: Whether playback should be active.
@@ -202,7 +215,9 @@ Returns:
         self._require_state().playback.is_playing = is_playing
 
     def close(self) -> None:
-        """Stop all workers (detection, tracking, decode) and close reader."""
+        """
+        Stop all workers (detection, tracking, decode) and close reader.
+"""
         if self.detection_worker is not None:
             self.detection_worker.stop()
         if self.tracking_worker is not None:
@@ -218,7 +233,8 @@ Returns:
     # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
     def get_layer_by_name(self, layer_name: VideoDataLayer) -> ListOfBoxesByFrameIndexAsDict:
-        """Get all boxes for a specific layer as a dictionary of lists.
+        """
+        Get all boxes for a specific layer as a dictionary of lists.
 
         Args:
             layer_name: Layer whose boxes should be retrieved.
@@ -229,7 +245,8 @@ Returns:
         return self.data.get_all_boxes_for_layer_as_dict_of_lists(layer_name)
 
     def get_layer_boxes_for_index(self, layer_name: VideoDataLayer, frame_index: int) -> ListOfBoxes:
-        """Get all boxes for a specific layer at a specific frame index.
+        """
+        Get all boxes for a specific layer at a specific frame index.
 
         Args:
             layer_name: Layer to query.
@@ -242,7 +259,8 @@ Returns:
         return self.data.get_boxes_for_layer_at_frame_index_as_list(layer_name, frame_index)
 
     def get_layer_boxes_for_current_frame(self, layer_name: VideoDataLayer) -> ListOfBoxes:
-        """Get all boxes for a specific layer at the current playback frame index.
+        """
+        Get all boxes for a specific layer at the current playback frame index.
 
         Args:
             layer_name: Layer to query.
@@ -253,7 +271,8 @@ Returns:
         return self.get_layer_boxes_for_index(layer_name, self._require_state().playback.current_frame_index)
 
     def has_boxes_for_layer(self, layer_name: VideoDataLayer) -> bool:
-        """Check if there are any boxes for a specific layer.
+        """
+        Check if there are any boxes for a specific layer.
 
 Args:
     layer_name: Name of the target layer.
@@ -264,7 +283,9 @@ Returns:
         return self.data.has_boxes_for_layer(layer_name)
 
     def stop_playback(self):
-        """Stop video playback and reset the playback state."""
+        """
+        Stop video playback and reset the playback state.
+"""
         self._require_state().playback.stop_playback()
 
     # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -272,7 +293,8 @@ Returns:
     # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
     def get_buffered_frame(self) -> RGBFrame | None:
-        """Get the next frame (current_idx + 1) from the ring buffer (for lookahead during playback).
+        """
+        Get the next frame (current_idx + 1) from the ring buffer (for lookahead during playback).
 
         Returns:
             Next RGB frame, or `None` if it is not currently available.
@@ -311,7 +333,8 @@ Returns:
         )
 
     def get_current_frame(self) -> RGBFrame | None:
-        """Get frame at current playback position (caches result in view_state).
+        """
+        Get frame at current playback position (caches result in view_state).
 
         Returns:
             Current RGB frame, or `None` when no frame is available.
@@ -325,7 +348,8 @@ Returns:
         )
 
     def get_next_frame(self) -> RGBFrame | None:
-        """Get next frame (current_idx + 1).
+        """
+        Get next frame (current_idx + 1).
 
         Returns:
             Next RGB frame, or `None` when it is not decoded before the timeout.
@@ -339,7 +363,8 @@ Returns:
         )
 
     def get_previous_frame(self) -> RGBFrame | None:
-        """Get previous frame at index `(current_idx - 1)`.
+        """
+        Get previous frame at index `(current_idx - 1)`.
 
         Returns:
             Previous RGB frame, or `None` when it is not decoded before the timeout.

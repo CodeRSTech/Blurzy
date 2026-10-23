@@ -66,14 +66,14 @@ class SessionDataStore(QObject):
         - Box mutation occurs in place after the lock is acquired.
 
 
-Layer: Infrastructure.
-Context: Implements concrete processing or I/O behind application-facing contracts.
+    Layer: Infrastructure.
+    Context: Implements concrete processing or I/O behind application-facing contracts.
 
 
     Args:
         s_id: Identifier of the session associated with this object.
         parent: Optional Qt parent object.
-"""
+    """
 
     def __init__(self, s_id: SessionId, parent: QObject | None = None) -> None:
         super().__init__(parent)
@@ -93,7 +93,8 @@ Context: Implements concrete processing or I/O behind application-facing contrac
 
     @property
     def data_lock(self) -> threading.RLock:
-        """Return reentrant lock protecting `_data` (used internally by all CRUD methods).
+        """
+        Return reentrant lock protecting `_data` (used internally by all CRUD methods).
 
         Returns:
             The reentrant lock guarding the store's layer data.
@@ -106,7 +107,8 @@ Context: Implements concrete processing or I/O behind application-facing contrac
     def get_boxes_for_layer_at_frame_index_as_list(
             self, layer: VideoDataLayer, frame_index: int
     ) -> ListOfBoxes:
-        """Retrieve all boxes for a given frame and layer in O(1) time.
+        """
+        Retrieve all boxes for a given frame and layer in O(1) time.
 
         Args:
             layer: Layer whose frame data is requested.
@@ -123,7 +125,8 @@ Context: Implements concrete processing or I/O behind application-facing contrac
             return self._data[layer].get(frame_index, [])
 
     def get_all_boxes_for_layer_as_dict_of_lists(self, layer: VideoDataLayer) -> dict[int, ListOfBoxes]:
-        """Return the store's frame-to-box mapping for a layer.
+        """
+        Return the store's frame-to-box mapping for a layer.
 
         Args:
             layer: Layer whose frame mapping is returned.
@@ -136,7 +139,8 @@ Context: Implements concrete processing or I/O behind application-facing contrac
             return self._data[layer]
 
     def has_boxes_for_layer(self, layer: VideoDataLayer) -> bool:
-        """Extremely fast boolean check if a layer contains any boxes across all frames.
+        """
+        Extremely fast boolean check if a layer contains any boxes across all frames.
 
         Args:
             layer: Layer to check.
@@ -148,7 +152,8 @@ Context: Implements concrete processing or I/O behind application-facing contrac
             return any(len(boxes) > 0 for boxes in self._data[layer].values())
 
     def has_boxes_for_layer_at_frame_index(self, layer: VideoDataLayer, frame_index: int) -> bool:
-        """Extremely fast boolean check if any boxes exist for a frame.
+        """
+        Extremely fast boolean check if any boxes exist for a frame.
 
         Args:
             layer: Layer to check.
@@ -161,7 +166,8 @@ Context: Implements concrete processing or I/O behind application-facing contrac
             return len(self._data[layer].get(frame_index, [])) > 0
 
     def has_frame_for_layer_at_frame_index(self, layer: VideoDataLayer, frame_index: int) -> bool:
-        """Return whether a layer frame was initialized, even when it is intentionally empty.
+        """
+        Return whether a layer frame was initialized, even when it is intentionally empty.
 
         Args:
             layer: Layer to check.
@@ -178,7 +184,8 @@ Context: Implements concrete processing or I/O behind application-facing contrac
     def add_box_to_layer_at_frame_index(
             self, layer: VideoDataLayer, frame_index: int, box: BBoxViewModel
     ) -> None:
-        """Inserts a single bounding detection in true O(1) append time.
+        """
+        Inserts a single bounding detection in true O(1) append time.
 
         Args:
             layer: Layer receiving the box.
@@ -191,7 +198,8 @@ Context: Implements concrete processing or I/O behind application-facing contrac
     def add_boxes_to_layer_at_frame_index(
             self, layer: VideoDataLayer, frame_index: int, boxes: Iterable[BBoxViewModel]
     ) -> None:
-        """Appends new boxes to the specified layer and frame natively.
+        """
+        Appends new boxes to the specified layer and frame natively.
 
         Args:
             layer: Layer receiving the boxes.
@@ -206,7 +214,8 @@ Context: Implements concrete processing or I/O behind application-facing contrac
     def purge_boxes_in_layer_by_minimum_confidence_at_frame_index(
             self, layer: VideoDataLayer, min_conf: float, frame_index: int
     ) -> None:
-        """Instantly deletes all AI boxes below a confidence threshold in a specific layer.
+        """
+        Instantly deletes all AI boxes below a confidence threshold in a specific layer.
 
         Args:
             layer: Layer from which low-confidence machine boxes are removed.
@@ -227,7 +236,8 @@ Context: Implements concrete processing or I/O behind application-facing contrac
     def move_boxes_in_layer_at_frame_index_by_delta(
             self, layer: VideoDataLayer, frame_index: int, keys: set[str], delta_x: float, delta_y: float
     ) -> int:
-        """Move boxes by (`delta_x`, `delta_y`) pixels, return count moved.
+        """
+        Move boxes by (`delta_x`, `delta_y`) pixels, return count moved.
 
         Args:
             layer: Layer containing the boxes.
@@ -258,7 +268,8 @@ Context: Implements concrete processing or I/O behind application-facing contrac
     def move_manual_boxes_in_layer_at_frame_index_by_delta(
             self, layer: VideoDataLayer, frame_index: int, keys: set[str], delta_x: float, delta_y: float
     ) -> int:
-        """Move manual boxes only (`source = AnnotationBoxSource.MANUAL`) by delta, return count moved.
+        """
+        Move manual boxes only (`source = AnnotationBoxSource.MANUAL`) by delta, return count moved.
 
         Args:
             layer: Layer containing the boxes.
@@ -289,7 +300,8 @@ Context: Implements concrete processing or I/O behind application-facing contrac
     # ============================== DELETE ==============================
 
     def purge_boxes_in_layer_by_minimum_confidence(self, layer: VideoDataLayer, min_conf: float) -> None:
-        """Delete all AI boxes below `min_conf` across all frames (preserves manual boxes).
+        """
+        Delete all AI boxes below `min_conf` across all frames (preserves manual boxes).
 
         Args:
             layer: Layer from which low-confidence machine boxes are removed.
@@ -310,7 +322,8 @@ Context: Implements concrete processing or I/O behind application-facing contrac
 
     def apply_filters_to_layers(self, source_layer_name: VideoDataLayer, target_layer_name: VideoDataLayer,
                                 session_settings: ProcessingSettings) -> int:
-        """Re-filter source boxes into the target layer using the current session settings.
+        """
+        Re-filter source boxes into the target layer using the current session settings.
 
         Args:
             source_layer_name: Layer containing the unfiltered boxes to evaluate.
@@ -351,7 +364,8 @@ Context: Implements concrete processing or I/O behind application-facing contrac
         return changed_frames
 
     def clear_all_layers(self, keep_manual: bool = False) -> None:
-        """Wipes all tracking and detection layers.
+        """
+        Wipes all tracking and detection layers.
 
         Args:
             keep_manual: Whether to retain manual boxes in editable layers B and D.
@@ -364,7 +378,8 @@ Context: Implements concrete processing or I/O behind application-facing contrac
             logger.info("Cleared all layers for session '{}'", self._s_id)
 
     def clear_layer_by_name(self, layer: VideoDataLayer, keep_manual: bool = False) -> None:
-        """Clears boxes for a specific layer.
+        """
+        Clears boxes for a specific layer.
 
         Args:
             layer: Layer to clear.
@@ -378,7 +393,8 @@ Context: Implements concrete processing or I/O behind application-facing contrac
                     self._data[layer][frame_index] = [b for b in boxes if b.is_manual]
 
     def clear_layers_by_name(self, layers: list[VideoDataLayer]) -> None:
-        """Clear layers by name.
+        """
+        Clear layers by name.
 
         Args:
             layers: Layers whose contents should be cleared.
@@ -387,7 +403,8 @@ Context: Implements concrete processing or I/O behind application-facing contrac
             self.clear_layer_by_name(layer)
 
     def delete_boxes_from_layer_by_id(self, layer: VideoDataLayer, box_ids: Iterable[str]) -> None:
-        """Deletes specific boxes from a layer by their string keys/IDs.
+        """
+        Deletes specific boxes from a layer by their string keys/IDs.
 
         Args:
             layer: Layer from which matching boxes are removed.
@@ -406,7 +423,8 @@ Context: Implements concrete processing or I/O behind application-facing contrac
     def delete_boxes_from_layer_by_id_at_frame_index(
             self, layer: VideoDataLayer, box_ids: Iterable[str], frame_index: int
     ) -> bool:
-        """Instantly deletes specific boxes from a layer at a single frame index.
+        """
+        Instantly deletes specific boxes from a layer at a single frame index.
 
         Args:
             layer: Layer from which boxes are removed.
@@ -442,7 +460,8 @@ Context: Implements concrete processing or I/O behind application-facing contrac
     def overwrite_source_to_target_layer_at_index(
             self, source_layer: VideoDataLayer, target_layer: VideoDataLayer, index: int
     ) -> None:
-        """Copy-and-overwrite a single frame's boxes from one layer to another.
+        """
+        Copy-and-overwrite a single frame's boxes from one layer to another.
 
 Args:
     source_layer: Layer providing source boxes.
@@ -459,7 +478,8 @@ Args:
             self, source_layer: VideoDataLayer, target_layer: VideoDataLayer,
             filter_fn: Callable[[BBoxViewModel], bool] | None = None
     ) -> None:
-        """Copy all accepted boxes from a source layer to a target layer.
+        """
+        Copy all accepted boxes from a source layer to a target layer.
 
         Args:
             source_layer: Layer providing box data.
@@ -487,7 +507,8 @@ Args:
     def overwrite_layer_with_dict_of_boxes(
             self, layer: VideoDataLayer, boxes_dict: dict[int, ListOfBoxes]
     ) -> None:
-        """Replace a layer with lists keyed by zero-based frame index.
+        """
+        Replace a layer with lists keyed by zero-based frame index.
 
         Args:
             layer: Layer whose stored frame data is cleared and replaced.
@@ -506,7 +527,8 @@ Args:
     def overwrite_layer_at_index_with_boxes(
             self, layer: VideoDataLayer, frame_index: int, boxes: ListOfBoxes
     ) -> None:
-        """Replace the stored box list for one layer and frame.
+        """
+        Replace the stored box list for one layer and frame.
 
         Args:
             layer: Layer whose frame entry is replaced.
@@ -526,7 +548,8 @@ Args:
             boxes: Iterable[BBoxViewModel],
             filter_fn: Callable[[BBoxViewModel], bool] | None = None,
     ) -> None:
-        """Replace machine boxes in one frame while retaining manual annotations.
+        """
+        Replace machine boxes in one frame while retaining manual annotations.
 
         Args:
             layer: Target layer whose machine boxes are refreshed.
@@ -553,7 +576,8 @@ Args:
             frame_count: int,
             filter_fn: Callable[[BBoxViewModel], bool] | None = None,
     ) -> None:
-        """Refresh all machine boxes in a frame range under one lock acquisition.
+        """
+        Refresh all machine boxes in a frame range under one lock acquisition.
 
         Args:
             layer: Target layer whose machine boxes are refreshed.
@@ -587,7 +611,8 @@ Args:
             boxes: Iterable[BBoxViewModel],
             filter_fn: Callable[[BBoxViewModel], bool] | None,
     ) -> None:
-        """Replace a frame's machine boxes while the caller holds `data_lock`.
+        """
+        Replace a frame's machine boxes while the caller holds `data_lock`.
 
         Args:
             layer: Layer being updated.
@@ -613,7 +638,8 @@ Args:
         self._data[layer][frame_index] = manual_boxes + machine_boxes
 
     def to_project_payload(self) -> dict[str, dict[str, list[dict[str, object]]]]:
-        """Serialize session layer data into the project payload structure.
+        """
+        Serialize session layer data into the project payload structure.
 
         Returns:
             Nested mapping of layer name to frame-index strings to serialized box dictionaries.
@@ -629,7 +655,8 @@ Args:
             return payload
 
     def load_project_payload(self, payload: dict[str, dict[str, list[dict[str, object]]]]) -> None:
-        """Replace stored layers with box data from a project payload.
+        """
+        Replace stored layers with box data from a project payload.
 
         Args:
             payload: Mapping from layer names to frame-index strings and serialized box mappings.

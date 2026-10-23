@@ -1,4 +1,5 @@
-"""Module for session settings view model; defines application concepts without UI or infrastructure dependencies.
+"""
+Module for session settings view model; defines application concepts without UI or infrastructure dependencies.
 
 See Also:
     - [`ProcessingSettings`][app.domain.export.processing_settings.ProcessingSettings] — underlying session processing options
@@ -52,9 +53,9 @@ class SessionSettingsViewModel:
         from `ProcessingSettings` whenever the UI needs a fresh snapshot.
 
 
-Layer: Domain.
-Context: Represents application concepts without UI or infrastructure dependencies.
-"""
+    Layer: Domain.
+    Context: Represents application concepts without UI or infrastructure dependencies.
+    """
 
     # --- Detection ---
     detection_model_name: str = "None"

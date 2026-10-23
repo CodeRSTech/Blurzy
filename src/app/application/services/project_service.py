@@ -1,4 +1,5 @@
-"""Captures and restores project state through the application and project store.
+"""
+Captures and restores project state through the application and project store.
 
 See Also:
     - [`ProjectStore`][app.infrastructure.project.project_store.ProjectStore] — persists project documents
@@ -29,7 +30,8 @@ logger = get_logger("Application->ProjectService")
 
 @dataclass(slots=True)
 class ProjectLoadReport:
-    """Summarize which project sessions were restored successfully.
+    """
+    Summarize which project sessions were restored successfully.
 
     Layer: Application.
     Context: Returned to callers after project restoration; missing or
@@ -45,7 +47,8 @@ class ProjectLoadReport:
 
 
 class ProjectService:
-    """Coordinate project persistence with application session management.
+    """
+    Coordinate project persistence with application session management.
 
     Layer: Application.
     Context: Captures serializable session state through the application,
@@ -65,7 +68,8 @@ class ProjectService:
 
     @property
     def current_project_path(self) -> str:
-        """Return the path of the currently loaded or most recently saved project.
+        """
+        Return the path of the currently loaded or most recently saved project.
 
         Returns:
             The project file path, or an empty string when no project is active.
@@ -74,7 +78,8 @@ class ProjectService:
 
     @property
     def directories(self) -> ProjectDirectories:
-        """Return the mutable project-specific import/export directory settings.
+        """
+        Return the mutable project-specific import/export directory settings.
 
         Returns:
             The current `ProjectDirectories` value object.
@@ -89,7 +94,8 @@ class ProjectService:
         export_prefix: str | None = None,
         export_suffix: str | None = None,
     ) -> None:
-        """Update only the supplied project directory or export-name settings.
+        """
+        Update only the supplied project directory or export-name settings.
 
         Args:
             last_import_directory: Optional most recently used import directory.
@@ -107,14 +113,17 @@ class ProjectService:
             self._directories.export_suffix = export_suffix
 
     def clear_project(self) -> None:
-        """Close all managed sessions and reset the active project state."""
+        """
+        Close all managed sessions and reset the active project state.
+"""
         logger.debug("Clearing project state and open sessions")
         self._app.sm.close_all()
         self._current_project_path = ""
         self._directories = ProjectDirectories()
 
     def save_project(self, file_path: str) -> ProjectDocument:
-        """Capture current sessions and persist them to a project file.
+        """
+        Capture current sessions and persist them to a project file.
 
         Args:
             file_path: Destination path for the serialized project document.
@@ -129,7 +138,8 @@ class ProjectService:
         return project
 
     def load_project(self, file_path: str) -> ProjectLoadReport:
-        """Load a project and restore every session whose video is available.
+        """
+        Load a project and restore every session whose video is available.
 
         Args:
             file_path: Path to the project document to read.

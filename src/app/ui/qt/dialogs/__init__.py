@@ -1,4 +1,5 @@
-"""Package for dialogs; implements the Qt presentation components.
+"""
+Package for dialogs; implements the Qt presentation components.
 
 See Also:
     - [`DialogueHandler`][app.ui.handlers.dialogue_handler.DialogueHandler] — coordinates modal dialog interactions

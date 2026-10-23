@@ -1,4 +1,5 @@
-"""Module for frame boxes view model; defines application concepts without UI or infrastructure dependencies.
+"""
+Module for frame boxes view model; defines application concepts without UI or infrastructure dependencies.
 
 See Also:
     - [`BBoxViewModel`][app.domain.views.bounding_box_view_model.BBoxViewModel] — represents each box in the frame
@@ -20,7 +21,6 @@ if TYPE_CHECKING:
 
 
 
-
 @dataclass(slots=True)
 class FrameBoxesViewModel:
     """
@@ -34,8 +34,8 @@ class FrameBoxesViewModel:
         supports multi-select operations such as copy, delete, and edit.
 
 
-Layer: Domain.
-Context: Represents application concepts without UI or infrastructure dependencies.
-"""
+    Layer: Domain.
+    Context: Represents application concepts without UI or infrastructure dependencies.
+    """
 
     frame_data_boxes: ListOfBoxes = field(default_factory=list)

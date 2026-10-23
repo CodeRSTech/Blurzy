@@ -1,4 +1,5 @@
-"""Module for model; implements concrete processing and I/O behind application-facing contracts.
+"""
+Module for model; implements concrete processing and I/O behind application-facing contracts.
 
 See Also:
     - [`BaseDetectionModel`][app.infrastructure.detection.model.base.BaseDetectionModel] — common model contract
@@ -11,7 +12,6 @@ Context: Implements concrete processing and i/o behind application-facing contra
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
-
 
 
 
@@ -48,20 +48,21 @@ class MTCNNTFDetectionModel(BaseDetectionModel):
         `"person"`.
 
 
-Layer: Infrastructure.
-Context: Implements concrete processing or I/O behind application-facing contracts.
+    Layer: Infrastructure.
+    Context: Implements concrete processing or I/O behind application-facing contracts.
 
 
     Args:
         loader: Backend-specific model loader.
         mapper: TensorFlow MTCNN mapper that filters face scores and converts boxes to person detections.
-"""
+    """
     def __init__(
         self,
         loader: MTCNNModelLoaderFactory | None = None,
         mapper: MTCNNTFDetectionMapper | None = None,
     ) -> None:
-        """Load the TensorFlow MTCNN model and prepare its result mapper.
+        """
+        Load the TensorFlow MTCNN model and prepare its result mapper.
 
         Args:
             loader: Optional MTCNN loader override.
@@ -76,7 +77,9 @@ Context: Implements concrete processing or I/O behind application-facing contrac
         self._model = self._load_model()
 
     def _load_model(self) -> MTCNN:
-        """Load MTCNN model using factory."""
+        """
+        Load MTCNN model using factory.
+"""
         return self._loader.create()
 
     def detect(
@@ -84,7 +87,8 @@ Context: Implements concrete processing or I/O behind application-facing contrac
         frame: np.ndarray,
         chosen_labels: list[str] | None = None,
     ) -> list[DetectionResult]:
-        """Run MTCNN inference, filter by confidence and optional label list.
+        """
+        Run MTCNN inference, filter by confidence and optional label list.
 
         Args:
             frame: RGB image array to process.

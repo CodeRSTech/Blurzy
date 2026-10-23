@@ -1,4 +1,5 @@
-"""Qt facade for interactive bbox overlay behavior.
+"""
+Qt facade for interactive bbox overlay behavior.
 
 Design notes for maintainers:
 - This class intentionally keeps Qt event handlers and signal emission.
@@ -12,9 +13,9 @@ See Also:
     - [`FrameBoxesViewModel`][app.domain.views.frame_boxes_view_model.FrameBoxesViewModel] — supplies boxes drawn by the overlay
 
 
-Layer: Presentation.
-Context: Contains concrete Qt presentation components and supporting utilities.
-"""
+    Layer: Presentation.
+    Context: Contains concrete Qt presentation components and supporting utilities.
+    """
 
 # app/ui/qt/preview/layer_bbox.py
 from __future__ import annotations
@@ -95,13 +96,13 @@ class AnnotationOverlayWidget(QWidget):
      - Paint primitives live in `rendering.py`.
 
 
-Layer: Presentation.
-Context: Supports user interaction and delegates application work through presentation contracts.
+    Layer: Presentation.
+    Context: Supports user interaction and delegates application work through presentation contracts.
 
 
     Args:
         parent: Optional Qt parent object.
-"""
+    """
 
     # --- Signals ---
     bbox_drawn = Signal(int, int, int, int)  # x1, y1, x2, y2
@@ -119,7 +120,9 @@ Context: Supports user interaction and delegates application work through presen
     pan_requested = Signal(int, int)  # dx, dy
 
     def __init__(self, parent: QWidget | None = None) -> None:
-        """Initialize the detection overlay widget with mouse tracking and state management."""
+        """
+        Initialize the detection overlay widget with mouse tracking and state management.
+"""
         super().__init__(parent)
         self.setMouseTracking(True)
         # Keeps background transparent so the video shows through
@@ -151,7 +154,9 @@ Context: Supports user interaction and delegates application work through presen
     # --- Public API for App ---
 
     def cancel_edit(self) -> None:
-        """Reset the editing state and cursor to prepare for a new interaction."""
+        """
+        Reset the editing state and cursor to prepare for a new interaction.
+"""
         self._editing_bbox_id = None
         self._group_drag_keys = []
         self._state = BBoxState()
@@ -162,7 +167,8 @@ Context: Supports user interaction and delegates application work through presen
         self.update()
 
     def set_pixmap_rect(self, rect: QRect) -> None:
-        """Update the displayed image rectangle used for coordinate conversion.
+        """
+        Update the displayed image rectangle used for coordinate conversion.
 
         Args:
             rect: New image rectangle in widget coordinates.
@@ -179,7 +185,8 @@ Context: Supports user interaction and delegates application work through presen
         self.update()
 
     def set_image_size(self, size: QSize) -> None:
-        """Called by the App to supply raw video dimensions for coordinate math.
+        """
+        Called by the App to supply raw video dimensions for coordinate math.
 
         Args:
             size: Original video frame size in pixels.
@@ -187,7 +194,8 @@ Context: Supports user interaction and delegates application work through presen
         self._image_size = size
 
     def set_active_bboxes(self, bboxes: dict[str, BBoxXYXYTuple]) -> None:
-        """Update the set of active bounding boxes and cancel editing if the current bbox was removed.
+        """
+        Update the set of active bounding boxes and cancel editing if the current bbox was removed.
 
         Args:
             bboxes: Mapping from box keys to image-space `(x1, y1, x2, y2)` coordinates.
@@ -202,7 +210,8 @@ Context: Supports user interaction and delegates application work through presen
         self.update()
 
     def set_selected_bbox_keys(self, box_keys: list[str]) -> None:
-        """Render shared selection state without taking ownership of that state.
+        """
+        Render shared selection state without taking ownership of that state.
 
         Args:
             box_keys: Box keys selected by the shared application selection state.
@@ -220,7 +229,8 @@ Context: Supports user interaction and delegates application work through presen
         self.update()
 
     def set_box_border_width(self, width: int) -> None:
-        """Set the preview outline width for selected and active boxes.
+        """
+        Set the preview outline width for selected and active boxes.
 
         Args:
             width: Outline width in pixels, from 1 to 10.
@@ -241,7 +251,8 @@ Context: Supports user interaction and delegates application work through presen
             self.update()
 
     def set_tool_mode(self, mode: ToolMode) -> None:
-        """Change the active tool mode and update the cursor accordingly.
+        """
+        Change the active tool mode and update the cursor accordingly.
 
         Args:
             mode: Tool mode to activate.
@@ -258,7 +269,8 @@ Context: Supports user interaction and delegates application work through presen
             self.setCursor(QCursor(Qt.CursorShape.ArrowCursor))
 
     def set_zoom(self, zoom: float) -> None:
-        """Update the zoom level for coordinate transforms.
+        """
+        Update the zoom level for coordinate transforms.
 
         Args:
             zoom: Current zoom factor supplied by the preview container.
@@ -267,7 +279,8 @@ Context: Supports user interaction and delegates application work through presen
         self.update()
 
     def set_pan(self, pan_x: float, pan_y: float) -> None:
-        """Update the pan offset for coordinate transforms.
+        """
+        Update the pan offset for coordinate transforms.
 
         Args:
             pan_x: Horizontal viewport offset.
@@ -278,7 +291,8 @@ Context: Supports user interaction and delegates application work through presen
         self.update()
 
     def set_tracker_actions_enabled(self, enabled: bool) -> None:
-        """Enables tracker-specific context menu options like 'Delete Next Occurrences'.
+        """
+        Enables tracker-specific context menu options like 'Delete Next Occurrences'.
 
         Args:
             enabled: Whether tracker-only context actions should be included in menus.
@@ -289,7 +303,8 @@ Context: Supports user interaction and delegates application work through presen
 
     @override
     def contextMenuEvent(self, event: QContextMenuEvent) -> None:
-        """Constructs and routes right-click actions dynamically.
+        """
+        Constructs and routes right-click actions dynamically.
 
         Args:
             event: Context-menu event providing local and global pointer positions.
@@ -313,7 +328,9 @@ Context: Supports user interaction and delegates application work through presen
         self._emit_context_menu_action(chosen, action_names, hit_box_id)
 
     def _emit_context_menu_action(self, chosen: QAction | None, action_names: dict[QAction, str], hit_box_id: str | None) -> None:
-        """Emit the selected context action as a `str` payload for downstream handlers."""
+        """
+        Emit the selected context action as a `str` payload for downstream handlers.
+"""
         action_name = resolve_selected_action(chosen, action_names)
         if action_name is None:
             return
@@ -321,7 +338,8 @@ Context: Supports user interaction and delegates application work through presen
 
     @override
     def mouseMoveEvent(self, event: QMouseEvent) -> None:
-        """Handle mouse movement and delegate drag/pan calculations to `interaction.py`.
+        """
+        Handle mouse movement and delegate drag/pan calculations to `interaction.py`.
 
 Args:
     event: Qt event being handled.
@@ -358,7 +376,8 @@ Args:
 
     @override
     def mousePressEvent(self, event: QMouseEvent) -> None:
-        """Handle mouse press to start drawing, panning, or selecting bounding boxes.
+        """
+        Handle mouse press to start drawing, panning, or selecting bounding boxes.
 
 Args:
     event: Qt event being handled.
@@ -461,7 +480,8 @@ Args:
 
     @override
     def mouseReleaseEvent(self, event: QMouseEvent) -> None:
-        """Finalize draw/edit outcomes and emit overlay signals when release completes.
+        """
+        Finalize draw/edit outcomes and emit overlay signals when release completes.
 
 Args:
     event: Qt event being handled.
@@ -539,7 +559,8 @@ Args:
 
     @override
     def paintEvent(self, event: QPaintEvent) -> None:
-        """Render the current bounding detection with selection handles and center point.
+        """
+        Render the current bounding detection with selection handles and center point.
 
 Args:
     event: Qt event being handled.
@@ -575,7 +596,8 @@ Args:
 
     @override
     def wheelEvent(self, event: QWheelEvent) -> None:
-        """Captures scroll wheel to broadcast zoom requests.
+        """
+        Captures scroll wheel to broadcast zoom requests.
 
 Args:
     event: Qt event being handled.
@@ -594,7 +616,9 @@ Args:
     # --- Geometry & Hit Test Helpers ---
 
     def _apply_handle_drag(self, base: QRect, mode: DragMode, delta: QPoint) -> QRect:
-        """Apply clamped drag deltas to the specified bbox corner or edge."""
+        """
+        Apply clamped drag deltas to the specified bbox corner or edge.
+"""
         x1, y1, x2, y2 = base.left(), base.top(), base.right(), base.bottom()
         dx, dy = delta.x(), delta.y()
         pr = self._pixmap_rect
@@ -602,16 +626,22 @@ Args:
         return apply_clamped_drag_deltas(mode, pr, x1, x2, y1, y2, dx, dy)
 
     def _clamp(self, point: QPoint) -> QPoint:
-        """Clamp a point to the pixmap rectangle bounds."""
+        """
+        Clamp a point to the pixmap rectangle bounds.
+"""
         r = self._pixmap_rect
         return clamp_point_to_rect(point, r)
 
     def _clamp_rect(self, rect: QRect) -> QRect:
-        """Clamp a rectangle to the pixmap bounds by translating it without resizing."""
+        """
+        Clamp a rectangle to the pixmap bounds by translating it without resizing.
+"""
         return clamp_rect_to_pixmap(rect.normalized(), self._pixmap_rect)
 
     def _get_bbox_at_pos(self, pos: QPoint) -> tuple[str | None, QRect | None]:
-        """Finds the closest bbox hit by the given point, accounting for zoom/pan."""
+        """
+        Finds the closest bbox hit by the given point, accounting for zoom/pan.
+"""
         return find_bbox_at_pos_with_transforms(
             active_bboxes=self._active_bboxes,
             pos=pos,
@@ -623,19 +653,27 @@ Args:
         )
 
     def _get_bbox_id_at_pos(self, pos: QPoint) -> str | None:
-        """Return the ID of the bbox at the given position using proximity testing."""
+        """
+        Return the ID of the bbox at the given position using proximity testing.
+"""
         box_id, _ = self._get_bbox_at_pos(pos)
         return box_id
 
     def _hit_test_handle(self, pos: QPoint) -> DragMode:
-        """Detect which bbox handle or edge is closest to the given position."""
+        """
+        Detect which bbox handle or edge is closest to the given position.
+"""
         rect = self._state.rect
         return get_drag_mode_for_rect_at_pos(rect, pos)
 
     def _image_rect_to_widget_space(self, x1: int, y1: int, x2: int, y2: int) -> QRect:
-        """Convert image space coordinates to widget space rectangle with scaling applied."""
+        """
+        Convert image space coordinates to widget space rectangle with scaling applied.
+"""
         return image_rect_to_widget_space(x1, y1, x2, y2, self._pixmap_rect, self._image_size)
 
     def _widget_rect_to_image_space(self, rect: QRect) -> BBoxXYXYTuple:
-        """Convert widget space rectangle to image space coordinates with scaling and bounds applied."""
+        """
+        Convert widget space rectangle to image space coordinates with scaling and bounds applied.
+"""
         return widget_rect_to_image_space(rect, self._pixmap_rect, self._image_size)

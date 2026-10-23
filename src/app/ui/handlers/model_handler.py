@@ -1,4 +1,5 @@
-"""Detection model management handler for asynchronous model loading.
+"""
+Detection model management handler for asynchronous model loading.
 
 See Also:
     - [`ModelLoadWorker`][app.ui.qt.workers.model_loader.ModelLoadWorker] — loads models without blocking the UI
@@ -50,15 +51,16 @@ class ModelHandler(QObject):
             Triggers frame re-render after successful model load.
 
 
-Layer: Presentation.
-Context: Supports user interaction and delegates application work through presentation contracts.
-
-
-    Args:
-        controller supplying model-selection actions, the active window, and worker completion callbacks.
-"""
+    Layer: Presentation.
+    Context: Supports user interaction and delegates application work through presentation contracts.
+    """
 
     def __init__(self, controller: UIController) -> None:
+        """
+        Initialize the ModelHandler.
+        Args:
+            controller: UIController supplying model-selection actions, the active window, and worker completion callbacks.
+        """
         super().__init__()
         self.setParent(controller)  # <- avoids circular dependency
 
@@ -82,7 +84,9 @@ Context: Supports user interaction and delegates application work through presen
         self._controller.window.right_panel.model_changed.connect(self.on_model_changed)
 
     def close(self) -> None:
-        """Close close."""
+        """
+        Close close.
+"""
         if self._model_load_thread is not None and self._model_load_thread.isRunning():
             self._model_load_thread.quit()
             self._model_load_thread.wait()

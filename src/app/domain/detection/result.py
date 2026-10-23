@@ -54,12 +54,13 @@ class DetectionResult(Box):
         ```
 
 
-Layer: Domain.
-Context: Represents application concepts without UI or infrastructure dependencies.
-"""
+    Layer: Domain.
+    Context: Represents application concepts without UI or infrastructure dependencies.
+    """
 
     def to_frame_box_view_model(self) -> BBoxViewModel:
-        """Convert this detection result into a frame-box view model.
+        """
+        Convert this detection result into a frame-box view model.
 
         Returns:
             View model preserving the detection's identity, geometry, label,

@@ -80,17 +80,16 @@ markdown_extensions:
 nav:
   - Overview: index.md
   - Getting started: getting-started.md
-  - Development: development.md
-  - Architecture: architecture.md
-  - Reference:
-      - reference/index.md
+  - Architecture:
+      - Overview: architecture/overview.md
+  - Development:
+      - Development: development/development.md
+      - Reference documentation: development/reference-documentation.md
+      - Documentation style: development/documentation-style.md
+      - Defensive guards: development/defensive-guards.md
   - API reference:
       - reference/api/index.md
-  - Engineering:
-      - Reference documentation: engineering/reference-documentation.md
-      - Documentation style: engineering/documentation-style.md
-      - Defensive guards: engineering/defensive-guards.md
-  - Planning (proposals):
+  - Plans:
       - About these notes: planning/README.md
       - Re-ID roadmap: planning/ideas/reid-roadmap.md
       - Annotation workflow: planning/ideas/annotation-workflow-polish.md

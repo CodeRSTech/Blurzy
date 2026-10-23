@@ -1,4 +1,5 @@
-"""Module for debug repr; implements the Qt presentation components.
+"""
+Module for debug repr; implements the Qt presentation components.
 
 Layer: Presentation.
 Context: Implements the qt presentation components at this architectural boundary.
@@ -7,7 +8,6 @@ Context: Implements the qt presentation components at this architectural boundar
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
-
 
 
 
@@ -24,13 +24,17 @@ logger = get_logger("Shared->QtDebugRepr")
 
 
 def _truncate(text: str, max_len: int = 20) -> str:
-    """Helper to keep representations concise."""
+    """
+    Helper to keep representations concise.
+"""
     text = text.replace('\n', ' ').strip()
     return f"{text[:max_len - 3]}..." if len(text) > max_len else text
 
 
 def _safe_repr(obj: Core.QObject, generator: Callable[..., str]) -> str:
-    """Safely generates a repr, falling back gracefully if the C++ object is deleted."""
+    """
+    Safely generates a repr, falling back gracefully if the C++ object is deleted.
+"""
     try:
         return generator(obj)
     except RuntimeError:
@@ -41,7 +45,8 @@ def _safe_repr(obj: Core.QObject, generator: Callable[..., str]) -> str:
 
 def _qobject_repr(self: Core.QObject) -> str:
     def gen(o: Core.QObject) -> str:
-        """Format a QObject's class name and optional object name.
+        """
+        Format a QObject's class name and optional object name.
 
         Args:
             o: Qt object whose class name and object name are formatted.
@@ -58,7 +63,8 @@ def _qobject_repr(self: Core.QObject) -> str:
 
 def _qwidget_repr(self: Widgets.QWidget) -> str:
     def gen(w: Widgets.QWidget) -> str:
-        """Format a widget's class, optional name, size, visibility, and enabled state.
+        """
+        Format a widget's class, optional name, size, visibility, and enabled state.
 
         Args:
             w: Widget whose name, size, visibility, and enabled state are formatted.
@@ -79,7 +85,8 @@ def _qwidget_repr(self: Widgets.QWidget) -> str:
 def _qabstractbutton_repr(self: Widgets.QAbstractButton) -> str:
     # Catches QPushButton, QRadioButton, QCheckBox
     def gen(b: Widgets.QAbstractButton) -> str:
-        """Format a button's class, optional name, shortened text, and state.
+        """
+        Format a button's class, optional name, shortened text, and state.
 
         Args:
             b: Button whose name, shortened text, enabled state, and check state are formatted.
@@ -99,7 +106,8 @@ def _qabstractbutton_repr(self: Widgets.QAbstractButton) -> str:
 
 def _qlabel_repr(self: Widgets.QLabel) -> str:
     def gen(l: Widgets.QLabel) -> str:
-        """Format a label's class, optional name, and shortened text.
+        """
+        Format a label's class, optional name, and shortened text.
 
         Args:
             l: Label whose name and shortened text are formatted.
@@ -117,7 +125,8 @@ def _qlabel_repr(self: Widgets.QLabel) -> str:
 
 def _qcombobox_repr(self: Widgets.QComboBox) -> str:
     def gen(c: Widgets.QComboBox) -> str:
-        """Format a combo box's class, optional name, item count, and current text.
+        """
+        Format a combo box's class, optional name, item count, and current text.
 
         Args:
             c: Combo box whose name, item count, and current text are formatted.
@@ -134,7 +143,8 @@ def _qcombobox_repr(self: Widgets.QComboBox) -> str:
 
 def _qslider_repr(self: Widgets.QAbstractSlider) -> str:
     def gen(s: Widgets.QAbstractSlider) -> str:
-        """Format a slider's class, optional name, current value, and range.
+        """
+        Format a slider's class, optional name, current value, and range.
 
         Args:
             s: Slider whose name, current value, and range are formatted.
@@ -152,7 +162,8 @@ def _qslider_repr(self: Widgets.QAbstractSlider) -> str:
 def _qitemviews_repr(self: Widgets.QAbstractItemView) -> str:
     # Catches QListWidget, QTableWidget, etc.
     def gen(v: Widgets.QAbstractItemView) -> str:
-        """Format an item view's class, optional name, and model dimensions.
+        """
+        Format an item view's class, optional name, and model dimensions.
 
         Args:
             v: Item view whose name and model dimensions are formatted.

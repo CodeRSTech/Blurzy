@@ -1,4 +1,5 @@
-"""Module for application; coordinates application workflows.
+"""
+Module for application; coordinates application workflows.
 
 See Also:
     - [`SessionManager`][app.application.managers.session.SessionManager] — owns session lifecycle operations
@@ -31,7 +32,8 @@ if TYPE_CHECKING:
 
 @final
 class Application(QObject):
-    """Thin delegation façade for the entire application layer.
+    """
+    Thin delegation façade for the entire application layer.
 
     Responsibilities:
         - Owns all service instances (Detection, Tracking, Export, Session, Layer management).
@@ -46,12 +48,14 @@ class Application(QObject):
             The UI Controller imports and calls only this class (not individual services).
 
 
-Layer: Application.
-Context: Coordinates use-case behavior through domain services and application contracts.
-"""
+    Layer: Application.
+    Context: Coordinates use-case behavior through domain services and application contracts.
+    """
 
     def __init__(self) -> None:
-        """Initialize the application with all service instances."""
+        """
+        Initialize the application with all service instances.
+"""
         super().__init__()
 
         from app.shared.logging_cfg import get_logger
@@ -92,7 +96,8 @@ Context: Coordinates use-case behavior through domain services and application c
 
     @override
     def __repr__(self) -> str:
-        """Return a concise string representation of the Application instance.
+        """
+        Return a concise string representation of the Application instance.
 
         Returns:
             str: The string representation.
@@ -105,7 +110,8 @@ Context: Coordinates use-case behavior through domain services and application c
 
     @property
     def active_session(self) -> Session | None:
-        """Retrieve the currently active session instance.
+        """
+        Retrieve the currently active session instance.
 
         Returns:
             Session | None: The active session, or None if no session is active.
@@ -114,7 +120,8 @@ Context: Coordinates use-case behavior through domain services and application c
 
     @property
     def active_session_id(self) -> SessionId | None:
-        """Retrieve the identifier of the currently active session.
+        """
+        Retrieve the identifier of the currently active session.
 
         Returns:
             SessionId | None: The ID of the active session, or None if none is active.
@@ -123,7 +130,8 @@ Context: Coordinates use-case behavior through domain services and application c
 
     @active_session_id.setter
     def active_session_id(self, s_id: SessionId) -> None:
-        """Set the active session by its identifier.
+        """
+        Set the active session by its identifier.
 
         Args:
             s_id (SessionId): The session identifier to mark as active.
@@ -132,7 +140,8 @@ Context: Coordinates use-case behavior through domain services and application c
 
     @property
     def all_s_ids(self) -> Iterable[SessionId]:
-        """Iterate over all session identifiers currently managed by the application.
+        """
+        Iterate over all session identifiers currently managed by the application.
 
         Returns:
             Iterable[SessionId]: A collection of all active session IDs.
@@ -141,7 +150,8 @@ Context: Coordinates use-case behavior through domain services and application c
 
     @property
     def current_project_path(self) -> str:
-        """Retrieve the file path of the currently active project.
+        """
+        Retrieve the file path of the currently active project.
 
         Returns:
             str: The absolute or relative file path of the current project.
@@ -150,7 +160,8 @@ Context: Coordinates use-case behavior through domain services and application c
 
     @property
     def project_directories(self) -> ProjectDirectories:
-        """Retrieve the directories associated with the current project.
+        """
+        Retrieve the directories associated with the current project.
 
         Returns:
             ProjectDirectories: The directory structure and paths for the active project.
@@ -163,15 +174,20 @@ Context: Coordinates use-case behavior through domain services and application c
 
     # Used by UIController
     def close(self) -> None:
-        """Close all active sessions and shut down the SessionManager."""
+        """
+        Close all active sessions and shut down the SessionManager.
+"""
         self.sm.close_all()
 
     def clear_project(self) -> None:
-        """Clear the currently active project from memory."""
+        """
+        Clear the currently active project from memory.
+"""
         self.project_svc.clear_project()
 
     def save_project(self, file_path: str) -> ProjectDocument:
-        """Save the current project to the specified file path.
+        """
+        Save the current project to the specified file path.
 
         Args:
             file_path (str): The destination file path to save the project.
@@ -182,7 +198,8 @@ Context: Coordinates use-case behavior through domain services and application c
         return self.project_svc.save_project(file_path)
 
     def load_project(self, file_path: str) -> ProjectLoadReport:
-        """Load a project from the specified file path.
+        """
+        Load a project from the specified file path.
 
         Args:
             file_path (str): The file path of the project to load.
@@ -201,7 +218,8 @@ Context: Coordinates use-case behavior through domain services and application c
             export_prefix: str | None = None,
             export_suffix: str | None = None,
     ) -> None:
-        """Update the directories and naming conventions associated with the current project.
+        """
+        Update the directories and naming conventions associated with the current project.
 
         Args:
             last_import_directory (str | None, optional): The path of the last used import directory. Defaults to None.
@@ -218,7 +236,8 @@ Context: Coordinates use-case behavior through domain services and application c
 
     # Used by SessionService
     def open_video_from_path(self, path: str) -> None:
-        """Open a video file and create a new session from the provided path.
+        """
+        Open a video file and create a new session from the provided path.
 
         Args:
             path (str): The file path to the video.
@@ -227,12 +246,15 @@ Context: Coordinates use-case behavior through domain services and application c
 
     # Used by SessionService
     def initialize_active_session(self) -> None:
-        """Set the first available session as the active session."""
+        """
+        Set the first available session as the active session.
+"""
         self.sm.initialize_active_session()
 
     # Used by SessionHandler
     def get_session_settings(self, s_id: SessionId) -> SessionSettingsViewModel:
-        """Retrieve the SessionSettingsViewModel for the specified session.
+        """
+        Retrieve the SessionSettingsViewModel for the specified session.
 
         Note:
             `ProcessingSettings` and `SessionSettingsViewModel` intentionally differ:
@@ -250,7 +272,8 @@ Context: Coordinates use-case behavior through domain services and application c
 
     # Used by PlaybackHandler
     def get_session_frame_interval_ms(self, s_id: SessionId) -> int:
-        """Calculate and return the frame interval in milliseconds for the specified session.
+        """
+        Calculate and return the frame interval in milliseconds for the specified session.
 
         Args:
             s_id (SessionId): The target session identifier.
@@ -264,7 +287,8 @@ Context: Coordinates use-case behavior through domain services and application c
 
     # Used by AnnotationHandler, DetectionHandler, UIHandler etc.
     def get_session_by_id(self, s_id: SessionId) -> Session:
-        """Fetch the Session instance identified by the given session ID.
+        """
+        Fetch the Session instance identified by the given session ID.
 
         Delegates to the `SessionManager` to retrieve the session. It is recommended
         to use this method rather than calling the SessionManager directly.
@@ -282,7 +306,8 @@ Context: Coordinates use-case behavior through domain services and application c
 
     # Used by PlaybackHandler
     def is_at_last_frame(self, s_id: SessionId) -> bool:
-        """Check if the playback position for the session is at the final frame.
+        """
+        Check if the playback position for the session is at the final frame.
 
         Args:
             s_id (SessionId): The target session identifier.
@@ -294,7 +319,8 @@ Context: Coordinates use-case behavior through domain services and application c
 
     # Used by PlaybackHandler
     def is_session_playing(self, s_id: SessionId) -> bool:
-        """Check if the specified session is currently playing.
+        """
+        Check if the specified session is currently playing.
 
         Args:
             s_id (SessionId): The target session identifier.
@@ -306,7 +332,8 @@ Context: Coordinates use-case behavior through domain services and application c
 
     # Used by PlaybackHandler
     def load_frame_by_index(self, s_id: SessionId, frame_index: int) -> RGBFrame | None:
-        """Load a specific frame by its index for the specified session.
+        """
+        Load a specific frame by its index for the specified session.
 
         Args:
             s_id (SessionId): The target session identifier.
@@ -319,7 +346,8 @@ Context: Coordinates use-case behavior through domain services and application c
 
     # Used by PlaybackHandler
     def load_next_frame(self, s_id: SessionId) -> RGBFrame | None:
-        """Advance to and load the next frame in the specified session.
+        """
+        Advance to and load the next frame in the specified session.
 
         Args:
             s_id (SessionId): The target session identifier.
@@ -331,7 +359,8 @@ Context: Coordinates use-case behavior through domain services and application c
 
     # Used by PlaybackHandler (only usage so far)
     def load_previous_frame(self, s_id: SessionId) -> RGBFrame | None:
-        """Rewind to and load the previous frame in the specified session.
+        """
+        Rewind to and load the previous frame in the specified session.
 
         Args:
             s_id (SessionId): The target session identifier.
@@ -342,7 +371,8 @@ Context: Coordinates use-case behavior through domain services and application c
         self.sm.get_previous_frame_for_session_id(s_id)
 
     def set_session_state_is_playing(self, s_id: SessionId, is_playing: bool) -> None:
-        """Set the playback state (playing/paused) for the specified session.
+        """
+        Set the playback state (playing/paused) for the specified session.
 
         Args:
             s_id (SessionId): The target session identifier.
@@ -352,14 +382,17 @@ Context: Coordinates use-case behavior through domain services and application c
 
     # Used by PlaybackHandler and SessionHandler
     def stop_all_playback(self) -> None:
-        """Stop playback for all active sessions."""
+        """
+        Stop playback for all active sessions.
+"""
         self.sm.stop_all_playback()
 
     # Used by DetectionHandler, ExportHandler, ModelHandler, and TrackingHandler
     def update_session_settings(
             self, s_id: SessionId, **kwargs: Unpack[ProcessingSettingsKwargs]
     ) -> None:
-        """Update processing settings for the specified session.
+        """
+        Update processing settings for the specified session.
 
         Args:
             s_id (SessionId): The target session identifier.
@@ -373,7 +406,8 @@ Context: Coordinates use-case behavior through domain services and application c
 
     # Used by DetectionHandler
     def apply_filters_to_layer(self, layer_name: VideoDataLayer, s_id: SessionId) -> None:
-        """Apply confidence and size filters to the specified layer.
+        """
+        Apply confidence and size filters to the specified layer.
 
         Operates on `DataLayer.B` (reviewed detections) or `DataLayer.D` (reviewed tracks)
         for the given session ID.
@@ -399,7 +433,8 @@ Context: Coordinates use-case behavior through domain services and application c
             bbox_xyxy: BBoxXYXYTuple,
             color_hex: str = "#00ff00",
     ) -> None:
-        """Add a manually drawn bounding detection box to Layer B for the current frame.
+        """
+        Add a manually drawn bounding detection box to Layer B for the current frame.
 
         Args:
             s_id (SessionId): The target session identifier.
@@ -430,7 +465,8 @@ Context: Coordinates use-case behavior through domain services and application c
             label: str,
             bbox_xyxy: BBoxXYXYTuple,
     ) -> None:
-        """Update a bounding detection's label and coordinates in the specified layer at the current frame.
+        """
+        Update a bounding detection's label and coordinates in the specified layer at the current frame.
 
         Args:
             s_id (SessionId): The target session identifier.
@@ -448,7 +484,8 @@ Context: Coordinates use-case behavior through domain services and application c
     # Used by AnnotationHandler
     def change_current_layer_boxes_by_keys_and_dxdy(self, s_id: SessionId, layer_name: VideoDataLayer,
                                                     box_keys: Iterable[str], dx: int, dy: int) -> int:
-        """Translate bounding boxes in the specified layer by dx and dy pixels.
+        """
+        Translate bounding boxes in the specified layer by dx and dy pixels.
 
         Args:
             s_id (SessionId): The target session identifier.
@@ -472,7 +509,8 @@ Context: Coordinates use-case behavior through domain services and application c
             item_keys: Iterable[str],
             direction: Direction,
     ) -> None:
-        """Duplicate bounding boxes to the adjacent frame in the specified direction.
+        """
+        Duplicate bounding boxes to the adjacent frame in the specified direction.
 
         Args:
             s_id (SessionId): The target session identifier.
@@ -488,7 +526,8 @@ Context: Coordinates use-case behavior through domain services and application c
     def delete_boxes_by_keys_and_tab_id_for_current_frame_by_session_id(
             self, s_id: SessionId, box_keys: list[str], tab: VideoDataLayerGroup
     ):
-        """Delete specific bounding boxes from the current frame in the designated tab layer.
+        """
+        Delete specific bounding boxes from the current frame in the designated tab layer.
 
         Args:
             s_id (SessionId): The target session identifier.
@@ -505,7 +544,8 @@ Context: Coordinates use-case behavior through domain services and application c
             tab: VideoDataLayerGroup,
             boxes: Iterable[tuple[str, BBoxXYXYTuple, str]],
     ) -> list[str]:
-        """Add clipboard boxes as new manual boxes to the active editable layer.
+        """
+        Add clipboard boxes as new manual boxes to the active editable layer.
 
         Args:
             s_id (SessionId): The target session identifier.
@@ -525,7 +565,8 @@ Context: Coordinates use-case behavior through domain services and application c
             frame_index: int,
             boxes: list[BBoxViewModel],
     ) -> None:
-        """Restore an editable tab frame from a mutation-history snapshot.
+        """
+        Restore an editable tab frame from a mutation-history snapshot.
 
         Args:
             s_id (SessionId): The target session identifier.
@@ -538,7 +579,8 @@ Context: Coordinates use-case behavior through domain services and application c
     def get_tab_frame_boxes_at_frame_index(
             self, s_id: SessionId, tab: VideoDataLayerGroup, frame_index: int
     ) -> list[BBoxViewModel]:
-        """Return cloned editable-tab boxes for an explicit frame.
+        """
+        Return cloned editable-tab boxes for an explicit frame.
 
         Args:
             s_id (SessionId): The target session identifier.
@@ -554,7 +596,8 @@ Context: Coordinates use-case behavior through domain services and application c
     def get_tab_frame_boxes_for_session_id(
             self, s_id: SessionId, tab: VideoDataLayerGroup
     ) -> FrameBoxesViewModel:
-        """Retrieve all bounding boxes for the current frame in the specified tab layer.
+        """
+        Retrieve all bounding boxes for the current frame in the specified tab layer.
 
         Args:
             s_id (SessionId): The target session identifier.
@@ -569,7 +612,8 @@ Context: Coordinates use-case behavior through domain services and application c
     def get_layer_box_by_key(
             self, s_id: SessionId, layer_name: VideoDataLayer, key: str
     ) -> BBoxViewModel | None:
-        """Fetch a single bounding detection by its unique key from the specified layer.
+        """
+        Fetch a single bounding detection by its unique key from the specified layer.
 
         Args:
             s_id (SessionId): The target session identifier.
@@ -583,7 +627,8 @@ Context: Coordinates use-case behavior through domain services and application c
 
     # Used by AnnotationHandler
     def reset_all_for_layer(self, s_id: SessionId, layer_name: VideoDataLayer) -> None:
-        """Clear all bounding boxes entirely in the specified layer for the session.
+        """
+        Clear all bounding boxes entirely in the specified layer for the session.
 
         Args:
             s_id (SessionId): The target session identifier.
@@ -595,7 +640,8 @@ Context: Coordinates use-case behavior through domain services and application c
     def reset_frame_for_layer(
             self, s_id: SessionId, layer_name: VideoDataLayer, frame_index: int
     ) -> None:
-        """Clear all bounding boxes in the specified layer for a specific frame index.
+        """
+        Clear all bounding boxes in the specified layer for a specific frame index.
 
         Args:
             s_id (SessionId): The target session identifier.
@@ -608,7 +654,8 @@ Context: Coordinates use-case behavior through domain services and application c
     def delete_tracks_by_id_and_direction(
             self, s_id: SessionId, t_id: str, direction: Direction
     ):
-        """Delete tracking occurrences in the specified direction from a specific track.
+        """
+        Delete tracking occurrences in the specified direction from a specific track.
 
         Args:
             s_id (SessionId): The target session identifier.
@@ -625,7 +672,8 @@ Context: Coordinates use-case behavior through domain services and application c
 
     # Used by DetectionHandler
     def detect_current_frame(self, s_id: SessionId) -> None:
-        """Run detection on the current frame using the active detection model.
+        """
+        Run detection on the current frame using the active detection model.
 
         Args:
             s_id (SessionId): The target session identifier.
@@ -634,7 +682,8 @@ Context: Coordinates use-case behavior through domain services and application c
 
     # Used by ModelHandler
     def get_selected_detection_model_name(self, s_id: SessionId) -> str:
-        """Retrieve the name of the currently selected detection model for the session.
+        """
+        Retrieve the name of the currently selected detection model for the session.
 
         Args:
             s_id (SessionId): The target session identifier.
@@ -648,7 +697,8 @@ Context: Coordinates use-case behavior through domain services and application c
     def set_detection_model(
             self, s_id: SessionId, model_name: str, keep_manual: bool
     ) -> None:
-        """Switch the detection model for the session, optionally preserving manual annotations.
+        """
+        Switch the detection model for the session, optionally preserving manual annotations.
 
         Args:
             s_id (SessionId): The target session identifier.
@@ -661,7 +711,8 @@ Context: Coordinates use-case behavior through domain services and application c
 
     # Used by DetectionHandler
     def start_detection_worker(self, s_id: SessionId) -> None:
-        """Start a background DetectionWorker to process all frames in the session.
+        """
+        Start a background DetectionWorker to process all frames in the session.
 
         Args:
             s_id (SessionId): The target session identifier.
@@ -676,7 +727,8 @@ Context: Coordinates use-case behavior through domain services and application c
     def start_tracking_worker(
             self, s_id: SessionId, strategy: str, source: VideoDataLayer
     ) -> None:
-        """Start a background TrackingWorker using the specified strategy and source layer.
+        """
+        Start a background TrackingWorker using the specified strategy and source layer.
 
         Args:
             s_id (SessionId): The target session identifier.
@@ -687,7 +739,8 @@ Context: Coordinates use-case behavior through domain services and application c
 
     # Used by TrackingHandler
     def sync_tracking_cache(self, s_id: SessionId) -> None:
-        """Synchronize the tracking cache with the current view_state for the session.
+        """
+        Synchronize the tracking cache with the current view_state for the session.
 
         Args:
             s_id (SessionId): The target session identifier.
@@ -705,7 +758,8 @@ Context: Coordinates use-case behavior through domain services and application c
             output_path: str,
             progress_callback: Callable[[int, int], None] | None = None,
     ) -> None:
-        """Export the session to a blurred video and metadata files at the given path.
+        """
+        Export the session to a blurred video and metadata files at the given path.
 
         Args:
             s_id (SessionId): The target session identifier.
@@ -717,7 +771,8 @@ Context: Coordinates use-case behavior through domain services and application c
 
     # Used by ExportHandler
     def session_is_ready_for_export(self, s_id: SessionId) -> bool:
-        """Check if the session has valid tracking data and is ready for export.
+        """
+        Check if the session has valid tracking data and is ready for export.
 
         Args:
             s_id (SessionId): The target session identifier.
@@ -733,7 +788,8 @@ Context: Coordinates use-case behavior through domain services and application c
 
     # Used by SessionHandler
     def open_videos(self, paths: Iterable[str]) -> list[str]:
-        """Create new Session instances from video files at the provided paths.
+        """
+        Create new Session instances from video files at the provided paths.
 
         Args:
             paths (Iterable[str]): An iterable of file paths to video files.
@@ -745,7 +801,8 @@ Context: Coordinates use-case behavior through domain services and application c
 
     # Used by PlaybackHandler
     def session_has_buffered_frame(self, s_id: SessionId) -> bool:
-        """Check if a pre-decoded frame is currently available in the buffer for the session.
+        """
+        Check if a pre-decoded frame is currently available in the buffer for the session.
 
         Args:
             s_id (SessionId): The target session identifier.
@@ -756,7 +813,8 @@ Context: Coordinates use-case behavior through domain services and application c
         return self.session_svc.session_by_id_has_buffered_frame(s_id)
 
     def session_has_running_detection_worker(self, s_id: SessionId) -> bool:
-        """Check if a DetectionWorker is actively running for the session.
+        """
+        Check if a DetectionWorker is actively running for the session.
 
         Args:
             s_id (SessionId): The target session identifier.
@@ -768,7 +826,8 @@ Context: Coordinates use-case behavior through domain services and application c
 
     # Used by TrackingHandler
     def session_has_running_tracking_worker(self, s_id: SessionId) -> bool:
-        """Check if a TrackingWorker is actively running for the session.
+        """
+        Check if a TrackingWorker is actively running for the session.
 
         Args:
             s_id (SessionId): The target session identifier.
@@ -781,7 +840,8 @@ Context: Coordinates use-case behavior through domain services and application c
     def handle_active_session_changed(
             self, old_s_id: SessionId | None, new_s_id: SessionId
     ):
-        """Notify services that the active session has changed.
+        """
+        Notify services that the active session has changed.
 
         Args:
             old_s_id (SessionId | None): The previously active session identifier.
@@ -793,7 +853,8 @@ Context: Coordinates use-case behavior through domain services and application c
 
     # Used by PlaybackHandler
     def start_session_playback(self, s_id: SessionId) -> None:
-        """Initialize and start playback for the specified session.
+        """
+        Initialize and start playback for the specified session.
 
         Args:
             s_id (SessionId): The target session identifier.
@@ -813,7 +874,8 @@ Context: Coordinates use-case behavior through domain services and application c
             file_path: str,
             mode: services.ImportMode | str,
     ) -> int:
-        """Import bounding-box data from a file into a specified layer.
+        """
+        Import bounding-box data from a file into a specified layer.
 
         Dispatches to `DetectionImportService` for layers A/B and
         `TrackingImportService` for layers C/D.
@@ -844,7 +906,8 @@ Context: Coordinates use-case behavior through domain services and application c
             layer: VideoDataLayer | str,
             file_path: str,
     ) -> int:
-        """Export bounding-box data from a specified layer to a file.
+        """
+        Export bounding-box data from a specified layer to a file.
 
         Dispatches to `DetectionExportService` for layers A/B and
         `TrackingExportService` for layers C/D.

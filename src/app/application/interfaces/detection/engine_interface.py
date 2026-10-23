@@ -1,4 +1,5 @@
-"""Interface contract for detection engine implementations.
+"""
+Interface contract for detection engine implementations.
 
 See Also:
     - [`DetectionEngine`][app.infrastructure.detection.engine.detection_engine.DetectionEngine] — concrete inference engine
@@ -16,7 +17,6 @@ if TYPE_CHECKING:
 
 
 
-
 if TYPE_CHECKING:
     from app.domain.detection.result import DetectionResult
 
@@ -31,13 +31,14 @@ class DetectionEngineInterface(Protocol):
     required (structural subtyping via `Protocol`).
 
 
-Layer: Application.
-Context: Coordinates use-case behavior through domain services and application contracts.
-"""
+    Layer: Application.
+    Context: Coordinates use-case behavior through domain services and application contracts.
+    """
 
     @property
     def model_name(self) -> str:
-        """Return the currently loaded model name.
+        """
+        Return the currently loaded model name.
 
         Returns:
             Name of the model currently selected by the engine.
@@ -45,7 +46,8 @@ Context: Coordinates use-case behavior through domain services and application c
         ...
 
     def set_model(self, model_name: str) -> None:
-        """Switch to a different model by name.
+        """
+        Switch to a different model by name.
 
         Args:
             model_name: Registered model identifier accepted by the detection-model factory.
@@ -53,7 +55,8 @@ Context: Coordinates use-case behavior through domain services and application c
         ...
 
     def detect(self, frame: np.ndarray) -> list[DetectionResult]:
-        """Run inference on `frame` and return a list of `DetectionResult` objects.
+        """
+        Run inference on `frame` and return a list of `DetectionResult` objects.
 
         Args:
             frame: RGB image array to pass to the detection model.

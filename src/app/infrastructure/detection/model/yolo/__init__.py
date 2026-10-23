@@ -1,4 +1,5 @@
-"""Package for yolo; implements concrete processing and I/O behind application-facing contracts.
+"""
+Package for yolo; implements concrete processing and I/O behind application-facing contracts.
 
 See Also:
     - [`YoloDetectionModel`][app.infrastructure.detection.model.yolo.model.YoloDetectionModel] — implements Ultralytics inference

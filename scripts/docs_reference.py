@@ -13,9 +13,10 @@ from mkdocs.structure.files import File, InclusionLevel
 
 
 API_ROOT = PurePosixPath("reference/api")
+NOTE_ROOT = PurePosixPath("architecture")
 API_ASSET_ROOT = PurePosixPath("assets/api")
 API_ASSET_REFERENCE = re.compile(r'(?P<prefix>(?<![\w:-])src=["\'])api-asset:(?P<path>[^"\']+)(?P<quote>["\'])')
-SOURCE_PATTERN = re.compile(r"^Source: `(?P<path>src/app/[^`]*)`", re.MULTILINE)
+SOURCE_PATTERN = re.compile(r"^Source: `(?P<path>[^`]+)`", re.MULTILINE)
 # [NOTE] Key overrides by defining module so private APIs stay opt-in and ownership is clear.
 MEMBER_EXCEPTIONS: dict[str, tuple[str, ...]] = {}
 MEMBER_EXCLUSIONS: dict[str, tuple[str, ...]] = {}
@@ -301,7 +302,22 @@ def note_navigation(pages: dict[PurePosixPath, str]) -> list:
                 )
         return result
 
-    return branch(PurePosixPath("reference"))
+    result: list = [{"Overview": str(NOTE_ROOT / "overview.md")}]
+    entries = {path.relative_to(NOTE_ROOT).parts[0] for path in pages}
+    entries -= {"index.md", "overview.md"}
+    order = ["ui", "application", "infrastructure"]
+    ordered = [entry for entry in order if entry in entries]
+    ordered += sorted(entries - set(order) - {"domain", "shared"})
+    ordered += [entry for entry in ("domain", "shared") if entry in entries]
+    for entry in ordered:
+        path = NOTE_ROOT / entry
+        if path in pages:
+            result.append({pages[path]: str(path)})
+        else:
+            descendants = branch(path)
+            label = "UI" if entry == "ui" else entry.replace("_", " ").capitalize()
+            result.append({label: descendants})
+    return result
 
 
 def on_files(files, config):
@@ -318,7 +334,7 @@ def on_files(files, config):
         page = PurePosixPath(file.src_uri)
         if page.is_relative_to(API_ROOT):
             raise PluginError(f"{API_ROOT} is reserved for generated pages: {page}")
-        if not page.is_relative_to("reference") or not file.is_documentation_page():
+        if not page.is_relative_to(NOTE_ROOT) or not file.is_documentation_page():
             continue
         content = file.content_string
         title = re.search(r"^# (.+)$", content, re.MULTILINE)
@@ -327,7 +343,9 @@ def on_files(files, config):
         notes[page] = title.group(1)
         match = SOURCE_PATTERN.search(content)
         if match:
-            source = root.joinpath(*PurePosixPath(match.group("path")).parts).resolve()
+            source_path = PurePosixPath(match.group("path"))
+            base = root if source_path.is_relative_to("src/app") else Path(file.abs_src_path).parent
+            source = base.joinpath(*source_path.parts).resolve()
             target = targets.get(source)
             if target is None:
                 raise PluginError(f"Reference note {page} points to a missing package: {source}")
@@ -343,23 +361,26 @@ def on_files(files, config):
             )
         )
     landing = "# API reference\n\nGenerated from source; edit Python docstrings, not these pages.\n\n"
-    landing += "[How reference generation works](../../engineering/reference-documentation.md).\n\n"
+    landing += "[How reference generation works](../../development/reference-documentation.md).\n\n"
     app = next(module for module in modules if module.name == "app")
     landing += f"[Application package index]({relative_link(API_ROOT / 'index.md', app.page)})\n\n"
     for module in children(app, modules):
         landing += f"- [{module.name.rsplit('.', 1)[-1]}]({relative_link(API_ROOT / 'index.md', module.page)})\n"
     files.append(File.generated(config, str(API_ROOT / "index.md"), content=landing))
     # [NOTE] Replace navigation on every rebuild because `mkdocs serve` reuses this config object.
-    reference = next((entry for entry in config.nav if "Reference" in entry), None)
-    if reference is None:
-        raise PluginError("mkdocs.yml must contain a Reference navigation entry")
-    reference["Reference"] = note_navigation(notes)
+    architecture = next((entry for entry in config.nav if "Architecture" in entry), None)
+    if architecture is None:
+        raise PluginError("mkdocs.yml must contain an Architecture navigation entry")
+    architecture["Architecture"] = note_navigation(notes)
     api = next((entry for entry in config.nav if "API reference" in entry), None)
     if api is None:
         raise PluginError("mkdocs.yml must contain an API reference navigation entry")
     api["API reference"] = [str(API_ROOT / "index.md"), *api_navigation(modules)]
     # [NOTE] Keep the wrapper reachable from the landing page without adding it to the menu.
     files.get_file_from_path(str(app.page)).inclusion = InclusionLevel.NOT_IN_NAV
+    note_index = files.get_file_from_path(str(NOTE_ROOT / "index.md"))
+    if note_index is not None:
+        note_index.inclusion = InclusionLevel.NOT_IN_NAV
     return files
 
 

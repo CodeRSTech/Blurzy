@@ -1,4 +1,5 @@
-"""Interface contract for creating export all worker instances.
+"""
+Interface contract for creating export all worker instances.
 
 See Also:
     - [`ExportAllWorkerFactoryAdapter`][app.application.adapters.export_all_worker_factory_adapter.ExportAllWorkerFactoryAdapter] — creates concrete batch export workers
@@ -16,7 +17,6 @@ if TYPE_CHECKING:
 
 
 
-
 if TYPE_CHECKING:
     from PySide6.QtCore import QObject
     from app.application.application import Application
@@ -24,11 +24,12 @@ if TYPE_CHECKING:
 
 
 class ExportAllWorkerFactoryInterface(Protocol):
-    """Create start-ready export all workers behind an interface seam.
+    """
+    Create start-ready export all workers behind an interface seam.
 
-Layer: Application.
-Context: Coordinates use-case behavior through domain services and application contracts.
-"""
+    Layer: Application.
+    Context: Coordinates use-case behavior through domain services and application contracts.
+    """
 
     def create(
         self,
@@ -39,7 +40,8 @@ Context: Coordinates use-case behavior through domain services and application c
         suffix: str,
         parent: QObject | None = None,
     ) -> ExportAllWorkerInterface:
-        """Create a worker that exports several sessions sequentially.
+        """
+        Create a worker that exports several sessions sequentially.
 
         Args:
             app: Application facade used to access sessions and export services.

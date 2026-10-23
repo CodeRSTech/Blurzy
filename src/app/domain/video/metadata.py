@@ -1,4 +1,5 @@
-"""Video file metadata — dimensions, FPS, frame count, and timing.
+"""
+Video file metadata — dimensions, FPS, frame count, and timing.
 
 See Also:
     - [`VideoReader`][app.infrastructure.video.reader.VideoReader] — reads video streams and their metadata
@@ -43,9 +44,9 @@ class VideoMetadata:
         safe_idx = min(requested_idx, max_idx)  # Clamp to valid range
 
 
-Layer: Domain.
-Context: Represents application concepts without UI or infrastructure dependencies.
-"""
+    Layer: Domain.
+    Context: Represents application concepts without UI or infrastructure dependencies.
+    """
     _path: str
     _width: int
     _height: int
@@ -58,7 +59,8 @@ Context: Represents application concepts without UI or infrastructure dependenci
 
     @property
     def path(self) -> str:
-        """Return the path of the video source.
+        """
+        Return the path of the video source.
 
         Returns:
             Path used to open the video.
@@ -67,7 +69,8 @@ Context: Represents application concepts without UI or infrastructure dependenci
 
     @property
     def width(self) -> int:
-        """Return the decoded video width in pixels.
+        """
+        Return the decoded video width in pixels.
 
         Returns:
             Frame width in pixels.
@@ -76,7 +79,8 @@ Context: Represents application concepts without UI or infrastructure dependenci
 
     @property
     def height(self) -> int:
-        """Return the decoded video height in pixels.
+        """
+        Return the decoded video height in pixels.
 
         Returns:
             Frame height in pixels.
@@ -85,7 +89,8 @@ Context: Represents application concepts without UI or infrastructure dependenci
 
     @property
     def fps(self) -> float:
-        """Return the video frame rate.
+        """
+        Return the video frame rate.
 
         Returns:
             Frames per second reported by the video metadata.
@@ -94,7 +99,8 @@ Context: Represents application concepts without UI or infrastructure dependenci
 
     @property
     def frame_count(self) -> int:
-        """Return the number of frames reported by the video metadata.
+        """
+        Return the number of frames reported by the video metadata.
 
         Returns:
             Total frame count reported by the video metadata.
@@ -102,7 +108,8 @@ Context: Represents application concepts without UI or infrastructure dependenci
         return self._frame_count
 
     def calculate_interval_in_mas(self):
-        """Calculate the approximate frame interval in milliseconds.
+        """
+        Calculate the approximate frame interval in milliseconds.
 
         Returns:
             Frame interval rounded to the nearest millisecond, with a minimum of 1.

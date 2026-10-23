@@ -1,4 +1,5 @@
-"""Compatibility shim for the renamed UI application adapter.
+"""
+Compatibility shim for the renamed UI application adapter.
 
 See Also:
     - [`UIApplicationAdapter`][app.ui.adapters.ui_application_adapter.UIApplicationAdapter] — current adapter implementation

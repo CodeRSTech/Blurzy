@@ -1,4 +1,5 @@
-"""Detection layer import service — loads bounding-box data into layers A or B.
+"""
+Detection layer import service — loads bounding-box data into layers A or B.
 
 See Also:
     - [`IDataImporter`][app.application.interfaces.data_import_interface.IDataImporter] — defines the import contract
@@ -72,13 +73,13 @@ class DetectionImportService(QObject):
         detection/export workers report progress today.
 
 
-Layer: Application.
-Context: Coordinates use-case behavior through domain services and application contracts.
+    Layer: Application.
+    Context: Coordinates use-case behavior through domain services and application contracts.
 
 
     Args:
         app: Application adapted for resolving sessions and writing imported detection-layer boxes.
-"""
+    """
 
     def __init__(self, app: Application) -> None:
         super().__init__(parent=app)

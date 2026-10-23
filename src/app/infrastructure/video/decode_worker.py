@@ -1,4 +1,5 @@
-"""Background video decoding worker with ring buffer cache and hard-seek support.
+"""
+Background video decoding worker with ring buffer cache and hard-seek support.
 
 See Also:
     - [`VideoRingBuffer`][app.domain.video.ring_buffer.VideoRingBuffer] — stores decoded frames for playback
@@ -30,11 +31,12 @@ logger = get_logger("Infrastructure->VideoDecodeWorker")
 
 
 class DecoderSignals(QObject):
-    """Container for Qt signals emitted by `VideoDecodeWorker` (must inherit `QObject`).
+    """
+    Container for Qt signals emitted by `VideoDecodeWorker` (must inherit `QObject`).
 
-Layer: Infrastructure.
-Context: Implements concrete processing or I/O behind application-facing contracts.
-"""
+    Layer: Infrastructure.
+    Context: Implements concrete processing or I/O behind application-facing contracts.
+    """
     # Signals must be defined on a QObject.
     # Emits (frame_index) when a sought frame is successfully cached
     seek_completed = Signal(int)
@@ -42,7 +44,8 @@ Context: Implements concrete processing or I/O behind application-facing contrac
 
 @final
 class VideoDecodeWorker(QThread):
-    """Background worker that decodes video frames into a ring buffer.
+    """
+    Background worker that decodes video frames into a ring buffer.
 
     This thread preloads frames ahead of playback, handles seek requests,
     and manages memory usage by clearing cached frames when inactive.
@@ -84,19 +87,21 @@ class VideoDecodeWorker(QThread):
             UI resumes decode with `set_active(True)`
 
 
-Layer: Infrastructure.
-Context: Implements concrete processing or I/O behind application-facing contracts.
+    Layer: Infrastructure.
+    Context: Implements concrete processing or I/O behind application-facing contracts.
 
 
     Args:
         path: Filesystem path of the video or resource.
         playback: Playback state shared with the decode worker.
         parent: Optional Qt parent object.
-"""
+    """
     def __init__(
             self, path: str, playback: PlaybackState, parent=None
     ) -> None:
-        """Initialize decode worker for `path` with reference to `playback` view_state."""
+        """
+        Initialize decode worker for `path` with reference to `playback` view_state.
+"""
         super().__init__(parent)  # Important for garbage collection
         self.signals = DecoderSignals()
         self._running = False
@@ -126,7 +131,8 @@ Context: Implements concrete processing or I/O behind application-facing contrac
         )
 
     def request_seek(self, frame_index: int) -> None:
-        """Request hard seek to `frame_index` (thread-safe, clears buffer).
+        """
+        Request hard seek to `frame_index` (thread-safe, clears buffer).
 
 Args:
     frame_index: Zero-based frame index.
@@ -238,7 +244,8 @@ Args:
         self._reader.close()
 
     def get_cached_frame_at_index(self, idx: int) -> RGBFrame | None:
-        """Return cached frame at `idx`, or None if not in buffer.
+        """
+        Return cached frame at `idx`, or None if not in buffer.
 
         Args:
             idx: Zero-based frame index to look up.

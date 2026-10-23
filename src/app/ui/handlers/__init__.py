@@ -1,4 +1,5 @@
-"""UI handlers module for session, playback, detection, tracking, and detection management.
+"""
+UI handlers module for session, playback, detection, tracking, and detection management.
 
 See Also:
     - [`UIController`][app.ui.uicontroller.UIController] — composes and exposes the handlers

@@ -1,4 +1,5 @@
-"""Module for logging cfg; provides reusable helpers across application layers.
+"""
+Module for logging cfg; provides reusable helpers across application layers.
 
 See Also:
     - [`normalize_log_level`][app.shared.runtime_config.normalize_log_level] — validates configured logging levels
@@ -35,7 +36,8 @@ def _build_filter(enabled_areas: set[str] | None):
     normalized_areas = {area.strip().lower() for area in enabled_areas}
 
     def area_filter(record) -> bool:
-        """Accept a log record only when its bound area is enabled.
+        """
+        Accept a log record only when its bound area is enabled.
 
         Args:
             record: Loguru record whose `extra["area"]` value is checked.
@@ -56,13 +58,15 @@ def configure_logging(
     log_file_path: str = "logs/app.log",
     enabled_areas: set[str] | None = None,
 ) -> None:
-    """Configure application log sinks and area-based filtering.
+    """
+    Configure application log sinks and area-based filtering.
 
     Args:
         console_level: Minimum level written to stderr; environment configuration may override it.
         file_level: Minimum level written to the log file; environment configuration may override it.
         log_file_path: Destination file path; environment configuration may override it.
-        enabled_areas: Optional allowlist of logger area names; `None` accepts all areas."""
+        enabled_areas: Optional allowlist of logger area names; `None` accepts all areas.
+"""
     console_level = normalize_log_level(
         console_level, env_var=ENV_LOG_CONSOLE_LEVEL
     )
@@ -115,7 +119,8 @@ def configure_logging(
 
 
 def get_logger(area: str) -> Logger:
-    """Return a Loguru logger bound to an application area.
+    """
+    Return a Loguru logger bound to an application area.
 
     Args:
         area: Name attached to emitted records as `extra["area"]`.

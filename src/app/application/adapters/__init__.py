@@ -1,4 +1,5 @@
-"""Application-layer adapters — explicit wrappers for application interface contracts.
+"""
+Application-layer adapters — explicit wrappers for application interface contracts.
 
 These adapters wrap higher-level application objects (e.g. `Application`) to expose
 narrow interface contracts consumed by services and managers.

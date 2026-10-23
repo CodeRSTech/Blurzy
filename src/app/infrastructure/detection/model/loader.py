@@ -1,4 +1,5 @@
-"""Detection model factory and polymorphic implementations (Torch, YOLO, Dummy).
+"""
+Detection model factory and polymorphic implementations (Torch, YOLO, Dummy).
 
 See Also:
     - [`DetectionModelError`][app.infrastructure.detection.exceptions.DetectionModelError] — reports model-loading failures
@@ -32,7 +33,8 @@ logger = get_logger("Infrastructure->Detection->Models")
 
 
 def load_detection_model(model_name: str) -> BaseDetectionModel:
-    """Instantiate the model implementation registered under `model_name`.
+    """
+    Instantiate the model implementation registered under `model_name`.
 
     Args:
         model_name: Registered model name, or `"None"` to select the dummy model.

@@ -1,4 +1,5 @@
-"""Application services layer — business logic and orchestration between domain and infrastructure.
+"""
+Application services layer — business logic and orchestration between domain and infrastructure.
 
 See Also:
     - [`Application`][app.application.application.Application] — exposes service workflows to the UI

@@ -1,4 +1,5 @@
-"""Right-click context menu actions for detection editing (add, copy, delete, select, reset).
+"""
+Right-click context menu actions for detection editing (add, copy, delete, select, reset).
 
 See Also:
     - [`AnnotationHandler`][app.ui.handlers.annotation_handler.AnnotationHandler] — dispatches annotation actions
@@ -26,9 +27,9 @@ class AnnotationContextActions(str, Enum):
         service method.
 
 
-Layer: Domain.
-Context: Represents application concepts without UI or infrastructure dependencies.
-"""
+    Layer: Domain.
+    Context: Represents application concepts without UI or infrastructure dependencies.
+    """
     ADD_BBOX_HERE = "add_bbox_here"
     COPY = "copy"
     COPY_CURRENT = "copy_current"

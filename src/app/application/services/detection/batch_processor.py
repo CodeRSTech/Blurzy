@@ -1,4 +1,5 @@
-"""Batch processing collaborator for worker-produced detection results.
+"""
+Batch processing collaborator for worker-produced detection results.
 
 See Also:
     - [`DetectionResult`][app.domain.detection.result.DetectionResult] — the per-frame result records processed here
@@ -28,11 +29,12 @@ logger = get_logger("Application->DetectionBatchProcessor")
 
 @dataclass(slots=True)
 class DetectionBatchProcessReport:
-    """Batch counts; `written_boxes` counts filtered boxes retained in Layer A.
+    """
+    Batch counts; `written_boxes` counts filtered boxes retained in Layer A.
 
-Layer: Application.
-Context: Coordinates use-case behavior through domain services and application contracts.
-"""
+    Layer: Application.
+    Context: Coordinates use-case behavior through domain services and application contracts.
+    """
 
     total_frames: int
     skipped_existing_frames: int
@@ -41,7 +43,8 @@ Context: Coordinates use-case behavior through domain services and application c
 
 
 class DetectionBatchProcessor:
-    """Store selected detections in Layer A and editable clones in Layer B.
+    """
+    Store selected detections in Layer A and editable clones in Layer B.
 
     Working principle
         ```python
@@ -59,13 +62,13 @@ class DetectionBatchProcessor:
         ```
 
 
-Layer: Application.
-Context: Coordinates use-case behavior through domain services and application contracts.
+    Layer: Application.
+    Context: Coordinates use-case behavior through domain services and application contracts.
 
 
     Args:
         session_repo: Interface used to retrieve a session and write its frame-indexed detections.
-"""
+    """
 
     def __init__(self, session_repo: UIApplicationInterface) -> None:
         self._app_adapter = session_repo
@@ -73,7 +76,8 @@ Context: Coordinates use-case behavior through domain services and application c
     def process_batch(
             self, s_id: SessionId, batch: dict[int, list[DetectionResult]]
     ) -> DetectionBatchProcessReport:
-        """Process batch.
+        """
+        Process batch.
 
         Args:
             s_id: Identifier of the session receiving the detection results.
@@ -115,7 +119,8 @@ Context: Coordinates use-case behavior through domain services and application c
     def _write_detections_if_frame_empty(
             session: Session, frame_index: int, raw_detections: list[DetectionResult]
     ) -> int | None:
-        """Write selected detections to A and refresh machine boxes in B.
+        """
+        Write selected detections to A and refresh machine boxes in B.
 
         Args:
             session: Session receiving detections.

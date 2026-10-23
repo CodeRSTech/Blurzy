@@ -1,4 +1,5 @@
-"""Export interface contracts.
+"""
+Export interface contracts.
 
 See Also:
     - [`ExportWorkerFactoryInterface`][app.application.interfaces.export.factory_interface.ExportWorkerFactoryInterface] — creates single-session export workers

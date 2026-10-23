@@ -1,4 +1,5 @@
-"""Centralizes video decode worker activation and deactivation per session.
+"""
+Centralizes video decode worker activation and deactivation per session.
 
 See Also:
     - [`VideoDecodeWorker`][app.infrastructure.video.decode_worker.VideoDecodeWorker] — performs frame decoding
@@ -44,13 +45,13 @@ class VideoDecodeWorkerManager:
     unit-testable without a live `Application` instance.
 
 
-Layer: Application.
-Context: Coordinates use-case behavior through domain services and application contracts.
+    Layer: Application.
+    Context: Coordinates use-case behavior through domain services and application contracts.
 
 
     Args:
         session_repo: Interface used to resolve sessions and coordinate their decode workers.
-"""
+    """
 
     def __init__(self, session_repo: UIApplicationInterface) -> None:
         self._app_adapter = session_repo

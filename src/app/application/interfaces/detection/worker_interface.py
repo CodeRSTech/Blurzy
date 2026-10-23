@@ -1,4 +1,5 @@
-"""Interface contract for background detection worker implementations.
+"""
+Interface contract for background detection worker implementations.
 
 See Also:
     - [`DetectionWorkerAdapter`][app.infrastructure.adapters.detection_worker_adapter.DetectionWorkerAdapter] — adapts worker operations to this contract
@@ -28,24 +29,29 @@ class DetectionWorkerInterface(Protocol):
     service; they are intentionally outside this minimal interface.
 
 
-Layer: Application.
-Context: Coordinates use-case behavior through domain services and application contracts.
-"""
+    Layer: Application.
+    Context: Coordinates use-case behavior through domain services and application contracts.
+    """
     progress_updated = SignalInstance
     finished_processing = SignalInstance
     error_occurred = SignalInstance
     batch_ready = SignalInstance
 
     def start(self) -> None:
-        """Start the detection thread."""
+        """
+        Start the detection thread.
+"""
         ...
 
     def stop(self) -> None:
-        """Request the detection thread to stop."""
+        """
+        Request the detection thread to stop.
+"""
         ...
 
     def isRunning(self) -> bool:
-        """Return `True` while the worker thread is processing frames.
+        """
+        Return `True` while the worker thread is processing frames.
 
         Returns:
             `True` while the detection worker thread is active.
@@ -53,7 +59,8 @@ Context: Coordinates use-case behavior through domain services and application c
         ...
 
     def is_complete(self) -> bool:
-        """Return `True` after the full frame stream has been processed.
+        """
+        Return `True` after the full frame stream has been processed.
 
         Returns:
             `True` once the worker has processed the complete frame stream.
@@ -61,7 +68,8 @@ Context: Coordinates use-case behavior through domain services and application c
         ...
 
     def get_detections(self, frame_index: int) -> list[DetectionResult] | None:
-        """Return cached detections for `frame_index`, or `None` if not yet processed.
+        """
+        Return cached detections for `frame_index`, or `None` if not yet processed.
 
         Args:
             frame_index: Zero-based index of the frame to query.
@@ -72,7 +80,8 @@ Context: Coordinates use-case behavior through domain services and application c
         ...
 
     def get_all_detections(self) -> dict[int, list[DetectionResult]]:
-        """Return a copy of all cached detections keyed by frame index.
+        """
+        Return a copy of all cached detections keyed by frame index.
 
         Returns:
             New dictionary mapping processed frame indices to detection results.

@@ -1,4 +1,5 @@
-"""Explicit adapter wrapping `VideoDecodeWorker` to `VideoDecodeWorkerControlInterface`.
+"""
+Explicit adapter wrapping `VideoDecodeWorker` to `VideoDecodeWorkerControlInterface`.
 
 See Also:
     - [`VideoDecodeWorkerControlInterface`][app.application.interfaces.video.decode_worker_control_interface.VideoDecodeWorkerControlInterface] — defines the lifecycle contract
@@ -37,13 +38,13 @@ class VideoDecodeWorkerControlAdapter(VideoDecodeWorkerControlInterface):
     signal internals stay on the concrete worker.
 
 
-Layer: Infrastructure.
-Context: Implements concrete processing or I/O behind application-facing contracts.
+    Layer: Infrastructure.
+    Context: Implements concrete processing or I/O behind application-facing contracts.
 
 
     Args:
         worker: Concrete video decode worker controlled by this adapter.
-"""
+    """
 
     def __init__(self, worker: VideoDecodeWorker) -> None:
         self._worker = worker
@@ -52,7 +53,8 @@ Context: Implements concrete processing or I/O behind application-facing contrac
         return f"<VideoDecodeWorkerControlAdapter wrapping={self._worker!r}>"
 
     def set_active(self, active: bool, resume_idx: int = 0) -> None:
-        """Activate or deactivate the wrapped decode worker.
+        """
+        Activate or deactivate the wrapped decode worker.
 
         Args:
             active: Whether the worker should decode frames.
@@ -61,11 +63,14 @@ Context: Implements concrete processing or I/O behind application-facing contrac
         self._worker.set_active(active=active, resume_idx=resume_idx)
 
     def stop(self) -> None:
-        """Stop the wrapped decode worker and release its reader resources."""
+        """
+        Stop the wrapped decode worker and release its reader resources.
+"""
         self._worker.stop()
 
     def get_cached_frame_at_index(self, idx: int) -> RGBFrame | None:
-        """Retrieve a decoded frame from the worker's ring buffer.
+        """
+        Retrieve a decoded frame from the worker's ring buffer.
 
         Args:
             idx: Zero-based frame index to look up.

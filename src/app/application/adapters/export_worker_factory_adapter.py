@@ -1,4 +1,5 @@
-"""Infrastructure-backed factory adapter for single-session export workers.
+"""
+Infrastructure-backed factory adapter for single-session export workers.
 
 See Also:
     - [`ExportWorkerFactoryInterface`][app.application.interfaces.export.factory_interface.ExportWorkerFactoryInterface] — defines the factory contract
@@ -25,11 +26,12 @@ if TYPE_CHECKING:
 
 
 class ExportWorkerFactoryAdapter(ExportWorkerFactoryInterface):
-    """Create concrete `ExportWorker` instances behind an interface seam.
+    """
+    Create concrete `ExportWorker` instances behind an interface seam.
 
-Layer: Application.
-Context: Coordinates use-case behavior through domain services and application contracts.
-"""
+    Layer: Application.
+    Context: Coordinates use-case behavior through domain services and application contracts.
+    """
 
     def create(
         self,
@@ -38,7 +40,8 @@ Context: Coordinates use-case behavior through domain services and application c
         output_path: str,
         parent: QObject | None = None,
     ) -> ExportWorkerInterface:
-        """Create a single-session export worker behind its interface.
+        """
+        Create a single-session export worker behind its interface.
 
         Args:
             export_service: Service that renders the session export.

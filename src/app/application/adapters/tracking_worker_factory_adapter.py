@@ -27,11 +27,12 @@ if TYPE_CHECKING:
 
 
 class TrackingWorkerFactoryAdapter(TrackingWorkerFactoryInterface):
-    """Create concrete `TrackingWorker` instances behind an interface seam.
+    """
+    Create concrete `TrackingWorker` instances behind an interface seam.
 
-Layer: Application.
-Context: Coordinates use-case behavior through domain services and application contracts.
-"""
+    Layer: Application.
+    Context: Coordinates use-case behavior through domain services and application contracts.
+    """
 
     def create(
         self,
@@ -39,7 +40,8 @@ Context: Coordinates use-case behavior through domain services and application c
         source_data: ListOfBoxesByFrameIndexAsDict,
         session_state: SessionState,
     ) -> TrackingWorkerInterface:
-        """Build and return a `TrackingWorker` instance.
+        """
+        Build and return a `TrackingWorker` instance.
 
         Args:
             strategy_name: Tracking algorithm to instantiate.

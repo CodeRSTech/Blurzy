@@ -1,4 +1,5 @@
-"""Module for preferences; implements the Qt presentation components.
+"""
+Module for preferences; implements the Qt presentation components.
 
 See Also:
     - [`AppPreferences`][app.shared.app_preferences.AppPreferences] — stores the preference values edited here
@@ -42,11 +43,12 @@ if TYPE_CHECKING:
 
 @final
 class PreferencesDialog(QDialog):
-    """Collect persistent app preferences and default per-session settings.
+    """
+    Collect persistent app preferences and default per-session settings.
 
-Layer: Presentation.
-Context: Supports user interaction and delegates application work through presentation contracts.
-"""
+    Layer: Presentation.
+    Context: Supports user interaction and delegates application work through presentation contracts.
+    """
 
     def __init__(
         self,
@@ -54,7 +56,8 @@ Context: Supports user interaction and delegates application work through presen
         available_models: list[ModelSelectionViewModel],
         parent: QWidget | None = None,
     ) -> None:
-        """Build the persistent preference dialog and populate saved defaults.
+        """
+        Build the persistent preference dialog and populate saved defaults.
 
         Args:
             preferences: Current persisted preferences.
@@ -80,7 +83,8 @@ Context: Supports user interaction and delegates application work through presen
         self._populate_from_preferences(preferences)
 
     def _init_widgets(self) -> None:
-        """Create preference widgets and assign explanatory hover text.
+        """
+        Create preference widgets and assign explanatory hover text.
 
 
         Note:
@@ -223,7 +227,8 @@ Context: Supports user interaction and delegates application work through presen
         )
 
     def _build_ui(self) -> None:
-        """Arrange preference controls into app, detection, tracking, and render groups.
+        """
+        Arrange preference controls into app, detection, tracking, and render groups.
 
 
         Note:
@@ -300,7 +305,8 @@ Context: Supports user interaction and delegates application work through presen
         root.addWidget(self._button_box)
 
     def _connect_signals(self) -> None:
-        """Connect preference controls to dialog state and browse actions.
+        """
+        Connect preference controls to dialog state and browse actions.
 
 
         Note:
@@ -316,7 +322,8 @@ Context: Supports user interaction and delegates application work through presen
         self._button_box.rejected.connect(self.reject)
 
     def _populate_from_preferences(self, preferences: AppPreferences) -> None:
-        """Restore preference values and dependent control enabled states.
+        """
+        Restore preference values and dependent control enabled states.
 
         Args:
             preferences: Values to display.
@@ -367,7 +374,8 @@ Context: Supports user interaction and delegates application work through presen
 
     @Slot(bool)
     def _on_blur_toggled(self, enabled: bool) -> None:
-        """Gate export-strength and preview-blur defaults on master blur.
+        """
+        Gate export-strength and preview-blur defaults on master blur.
 
         Args:
             enabled: Whether blur is enabled by default for new sessions.
@@ -383,7 +391,8 @@ Context: Supports user interaction and delegates application work through presen
 
     @Slot(bool)
     def _on_offline_stitching_toggled(self, enabled: bool) -> None:
-        """Gate gap length and GSI smoothness preference controls.
+        """
+        Gate gap length and GSI smoothness preference controls.
 
         Args:
             enabled: Whether offline stitching is enabled by default.
@@ -401,7 +410,8 @@ Context: Supports user interaction and delegates application work through presen
 
     @Slot()
     def _on_browse_export_directory(self) -> None:
-        """Open a directory chooser for the default export location.
+        """
+        Open a directory chooser for the default export location.
 
 
         Note:
@@ -419,7 +429,8 @@ Context: Supports user interaction and delegates application work through presen
             self._export_directory_edit.setText(directory)
 
     def get_preferences(self) -> AppPreferences:
-        """Create a preference value object from the current controls.
+        """
+        Create a preference value object from the current controls.
 
 
         Returns:

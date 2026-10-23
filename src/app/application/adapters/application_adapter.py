@@ -1,12 +1,13 @@
-"""Explicit adapter wrapping `Application` to `ApplicationInterface`.
+"""
+Explicit adapter wrapping `Application` to `ApplicationInterface`.
 
 See Also:
     - [`Application`][app.application.application.Application] — provides the concrete workflow operations
     - [`UIApplicationInterface`][app.application.interfaces.application_interface.UIApplicationInterface] — defines the contract exposed to callers
 
-Layer: Application.
-Context: Adapts infrastructure implementations to application contracts.
-"""
+    Layer: Application.
+    Context: Adapts infrastructure implementations to application contracts.
+    """
 # [NOTE]
 # [IMPORTANT]
 # ALL Methods of
@@ -48,13 +49,13 @@ class ApplicationAdapter(UIApplicationInterface):
       without depending on the entire `Application` instance.
 
 
-Layer: Application.
-Context: Coordinates use-case behavior through domain services and application contracts.
+    Layer: Application.
+    Context: Coordinates use-case behavior through domain services and application contracts.
 
 
     Args:
         app: Concrete application wrapped to expose the session operations required by application services.
-"""
+    """
 
     def __init__(self, app: Application) -> None:
         self._app = app
@@ -69,7 +70,8 @@ Context: Coordinates use-case behavior through domain services and application c
 
     @property
     def active_session(self) -> Session | None:
-        """Retrieve the currently active `Session` instance, or `None` if no session is active.
+        """
+        Retrieve the currently active `Session` instance, or `None` if no session is active.
 
 Returns:
     The active session, or `None` if there is no active session.
@@ -78,7 +80,8 @@ Returns:
 
     @property
     def active_session_id(self) -> SessionId | None:
-        """Retrieve the `SessionId` of the currently active session, or `None` if none is active.
+        """
+        Retrieve the `SessionId` of the currently active session, or `None` if none is active.
 
 Returns:
     The active session identifier, or `None` if none is active.
@@ -87,7 +90,8 @@ Returns:
 
     @active_session_id.setter
     def active_session_id(self, s_id: SessionId) -> None:
-        """Set the active session by `SessionId`.
+        """
+        Set the active session by `SessionId`.
 
         Args:
             s_id: Identifier of the session to activate.
@@ -96,7 +100,8 @@ Returns:
 
     @property
     def all_s_ids(self) -> Iterable[SessionId]:
-        """Iterate over all `SessionId` instances currently managed by the application.
+        """
+        Iterate over all `SessionId` instances currently managed by the application.
 
         Returns:
             Iterable view of the managed session identifiers.
@@ -108,7 +113,8 @@ Returns:
     # ══════════════════════════════════════════════════════════════════════════════════════════════════════════════════
 
     def open_video_from_path(self, path: str) -> None:
-        """Open a video file and create a new session from `path`.
+        """
+        Open a video file and create a new session from `path`.
 
         Args:
             path: Filesystem path of the video to open.
@@ -116,11 +122,14 @@ Returns:
         self._sm.create_session_from_video_path(path)
 
     def initialize_active_session(self) -> None:
-        """Set the first available session as the active session."""
+        """
+        Set the first available session as the active session.
+"""
         self._sm.initialize_active_session()
 
     def get_session_by_id(self, s_id: SessionId) -> Session:
-        """Fetch the `Session` instance identified by `s_id`.
+        """
+        Fetch the `Session` instance identified by `s_id`.
 
 Args:
     s_id: Identifier of the target session.
@@ -131,7 +140,8 @@ Returns:
         return self._sm.get_session_by_id(s_id)
 
     def set_session_state_is_playing(self, s_id: SessionId, is_playing: bool) -> None:
-        """Set the playback view_state (playing/paused) for the session `s_id`.
+        """
+        Set the playback view_state (playing/paused) for the session `s_id`.
 
         Args:
             s_id: Identifier of the session whose playback state to update.
@@ -141,11 +151,14 @@ Returns:
 
     # Used by PlaybackHandler and SessionHandler
     def stop_all_playback(self) -> None:
-        """Stop playback for **all** active sessions."""
+        """
+        Stop playback for **all** active sessions.
+"""
         self._sm.stop_all_playback()
 
     def get_selected_detection_model_name(self, s_id: SessionId) -> str:
-        """Retrieve the name of the currently selected detection model for `s_id`.
+        """
+        Retrieve the name of the currently selected detection model for `s_id`.
 
         Args:
             s_id: Identifier of the session whose model selection is queried.

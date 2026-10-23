@@ -1,4 +1,5 @@
-"""Module for selection history state; stores transient interaction state.
+"""
+Module for selection history state; stores transient interaction state.
 
 See Also:
     - [`BBoxViewModel`][app.domain.views.bounding_box_view_model.BBoxViewModel] — snapshots box data for undo and redo
@@ -16,22 +17,24 @@ from dataclasses import dataclass
 
 @dataclass(slots=True)
 class SelectionHistoryEntry:
-    """Store the selected box keys before and after one selection change.
+    """
+    Store the selected box keys before and after one selection change.
 
     Attributes:
         before_keys: Selection to restore when undoing the change.
         after_keys: Selection to restore when redoing the change.
 
-Layer: Presentation.
-Context: Supports user interaction and delegates application work through presentation contracts.
-"""
+    Layer: Presentation.
+    Context: Supports user interaction and delegates application work through presentation contracts.
+    """
     before_keys: list[str]
     after_keys: list[str]
 
 
 @dataclass(slots=True)
 class BoxMutationEntry:
-    """Store one frame's box and selection snapshots for undo or redo.
+    """
+    Store one frame's box and selection snapshots for undo or redo.
 
     Attributes:
         frame_index: Frame whose boxes were mutated.
@@ -40,9 +43,9 @@ class BoxMutationEntry:
         before_selection: Selected keys captured before the mutation.
         after_selection: Selected keys captured after the mutation.
 
-Layer: Presentation.
-Context: Supports user interaction and delegates application work through presentation contracts.
-"""
+    Layer: Presentation.
+    Context: Supports user interaction and delegates application work through presentation contracts.
+    """
     frame_index: int
     before_boxes: list
     after_boxes: list
@@ -52,27 +55,29 @@ Context: Supports user interaction and delegates application work through presen
 
 @dataclass(slots=True)
 class CopiedBBoxSnapshot:
-    """Store the box fields needed to paste a copied annotation.
+    """
+    Store the box fields needed to paste a copied annotation.
 
     Attributes:
         label: Classification label to copy.
         bbox_xyxy: Image-space `(x1, y1, x2, y2)` coordinates.
         color_hex: Display color to apply to the pasted box.
 
-Layer: Presentation.
-Context: Supports user interaction and delegates application work through presentation contracts.
-"""
+    Layer: Presentation.
+    Context: Supports user interaction and delegates application work through presentation contracts.
+    """
     label: str
     bbox_xyxy: tuple[int, int, int, int]
     color_hex: str
 
 
 class SelectionHistoryState:
-    """Represent selection history state.
+    """
+    Represent selection history state.
 
-Layer: Presentation.
-Context: Supports user interaction and delegates application work through presentation contracts.
-"""
+    Layer: Presentation.
+    Context: Supports user interaction and delegates application work through presentation contracts.
+    """
     def __init__(self) -> None:
         self._selection_undo: dict[tuple[str, int], list[SelectionHistoryEntry]] = defaultdict(list)
         self._selection_redo: dict[tuple[str, int], list[SelectionHistoryEntry]] = defaultdict(list)
@@ -89,7 +94,8 @@ Context: Supports user interaction and delegates application work through presen
         before_keys: list[str],
         after_keys: list[str],
     ) -> None:
-        """Push a selection change onto the undo stack for one session and tab.
+        """
+        Push a selection change onto the undo stack for one session and tab.
 
         Args:
             session_id: Session whose selection changed.
@@ -109,7 +115,8 @@ Context: Supports user interaction and delegates application work through presen
         self._selection_redo[key].clear()
 
     def undo_selection(self, *, session_id: str, tab_index: int) -> list[str] | None:
-        """Move the latest selection change to redo history and return its prior selection.
+        """
+        Move the latest selection change to redo history and return its prior selection.
 
         Args:
             session_id: Session whose selection history is traversed.
@@ -126,7 +133,8 @@ Context: Supports user interaction and delegates application work through presen
         return list(entry.before_keys)
 
     def redo_selection(self, *, session_id: str, tab_index: int) -> list[str] | None:
-        """Move the latest undone selection change back to undo history.
+        """
+        Move the latest undone selection change back to undo history.
 
         Args:
             session_id: Session whose selection history is traversed.
@@ -153,7 +161,8 @@ Context: Supports user interaction and delegates application work through presen
         before_selection: list[str],
         after_selection: list[str],
     ) -> None:
-        """Record before/after box and selection snapshots for undo.
+        """
+        Record before/after box and selection snapshots for undo.
 
         Args:
             session_id: Session whose boxes changed.
@@ -180,7 +189,8 @@ Context: Supports user interaction and delegates application work through presen
         self._mutation_redo[key].clear()
 
     def undo_box_mutation(self, *, session_id: str, tab_index: int) -> BoxMutationEntry | None:
-        """Move the latest box mutation to redo history and return its snapshots.
+        """
+        Move the latest box mutation to redo history and return its snapshots.
 
         Args:
             session_id: Session whose mutation history is traversed.
@@ -197,7 +207,8 @@ Context: Supports user interaction and delegates application work through presen
         return entry
 
     def redo_box_mutation(self, *, session_id: str, tab_index: int) -> BoxMutationEntry | None:
-        """Move the latest undone box mutation back to undo history.
+        """
+        Move the latest undone box mutation back to undo history.
 
         Args:
             session_id: Session whose mutation history is traversed.
@@ -214,7 +225,8 @@ Context: Supports user interaction and delegates application work through presen
         return entry
 
     def set_clipboard_boxes(self, *, boxes: list[CopiedBBoxSnapshot], tab_index: int) -> None:
-        """Replace the copied-box clipboard with snapshots from one data tab.
+        """
+        Replace the copied-box clipboard with snapshots from one data tab.
 
         Args:
             boxes: Box snapshots available for pasting.
@@ -225,7 +237,8 @@ Context: Supports user interaction and delegates application work through presen
 
     @property
     def has_clipboard_boxes(self) -> bool:
-        """Return whether the clipboard contains any copied boxes.
+        """
+        Return whether the clipboard contains any copied boxes.
 
         Returns:
             `True` when at least one copied box is stored.
@@ -233,7 +246,8 @@ Context: Supports user interaction and delegates application work through presen
         return bool(self._clipboard_boxes)
 
     def get_clipboard_boxes(self) -> list[CopiedBBoxSnapshot]:
-        """Return a shallow copy of the copied-box clipboard.
+        """
+        Return a shallow copy of the copied-box clipboard.
 
         Returns:
             List of clipboard snapshots; the list is copied, but its entries are shared.

@@ -1,4 +1,5 @@
-"""Module for box io; provides reusable helpers across application layers.
+"""
+Module for box io; provides reusable helpers across application layers.
 
 See Also:
     - [`BBoxViewModel`][app.domain.views.bounding_box_view_model.BBoxViewModel] — the view-model shape serialized by these helpers
@@ -20,7 +21,8 @@ if TYPE_CHECKING:
 
 
 def box_to_dict(box: BBoxViewModel) -> dict[str, object]:
-    """Serialize a box view model to a JSON-compatible mapping.
+    """
+    Serialize a box view model to a JSON-compatible mapping.
 
     Args:
         box: Bounding box whose fields are serialized.
@@ -40,7 +42,8 @@ def box_to_dict(box: BBoxViewModel) -> dict[str, object]:
 
 
 def dict_to_box(data: dict[str, object]) -> BBoxViewModel:
-    """Build a box view model from its serialized fields.
+    """
+    Build a box view model from its serialized fields.
 
     Args:
         data: Mapping with `id`, `source`, `label`, `bbox_xyxy`, and `color_hex`; `confidence` and `key` are optional.

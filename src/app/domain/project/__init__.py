@@ -1,4 +1,5 @@
-"""Project domain models for save/load persistence.
+"""
+Project domain models for save/load persistence.
 
 See Also:
     - [`ProjectService`][app.application.services.project_service.ProjectService] — coordinates project workflows

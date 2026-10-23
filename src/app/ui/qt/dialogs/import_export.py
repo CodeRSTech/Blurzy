@@ -1,4 +1,5 @@
-"""Import / Export layer data dialog.
+"""
+Import / Export layer data dialog.
 
 Shown when the user clicks either "Import / Export" button on the right panel.
 The dialog is *scope-aware*: the detection button opens it scoped to layers A/B,
@@ -77,7 +78,6 @@ if TYPE_CHECKING:
     from PySide6.QtWidgets import QWidget
 
 
-
 # ──────────────────────────────────────────────────────────────────────────────
 #  Result type
 # ──────────────────────────────────────────────────────────────────────────────
@@ -96,9 +96,9 @@ class ImportExportConfig:
         import_mode: The chosen `ImportMode`; `None` for exports.
 
 
-Layer: Presentation.
-Context: Supports user interaction and delegates application work through presentation contracts.
-"""
+    Layer: Presentation.
+    Context: Supports user interaction and delegates application work through presentation contracts.
+    """
     is_import: bool
     layer: VideoDataLayer
     fmt: str
@@ -157,9 +157,9 @@ class ImportExportDialog(QDialog):
         in a sensible location across sessions.
 
 
-Layer: Presentation.
-Context: Supports user interaction and delegates application work through presentation contracts.
-"""
+    Layer: Presentation.
+    Context: Supports user interaction and delegates application work through presentation contracts.
+    """
 
     def __init__(
         self,
@@ -284,7 +284,9 @@ Context: Supports user interaction and delegates application work through presen
     # ──────────────────────────────────────────────────────────────────────
 
     def _refresh_ui_state(self) -> None:
-        """Show/hide import-only widgets based on current operation radio."""
+        """
+        Show/hide import-only widgets based on current operation radio.
+"""
         is_import = self._radio_import.isChecked()
         self._mode_label.setVisible(is_import)
         self._mode_combo.setVisible(is_import)
@@ -292,7 +294,9 @@ Context: Supports user interaction and delegates application work through presen
         self._update_ok_button()
 
     def _on_format_changed(self) -> None:
-        """Clear the file path when the format changes to avoid extension mismatches."""
+        """
+        Clear the file path when the format changes to avoid extension mismatches.
+"""
         self._file_edit.clear()
         self._update_ok_button()
 
@@ -338,7 +342,9 @@ Context: Supports user interaction and delegates application work through presen
     # ──────────────────────────────────────────────────────────────────────
 
     def _on_accepted(self) -> None:
-        """Validate, optionally show the overwrite confirmation, then accept."""
+        """
+        Validate, optionally show the overwrite confirmation, then accept.
+"""
         file_path = self._file_edit.text().strip()
         if not file_path:
             return

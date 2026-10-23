@@ -1,4 +1,5 @@
-"""Detection operations handler for model-based object detection.
+"""
+Detection operations handler for model-based object detection.
 
 See Also:
     - [`DetectionService`][app.application.services.detection.service.DetectionService] — coordinates detection workflows
@@ -48,15 +49,16 @@ class DetectionHandler(QObject):
     - Renders frames after detection completion
 
 
-Layer: Presentation.
-Context: Supports user interaction and delegates application work through presentation contracts.
-
-
-    Args:
-        controller supplying detection actions, worker signals, the active window, and frame rendering.
-"""
+    Layer: Presentation.
+    Context: Supports user interaction and delegates application work through presentation contracts.
+    """
 
     def __init__(self, controller: UIController) -> None:
+        """
+        Initialize the DetectionHandler.
+        Args:
+            controller: UIController supplying detection actions, worker signals, the active window, and frame rendering.
+        """
         super().__init__()
         self.setParent(controller)
 

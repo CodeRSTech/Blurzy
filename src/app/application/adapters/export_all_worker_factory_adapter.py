@@ -1,4 +1,5 @@
-"""Infrastructure-backed factory adapter for batch export workers.
+"""
+Infrastructure-backed factory adapter for batch export workers.
 
 See Also:
     - [`ExportAllWorkerFactoryInterface`][app.application.interfaces.export_all.worker_factory_interface.ExportAllWorkerFactoryInterface] — defines the factory contract
@@ -25,11 +26,12 @@ if TYPE_CHECKING:
 
 
 class ExportAllWorkerFactoryAdapter(ExportAllWorkerFactoryInterface):
-    """Create concrete `ExportAllWorker` instances behind an interface seam.
+    """
+    Create concrete `ExportAllWorker` instances behind an interface seam.
 
-Layer: Application.
-Context: Coordinates use-case behavior through domain services and application contracts.
-"""
+    Layer: Application.
+    Context: Coordinates use-case behavior through domain services and application contracts.
+    """
 
     def create(
         self,
@@ -40,7 +42,8 @@ Context: Coordinates use-case behavior through domain services and application c
         suffix: str,
         parent: QObject | None = None,
     ) -> ExportAllWorkerInterface:
-        """Create a batch export worker behind its interface.
+        """
+        Create a batch export worker behind its interface.
 
         Args:
             app: Application that owns the sessions and export services.

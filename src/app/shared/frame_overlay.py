@@ -1,4 +1,5 @@
-"""Module for frame overlay; provides reusable helpers across application layers.
+"""
+Module for frame overlay; provides reusable helpers across application layers.
 
 See Also:
     - [`UIHandler`][app.ui.handlers.ui_handler.UIHandler] — composes overlays for displayed frames
@@ -27,7 +28,8 @@ def draw_frame_overlays(
         boxes: ListOfBoxes | None,
         border_width: int = 2,
 ) -> RGBFrame:
-    """Draw preview box borders and labels onto a copy of an RGB frame.
+    """
+    Draw preview box borders and labels onto a copy of an RGB frame.
 
     Args:
         frame: RGB frame to annotate.

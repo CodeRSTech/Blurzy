@@ -1,4 +1,5 @@
-"""State-transition helpers for bbox interaction flows.
+"""
+State-transition helpers for bbox interaction flows.
 
 These functions are intentionally side-effect-light and operate on `BBoxState` so
 the widget facade can remain thin and easier to test.
@@ -33,7 +34,8 @@ ApplyHandleDragFn = Callable[[QRect, DragMode, QPoint], QRect]
 
 
 def begin_add_drag(state: BBoxState, clamped_pos: QPoint) -> None:
-    """Initialize state for drawing a new bbox.
+    """
+    Initialize state for drawing a new bbox.
 
     Args:
         state: Mutable drag state to initialize.
@@ -53,7 +55,8 @@ def try_start_panning(
     is_ctrl_pressed: bool,
     pos: QPoint,
 ) -> tuple[bool, QPoint | None]:
-    """Start panning when Ctrl+Left is pressed.
+    """
+    Start panning when Ctrl+Left is pressed.
 
     Args:
         is_panning: Whether a pan gesture is already active.
@@ -74,7 +77,8 @@ def update_panning(
     last_pan_pos: QPoint,
     pos: QPoint,
 ) -> tuple[bool, QPoint, QPoint | None]:
-    """Update panning delta while dragging the viewport.
+    """
+    Update panning delta while dragging the viewport.
 
     Args:
         is_panning: Whether a pan gesture is active.
@@ -92,7 +96,8 @@ def update_panning(
 
 
 def stop_panning(is_panning: bool) -> bool:
-    """Return True when panning was active and should be cancelled on release.
+    """
+    Return True when panning was active and should be cancelled on release.
 
     Args:
         is_panning: Whether panning was active before the mouse release.
@@ -108,7 +113,8 @@ def try_begin_existing_edit_drag(
     pos: QPoint,
     hit_test_handle: HitTestHandleFn,
 ) -> bool:
-    """Start handle-resize or move drag when the active bbox is already selected.
+    """
+    Start handle-resize or move drag when the active bbox is already selected.
 
     Args:
         state: Current bbox rectangle and drag state.
@@ -145,7 +151,8 @@ def try_select_bbox_for_edit(
     pos: QPoint,
     get_bbox_at_pos: BBoxLookupFn,
 ) -> str | None:
-    """Pick a bbox under cursor and initialize drag-ready state for edit mode.
+    """
+    Pick a bbox under cursor and initialize drag-ready state for edit mode.
 
     Args:
         state: Mutable bbox drag state to initialize.
@@ -176,7 +183,8 @@ def update_drag_rect(
     clamp_rect: ClampRectFn,
     apply_handle_drag: ApplyHandleDragFn,
 ) -> bool:
-    """Apply draw/move/resize updates for the current drag state.
+    """
+    Apply draw/move/resize updates for the current drag state.
 
     Args:
         state: Mutable rectangle and drag mode being updated.
@@ -217,7 +225,8 @@ def finalize_release(
     min_bbox_px: int,
     widget_rect_to_image_space: Callable[[QRect], tuple[int, int, int, int]],
 ) -> tuple[MouseReleaseOutcome, tuple[str, int, int, int, int] | tuple[int, int, int, int] | None]:
-    """Finalize mouse release into `cancel`/`draw`/`edit`/`none` outcomes.
+    """
+    Finalize mouse release into `cancel`/`draw`/`edit`/`none` outcomes.
 
     Args:
         state: Current rectangle and drag mode to finalize.

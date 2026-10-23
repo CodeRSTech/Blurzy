@@ -1,4 +1,5 @@
-"""Deterministic, part-based appearance embeddings for object tracking.
+"""
+Deterministic, part-based appearance embeddings for object tracking.
 
 See Also:
     - [`DeepSortStrategy`][app.infrastructure.tracking.deepsort_strategy.DeepSortStrategy] — uses appearance features for association
@@ -29,23 +30,25 @@ if TYPE_CHECKING:
 
 
 class ReIDExtractorProtocol(Protocol):
-    """Interface for extracting one optional appearance vector per box.
+    """
+    Interface for extracting one optional appearance vector per box.
 
     Note:
         Implementations may use a hand-crafted descriptor or a learned backbone;
         callers rely only on input-order preservation and unit-normalized vectors.
 
 
-Layer: Infrastructure.
-Context: Implements concrete processing or I/O behind application-facing contracts.
-"""
+    Layer: Infrastructure.
+    Context: Implements concrete processing or I/O behind application-facing contracts.
+    """
 
     def extract_for_boxes(
         self,
         frame: RGBFrame | None,
         boxes: Sequence[BBoxViewModel],
     ) -> list[np.ndarray | None]:
-        """Extract embeddings aligned with `boxes`, using `None` for invalid crops.
+        """
+        Extract embeddings aligned with `boxes`, using `None` for invalid crops.
 
         Args:
             frame: RGB image for the current video frame, or `None` when unavailable.
@@ -67,7 +70,8 @@ Context: Implements concrete processing or I/O behind application-facing contrac
 
 
 class PartBasedAppearanceEmbedder:
-    """Build compact, illumination-tolerant color and texture descriptors.
+    """
+    Build compact, illumination-tolerant color and texture descriptors.
 
     Attributes:
         embedding_dim: Requested output size; supported values are 128, 256, and 512.
@@ -83,14 +87,15 @@ class PartBasedAppearanceEmbedder:
         embedder = PartBasedAppearanceEmbedder(embedding_dim=256)
 
 
-Layer: Infrastructure.
-Context: Implements concrete processing or I/O behind application-facing contracts.
-"""
+    Layer: Infrastructure.
+    Context: Implements concrete processing or I/O behind application-facing contracts.
+    """
 
     _CANONICAL_SIZE = (64, 128)
 
     def __init__(self, embedding_dim: int = 256) -> None:
-        """Initialize the descriptor at one of the supported output dimensions.
+        """
+        Initialize the descriptor at one of the supported output dimensions.
 
         Args:
             embedding_dim: Output dimension, either 128, 256, or 512.
@@ -112,7 +117,8 @@ Context: Implements concrete processing or I/O behind application-facing contrac
         frame: RGBFrame | None,
         boxes: Sequence[BBoxViewModel],
     ) -> list[np.ndarray | None]:
-        """Extract an appearance descriptor for every usable box crop.
+        """
+        Extract an appearance descriptor for every usable box crop.
 
         Args:
             frame: RGB image for the current frame, or `None`.
@@ -162,7 +168,9 @@ Context: Implements concrete processing or I/O behind application-facing contrac
         return result
 
     def _describe(self, rgb_crop: np.ndarray) -> np.ndarray:
-        """Build and normalize the configured multi-region descriptor."""
+        """
+        Build and normalize the configured multi-region descriptor.
+"""
         hsv = cv2.cvtColor(rgb_crop, cv2.COLOR_RGB2HSV)
         lab = cv2.cvtColor(rgb_crop, cv2.COLOR_RGB2LAB)
         gray = cv2.cvtColor(rgb_crop, cv2.COLOR_RGB2GRAY)
@@ -244,7 +252,9 @@ Context: Implements concrete processing or I/O behind application-facing contrac
 
     @staticmethod
     def _hist(image: np.ndarray, color_space: int, bins: tuple[int, int, int]) -> np.ndarray:
-        """Return an L1-normalized three-channel spatial color histogram."""
+        """
+        Return an L1-normalized three-channel spatial color histogram.
+"""
         channel_ranges = (0, 180, 0, 256, 0, 256) if color_space == 0 else (0, 256, 0, 256, 0, 256)
         hist = cv2.calcHist([image], [0, 1, 2], None, list(bins), list(channel_ranges))
         hist = cv2.normalize(hist, None, alpha=1.0, norm_type=cv2.NORM_L1)
@@ -252,7 +262,9 @@ Context: Implements concrete processing or I/O behind application-facing contrac
 
     @classmethod
     def _color_hist(cls, image: np.ndarray, color_space: int, bins: tuple[int, int, int]) -> np.ndarray:
-        """Down-weight HSV value and Lab lightness while retaining chroma."""
+        """
+        Down-weight HSV value and Lab lightness while retaining chroma.
+"""
         histogram = cls._hist(image, color_space, bins).reshape(bins)
         if color_space == 0:
             histogram *= np.linspace(1.0, 0.35, num=bins[2], dtype=np.float32)[None, None, :]
@@ -262,7 +274,9 @@ Context: Implements concrete processing or I/O behind application-facing contrac
 
     @staticmethod
     def _gradient_hist(magnitude: np.ndarray, angle: np.ndarray, *, bins: int) -> np.ndarray:
-        """Compute a magnitude-weighted histogram of unsigned Sobel orientations."""
+        """
+        Compute a magnitude-weighted histogram of unsigned Sobel orientations.
+"""
         orientation = np.mod(angle, 180.0)
         hist, _ = np.histogram(
             orientation,
@@ -276,7 +290,9 @@ Context: Implements concrete processing or I/O behind application-facing contrac
 
     @staticmethod
     def _resize_feature(feature: np.ndarray, output_size: int) -> np.ndarray:
-        """Interpolate a fixed descriptor layout to a requested vector size."""
+        """
+        Interpolate a fixed descriptor layout to a requested vector size.
+"""
         if feature.size == output_size:
             return feature.astype(np.float32, copy=False)
         source = np.linspace(0.0, 1.0, num=feature.size, dtype=np.float32)
@@ -285,7 +301,8 @@ Context: Implements concrete processing or I/O behind application-facing contrac
 
 
 def cosine_similarity(vec_a: np.ndarray, vec_b: np.ndarray) -> float:
-    r"""Return cosine similarity for two equal-length vectors.
+    r"""
+Return cosine similarity for two equal-length vectors.
 
     Args:
         vec_a: First feature vector.
@@ -323,7 +340,8 @@ def cosine_similarity(vec_a: np.ndarray, vec_b: np.ndarray) -> float:
 
 
 def cosine_distance(vec_a: np.ndarray, vec_b: np.ndarray) -> float:
-    r"""Return cosine distance, defined as one minus cosine similarity.
+    r"""
+Return cosine distance, defined as one minus cosine similarity.
 
     Args:
         vec_a: First feature vector.
@@ -354,7 +372,8 @@ def update_ema_embedding(
     new_vec: np.ndarray,
     momentum: float = 0.90,
 ) -> np.ndarray:
-    r"""Blend a new unit feature into a normalized exponential-moving prototype.
+    r"""
+Blend a new unit feature into a normalized exponential-moving prototype.
 
     Args:
         prototype: Prior normalized appearance vector, if any.

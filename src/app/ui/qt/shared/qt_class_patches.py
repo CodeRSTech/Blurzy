@@ -1,4 +1,5 @@
-"""Module for qt class patches; implements the Qt presentation components.
+"""
+Module for qt class patches; implements the Qt presentation components.
 
 Layer: Presentation.
 Context: Implements the qt presentation components at this architectural boundary.
@@ -55,7 +56,9 @@ def _vbox_create(
 
 
 def apply_qt_ui_shortcuts() -> None:
-    """Inject convenience methods onto common Qt layout classes."""
+    """
+    Inject convenience methods onto common Qt layout classes.
+"""
     global _PATCHED
     if _PATCHED:
         logger.debug("Qt UI shortcut patches already applied.")

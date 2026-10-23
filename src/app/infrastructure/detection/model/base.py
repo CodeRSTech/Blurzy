@@ -1,4 +1,5 @@
-"""Module for base; implements concrete processing and I/O behind application-facing contracts.
+"""
+Module for base; implements concrete processing and I/O behind application-facing contracts.
 
 See Also:
     - [`DetectionEngine`][app.infrastructure.detection.engine.detection_engine.DetectionEngine] — invokes the model interface
@@ -22,21 +23,21 @@ if TYPE_CHECKING:
 
 
 
-
-
 class BaseDetectionModel(ABC):
-    """Abstract base class for all detection model implementations (Torch, YOLO, Dummy).
+    """
+    Abstract base class for all detection model implementations (Torch, YOLO, Dummy).
 
-Layer: Infrastructure.
-Context: Implements concrete processing or I/O behind application-facing contracts.
-"""
+    Layer: Infrastructure.
+    Context: Implements concrete processing or I/O behind application-facing contracts.
+    """
     @abstractmethod
     def detect(
         self,
         frame: np.ndarray,
         chosen_labels: list[str] | None = None,
     ) -> list[DetectionResult]:
-        """Run inference on `frame`, optionally filtering to `chosen_labels`.
+        """
+        Run inference on `frame`, optionally filtering to `chosen_labels`.
 
         Args:
             frame: RGB image array to process.

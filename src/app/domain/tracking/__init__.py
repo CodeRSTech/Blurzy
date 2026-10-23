@@ -1,4 +1,5 @@
-"""Tracking configuration — tracking strategy enumeration.
+"""
+Tracking configuration — tracking strategy enumeration.
 
 See Also:
     - [`TrackingStrategy`][app.domain.tracking.tracking_strategy.TrackingStrategy] — selectable tracking algorithms

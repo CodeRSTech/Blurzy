@@ -1,4 +1,5 @@
-"""Module for export all; implements the Qt presentation components.
+"""
+Module for export all; implements the Qt presentation components.
 
 See Also:
     - [`ExportService`][app.application.services.export_service.ExportService] — coordinates export operations
@@ -18,15 +19,14 @@ if TYPE_CHECKING:
     from PySide6.QtWidgets import QWidget
 
 
-
 class ExportAllDialog(QDialog):
     """
     Dialog to collect configuration for the batch export operation.
     Requires an output directory and allows optional prefix/suffix.
 
 
-Layer: Presentation.
-Context: Supports user interaction and delegates application work through presentation contracts.
+    Layer: Presentation.
+    Context: Supports user interaction and delegates application work through presentation contracts.
 
 
     Args:
@@ -34,7 +34,7 @@ Context: Supports user interaction and delegates application work through presen
         initial_directory: Directory initially shown by the dialog.
         initial_prefix: Initial output filename prefix.
         initial_suffix: Initial output filename suffix.
-"""
+    """
 
     def __init__(
         self,
@@ -106,7 +106,8 @@ Context: Supports user interaction and delegates application work through presen
             ok_btn.setEnabled(bool(self.dir_edit.text()))
 
     def get_export_config(self) -> tuple[str, str, str]:
-        """Return the trimmed output directory, filename prefix, and suffix.
+        """
+        Return the trimmed output directory, filename prefix, and suffix.
 
 Returns:
     Export configuration as `(output_directory, prefix, suffix)`.

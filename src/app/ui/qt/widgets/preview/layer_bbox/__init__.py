@@ -1,4 +1,5 @@
-"""BBox overlay package.
+"""
+BBox overlay package.
 
 This package contains the concern-based split of the preview bbox overlay:
 - `layer_bbox.py`: Qt widget facade and signal emission.
