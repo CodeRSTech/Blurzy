@@ -1,5 +1,11 @@
 # Annotation Workflow Polish
 
+!!! info "Current status"
+
+    Canvas/table selection, annotation actions, and multi-selection are already
+    implemented. This proposal is now about validating consistency and edge
+    cases; track-specific occurrence deletion remains a known issue.
+
 ## What is an Annotation
 
 An annotation is a box drawn around an object in a video frame, with a label, confidence score, or other metadata that describes what the object is. Annotations are used to train and evaluate machine learning models for object detection and tracking.
