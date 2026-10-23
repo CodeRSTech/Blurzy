@@ -1,4 +1,5 @@
-"""`DetectionEngine` is the application-facing wrapper around a detection model.
+"""
+`DetectionEngine` is the application-facing wrapper around a detection model.
 It loads the named model when created, then passes each image or frame to that model’s `detect()` method and
 returns the resulting `DetectionResult` list. It can also replace the active model at runtime with `set_model()`.
 
