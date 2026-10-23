@@ -62,9 +62,11 @@ python -m http.server --directory site 8000
 Visit `http://localhost:8000/` for the homepage and
 `http://localhost:8000/docs/` for the documentation.
 
-Architecture diagrams use fenced Mermaid blocks. Material renders them through
-its supported SuperFences integration; the diagram source remains in Markdown.
-The Material release controls the bundled Mermaid integration.
+For architecture explanations, asset locations, diagram formats, and real
+input/output examples, follow [Writing architecture guides](architecture-documentation.md).
+New component illustrations use editable sources and light/dark SVG renders.
+Existing fenced Mermaid diagrams remain supported through Material's
+SuperFences integration; no wholesale migration is required.
 
 The published layout is:
 
@@ -83,7 +85,8 @@ artifacts and are not committed.
 
 Reference documentation has two complementary parts:
 
-- **Package notes** in `docs/architecture/` contain architecture explanations,
+- **Package notes** in `docs/architecture/` are beginner-friendly, visual
+  explanations of workflows and collaboration, including
   ownership rules, lifecycle notes, and diagrams. Keep the `Source:` line
   pointing to the corresponding source package, using a page-relative path or
   repository-relative `src/app/...` path; the build adds its API link.

@@ -1,0 +1,26 @@
+direction: down
+load: "LOAD: at construction or model switch" {
+  direction: right
+  name: "Registered name\nExample: YOLOv8n"
+  loader: "load_detection_model()\nSelect wrapper from registry"
+  weights: "Load provider\nand weights"
+  name -> loader -> weights
+}
+infer: "INFER: repeated for each image" {
+  direction: down
+  frame: "Image array"
+  delegate: "Engine calls\nloaded wrapper"
+  predict: "YOLO inference\nConfidence 0.25 / NMS IoU 0.45"
+  map: "YOLO mapper\nInteger XYXY + label + score"
+  output: "Return DetectionResult list"
+  frame -> delegate -> predict -> map -> output
+  failed: "Inference exception\nLog warning, return []"
+  skipped: "Malformed prediction\nLog warning, skip that item"
+  predict -> failed: caught error {
+    style.stroke-dash: 4
+  }
+  map -> skipped: caught item error {
+    style.stroke-dash: 4
+  }
+}
+load -> infer: model stays loaded

@@ -1,0 +1,18 @@
+direction: down
+image: "One image\nPixel array"
+engine: "DetectionEngine\nPass the image to the selected model"
+wrapper: "One selected wrapper\nBaseDetectionModel.detect() contract" {
+  provider: "Provider library\nPreprocess and predict"
+  mapper: "Provider-specific mapper\nFilter and convert predictions"
+  provider -> mapper: raw predictions
+}
+results: "list[DetectionResult]\nLabel + confidence + pixel box + local ID"
+caller: "Caller\nStore, present, or process results"
+image -> engine: input
+engine -> wrapper: detect(frame, None)
+wrapper -> results: common result shape
+results -> caller: returned list
+alternatives: "Alternative wrappers, not a pipeline\nYOLO / TorchVision / MTCNN / Dummy"
+alternatives -> wrapper: choose ONE at model load {
+  style.stroke-dash: 4
+}

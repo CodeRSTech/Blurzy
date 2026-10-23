@@ -1,7 +1,9 @@
 # Reference documentation
 
-Blurzy maintains two complementary references. **Architecture** contains
-handwritten package notes about responsibilities, ownership, and design.
+Blurzy maintains two complementary references. **Architecture** is the
+beginner-friendly, visual explanation of responsibilities, workflows, and design.
+Follow [Writing architecture guides](architecture-documentation.md) for shared
+authoring and asset conventions.
 **API reference** is generated from Python source on every build. This avoids
 maintaining a second copy of module inventories and signatures, but does not
 make behavioral explanations automatically correct.

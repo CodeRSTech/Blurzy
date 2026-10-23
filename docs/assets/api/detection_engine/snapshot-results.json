@@ -1,0 +1,365 @@
+{
+  "model_name": "YOLOv8n",
+  "weights": {
+    "filename": "yolov8n.pt",
+    "sha256": "f59b3d833e2ff32e194b5bb8e08d211dc7c5bdf144b90d2c8412c47ccfc83b36"
+  },
+  "input": {
+    "filename": "snapshot-original.png",
+    "sha256": "2f3017b668b0f0a1826a69053f6623dfcea74ae8878ef9a8a9da52fcbb106461",
+    "rgb_pixels_sha256": "299eb802e07728ec8bbc261378f039954954fa987781e8260269a0b8b185749c",
+    "width": 960,
+    "height": 540,
+    "dtype": "uint8",
+    "channel_order": "RGB, passed unchanged through the engine to the YOLO wrapper",
+    "attribution": "User-supplied MOT17-04-SDP-snapshot.png; exact origin and redistribution permission unverified."
+  },
+  "packages": {
+    "Blurzy": "0.1.0",
+    "ultralytics": "8.4.177",
+    "torch": "2.14.1",
+    "torchvision": "0.29.1",
+    "numpy": "2.5.3",
+    "Pillow": "12.3.0"
+  },
+  "python": "3.14.3",
+  "settings": {
+    "confidence": 0.25,
+    "nms_iou": 0.45,
+    "chosen_labels": null,
+    "other_provider_options": "Installed Ultralytics defaults"
+  },
+  "annotation": "Numbers are the suffix of item_id (for example 7 means yolo-7).",
+  "count": 27,
+  "counts_by_label": {
+    "car": 1,
+    "motorcycle": 2,
+    "person": 24
+  },
+  "detections": [
+    {
+      "item_id": "yolo-0",
+      "label": "car",
+      "bbox_xyxy": [
+        597,
+        158,
+        730,
+        286
+      ],
+      "confidence": 0.8879207372665405,
+      "color_hex": "#8080F0"
+    },
+    {
+      "item_id": "yolo-1",
+      "label": "person",
+      "bbox_xyxy": [
+        860,
+        228,
+        898,
+        333
+      ],
+      "confidence": 0.8415327668190002,
+      "color_hex": "#8080F0"
+    },
+    {
+      "item_id": "yolo-2",
+      "label": "person",
+      "bbox_xyxy": [
+        191,
+        251,
+        231,
+        368
+      ],
+      "confidence": 0.8118743300437927,
+      "color_hex": "#8080F0"
+    },
+    {
+      "item_id": "yolo-3",
+      "label": "person",
+      "bbox_xyxy": [
+        875,
+        38,
+        902,
+        120
+      ],
+      "confidence": 0.758521556854248,
+      "color_hex": "#8080F0"
+    },
+    {
+      "item_id": "yolo-4",
+      "label": "person",
+      "bbox_xyxy": [
+        213,
+        166,
+        253,
+        271
+      ],
+      "confidence": 0.7454190254211426,
+      "color_hex": "#8080F0"
+    },
+    {
+      "item_id": "yolo-5",
+      "label": "person",
+      "bbox_xyxy": [
+        475,
+        463,
+        517,
+        539
+      ],
+      "confidence": 0.7160184979438782,
+      "color_hex": "#8080F0"
+    },
+    {
+      "item_id": "yolo-6",
+      "label": "person",
+      "bbox_xyxy": [
+        514,
+        31,
+        542,
+        111
+      ],
+      "confidence": 0.7076737880706787,
+      "color_hex": "#8080F0"
+    },
+    {
+      "item_id": "yolo-7",
+      "label": "person",
+      "bbox_xyxy": [
+        506,
+        210,
+        544,
+        306
+      ],
+      "confidence": 0.6820139288902283,
+      "color_hex": "#8080F0"
+    },
+    {
+      "item_id": "yolo-8",
+      "label": "person",
+      "bbox_xyxy": [
+        239,
+        271,
+        298,
+        409
+      ],
+      "confidence": 0.656714141368866,
+      "color_hex": "#8080F0"
+    },
+    {
+      "item_id": "yolo-9",
+      "label": "person",
+      "bbox_xyxy": [
+        423,
+        233,
+        458,
+        341
+      ],
+      "confidence": 0.6042215824127197,
+      "color_hex": "#8080F0"
+    },
+    {
+      "item_id": "yolo-10",
+      "label": "person",
+      "bbox_xyxy": [
+        456,
+        241,
+        489,
+        344
+      ],
+      "confidence": 0.5768243670463562,
+      "color_hex": "#8080F0"
+    },
+    {
+      "item_id": "yolo-11",
+      "label": "person",
+      "bbox_xyxy": [
+        484,
+        27,
+        511,
+        113
+      ],
+      "confidence": 0.5669031143188477,
+      "color_hex": "#8080F0"
+    },
+    {
+      "item_id": "yolo-12",
+      "label": "person",
+      "bbox_xyxy": [
+        776,
+        311,
+        828,
+        435
+      ],
+      "confidence": 0.5585048198699951,
+      "color_hex": "#8080F0"
+    },
+    {
+      "item_id": "yolo-13",
+      "label": "person",
+      "bbox_xyxy": [
+        221,
+        46,
+        256,
+        140
+      ],
+      "confidence": 0.523999035358429,
+      "color_hex": "#8080F0"
+    },
+    {
+      "item_id": "yolo-14",
+      "label": "person",
+      "bbox_xyxy": [
+        228,
+        457,
+        280,
+        537
+      ],
+      "confidence": 0.5197547078132629,
+      "color_hex": "#8080F0"
+    },
+    {
+      "item_id": "yolo-15",
+      "label": "person",
+      "bbox_xyxy": [
+        807,
+        1,
+        835,
+        75
+      ],
+      "confidence": 0.5155531167984009,
+      "color_hex": "#8080F0"
+    },
+    {
+      "item_id": "yolo-16",
+      "label": "person",
+      "bbox_xyxy": [
+        396,
+        75,
+        425,
+        160
+      ],
+      "confidence": 0.4435608685016632,
+      "color_hex": "#8080F0"
+    },
+    {
+      "item_id": "yolo-17",
+      "label": "person",
+      "bbox_xyxy": [
+        462,
+        3,
+        493,
+        82
+      ],
+      "confidence": 0.4432942271232605,
+      "color_hex": "#8080F0"
+    },
+    {
+      "item_id": "yolo-18",
+      "label": "person",
+      "bbox_xyxy": [
+        716,
+        0,
+        741,
+        54
+      ],
+      "confidence": 0.4398086667060852,
+      "color_hex": "#8080F0"
+    },
+    {
+      "item_id": "yolo-19",
+      "label": "motorcycle",
+      "bbox_xyxy": [
+        741,
+        283,
+        864,
+        367
+      ],
+      "confidence": 0.42142975330352783,
+      "color_hex": "#8080F0"
+    },
+    {
+      "item_id": "yolo-20",
+      "label": "person",
+      "bbox_xyxy": [
+        930,
+        30,
+        956,
+        105
+      ],
+      "confidence": 0.405801922082901,
+      "color_hex": "#8080F0"
+    },
+    {
+      "item_id": "yolo-21",
+      "label": "motorcycle",
+      "bbox_xyxy": [
+        626,
+        77,
+        721,
+        132
+      ],
+      "confidence": 0.4014705419540405,
+      "color_hex": "#8080F0"
+    },
+    {
+      "item_id": "yolo-22",
+      "label": "person",
+      "bbox_xyxy": [
+        182,
+        50,
+        212,
+        139
+      ],
+      "confidence": 0.3748110234737396,
+      "color_hex": "#8080F0"
+    },
+    {
+      "item_id": "yolo-23",
+      "label": "person",
+      "bbox_xyxy": [
+        109,
+        161,
+        137,
+        249
+      ],
+      "confidence": 0.3557770848274231,
+      "color_hex": "#8080F0"
+    },
+    {
+      "item_id": "yolo-24",
+      "label": "person",
+      "bbox_xyxy": [
+        238,
+        259,
+        271,
+        368
+      ],
+      "confidence": 0.35091137886047363,
+      "color_hex": "#8080F0"
+    },
+    {
+      "item_id": "yolo-25",
+      "label": "person",
+      "bbox_xyxy": [
+        217,
+        503,
+        270,
+        540
+      ],
+      "confidence": 0.3260405361652374,
+      "color_hex": "#8080F0"
+    },
+    {
+      "item_id": "yolo-26",
+      "label": "person",
+      "bbox_xyxy": [
+        144,
+        38,
+        174,
+        147
+      ],
+      "confidence": 0.30713653564453125,
+      "color_hex": "#8080F0"
+    }
+  ]
+}

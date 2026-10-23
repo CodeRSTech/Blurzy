@@ -5,6 +5,8 @@
     This document defines the **modern documentation styling** used throughout Blurzy, with emphasis on consistency, clarity, and developer experience. The codebase is transitioning to this standard incrementally.
 
     API reference pages are generated from Python signatures  and docstrings.
+    For beginner-friendly Architecture pages, diagram formats, asset locations,
+    and reproducible examples, follow [Writing architecture guides](architecture-documentation.md).
     Maintain API explanations in source and cross-component design notes in
     `docs/architecture/`; see [Reference authoring](development.md#reference-authoring).
     The [Reference documentation](reference-documentation.md) article explains

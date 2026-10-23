@@ -86,6 +86,7 @@ nav:
       - Development: development/development.md
       - Reference documentation: development/reference-documentation.md
       - Documentation style: development/documentation-style.md
+      - Writing architecture guides: development/architecture-documentation.md
       - Defensive guards: development/defensive-guards.md
   - API reference:
       - reference/api/index.md
