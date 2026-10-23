@@ -124,16 +124,12 @@ Project Save/Load preserves session state, while JSON/CSV import/export
 exchanges detection and tracking layers. Preview controls affect the editor;
 Render controls affect exported video.
 
-## Planned features
+## Planning
 
-| Feature                                                                                             | Priority  | Status  |
-|-----------------------------------------------------------------------------------------------------|-----------|---------|
-| Add RetinaFace ResNet50                                                                             | Very High | Planned |
-| Preserve source audio in exported videos                                                            | High      | Planned |
-| Resume background detection without rerunning completed work                                        | High      | Planned |
-| Bottom status bar should show Exporting 50% instead of Exporting 100/200                            | Medium    | Planned |
-| Top bar (file edit) should have height reduced by 50-75% to allow more vertical space for the video | Medium    | Planned |
-| Add an option to enable or disable nested-detection suppression                                     | Low       | Planned |
+Product proposals and follow-up work are collected in the
+[planning notes](docs/planning/README.md), including ideas previously listed
+here and areas where planned capabilities are already implemented.
+
 ## Implemented tracking and privacy features
 
 | Capability              | Current implementation                                                               |
