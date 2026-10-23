@@ -90,9 +90,9 @@ class DetectionEngine:
     def set_model(self, model_name: str) -> None:
         """Switch to a different detection model by `model_name`.
 
-Args:
-    model_name: Name of the detection model.
-"""
+        Args:
+            model_name: Name of the detection model.
+        """
         logger.trace("Setting detection model to {}", model_name)
         self._model_name = model_name
         self._model = self._load_model(model_name)
