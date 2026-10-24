@@ -892,9 +892,9 @@ class RightControlPanel(QScrollArea):
         """
         Disable detection controls and show the model-loading spinner while loading.
 
-Args:
-    is_loading: Whether a detection model is currently loading.
-"""
+        Args:
+            is_loading: Whether a detection model is currently loading.
+        """
         self.model_combo_box.setEnabled(not is_loading)
         self.detect_btn.setEnabled(not is_loading)
         self.detect_all_btn.setEnabled(not is_loading)

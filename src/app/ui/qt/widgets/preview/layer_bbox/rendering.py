@@ -37,11 +37,11 @@ def draw_active_bbox(painter: QPainter, rect: QRect, border_width: int = 2) -> N
     """
     Draw the active bbox with center marker and drag handles.
 
-Args:
-    painter: Active Qt painter to draw with.
-    rect: Bounding-box rectangle in widget coordinates.
-    border_width: Width of the outline pen in pixels.
-"""
+    Args:
+        painter: Active Qt painter to draw with.
+        rect: Bounding-box rectangle in widget coordinates.
+        border_width: Width of the outline pen in pixels.
+    """
     painter.setPen(QPen(_BOX_COLOR, border_width, Qt.PenStyle.SolidLine))
     painter.setBrush(Qt.BrushStyle.NoBrush)
     painter.drawRect(rect)
@@ -62,11 +62,11 @@ def draw_selected_bbox(painter: QPainter, rect: QRect, border_width: int = 2) ->
     """
     Draw a selection outline without edit handles.
 
-Args:
-    painter: Active Qt painter to draw with.
-    rect: Bounding-box rectangle in widget coordinates.
-    border_width: Width of the outline pen in pixels.
-"""
+    Args:
+        painter: Active Qt painter to draw with.
+        rect: Bounding-box rectangle in widget coordinates.
+        border_width: Width of the outline pen in pixels.
+    """
     painter.setPen(QPen(_BOX_COLOR, border_width, Qt.PenStyle.SolidLine))
     painter.setBrush(Qt.BrushStyle.NoBrush)
     painter.drawRect(rect)

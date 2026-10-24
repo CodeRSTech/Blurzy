@@ -67,7 +67,7 @@ class PlaybackHandler(QObject):
     render_frame_requested = Signal(object)
     """
     Emitted when a frame needs to be rendered. Payload: ``SessionId``.
-"""
+    """
 
     def __init__(self, controller: UIController) -> None:
         super().__init__()
@@ -101,9 +101,9 @@ class PlaybackHandler(QObject):
         """
         Retrieves the selected session ID from the session list.
 
-Returns:
-    Identifier of the selected session, or the empty identifier when none is selected.
-"""
+        Returns:
+            Identifier of the selected session, or the empty identifier when none is selected.
+        """
         return self._window.selected_s_id
 
     @Slot()
@@ -256,7 +256,7 @@ Returns:
     def on_fit_view_requested(self) -> None:
         """
         Reset the preview viewport to fit the image within its available area.
-"""
+        """
         self._window.preview_container.reset_viewport()
 
     @Slot()

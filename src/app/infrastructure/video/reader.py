@@ -118,7 +118,7 @@ class VideoReader:
     def __init__(self, path: str) -> None:
         """
         Open video file at `path` using PyAV (calls `open()` automatically).
-"""
+        """
         self._path: str = path
         logger.debug("Initializing AvVideoReader for: {}", self.path_file_name)
         self._current_index: int = 0
@@ -137,7 +137,7 @@ class VideoReader:
     def open(self) -> None:
         """
         Open `_path` via `av.open()` with GPU acceleration (`hwaccel=auto`).
-"""
+        """
         try:
             # Using {"hwaccel": "auto"} to take advantage of GPU if available
             self.container = av.open(self._path, options={"hwaccel": "auto"})
@@ -215,7 +215,7 @@ class VideoReader:
     def basename(self):
         """
         Return filename only (no directory path).
-"""
+        """
         return os.path.basename(self._path)
 
     @property
@@ -286,7 +286,7 @@ class VideoReader:
     def container(self) -> None:
         """
         Close and release video container.
-"""
+        """
         if self._container is not None:
             self._container.close()
             self._container = None
@@ -322,7 +322,7 @@ class VideoReader:
     def stream(self) -> None:
         """
         Clear stream reference.
-"""
+        """
         self._stream = None
 
     @property
@@ -369,7 +369,7 @@ class VideoReader:
     def _recalculate_dimensions(self) -> None:
         """
         Update `_w` and `_h` by applying total rotation (base + manual).
-"""
+        """
         if self._stream is None:
             return
 
@@ -447,7 +447,7 @@ class VideoReader:
     def close(self) -> None:
         """
         Close and release video file handle.
-"""
+        """
         logger.debug("Closing AvVideoReader for: {}", self._path)
         del self.container
 
@@ -603,5 +603,5 @@ class VideoReader:
     def __str__(self) -> str:
         """
         Return string representation showing path, frame count, and FPS.
-"""
+        """
         return f"AvVideoReader(path={self._path}: {self.frame_count} frames, {self.fps} fps)"

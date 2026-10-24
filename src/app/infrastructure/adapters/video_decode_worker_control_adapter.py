@@ -65,7 +65,7 @@ class VideoDecodeWorkerControlAdapter(VideoDecodeWorkerControlInterface):
     def stop(self) -> None:
         """
         Stop the wrapped decode worker and release its reader resources.
-"""
+        """
         self._worker.stop()
 
     def get_cached_frame_at_index(self, idx: int) -> RGBFrame | None:

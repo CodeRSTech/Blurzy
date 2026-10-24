@@ -101,7 +101,7 @@ class VideoDecodeWorker(QThread):
     ) -> None:
         """
         Initialize decode worker for `path` with reference to `playback` view_state.
-"""
+        """
         super().__init__(parent)  # Important for garbage collection
         self.signals = DecoderSignals()
         self._running = False
@@ -134,9 +134,9 @@ class VideoDecodeWorker(QThread):
         """
         Request hard seek to `frame_index` (thread-safe, clears buffer).
 
-Args:
-    frame_index: Zero-based frame index.
-"""
+        Args:
+            frame_index: Zero-based frame index.
+        """
         with QMutexLocker(self._mutex):
             self._seek_request = frame_index
             self.ring_buffer.clear()

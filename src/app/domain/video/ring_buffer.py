@@ -52,7 +52,7 @@ class VideoRingBuffer:
     def __init__(self, capacity: int = 90):
         """
         Initialize ring buffer with `capacity` pre-allocated slots.
-"""
+        """
         self.capacity = capacity
         # Pre-allocate physical memory slots
         self._frames: list[RGBFrame | None] = [None] * capacity
@@ -111,7 +111,7 @@ class VideoRingBuffer:
     def clear(self) -> None:
         """
         Reset buffer bounds and clear all slots (frees memory for inactive sessions).
-"""
+        """
         with self._lock:
             self._start_idx = -1
             self._end_idx = -1

@@ -286,7 +286,7 @@ class ImportExportDialog(QDialog):
     def _refresh_ui_state(self) -> None:
         """
         Show/hide import-only widgets based on current operation radio.
-"""
+        """
         is_import = self._radio_import.isChecked()
         self._mode_label.setVisible(is_import)
         self._mode_combo.setVisible(is_import)
@@ -296,7 +296,7 @@ class ImportExportDialog(QDialog):
     def _on_format_changed(self) -> None:
         """
         Clear the file path when the format changes to avoid extension mismatches.
-"""
+        """
         self._file_edit.clear()
         self._update_ok_button()
 
@@ -344,7 +344,7 @@ class ImportExportDialog(QDialog):
     def _on_accepted(self) -> None:
         """
         Validate, optionally show the overwrite confirmation, then accept.
-"""
+        """
         file_path = self._file_edit.text().strip()
         if not file_path:
             return

@@ -67,7 +67,7 @@ def suppress_nested_same_class_boxes(
     iomin_threshold: float = 0.80,
 ) -> ListOfBoxes:
     r"""
-Suppress duplicate same-class boxes mostly contained by a stronger box.
+    Suppress duplicate same-class boxes mostly contained by a stronger box.
 
     A stronger box is at least as large and as confident as the candidate;
     manual boxes are prioritized and retained. “Mostly contained” means the

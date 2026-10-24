@@ -95,7 +95,7 @@ class ExportWorker(QThread):
     ) -> None:
         """
         Initialize export worker for `s_id` to `output_path`.
-"""
+        """
         super().__init__(parent)
         self._export_service = export_service
         self._s_id = s_id
@@ -105,7 +105,7 @@ class ExportWorker(QThread):
     def stop(self) -> None:
         """
         Request early stop (next progress callback will raise `ExportCancelled`).
-"""
+        """
         self._stop_requested = True
 
     def run(self) -> None:
@@ -141,7 +141,7 @@ class ExportWorker(QThread):
     def _emit_progress_or_cancel(self, current_frame: int, total_frames: int) -> None:
         """
         Progress callback for export service — raise `ExportCancelled` if stop requested.
-"""
+        """
         if self._stop_requested:
             raise ExportCancelled
         self.progress_updated.emit(current_frame, total_frames)

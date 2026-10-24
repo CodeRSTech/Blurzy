@@ -215,7 +215,7 @@ class TrackingWorker(QThread):
     def stop(self) -> None:
         """
         Request early stop (reserved for future use).
-"""
+        """
         self._stop_requested = True
 
     def isRunning(self) -> bool:
@@ -371,7 +371,7 @@ class TrackingWorker(QThread):
     def _isolated_detection_indices(frame_boxes: list[BBoxViewModel]) -> set[int]:
         """
         Return boxes whose IoU with every other same-frame box is below 0.25.
-"""
+        """
         isolated: set[int] = set()
         for index, box in enumerate(frame_boxes):
             if all(
@@ -389,7 +389,7 @@ class TrackingWorker(QThread):
     ) -> int | None:
         """
         Find the input detection matching a detection-backed tracker output.
-"""
+        """
         candidates = [
             (index, TrackingWorker._iou(tracked_box.bbox_xyxy, box.bbox_xyxy))
             for index, box in enumerate(frame_boxes)
@@ -407,7 +407,7 @@ class TrackingWorker(QThread):
     ) -> float:
         """
         Return box intersection-over-union for two xyxy rectangles.
-"""
+        """
         x1 = max(first[0], second[0])
         y1 = max(first[1], second[1])
         x2 = min(first[2], second[2])

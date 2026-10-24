@@ -55,7 +55,7 @@ class Application(QObject):
     def __init__(self) -> None:
         """
         Initialize the application with all service instances.
-"""
+        """
         super().__init__()
 
         from app.shared.logging_cfg import get_logger
@@ -176,13 +176,13 @@ class Application(QObject):
     def close(self) -> None:
         """
         Close all active sessions and shut down the SessionManager.
-"""
+        """
         self.sm.close_all()
 
     def clear_project(self) -> None:
         """
         Clear the currently active project from memory.
-"""
+        """
         self.project_svc.clear_project()
 
     def save_project(self, file_path: str) -> ProjectDocument:
@@ -248,7 +248,7 @@ class Application(QObject):
     def initialize_active_session(self) -> None:
         """
         Set the first available session as the active session.
-"""
+        """
         self.sm.initialize_active_session()
 
     # Used by SessionHandler
@@ -384,7 +384,7 @@ class Application(QObject):
     def stop_all_playback(self) -> None:
         """
         Stop playback for all active sessions.
-"""
+        """
         self.sm.stop_all_playback()
 
     # Used by DetectionHandler, ExportHandler, ModelHandler, and TrackingHandler

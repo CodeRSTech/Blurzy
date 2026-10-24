@@ -8,6 +8,6 @@ See Also:
     - [`Window`][app.ui.qt.window.window.Window] — concrete window used by current handlers
 
 
-    Layer: Presentation.
-    Context: Bridges UI-facing contracts to application operations.
-    """
+Layer: Presentation.
+Context: Bridges UI-facing contracts to application operations.
+"""

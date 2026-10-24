@@ -225,7 +225,7 @@ class SessionManager:
     def initialize_active_session(self):
         """
         One-time helper to initialize the active session.
-"""
+        """
         if self._sessions:
             self.active_session_id = next(iter(self._sessions.keys()))
             logger.info("Active session initialized: {}", self.active_session_id)
@@ -253,7 +253,7 @@ class SessionManager:
     def stop_all_playback(self) -> None:
         """
         Stop all playback.
-"""
+        """
         logger.trace("Stopping all playback sessions")
         for session in self._sessions.values():
             session.stop_playback()

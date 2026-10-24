@@ -113,7 +113,7 @@ class _Track:
     def predict(self) -> None:
         """
         Advance the Kalman position and covariance by one frame.
-"""
+        """
         transition = np.eye(8)
         transition[:4, 4:] = np.eye(4)
         scale = np.maximum(self.mean[[2, 3, 2, 3]], 1.0)

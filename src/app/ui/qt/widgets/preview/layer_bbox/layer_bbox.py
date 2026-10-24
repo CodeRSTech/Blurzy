@@ -13,9 +13,9 @@ See Also:
     - [`FrameBoxesViewModel`][app.domain.views.frame_boxes_view_model.FrameBoxesViewModel] — supplies boxes drawn by the overlay
 
 
-    Layer: Presentation.
-    Context: Contains concrete Qt presentation components and supporting utilities.
-    """
+Layer: Presentation.
+Context: Contains concrete Qt presentation components and supporting utilities.
+"""
 
 # app/ui/qt/preview/layer_bbox.py
 from __future__ import annotations
@@ -122,7 +122,7 @@ class AnnotationOverlayWidget(QWidget):
     def __init__(self, parent: QWidget | None = None) -> None:
         """
         Initialize the detection overlay widget with mouse tracking and state management.
-"""
+        """
         super().__init__(parent)
         self.setMouseTracking(True)
         # Keeps background transparent so the video shows through
@@ -156,7 +156,7 @@ class AnnotationOverlayWidget(QWidget):
     def cancel_edit(self) -> None:
         """
         Reset the editing state and cursor to prepare for a new interaction.
-"""
+        """
         self._editing_bbox_id = None
         self._group_drag_keys = []
         self._state = BBoxState()
@@ -330,7 +330,7 @@ class AnnotationOverlayWidget(QWidget):
     def _emit_context_menu_action(self, chosen: QAction | None, action_names: dict[QAction, str], hit_box_id: str | None) -> None:
         """
         Emit the selected context action as a `str` payload for downstream handlers.
-"""
+        """
         action_name = resolve_selected_action(chosen, action_names)
         if action_name is None:
             return
@@ -341,9 +341,9 @@ class AnnotationOverlayWidget(QWidget):
         """
         Handle mouse movement and delegate drag/pan calculations to `interaction.py`.
 
-Args:
-    event: Qt event being handled.
-"""
+        Args:
+            event: Qt event being handled.
+        """
         pos = event.position().toPoint()
 
         # 2. Process Panning continuously while mouse moves!
@@ -379,9 +379,9 @@ Args:
         """
         Handle mouse press to start drawing, panning, or selecting bounding boxes.
 
-Args:
-    event: Qt event being handled.
-"""
+        Args:
+            event: Qt event being handled.
+        """
         # 1. Catch Alt + Left Click to START panning
         pos = event.position().toPoint()
         panning_started, pan_origin = try_start_panning(
@@ -483,9 +483,9 @@ Args:
         """
         Finalize draw/edit outcomes and emit overlay signals when release completes.
 
-Args:
-    event: Qt event being handled.
-"""
+        Args:
+            event: Qt event being handled.
+        """
         # 3. Stop panning safely without clearing the active selection state.
         if stop_panning(self._is_panning):
             self._is_panning = False
@@ -562,9 +562,9 @@ Args:
         """
         Render the current bounding detection with selection handles and center point.
 
-Args:
-    event: Qt event being handled.
-"""
+        Args:
+            event: Qt event being handled.
+        """
         if not self._state.has_valid_rect and self._marquee_rect.isNull() and not self._selected_bbox_keys:
             return
 
@@ -599,9 +599,9 @@ Args:
         """
         Captures scroll wheel to broadcast zoom requests.
 
-Args:
-    event: Qt event being handled.
-"""
+        Args:
+            event: Qt event being handled.
+        """
         # NEW: Require Ctrl modifier for zoom
         if event.modifiers() != Qt.KeyboardModifier.ControlModifier:
             return
@@ -618,7 +618,7 @@ Args:
     def _apply_handle_drag(self, base: QRect, mode: DragMode, delta: QPoint) -> QRect:
         """
         Apply clamped drag deltas to the specified bbox corner or edge.
-"""
+        """
         x1, y1, x2, y2 = base.left(), base.top(), base.right(), base.bottom()
         dx, dy = delta.x(), delta.y()
         pr = self._pixmap_rect
@@ -628,20 +628,20 @@ Args:
     def _clamp(self, point: QPoint) -> QPoint:
         """
         Clamp a point to the pixmap rectangle bounds.
-"""
+        """
         r = self._pixmap_rect
         return clamp_point_to_rect(point, r)
 
     def _clamp_rect(self, rect: QRect) -> QRect:
         """
         Clamp a rectangle to the pixmap bounds by translating it without resizing.
-"""
+        """
         return clamp_rect_to_pixmap(rect.normalized(), self._pixmap_rect)
 
     def _get_bbox_at_pos(self, pos: QPoint) -> tuple[str | None, QRect | None]:
         """
         Finds the closest bbox hit by the given point, accounting for zoom/pan.
-"""
+        """
         return find_bbox_at_pos_with_transforms(
             active_bboxes=self._active_bboxes,
             pos=pos,
@@ -655,25 +655,25 @@ Args:
     def _get_bbox_id_at_pos(self, pos: QPoint) -> str | None:
         """
         Return the ID of the bbox at the given position using proximity testing.
-"""
+        """
         box_id, _ = self._get_bbox_at_pos(pos)
         return box_id
 
     def _hit_test_handle(self, pos: QPoint) -> DragMode:
         """
         Detect which bbox handle or edge is closest to the given position.
-"""
+        """
         rect = self._state.rect
         return get_drag_mode_for_rect_at_pos(rect, pos)
 
     def _image_rect_to_widget_space(self, x1: int, y1: int, x2: int, y2: int) -> QRect:
         """
         Convert image space coordinates to widget space rectangle with scaling applied.
-"""
+        """
         return image_rect_to_widget_space(x1, y1, x2, y2, self._pixmap_rect, self._image_size)
 
     def _widget_rect_to_image_space(self, rect: QRect) -> BBoxXYXYTuple:
         """
         Convert widget space rectangle to image space coordinates with scaling and bounds applied.
-"""
+        """
         return widget_rect_to_image_space(rect, self._pixmap_rect, self._image_size)

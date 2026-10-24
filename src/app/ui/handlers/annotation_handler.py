@@ -5,9 +5,9 @@ See Also:
     - [`AnnotationContextActions`][app.domain.detection.context_actions.AnnotationContextActions] — describes supported annotation operations
     - [`AnnotationOverlayWidget`][app.ui.qt.widgets.preview.layer_bbox.layer_bbox.AnnotationOverlayWidget] — captures box-editing interactions
 
-    Layer: Presentation.
-    Context: Converts user actions and worker signals into application calls and UI feedback.
-    """
+Layer: Presentation.
+Context: Converts user actions and worker signals into application calls and UI feedback.
+"""
 
 # [10-08-26 05:00 PM] `AnnotationHandler` has a lot of responsibilities, we must create a module
 # `annotation_handler` or just `annotation` under `src/app/ui/handlers` and move all the related logic there.
@@ -38,9 +38,6 @@ from app.ui.view_state.preview_state import ToolMode
 from app.ui.view_state.selection_history_state import CopiedBBoxSnapshot
 if TYPE_CHECKING:
     from PySide6.QtGui import QKeyEvent
-
-
-if TYPE_CHECKING:
     from app.domain.session.session_id import SessionId
     from app.domain.base.dtypes import BBoxXYXYTuple
     from app.ui.uicontroller import UIController
@@ -68,9 +65,9 @@ class AnnotationHandler(QObject):
             Handles keyboard events for detection nudging with acceleration.
             Emits frame render requests after detection changes.
 
-    Layer: Presentation.
-    Context: Supports user interaction and delegates application work through presentation contracts.
-    """
+Layer: Presentation.
+Context: Supports user interaction and delegates application work through presentation contracts.
+"""
 
     def __init__(self, controller: UIController) -> None:
         """
@@ -212,11 +209,11 @@ class AnnotationHandler(QObject):
         """
         Handles both visual drags (new_coords) and table 'Edit' clicks (dialog).
 
-Args:
-    s_id: Identifier of the target session.
-    box_key: Key of the existing box to update.
-    new_coords: Replacement `(x1, y1, x2, y2)` coordinates from a drag, or `None` to open the edit dialog.
-"""
+        Args:
+            s_id: Identifier of the target session.
+            box_key: Key of the existing box to update.
+            new_coords: Replacement `(x1, y1, x2, y2)` coordinates from a drag, or `None` to open the edit dialog.
+        """
         tab = self._window.active_tab_index
 
         box = (
@@ -259,7 +256,7 @@ Args:
     def _get_effective_selection_keys(self, fallback_box_key: str | None = None) -> list[str]:
         """
         Return the current shared selection, falling back to a clicked box key if needed.
-"""
+        """
         selected_keys = self._window.selected_frame_box_keys
         if selected_keys:
             return selected_keys
@@ -292,7 +289,7 @@ Args:
     def _get_current_frame_boxes_snapshot(self, frame_index: int | None = None) -> list:
         """
         Clone active-tab boxes so a mutation can be restored exactly.
-"""
+        """
         s_id = self._window.selected_s_id
         if not s_id:
             return []
@@ -684,7 +681,7 @@ Args:
     def on_relabel_selected(self) -> None:
         """
         Relabel the currently selected boxes using a dialog.
-"""
+        """
         s_id = self._window.selected_s_id
         keys = self._window.selected_frame_box_keys
         if not s_id or not keys:
@@ -743,7 +740,7 @@ Args:
     def on_reset_frame(self) -> None:
         """
         Reset editable detection layer B on the current frame and rerender it.
-"""
+        """
         s_id = self._window.selected_s_id
         if not s_id:
             return
@@ -758,7 +755,7 @@ Args:
     def on_reset_all(self) -> None:
         """
         Reset editable detection layer B across all frames and rerender the current frame.
-"""
+        """
         s_id = self._window.selected_s_id
         if not s_id:
             return
@@ -772,7 +769,7 @@ Args:
     def on_reset_tracker_frame(self) -> None:
         """
         Reset editable tracking layer D on the current frame and rerender it.
-"""
+        """
         s_id = self._window.selected_s_id
         if not s_id:
             return
@@ -787,7 +784,7 @@ Args:
     def on_reset_all_trackers(self) -> None:
         """
         Reset editable tracking layer D across all frames and rerender the current frame.
-"""
+        """
         s_id = self._window.selected_s_id
         if not s_id:
             return
@@ -801,14 +798,14 @@ Args:
     def on_delete_next_occurrences(self) -> None:
         """
         Delete the selected boxes' later-frame occurrences.
-"""
+        """
         self._delete_occurrences(direction=Direction.NEXT)
 
     @Slot()
     def on_delete_prev_occurrences(self) -> None:
         """
         Delete the selected boxes' earlier-frame occurrences.
-"""
+        """
         self._delete_occurrences(direction=Direction.PREV)
 
     @Slot(object, str, int, int, int, int)
@@ -899,9 +896,9 @@ Args:
         """
         Handle canvas-originated selection and sync to table and shared state.
 
-Args:
-    box_key: Key of the box selected on the preview canvas.
-"""
+        Args:
+            box_key: Key of the box selected on the preview canvas.
+        """
         logger.debug("Canvas bbox selected: {}", box_key)
         self._apply_selection_keys([box_key], record_history=True)
 
@@ -910,10 +907,10 @@ Args:
         """
         Apply a canvas click to the shared selection, toggling when Ctrl is held.
 
-Args:
-    box_key: Key of the box clicked on the canvas.
-    additive: Whether the click toggles this box in the existing selection.
-"""
+        Args:
+            box_key: Key of the box clicked on the canvas.
+            additive: Whether the click toggles this box in the existing selection.
+        """
         if not additive:
             self._apply_selection_keys([box_key], record_history=True)
             return
@@ -929,7 +926,7 @@ Args:
     def on_preview_bbox_selection_cleared(self) -> None:
         """
         Clear shared selection after a click on empty canvas space.
-"""
+        """
         self._apply_selection_keys([], record_history=True)
 
     @Slot(list)
@@ -937,9 +934,9 @@ Args:
         """
         Add marquee-contained boxes to the current shared selection.
 
-Args:
-    box_keys: Keys of boxes contained by the marquee rectangle.
-"""
+        Args:
+            box_keys: Keys of boxes contained by the marquee rectangle.
+        """
         selected_keys = list(self._window.selected_frame_box_keys)
         selected_key_set = set(selected_keys)
         selected_keys.extend(key for key in box_keys if key not in selected_key_set)
@@ -950,11 +947,11 @@ Args:
         """
         Apply an overlay group-drag delta to every selected editable box.
 
-Args:
-    box_keys: Keys of boxes moved by the drag.
-    dx: Horizontal drag delta in image coordinates.
-    dy: Vertical drag delta in image coordinates.
-"""
+        Args:
+            box_keys: Keys of boxes moved by the drag.
+            dx: Horizontal drag delta in image coordinates.
+            dy: Vertical drag delta in image coordinates.
+        """
         s_id = self._window.selected_s_id
         if not s_id or not box_keys:
             return

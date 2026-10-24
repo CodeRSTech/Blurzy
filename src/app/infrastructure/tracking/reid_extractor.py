@@ -170,7 +170,7 @@ class PartBasedAppearanceEmbedder:
     def _describe(self, rgb_crop: np.ndarray) -> np.ndarray:
         """
         Build and normalize the configured multi-region descriptor.
-"""
+        """
         hsv = cv2.cvtColor(rgb_crop, cv2.COLOR_RGB2HSV)
         lab = cv2.cvtColor(rgb_crop, cv2.COLOR_RGB2LAB)
         gray = cv2.cvtColor(rgb_crop, cv2.COLOR_RGB2GRAY)
@@ -254,7 +254,7 @@ class PartBasedAppearanceEmbedder:
     def _hist(image: np.ndarray, color_space: int, bins: tuple[int, int, int]) -> np.ndarray:
         """
         Return an L1-normalized three-channel spatial color histogram.
-"""
+        """
         channel_ranges = (0, 180, 0, 256, 0, 256) if color_space == 0 else (0, 256, 0, 256, 0, 256)
         hist = cv2.calcHist([image], [0, 1, 2], None, list(bins), list(channel_ranges))
         hist = cv2.normalize(hist, None, alpha=1.0, norm_type=cv2.NORM_L1)
@@ -264,7 +264,7 @@ class PartBasedAppearanceEmbedder:
     def _color_hist(cls, image: np.ndarray, color_space: int, bins: tuple[int, int, int]) -> np.ndarray:
         """
         Down-weight HSV value and Lab lightness while retaining chroma.
-"""
+        """
         histogram = cls._hist(image, color_space, bins).reshape(bins)
         if color_space == 0:
             histogram *= np.linspace(1.0, 0.35, num=bins[2], dtype=np.float32)[None, None, :]
@@ -276,7 +276,7 @@ class PartBasedAppearanceEmbedder:
     def _gradient_hist(magnitude: np.ndarray, angle: np.ndarray, *, bins: int) -> np.ndarray:
         """
         Compute a magnitude-weighted histogram of unsigned Sobel orientations.
-"""
+        """
         orientation = np.mod(angle, 180.0)
         hist, _ = np.histogram(
             orientation,
@@ -292,7 +292,7 @@ class PartBasedAppearanceEmbedder:
     def _resize_feature(feature: np.ndarray, output_size: int) -> np.ndarray:
         """
         Interpolate a fixed descriptor layout to a requested vector size.
-"""
+        """
         if feature.size == output_size:
             return feature.astype(np.float32, copy=False)
         source = np.linspace(0.0, 1.0, num=feature.size, dtype=np.float32)
@@ -302,7 +302,7 @@ class PartBasedAppearanceEmbedder:
 
 def cosine_similarity(vec_a: np.ndarray, vec_b: np.ndarray) -> float:
     r"""
-Return cosine similarity for two equal-length vectors.
+    Return cosine similarity for two equal-length vectors.
 
     Args:
         vec_a: First feature vector.
@@ -341,7 +341,7 @@ Return cosine similarity for two equal-length vectors.
 
 def cosine_distance(vec_a: np.ndarray, vec_b: np.ndarray) -> float:
     r"""
-Return cosine distance, defined as one minus cosine similarity.
+    Return cosine distance, defined as one minus cosine similarity.
 
     Args:
         vec_a: First feature vector.
@@ -373,7 +373,7 @@ def update_ema_embedding(
     momentum: float = 0.90,
 ) -> np.ndarray:
     r"""
-Blend a new unit feature into a normalized exponential-moving prototype.
+    Blend a new unit feature into a normalized exponential-moving prototype.
 
     Args:
         prototype: Prior normalized appearance vector, if any.

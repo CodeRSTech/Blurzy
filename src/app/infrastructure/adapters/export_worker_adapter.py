@@ -41,47 +41,47 @@ class ExportWorkerAdapter(ExportWorkerInterface):
     def progress_updated(self):
         """
         Forward the worker progress signal.
-"""
+        """
         return self._worker.progress_updated
 
     @property
     def succeeded(self):
         """
         Forward the worker success signal.
-"""
+        """
         return self._worker.succeeded
 
     @property
     def finished_processing(self):
         """
         Forward the worker completion signal.
-"""
+        """
         return self._worker.finished_processing
 
     @property
     def cancelled(self):
         """
         Forward the worker cancellation signal.
-"""
+        """
         return self._worker.cancelled
 
     @property
     def error_occurred(self):
         """
         Forward the worker error signal.
-"""
+        """
         return self._worker.error_occurred
 
     def start(self) -> None:
         """
         Start the wrapped export worker.
-"""
+        """
         self._worker.start()
 
     def stop(self) -> None:
         """
         Request the wrapped export worker to stop.
-"""
+        """
         self._worker.stop()
 
     def isRunning(self) -> bool:
@@ -96,5 +96,5 @@ class ExportWorkerAdapter(ExportWorkerInterface):
     def deleteLater(self) -> None:
         """
         Schedule this Qt object for deletion.
-"""
+        """
         self._worker.deleteLater()

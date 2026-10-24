@@ -241,7 +241,7 @@ class ExportService(QObject):
     ) -> np.ndarray:
         """
         Apply shared feathered Gaussian blur to export pixels.
-"""
+        """
         return apply_masked_blur(frame, boxes, strength)
 
     def export_annotations_csv(self, s_id: SessionId, output_path: str) -> None:

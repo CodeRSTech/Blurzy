@@ -101,7 +101,7 @@ class DetectionWorker(QThread):
     ) -> None:
         """
         Initialize worker for `s_id` using the given `detection_engine`.
-"""
+        """
         super().__init__(parent)
         self._s_id = s_id  # Store the SessionId object
         self._video_path = s_id.path  # Extract path for the reader
@@ -147,7 +147,7 @@ class DetectionWorker(QThread):
     def stop(self) -> None:
         """
         Request thread to stop (sets `_stop_requested` flag).
-"""
+        """
         self._stop_requested = True
         logger.info("Detection worker stop requested for {}", self._video_path)
 

@@ -52,9 +52,9 @@ Communication
 - **Must not depend on:** concrete widget behavior or layout details
 
 
-    Layer: Application.
-    Context: Coordinates application workflows.
-    """
+Layer: Application.
+Context: Coordinates application workflows.
+"""
 
 # from .editor_app_service import EditorAppService
 

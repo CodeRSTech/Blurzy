@@ -5,9 +5,9 @@ See Also:
     - [`Session`][app.infrastructure.session.session.Session] — runtime container identified by a session ID
     - [`SessionManager`][app.application.managers.session.SessionManager] — creates and manages session lifecycles
 
-    Layer: Domain.
-    Context: Defines application concepts independently of UI and infrastructure implementations.
-    """
+Layer: Domain.
+Context: Defines application concepts independently of UI and infrastructure implementations.
+"""
 
 import os
 from dataclasses import dataclass
@@ -43,21 +43,21 @@ class SessionId:
     def __bool__(self) -> bool:
         """
         Returns False if the path is empty, True otherwise.
-"""
+        """
         return bool(self.path and self.path.strip())
 
     @override
     def __str__(self) -> str:
         """
         Returns the session id as a string.
-"""
+        """
         return self.basename
 
     @override
     def __eq__(self, other: object) -> bool:
         """
         Allows comparison with other FileID objects or raw strings.
-"""
+        """
         if isinstance(other, SessionId):
             return self.path == other.path
         if isinstance(other, str):
@@ -71,12 +71,12 @@ class SessionId:
     def basename(self):
         """
         Return the video filename without its parent directories.
-"""
+        """
         return os.path.basename(self.path)
 
     @property
     def basename_without_extension(self):
         """
         Return the video filename without its extension.
-"""
+        """
         return os.path.splitext(self.basename)[0]

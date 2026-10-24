@@ -91,7 +91,7 @@ class PreferencesHandler(QObject):
     def on_preferences_requested(self) -> None:
         """
         Show the preferences dialog and persist changes if the user accepts it.
-"""
+        """
         dialog = PreferencesDialog(
             preferences=self._preferences,
             available_models=get_detection_model_names_as_view_model_by_provider_id(),

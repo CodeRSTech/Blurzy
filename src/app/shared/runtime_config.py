@@ -12,7 +12,6 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-
 import os
 from dataclasses import dataclass
 from pathlib import Path
@@ -103,12 +102,12 @@ def parse_enabled_areas(value: str | None) -> tuple[str, ...] | None:
     """
     Parse a comma-separated allow-list into a stable deduplicated tuple.
 
-Args:
-    value: Comma-separated logging-area names, or `None` when unrestricted.
+    Args:
+        value: Comma-separated logging-area names, or `None` when unrestricted.
 
-Returns:
-    Deduplicated area names, or `None` when no allow-list is configured.
-"""
+    Returns:
+        Deduplicated area names, or `None` when no allow-list is configured.
+    """
     if value is None:
         return None
 

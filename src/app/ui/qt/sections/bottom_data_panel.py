@@ -230,7 +230,7 @@ class BottomDataPanelContainer(QWidget):
     def _get_current_selection_keys(self, prefer_shared_selection: bool = False) -> list[str]:
         """
         Resolve the current selection from the active table, or from the shared state when requested.
-"""
+        """
         from app.ui.qt.window.window import Window
 
         window = self.window()
@@ -303,7 +303,7 @@ class BottomDataPanelContainer(QWidget):
 
         Args:
             s_id: Identifier of the target session. (SessionId).
-"""
+        """
         for index in range(self.session_file_list.count()):
             item = self.session_file_list.item(index)
             if item.data(Qt.ItemDataRole.UserRole) == s_id:
@@ -314,9 +314,9 @@ class BottomDataPanelContainer(QWidget):
         """
         Replace the session list contents with the supplied session entries.
 
-Args:
-    session_list: Session entries to display, including title and subtitle.
-"""
+        Args:
+            session_list: Session entries to display, including title and subtitle.
+        """
         # NEW: Using signal blocker to avoid issues
         with QSignalBlocker(self.session_file_list):
             self.session_file_list.clear()
@@ -396,9 +396,9 @@ Args:
         """
         Return all box keys visible in the active data table.
 
-Returns:
-    Unique box keys in the order of their table rows.
-"""
+        Returns:
+            Unique box keys in the order of their table rows.
+        """
         table = self.active_data_table_for_current_frame
         box_keys: list[str] = []
         seen_keys: set[str] = set()
@@ -418,7 +418,7 @@ Returns:
     def _sync_selection_to_active_table(self, selected_box_keys: list[str] | None = None) -> None:
         """
         Mirror the shared selection to the currently active data table.
-"""
+        """
         if selected_box_keys is None:
             selected_box_keys = self.get_selected_box_keys_from_active_tab
 

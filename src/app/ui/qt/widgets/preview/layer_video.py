@@ -74,7 +74,7 @@ class VideoDisplayWidget(QWidget):
     def reset_viewport(self) -> None:
         """
         Restore 1× zoom and zero pan, then recompute and redraw the image.
-"""
+        """
         self._zoom_factor = 1.0
         self._pan_offset = QPointF(0.0, 0.0)
         self._update_pixmap_rect()
@@ -120,7 +120,7 @@ class VideoDisplayWidget(QWidget):
 
         Args:
             event: Qt event being handled. (QPaintEvent).
-"""
+        """
         painter = QPainter(self)
         painter.setRenderHint(QPainter.RenderHint.SmoothPixmapTransform)
         painter.fillRect(self.rect(), QColor(30, 30, 30))
@@ -142,14 +142,14 @@ class VideoDisplayWidget(QWidget):
 
         Args:
             event: Qt event being handled. (QResizeEvent).
-"""
+        """
         super().resizeEvent(event)
         self._update_pixmap_rect()
 
     def _update_pixmap_rect(self) -> None:
         """
         Calculates the absolute position of the video on the screen, applying pan & zoom.
-"""
+        """
         if self._image is None:
             new_rect = QRect()
             img_size = QSize()

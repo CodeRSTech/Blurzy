@@ -463,11 +463,11 @@ class SessionDataStore(QObject):
         """
         Copy-and-overwrite a single frame's boxes from one layer to another.
 
-Args:
-    source_layer: Layer providing source boxes.
-    target_layer: Layer whose box list at `index` will be replaced.
-    index: Zero-based frame index.
-"""
+        Args:
+            source_layer: Layer providing source boxes.
+            target_layer: Layer whose box list at `index` will be replaced.
+            index: Zero-based frame index.
+        """
         with self.data_lock:
             source_boxes = self._data[source_layer].get(index, [])
             # Directly overwrite the target layer at this frame with fast-cloned boxes

@@ -26,7 +26,7 @@ logger = get_logger("Shared->QtDebugRepr")
 def _truncate(text: str, max_len: int = 20) -> str:
     """
     Helper to keep representations concise.
-"""
+    """
     text = text.replace('\n', ' ').strip()
     return f"{text[:max_len - 3]}..." if len(text) > max_len else text
 
@@ -34,7 +34,7 @@ def _truncate(text: str, max_len: int = 20) -> str:
 def _safe_repr(obj: Core.QObject, generator: Callable[..., str]) -> str:
     """
     Safely generates a repr, falling back gracefully if the C++ object is deleted.
-"""
+    """
     try:
         return generator(obj)
     except RuntimeError:

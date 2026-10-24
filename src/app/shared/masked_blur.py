@@ -103,7 +103,7 @@ def compute_blur_alpha_mask(
     feather_radius: int = _FEATHER_RADIUS,
 ) -> np.ndarray:
     r"""
-Compute the combined interior-plus-outward-feather alpha mask.
+    Compute the combined interior-plus-outward-feather alpha mask.
 
     Args:
         frame_shape: Image shape beginning with `(height, width)`.
@@ -166,7 +166,7 @@ def apply_masked_blur(
     feather_radius: int = _FEATHER_RADIUS,
 ) -> np.ndarray:
     r"""
-Blur the union of box interiors with a smooth outward alpha feather.
+    Blur the union of box interiors with a smooth outward alpha feather.
 
     Args:
         frame: RGB or BGR image to process.

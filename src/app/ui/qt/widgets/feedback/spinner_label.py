@@ -68,7 +68,7 @@ class InlineSpinnerLabel(QLabel):
     def stop(self) -> None:
         """
         Stop the frame timer and hide the label.
-"""
+        """
         if self._timer.isActive():
             self._timer.stop()
         self.setVisible(False)

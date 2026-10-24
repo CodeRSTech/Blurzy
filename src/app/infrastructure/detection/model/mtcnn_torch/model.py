@@ -76,7 +76,7 @@ class MTCNNTorchDetectionModel(BaseDetectionModel):
     def _load_model(self) -> "MTCNN":
         """
         Load MTCNN model using factory.
-"""
+        """
         return self._loader.create()
 
     def detect(

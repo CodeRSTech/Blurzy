@@ -40,13 +40,13 @@ class DetectionWorkerInterface(Protocol):
     def start(self) -> None:
         """
         Start the detection thread.
-"""
+        """
         ...
 
     def stop(self) -> None:
         """
         Request the detection thread to stop.
-"""
+        """
         ...
 
     def isRunning(self) -> bool:

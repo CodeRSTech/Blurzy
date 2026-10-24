@@ -66,7 +66,7 @@ def configure_logging(
         file_level: Minimum level written to the log file; environment configuration may override it.
         log_file_path: Destination file path; environment configuration may override it.
         enabled_areas: Optional allowlist of logger area names; `None` accepts all areas.
-"""
+    """
     console_level = normalize_log_level(
         console_level, env_var=ENV_LOG_CONSOLE_LEVEL
     )

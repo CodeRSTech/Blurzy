@@ -115,7 +115,7 @@ class ProjectService:
     def clear_project(self) -> None:
         """
         Close all managed sessions and reset the active project state.
-"""
+        """
         logger.debug("Clearing project state and open sessions")
         self._app.sm.close_all()
         self._current_project_path = ""

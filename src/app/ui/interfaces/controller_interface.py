@@ -28,24 +28,24 @@ if TYPE_CHECKING:
 
 class UIControllerInterface(Protocol):
 	"""
-Narrow controller facade exposed to handlers.
+	Narrow controller facade exposed to handlers.
 
- Layer: Presentation.
- Context: Supports user interaction and delegates application work through presentation contracts.
- """
+	Layer: Presentation.
+	Context: Supports user interaction and delegates application work through presentation contracts.
+	"""
 
 	def render_frame_for_session_id(self, s_id: SessionId) -> None:
 		"""
-Render frame for session id.
+		Render frame for session id.
 
 		Args:
 		    s_id: Identifier of the target session. (SessionId).
-"""
+		"""
 		...
 
 	def update_ui_status_bar(self) -> None:
 		"""
-Update ui status bar.
-"""
+		Update ui status bar.
+		"""
 		...
 

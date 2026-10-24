@@ -87,5 +87,5 @@ class PlaybackState:
     def stop_playback(self) -> None:
         """
         Stop playback.
-"""
+        """
         self._is_playing = False

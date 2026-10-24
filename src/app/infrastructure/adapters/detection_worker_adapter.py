@@ -57,26 +57,26 @@ class DetectionWorkerAdapter(DetectionWorkerInterface):
     def batch_ready(self):
         """
         Expose the Qt signal so existing `connect` call-sites work unchanged.
-"""
+        """
         return self._worker.batch_ready
 
     @property
     def progress_updated(self):
         """
         Expose the Qt signal so existing `connect` call-sites work unchanged.
-"""
+        """
         return self._worker.progress_updated
 
     def start(self) -> None:
         """
         Start the wrapped detection worker.
-"""
+        """
         self._worker.start()
 
     def stop(self) -> None:
         """
         Stop the wrapped detection worker.
-"""
+        """
         self._worker.stop()
 
     def isRunning(self) -> bool:

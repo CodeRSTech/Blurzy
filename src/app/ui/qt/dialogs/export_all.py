@@ -109,9 +109,9 @@ class ExportAllDialog(QDialog):
         """
         Return the trimmed output directory, filename prefix, and suffix.
 
-Returns:
-    Export configuration as `(output_directory, prefix, suffix)`.
-"""
+        Returns:
+            Export configuration as `(output_directory, prefix, suffix)`.
+        """
         return (
             self.dir_edit.text().strip(),
             self.prefix_edit.text().strip(),

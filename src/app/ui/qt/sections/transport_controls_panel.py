@@ -118,7 +118,7 @@ class TransportControlsPanel(QVBoxLayout):
     def _configure_icon_buttons(self) -> None:
         """
         Make transport buttons icon-only with a minimal hoverable surface.
-"""
+        """
         for button in (
             self.play_btn,
             self.pause_btn,
@@ -153,7 +153,7 @@ class TransportControlsPanel(QVBoxLayout):
     def _apply_transport_icons(self) -> None:
         """
         Apply bundled icons to transport controls using palette-aware tint colors.
-"""
+        """
         palette = self.play_btn.palette()
         normal_tint = palette.color(QPalette.ColorGroup.Active, QPalette.ColorRole.ButtonText)
         disabled_tint = palette.color(QPalette.ColorGroup.Disabled, QPalette.ColorRole.ButtonText)
@@ -190,7 +190,7 @@ class TransportControlsPanel(QVBoxLayout):
     def refresh_theme_icons(self) -> None:
         """
         Recompute transport icons after runtime palette/style changes.
-"""
+        """
         self._apply_transport_icons()
 
     def _build_ui(self) -> None:
@@ -258,9 +258,9 @@ class TransportControlsPanel(QVBoxLayout):
         """
         Set the seek position to the given frame index.
 
-Args:
-    frame_index: Zero-based frame index.
-"""
+        Args:
+            frame_index: Zero-based frame index.
+        """
         with QSignalBlocker(self.seek_slider):
             self.seek_slider.setValue(max(0, frame_index))
 
@@ -268,9 +268,9 @@ Args:
         """
         Set the seek slider range from frame zero through the final frame.
 
-Args:
-    maximum_frame_index: Index of the final frame; negative values produce a zero-only range.
-"""
+        Args:
+            maximum_frame_index: Index of the final frame; negative values produce a zero-only range.
+        """
         self.seek_slider.setMinimum(0)
         self.seek_slider.setMaximum(max(0, maximum_frame_index))
 

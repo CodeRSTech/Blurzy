@@ -83,7 +83,7 @@ class YoloDetectionModel(BaseDetectionModel):
     def _load_model(self) -> YOLO:
         """
         Load YOLO model using factory.
-"""
+        """
         return self._loader.create(self._model_file_name)
 
     def detect(

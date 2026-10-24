@@ -141,7 +141,7 @@ class _SettingsBackend(Protocol):
     def sync(self) -> None:
         """
         Flush pending settings changes to the backend.
-"""
+        """
         ...
 
 

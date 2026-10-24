@@ -41,61 +41,61 @@ class ExportAllWorkerAdapter(ExportAllWorkerInterface):
     def session_started(self):
         """
         Forward the batch worker session-started signal.
-"""
+        """
         return self._worker.session_started
 
     @property
     def session_finished(self):
         """
         Forward the batch worker session-finished signal.
-"""
+        """
         return self._worker.session_finished
 
     @property
     def session_failed(self):
         """
         Forward the batch worker session-failed signal.
-"""
+        """
         return self._worker.session_failed
 
     @property
     def progress_updated(self):
         """
         Forward the worker progress signal.
-"""
+        """
         return self._worker.progress_updated
 
     @property
     def session_export_progress_updated(self):
         """
         Forward per-session export progress.
-"""
+        """
         return self._worker.session_export_progress_updated
 
     @property
     def finished_processing(self):
         """
         Forward the worker completion signal.
-"""
+        """
         return self._worker.finished_processing
 
     @property
     def cancelled(self):
         """
         Forward the worker cancellation signal.
-"""
+        """
         return self._worker.cancelled
 
     def start(self) -> None:
         """
         Start the wrapped batch-export worker.
-"""
+        """
         self._worker.start()
 
     def stop(self) -> None:
         """
         Request the wrapped batch-export worker to stop.
-"""
+        """
         self._worker.stop()
 
     def isRunning(self) -> bool:
@@ -110,5 +110,5 @@ class ExportAllWorkerAdapter(ExportAllWorkerInterface):
     def deleteLater(self) -> None:
         """
         Schedule this Qt object for deletion.
-"""
+        """
         self._worker.deleteLater()

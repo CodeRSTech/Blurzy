@@ -321,5 +321,5 @@ class UIController(QObject):
     def update_ui_status_bar(self):
         """
         Update ui status bar.
-"""
+        """
         self.ui_handler.update_status_bar()

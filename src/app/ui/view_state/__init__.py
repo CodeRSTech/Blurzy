@@ -6,6 +6,6 @@ See Also:
     - [`SelectionHistoryState`][app.ui.view_state.selection_history_state.SelectionHistoryState]
     - [`ToolMode`][app.ui.view_state.preview_state.ToolMode]
 
-    Layer: Presentation.
-    Context: Stores transient interaction state at this architectural boundary.
-    """
+Layer: Presentation.
+Context: Stores transient interaction state at this architectural boundary.
+"""

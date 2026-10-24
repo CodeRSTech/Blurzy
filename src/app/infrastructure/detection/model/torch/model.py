@@ -5,9 +5,9 @@ See Also:
     - [`BaseDetectionModel`][app.infrastructure.detection.model.base.BaseDetectionModel] — common model contract
     - [`TorchModelLoaderFactory`][app.infrastructure.detection.model.torch.loader_factory.TorchModelLoaderFactory] — loads the underlying model
 
-    Layer: Infrastructure.
-    Context: Implements concrete processing and i/o behind application-facing contracts at this architectural boundary.
-    """
+Layer: Infrastructure.
+Context: Implements concrete processing and i/o behind application-facing contracts at this architectural boundary.
+"""
 
 
 
@@ -85,7 +85,7 @@ class TorchDetectionModel(BaseDetectionModel):
     def _load_model(self) -> None:
         """
         Load TorchVision model using factory.
-"""
+        """
         loaded = self._loader.create(self._model_name, self._weights_name)
         self._model = loaded.model
         self.labels = loaded.labels

@@ -5,9 +5,9 @@ See Also:
     - [`ModelHandler`][app.ui.handlers.model_handler.ModelHandler] — initiates model changes
     - [`DetectionEngineManager`][app.application.managers.detection_engine.DetectionEngineManager] — replaces per-session detection engines
 
-    Layer: Presentation.
-    Context: Implements the qt presentation components at this architectural boundary.
-    """
+Layer: Presentation.
+Context: Implements the qt presentation components at this architectural boundary.
+"""
 
 # app/ui/qt/model_change.py
 from __future__ import annotations
@@ -65,7 +65,7 @@ class ModelChangeWarningDialog(QDialog):
         """
         Return the manual-annotation and future-warning checkbox states.
 
-Returns:
-    `(keep_manual, dont_ask_again)` boolean values.
-"""
+        Returns:
+            `(keep_manual, dont_ask_again)` boolean values.
+        """
         return self.keep_manual_cb.isChecked(), self.dont_ask_cb.isChecked()

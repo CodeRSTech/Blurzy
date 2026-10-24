@@ -565,7 +565,7 @@ def _seed_layer_frame_from_layer(
 ) -> None:
     """
     Compatibility seeder for editable-layer frames not populated by current writers.
-"""
+    """
     logger.trace("Seeding Layer {} from Layer {} for frame {}", target, source, frame_index)
 
     # A frame remains initialized after its final box is deleted. This must not

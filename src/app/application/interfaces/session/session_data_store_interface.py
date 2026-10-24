@@ -330,12 +330,12 @@ class SessionDataStoreInterface(Protocol):
         """
         Replace machine output for one frame while preserving manual boxes.
 
-Args:
-    layer: Target layer whose machine boxes are refreshed.
-    frame_index: Zero-based frame index.
-    boxes: Candidate machine-produced boxes for the frame.
-    filter_fn: Optional predicate applied before boxes are cloned.
-"""
+        Args:
+            layer: Target layer whose machine boxes are refreshed.
+            frame_index: Zero-based frame index.
+            boxes: Candidate machine-produced boxes for the frame.
+            filter_fn: Optional predicate applied before boxes are cloned.
+        """
         ...
 
     def replace_machine_boxes_for_frames(

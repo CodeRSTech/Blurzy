@@ -70,7 +70,7 @@ class ModelLoadWorker(QThread):
     def run(self) -> None:
         """
         Load the requested model in the worker thread.
-"""
+        """
         try:
             logger.info(
                 "Starting `ModelLoadWorker(QThread)` for session: '{}' with model: '{}'",

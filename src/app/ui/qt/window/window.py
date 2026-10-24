@@ -97,7 +97,7 @@ class Window(QtWidgets.QMainWindow):
     def _build_menu_bar(self) -> None:
         """
         Build a real top menu bar hosted in the window's custom top bar.
-"""
+        """
         menu_bar = QtWidgets.QMenuBar(self)
         # Keep menu rendering inside the window consistently across platforms.
         menu_bar.setNativeMenuBar(False)
@@ -173,7 +173,7 @@ class Window(QtWidgets.QMainWindow):
     def _build_main_splitter(self) -> QtWidgets.QSplitter:
         """
         Build the main horizontal splitter with left and right panels.
-"""
+        """
         splitter = self._build_splitter(Qt.Orientation.Horizontal,
                                         [self._build_left_splitter(), self.right_panel],
                                         list(self._splitter_defaults.main_stretch),
@@ -183,7 +183,7 @@ class Window(QtWidgets.QMainWindow):
     def _build_left_splitter(self) -> QtWidgets.QSplitter:
         """
         Build the left vertical splitter with preview and bottom panels.
-"""
+        """
         splitter = self._build_splitter(Qt.Orientation.Vertical,
                                         [self._build_preview_stack(), self.bottom_panel],
                                         list(self._splitter_defaults.left_stretch),
@@ -236,7 +236,7 @@ class Window(QtWidgets.QMainWindow):
     def _init_menu_actions(self) -> None:
         """
         Initialize top-level menu actions once so handlers can reuse stable action objects.
-"""
+        """
         self.open_videos_action = QAction("Open Videos...", self)
         self.open_videos_action.setShortcut("Ctrl+O")
         self.open_videos_action.setStatusTip("Open one or more video files")
@@ -308,7 +308,7 @@ class Window(QtWidgets.QMainWindow):
     def _choose_video_files(self) -> None:
         """
         Open a file chooser and emit selected paths for SessionHandler.
-"""
+        """
         paths, _ = QtWidgets.QFileDialog.getOpenFileNames(
             self,
             "Open Video Files",

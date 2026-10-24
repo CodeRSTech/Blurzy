@@ -43,7 +43,7 @@ class VideoDecodeWorkerControlInterface(Protocol):
     def stop(self) -> None:
         """
         Shut down the worker thread cleanly.
-"""
+        """
         ...
 
     def get_cached_frame_at_index(self, idx: int) -> RGBFrame | None:

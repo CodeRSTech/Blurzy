@@ -28,12 +28,12 @@ def build_no_hit_action_map(menu: QMenu) -> dict[QAction, str]:
     """
     Build context menu actions used when right-clicking empty canvas space.
 
-Args:
-    menu: Menu to populate with empty-canvas actions.
+    Args:
+        menu: Menu to populate with empty-canvas actions.
 
-Returns:
-    Mapping from each created action to its `AnnotationContextActions` value.
-"""
+    Returns:
+        Mapping from each created action to its `AnnotationContextActions` value.
+    """
     action_select_all = menu.addAction("Select All")
     action_select_none = menu.addAction("Deselect All")
     action_select_inverse = menu.addAction("Invert Selection")
@@ -64,13 +64,13 @@ def build_hit_action_map(menu: QMenu, tracker_actions_enabled: bool) -> dict[QAc
     """
     Build context menu actions used when right-clicking over an existing bbox.
 
-Args:
-    menu: Menu to populate with actions for an existing box.
-    tracker_actions_enabled: Whether to include delete-next/previous-occurrence actions.
+    Args:
+        menu: Menu to populate with actions for an existing box.
+        tracker_actions_enabled: Whether to include delete-next/previous-occurrence actions.
 
-Returns:
-    Mapping from each created action to its `AnnotationContextActions` value.
-"""
+    Returns:
+        Mapping from each created action to its `AnnotationContextActions` value.
+    """
     action_select_all = menu.addAction("Select All")
     action_select_none = menu.addAction("Deselect All")
     action_select_inverse = menu.addAction("Invert Selection")
@@ -111,13 +111,13 @@ def resolve_selected_action(chosen: QAction | None, action_names: dict[QAction, 
     """
     Resolve the selected QAction into a context action string payload.
 
-Args:
-    chosen: Action selected by the user, or `None` if the menu was dismissed.
-    action_names: Mapping produced by one of the context-menu builders.
+    Args:
+        chosen: Action selected by the user, or `None` if the menu was dismissed.
+        action_names: Mapping produced by one of the context-menu builders.
 
-Returns:
-    Mapped action identifier, or `None` if the action is absent or unmapped.
-"""
+    Returns:
+        Mapped action identifier, or `None` if the action is absent or unmapped.
+    """
     if chosen is None:
         return None
     return action_names.get(chosen)

@@ -33,13 +33,13 @@ class ExportWorkerInterface(Protocol):
     def start(self) -> None:
         """
         Start the export thread.
-"""
+        """
         ...
 
     def stop(self) -> None:
         """
         Request the export thread to stop.
-"""
+        """
         ...
 
     def isRunning(self) -> bool:
@@ -54,12 +54,12 @@ class ExportWorkerInterface(Protocol):
     def deleteLater(self) -> None:
         """
         Schedule worker object deletion on the Qt event loop.
-"""
+        """
         ...
 
     def wait(self) -> None:
         """
         Wait for the export thread to finish.
-"""
+        """
         ...
     

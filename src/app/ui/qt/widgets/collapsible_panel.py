@@ -59,7 +59,7 @@ class CollapsiblePanel(QWidget):
     def toggle(self) -> None:
         """
         Invert the expanded state and update the content visibility and header icon.
-"""
+        """
         self.is_expanded = not self.is_expanded
         self.content_area.setVisible(self.is_expanded)
         icon = "▼" if self.is_expanded else "▶"

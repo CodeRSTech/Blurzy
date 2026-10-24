@@ -58,7 +58,7 @@ def _vbox_create(
 def apply_qt_ui_shortcuts() -> None:
     """
     Inject convenience methods onto common Qt layout classes.
-"""
+    """
     global _PATCHED
     if _PATCHED:
         logger.debug("Qt UI shortcut patches already applied.")

@@ -67,7 +67,7 @@ class SessionHandler(QObject):
     def __init__(self, controller: UIController) -> None:
         """
         Initialize the session handler with UI controller dependencies.
-"""
+        """
         super().__init__()
         self.setParent(controller)
         self._controller = controller
@@ -81,13 +81,13 @@ class SessionHandler(QObject):
     def __repr__(self) -> str:
         """
         Return a concise representation of the SessionHandler instance.
-"""
+        """
         return f"<{self.__class__.__name__}>"
 
     def _connect_signals(self) -> None:
         """
         Wire all upstream signals to their corresponding slots.
-"""
+        """
         # ====================================================================
         # 1. CONNECT MAIN WINDOW SIGNALS
         # ====================================================================
@@ -107,7 +107,7 @@ class SessionHandler(QObject):
     def refresh_session_views(self) -> None:
         """
         Refresh session views.
-"""
+        """
         sessions = list(self._controller.app.sm.all_sessions)
         self._controller.window.bottom_panel.update_session_file_list(
             list_of_session_list_view_models(sessions=sessions)
@@ -128,7 +128,7 @@ class SessionHandler(QObject):
     def prepare_active_session_initial_frame_render(self) -> None:
         """
         Handle prepare active session initial frame render.
-"""
+        """
         active = self._controller.app.active_session
         if active is None:
             return

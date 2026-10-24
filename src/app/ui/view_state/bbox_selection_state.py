@@ -34,7 +34,7 @@ class BBoxSelectionState:
     def __init__(self) -> None:
         """
         Initialize empty selection.
-"""
+        """
         self._selected: set[str] = set()
 
     def select(self, key: str) -> None:
@@ -79,7 +79,7 @@ class BBoxSelectionState:
     def clear(self) -> None:
         """
         Clear the selection.
-"""
+        """
         self._selected.clear()
 
     def get_selected_keys(self) -> list[str]:

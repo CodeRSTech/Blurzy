@@ -104,7 +104,7 @@ class ExportAllWorker(QThread):
     ) -> None:
         """
         Initialize batch export for `s_ids` to `output_dir` with naming prefix/suffix.
-"""
+        """
         super().__init__(parent)
         self._app = app
         self._s_ids = s_ids
@@ -117,7 +117,7 @@ class ExportAllWorker(QThread):
     def stop(self) -> None:
         """
         Request early stop (stops current workers, doesn't cancel in-progress export).
-"""
+        """
         self._stop_requested = True
         if self._current_s_id is None:
             return
@@ -260,7 +260,7 @@ class ExportAllWorker(QThread):
     def _emit_export_progress_or_cancel(self, s_id: SessionId, current_frame: int, total_frames: int) -> None:
         """
         Progress callback for export service — raise `RuntimeError` if batch stopped.
-"""
+        """
         if self._stop_requested:
             raise RuntimeError("Batch export cancelled.")
         self.session_export_progress_updated.emit(s_id, current_frame, total_frames)

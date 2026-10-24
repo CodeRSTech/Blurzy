@@ -9,6 +9,6 @@ See Also:
     - [`Window`][app.ui.qt.window.window.Window] — concrete window used by handlers
 
 
-    Layer: Presentation.
-    Context: Defines presentation-facing contracts for controllers, application access, and windows.
-    """
+Layer: Presentation.
+Context: Defines presentation-facing contracts for controllers, application access, and windows.
+"""

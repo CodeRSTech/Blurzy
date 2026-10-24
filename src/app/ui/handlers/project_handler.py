@@ -87,7 +87,7 @@ class ProjectHandler(QObject):
     def on_new_project(self) -> None:
         """
         Clear the current project and its sessions, then reset project-related UI state.
-"""
+        """
         logger.debug("Starting a new project")
         self._app.clear_project()
         self._window.bottom_panel.update_session_file_list([])
@@ -99,7 +99,7 @@ class ProjectHandler(QObject):
     def on_open_project(self) -> None:
         """
         Prompt for a project file, restore it, and refresh the session and project UI.
-"""
+        """
         start_dir = self._project_dialog_directory()
         path, _ = QFileDialog.getOpenFileName(
             self._window,
@@ -125,7 +125,7 @@ class ProjectHandler(QObject):
     def on_save_project(self) -> None:
         """
         Save to the current project path, prompting for a path when none is set.
-"""
+        """
         path = self._app.current_project_path
         if not path:
             self.on_save_project_as()
@@ -143,7 +143,7 @@ class ProjectHandler(QObject):
     def on_save_project_as(self) -> None:
         """
         Prompt for a `.blurzy` destination and save the current project there.
-"""
+        """
         start_dir = self._project_dialog_directory()
         path, _ = QFileDialog.getSaveFileName(
             self._window,

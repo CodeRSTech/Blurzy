@@ -86,7 +86,7 @@ class ModelHandler(QObject):
     def close(self) -> None:
         """
         Close close.
-"""
+        """
         if self._model_load_thread is not None and self._model_load_thread.isRunning():
             self._model_load_thread.quit()
             self._model_load_thread.wait()

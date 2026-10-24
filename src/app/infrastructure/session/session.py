@@ -129,7 +129,7 @@ class Session(QObject):
     def _require_state(self) -> SessionState:
         """
         Return the initialized session view_state or raise a clear error.
-"""
+        """
         if self.state is None:
             raise RuntimeError(
                 "Session view_state has not been initialized yet. "
@@ -140,7 +140,7 @@ class Session(QObject):
     def _require_video_reader(self) -> VideoReader:
         """
         Return the initialized video reader or raise a clear error.
-"""
+        """
         if self.video_reader is None:
             raise RuntimeError(
                 "Session video reader has not been initialized yet. "
@@ -151,7 +151,7 @@ class Session(QObject):
     def _require_video_decode_worker(self) -> VideoDecodeWorker:
         """
         Return the initialized decode worker or raise a clear error.
-"""
+        """
         if self.video_decode_worker is None:
             raise RuntimeError(
                 "Session decode worker has not been initialized yet. "
@@ -169,9 +169,9 @@ class Session(QObject):
         """
         Check if the session has a buffered frame.
 
-Returns:
-    `True` when the decode worker can provide a buffered frame.
-"""
+        Returns:
+            `True` when the decode worker can provide a buffered frame.
+        """
         return self.get_buffered_frame() is not None
 
     @property
@@ -179,9 +179,9 @@ Returns:
         """
         Check if the session has a running detection worker.
 
-Returns:
-    `True` when the detection worker exists and is running.
-"""
+        Returns:
+            `True` when the detection worker exists and is running.
+        """
         return self.detection_worker is not None and self.detection_worker.isRunning()
 
     @property
@@ -189,9 +189,9 @@ Returns:
         """
         Check if the session has a running tracking worker.
 
-Returns:
-    `True` when the tracking worker exists and is running.
-"""
+        Returns:
+            `True` when the tracking worker exists and is running.
+        """
         return self.tracking_worker is not None and self.tracking_worker.isRunning()
 
     @property
@@ -199,9 +199,9 @@ Returns:
         """
         Check if the session is currently playing the video.
 
-Returns:
-    Whether the session is currently playing.
-"""
+        Returns:
+            Whether the session is currently playing.
+        """
         return self._require_state().playback.is_playing
 
     @is_playing_video.setter
@@ -217,7 +217,7 @@ Returns:
     def close(self) -> None:
         """
         Stop all workers (detection, tracking, decode) and close reader.
-"""
+        """
         if self.detection_worker is not None:
             self.detection_worker.stop()
         if self.tracking_worker is not None:
@@ -274,18 +274,18 @@ Returns:
         """
         Check if there are any boxes for a specific layer.
 
-Args:
-    layer_name: Name of the target layer.
+        Args:
+            layer_name: Name of the target layer.
 
-Returns:
-    `True` when the layer contains boxes.
-"""
+        Returns:
+            `True` when the layer contains boxes.
+        """
         return self.data.has_boxes_for_layer(layer_name)
 
     def stop_playback(self):
         """
         Stop video playback and reset the playback state.
-"""
+        """
         self._require_state().playback.stop_playback()
 
     # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

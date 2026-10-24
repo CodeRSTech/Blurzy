@@ -27,13 +27,13 @@ class TrackingWorkerInterface(Protocol):
     def start(self) -> None:
         """
         Start the tracking thread.
-"""
+        """
         ...
 
     def stop(self) -> None:
         """
         Request the tracking thread to stop.
-"""
+        """
         ...
 
     def isRunning(self) -> bool:

@@ -183,7 +183,7 @@ def _iou_matrix(
 ) -> np.ndarray:
     """
     Return an (n_tracks × n_detections) IoU matrix.
-"""
+    """
     n_t = len(tracks)
     n_d = len(detections)
     mat = np.zeros((n_t, n_d), dtype=np.float32)
@@ -247,7 +247,7 @@ class HungarianIoUTracker:
     def reset(self) -> None:
         """
         Clear all live tracks and reset the UID counter.
-"""
+        """
         logger.debug("HungarianIoUTracker internal view_state reset")
         self._tracks = []
         self._next_uid = 1

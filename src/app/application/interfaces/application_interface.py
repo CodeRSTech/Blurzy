@@ -51,9 +51,9 @@ class UIApplicationInterface(Protocol):
         """
         Retrieve the currently active `Session` instance, or `None` if no session is active.
 
-Returns:
-    The active session, or `None` if there is no active session.
-"""
+        Returns:
+            The active session, or `None` if there is no active session.
+        """
         ...
 
     @property
@@ -61,9 +61,9 @@ Returns:
         """
         Return the `SessionId` of the currently active session, or `None`.
 
-Returns:
-    The active session identifier, or `None` if none is active.
-"""
+        Returns:
+            The active session identifier, or `None` if none is active.
+        """
         ...
 
     @property
@@ -84,12 +84,12 @@ Returns:
         """
         Fetch the `Session` instance identified by `s_id`.
 
-Args:
-    s_id: Identifier of the session to return.
+        Args:
+            s_id: Identifier of the session to return.
 
-Returns:
-    The session identified by `s_id`.
-"""
+        Returns:
+            The session identified by `s_id`.
+        """
         ...
 
     # Used by PlaybackHandler
@@ -97,12 +97,12 @@ Returns:
         """
         Check if the playback position for `s_id` is at the final frame.
 
-Args:
-    s_id: Identifier of the session whose playback position is checked.
+        Args:
+            s_id: Identifier of the session whose playback position is checked.
 
-Returns:
-    `True` when playback is positioned at the final frame.
-"""
+        Returns:
+            `True` when playback is positioned at the final frame.
+        """
         ...
 
     # Used by PlaybackHandler
@@ -207,12 +207,12 @@ Returns:
         """
         Check if a `DetectionWorker` is actively running for `s_id`.
 
-Args:
-    s_id: Identifier of the session whose detection worker state is queried.
+        Args:
+            s_id: Identifier of the session whose detection worker state is queried.
 
-Returns:
-    `True` when a detection worker is running.
-"""
+        Returns:
+            `True` when a detection worker is running.
+        """
         ...
 
     # Used by TrackingHandler
@@ -220,10 +220,10 @@ Returns:
         """
         Check if a `TrackingWorker` is actively running for `s_id`.
 
-Args:
-    s_id: Identifier of the session whose tracking worker state is queried.
+        Args:
+            s_id: Identifier of the session whose tracking worker state is queried.
 
-Returns:
-    `True` when a tracking worker is running.
-"""
+        Returns:
+            `True` when a tracking worker is running.
+        """
         ...

@@ -73,7 +73,7 @@ def _assign(cost: np.ndarray) -> list[tuple[int, int]]:
 def _legacy_embedding(box: BBoxViewModel) -> np.ndarray:
     """
     Build the historical batch-wrapper feature expected by DeepSORT.
-"""
+    """
     x1, y1, x2, y2 = box.bbox_xyxy
     width, height = float(x2 - x1), float(y2 - y1)
     center_x, center_y = (float(x1 + x2) / 2, float(y1 + y2) / 2)

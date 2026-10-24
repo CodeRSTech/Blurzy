@@ -36,7 +36,7 @@ _AMBIGUITY_MARGIN = 0.05
 def _normalized_mean(vectors: list[np.ndarray]) -> np.ndarray | None:
     """
     Return the normalized mean of available embedding vectors.
-"""
+    """
     if not vectors:
         return None
     mean = np.mean(np.stack(vectors).astype(np.float32), axis=0)
@@ -954,7 +954,7 @@ class TrackingPostProcessor:
         smoothness: float,
     ) -> int:
         r"""
-Interpolate missing frames with two endpoint predictions and GSI weights.
+        Interpolate missing frames with two endpoint predictions and GSI weights.
 
         Args:
             output: Mutable output frame map.
