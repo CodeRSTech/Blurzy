@@ -25,6 +25,8 @@ from PySide6.QtWidgets import (
     QLabel,
     QLineEdit,
     QPushButton,
+    QScrollArea,
+    QWidget,
 )
 
 from app.domain import TrackingStrategy, VideoDataLayer
@@ -73,9 +75,15 @@ class PreferencesDialog(QDialog):
         super().__init__(parent)
         self.setWindowTitle("Settings")
         self.setMinimumWidth(560)
+        self.setMaximumHeight(int(self.screen().availableGeometry().height() * 0.9))
 
         self._preferences = preferences
         self._available_models = available_models
+
+        self._content_widget = QWidget()
+        self._scroll_area = QScrollArea()
+        self._scroll_area.setWidgetResizable(True)
+        self._scroll_area.setWidget(self._content_widget)
 
         self._init_widgets()
         self._build_ui()
@@ -238,19 +246,20 @@ class PreferencesDialog(QDialog):
             dialog._build_ui()
         """
         root = create_vbox_layout(self, spacing=12)
-        root.addWidget(self._hint_label)
+        content = create_vbox_layout(self._content_widget, spacing=12)
+        content.addWidget(self._hint_label)
 
         ui_group = QGroupBox("App")
         ui_form = QFormLayout(ui_group)
         ui_form.addRow("", self._startup_fullscreen_checkbox)
-        root.addWidget(ui_group)
+        content.addWidget(ui_group)
 
         detection_group = QGroupBox("Default Detection Settings")
         detection_form = QFormLayout(detection_group)
         detection_form.addRow("Model:", self._model_combo_box)
         detection_form.addRow("Min confidence:", self._min_confidence_spinbox)
         detection_form.addRow("Labels:", self._labels_edit)
-        root.addWidget(detection_group)
+        content.addWidget(detection_group)
 
         tracking_group = QGroupBox("Default Tracking Settings")
         tracking_form = QFormLayout(tracking_group)
@@ -271,7 +280,7 @@ class PreferencesDialog(QDialog):
         self._gsi_smoothness_label = QLabel("GSI smoothness:")
         self._gsi_smoothness_label.setToolTip(self._gsi_smoothness_tooltip)
         tracking_form.addRow(self._gsi_smoothness_label, self._gsi_smoothness_spinbox)
-        root.addWidget(tracking_group)
+        content.addWidget(tracking_group)
 
         preview_group = QGroupBox("Default Preview Settings")
         preview_form = QFormLayout(preview_group)
@@ -287,8 +296,8 @@ class PreferencesDialog(QDialog):
         self._blur_strength_label = QLabel("Blur strength:")
         self._blur_strength_label.setToolTip(self._blur_strength_tooltip)
         render_form.addRow(self._blur_strength_label, self._blur_strength_spinbox)
-        root.addWidget(preview_group)
-        root.addWidget(render_group)
+        content.addWidget(preview_group)
+        content.addWidget(render_group)
 
         export_group = QGroupBox("Default Export Naming")
         export_form = QFormLayout(export_group)
@@ -300,8 +309,9 @@ class PreferencesDialog(QDialog):
         )
         export_form.addRow("Filename prefix:", self._export_prefix_edit)
         export_form.addRow("Filename suffix:", self._export_suffix_edit)
-        root.addWidget(export_group)
+        content.addWidget(export_group)
 
+        root.addWidget(self._scroll_area)
         root.addWidget(self._button_box)
 
     def _connect_signals(self) -> None:
