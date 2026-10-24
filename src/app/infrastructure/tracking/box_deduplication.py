@@ -67,7 +67,7 @@ def suppress_nested_same_class_boxes(
     iomin_threshold: float = 0.80,
 ) -> ListOfBoxes:
     r"""
-Suppress duplicate same-class boxes mostly contained by a stronger box.
+    Suppress duplicate same-class boxes mostly contained by a stronger box.
 
     A stronger box is at least as large and as confident as the candidate;
     manual boxes are prioritized and retained. “Mostly contained” means the
@@ -108,7 +108,7 @@ Suppress duplicate same-class boxes mostly contained by a stronger box.
         \begin{aligned}
         Area_I &= 857 \times 864 = 740{,}448,\\
         \because \quad X \cup Y &= X + Y - X \cap Y,\\
-        \therefore \quad Area_U &= Area_B + Area_T - Area_I\\_I\\
+        \therefore \quad Area_U &= Area_B + Area_T - Area_I,\\
             &= 1{,}505{,}790 + 745{,}632 - 740{,}448\\
             &= 1{,}510{,}974.
         \end{aligned}

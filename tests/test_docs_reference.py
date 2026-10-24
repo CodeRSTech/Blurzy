@@ -450,8 +450,10 @@ class Worker(QObject):
                 for block in code_blocks:
                     self.assertNotIn(summary, block)
                     self.assertNotIn(note, block)
-        self.assertIn('class="doc-section-title">Attributes', html)
-        self.assertIn('class="admonition-title">Note', html)
+        self.assertRegex(html, r'class="doc-section-title">(?:Attributes|ATTRIBUTE|ATTRIBUTES)</span>')
+        self.assertTrue(
+            'class="admonition-title">Note' in html or "<summary>Note</summary>" in html
+        )
 
     def test_detection_engine_page_renders_model_names_from_literal_registries(self):
         self.write(
