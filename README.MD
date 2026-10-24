@@ -21,6 +21,8 @@ experiments can be refined without putting all of that complexity in the UI.
   holds, and safety-margin padding.
 - Use separate Preview and Render panels for box outlines, border width, mask preview, live blur,
   and export blur.
+- Configure persistent app preferences and session defaults in a screen-bounded Settings dialog with
+  a scrollable form.
 - Save and load `.blurzy` or JSON projects; import and export annotation and tracking layers as JSON
   or CSV.
 - Keep long-running work off the UI thread and surface progress in the app.

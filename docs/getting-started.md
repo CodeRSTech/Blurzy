@@ -56,6 +56,10 @@ The editable installation provides the `blurzy` GUI command. Runtime
 dependencies are maintained in `pyproject.toml`; `requirements.txt` delegates
 to that metadata.
 
+Open **Edit → Settings...** to change persistent app preferences and defaults
+for newly opened videos. The settings form scrolls on shorter displays, while
+the dialog stays within the available screen area.
+
 ???+ example "Typical workflow"
 
     1. Open a video.
