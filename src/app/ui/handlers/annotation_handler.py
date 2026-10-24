@@ -65,9 +65,9 @@ class AnnotationHandler(QObject):
             Handles keyboard events for detection nudging with acceleration.
             Emits frame render requests after detection changes.
 
-Layer: Presentation.
-Context: Supports user interaction and delegates application work through presentation contracts.
-"""
+    Layer: Presentation.
+    Context: Supports user interaction and delegates application work through presentation contracts.
+    """
 
     def __init__(self, controller: UIController) -> None:
         """
