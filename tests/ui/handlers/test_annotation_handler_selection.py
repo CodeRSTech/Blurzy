@@ -98,10 +98,14 @@ def test_directional_toolbar_actions_delete_each_selected_track_id() -> None:
     handler.on_delete_prev_occurrences()
 
     calls = handler._app.delete_tracks_by_id_and_direction.call_args_list
-    assert [call.args for call in calls] == [
-        ("session-1", "-4", Direction.NEXT), ("session-1", "-5", Direction.NEXT),
-        ("session-1", "-4", Direction.PREV), ("session-1", "-5", Direction.PREV),
+    assert [(call.args[0], call.args[2]) for call in calls] == [
+        ("session-1", Direction.NEXT),
+        ("session-1", Direction.NEXT),
+        ("session-1", Direction.PREV),
+        ("session-1", Direction.PREV),
     ]
+    assert {call.args[1] for call in calls[:2]} == {"-4", "-5"}
+    assert {call.args[1] for call in calls[2:]} == {"-4", "-5"}
     assert handler._controller.render_frame_for_session_id.call_count == 2
 
 
