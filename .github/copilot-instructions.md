@@ -142,3 +142,29 @@ For documentation builds, install only `requirements-docs.txt` and run
 `python -m unittest discover -s tests -p "test_docs_reference.py"`.
 An instruction-only Markdown change needs link/accuracy review, not app tests.
 Keep this instruction file aligned with changes to project structure and commands.
+
+## Versioning and release records
+
+Version and changelog maintenance is mandatory, even during early development.
+The historical 1.1.0 entry is a retrospective baseline, not a reason to leave
+future changes undocumented. Follow the
+[versioning policy](../CONTRIBUTING.md#versioning-and-changelog).
+
+- For every user-visible feature, fix, or workflow change, update
+  `CHANGELOG.md` in the same change. Use Unreleased for changes after the latest
+  recorded version; do not leave "No unreleased changes" above pending entries.
+- Use major/minor/patch intent: incompatible public contracts or file formats,
+  compatible features/substantial UI changes, and compatible fixes respectively.
+  Coordinate a bump once per version update, not once per file or commit.
+- When advancing the application version, keep `[project].version` in
+  `pyproject.toml`, `APP_VERSION` in `src/app/shared/distribution.py`, the new
+  changelog heading, and the homepage version label in sync. Review other
+  current-version references, build metadata, and user docs too.
+- Do not bump project/layer file `format_version` for an application release
+  unless the serialized schema changes. Preserve historical changelog entries
+  and recorded example/tool provenance.
+- Review README status tables, getting-started steps, affected architecture/API
+  docs, and homepage claims. Visible UI changes also require checking the
+  homepage screenshot; use approved real app captures, not stale fixtures.
+- Run the version-consistency test and relevant documentation checks. A version
+  edit does not authorize creating a tag, publishing a package, or a release.

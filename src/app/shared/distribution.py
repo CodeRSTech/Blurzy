@@ -20,7 +20,7 @@ if TYPE_CHECKING:
 
 
 APP_NAME = "Blurzy"
-APP_VERSION = "1.1.0"
+APP_VERSION = "1.2.0"
 APP_ORGANIZATION_NAME = "CodeRSTech"
 _RESOURCE_ROOT_PARTS = ("app", "ui", "qt", "resources")
 

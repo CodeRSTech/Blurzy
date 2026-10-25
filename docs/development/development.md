@@ -61,6 +61,33 @@ python -m pip install -e ".[dist]"
 python -m build
 ```
 
+### Versioning and changelog
+
+Version maintenance is required alongside user-visible changes. Follow the
+[contributor versioning policy](https://github.com/CodeRSTech/Blurzy/blob/master/CONTRIBUTING.md#versioning-and-changelog):
+record changes under Unreleased, then choose a major/minor/patch update from the
+accumulated behavior changes. Earlier incomplete versioning is preserved as
+historical context in the 1.1.0 changelog entry, not continued as a workflow.
+
+An application-version update must coordinate `pyproject.toml`,
+`src/app/shared/distribution.py` (Qt/bundled metadata), the dated
+`CHANGELOG.md` heading, and the current-version label in `website/index.html`.
+Project/layer `format_version` values describe serialization schemas and must
+not change solely because the application version changes. Recorded example
+environments keep their original versions.
+
+Run the consistency check:
+
+```console
+python -m pytest tests/shared/test_distribution.py -q
+```
+
+Check README issue statuses, getting-started instructions, affected architecture
+pages, and source docstrings as part of the same update. For visible UI changes,
+refresh the homepage's real application screenshot as well. Installed package
+metadata can lag behind an edited source version until reinstallation; a
+version edit alone does not publish a release.
+
 ## Documentation and homepage
 
 Documentation uses MkDocs with **Material**, including dark and light modes. Install the
@@ -83,6 +110,14 @@ python -m http.server --directory site 8000
 
 Visit `http://localhost:8000/` for the homepage and
 `http://localhost:8000/docs/` for the documentation.
+
+The homepage references its approved application capture using a relative
+`docs/assets/screenshots/` URL, so it works under the project's `/Blurzy/` Pages
+prefix as well as in the local combined preview. Keep screenshots in that
+authored asset directory, not generated `site/` output. After replacing one,
+check the actual image at desktop and narrow widths and update its alt text if
+the workflow shown changes. Review captures for private paths or personal data
+before publishing.
 
 For architecture explanations, asset locations, diagram formats, and real
 input/output examples, follow [Writing architecture guides](architecture-documentation.md).
