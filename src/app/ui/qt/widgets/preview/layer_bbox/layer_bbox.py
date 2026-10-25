@@ -55,7 +55,11 @@ from app.ui.qt.widgets.preview.layer_bbox.menu import (
     build_no_hit_action_map,
     resolve_selected_action,
 )
-from app.ui.qt.widgets.preview.layer_bbox.rendering import draw_active_bbox, draw_selected_bbox
+from app.ui.qt.widgets.preview.layer_bbox.rendering import (
+    draw_active_bbox,
+    draw_selected_bbox,
+    scale_bbox_border_width,
+)
 from app.ui.qt.widgets.preview.layer_bbox.helpers import (
     apply_clamped_drag_deltas,
     clamp_point_to_rect,
@@ -567,6 +571,7 @@ class AnnotationOverlayWidget(QWidget):
 
         painter = QPainter(self)
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
+        border_width = scale_bbox_border_width(self._box_border_width, self._pixmap_rect.height())
 
         group_drag_delta = QPoint()
         if self._group_drag_keys and self._state.drag_mode == DragMode.MOVE:
@@ -579,9 +584,9 @@ class AnnotationOverlayWidget(QWidget):
             selected_rect = self._image_rect_to_widget_space(*bbox_xyxy)
             if box_key in self._group_drag_keys:
                 selected_rect = selected_rect.translated(group_drag_delta)
-            draw_selected_bbox(painter, selected_rect, self._box_border_width)
+            draw_selected_bbox(painter, selected_rect, border_width)
         if self._state.has_valid_rect:
-            draw_active_bbox(painter, self._state.rect, self._box_border_width)
+            draw_active_bbox(painter, self._state.rect, border_width)
         if not self._marquee_rect.isNull():
             painter.setPen(QPen(_BOX_COLOR, 2, Qt.PenStyle.DashLine))
             painter.setBrush(Qt.BrushStyle.NoBrush)

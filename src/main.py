@@ -43,6 +43,7 @@ def main() -> None:
     from app.ui.qt.window import Window
     from app.ui.qt.shared.qt_debug_repr import apply_custom_qt_reprs
     from app.ui.qt.shared.qt_ui_shortcuts import apply_qt_ui_shortcuts
+    from app.ui.qt.shared.theme import apply_application_theme
     from app.ui.uicontroller import UIController
 
     # Add a __repr__() method to Qt objects for better debugging output in logs and console.
@@ -55,12 +56,14 @@ def main() -> None:
     logger.info("Starting the application...")
     q_app = QApplication(sys.argv)
     configure_qt_application_metadata(q_app)
+    preferences = AppPreferencesStore().load()
+    apply_application_theme(q_app, preferences.default_theme)
 
     app = Application()
     window = Window()
     UIController(q_app, window, app)
 
-    if AppPreferencesStore().load().startup_fullscreen:
+    if preferences.startup_fullscreen:
         window.showFullScreen()
     else:
         window.show()

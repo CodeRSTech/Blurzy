@@ -14,9 +14,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, final, override
 
-from PySide6.QtCore import Signal, QPointF
-
-from PySide6.QtWidgets import QWidget, QStackedLayout, QSizePolicy
+from PySide6.QtCore import Signal, QPointF, Qt
+from PySide6.QtWidgets import QFrame, QLabel, QPushButton, QVBoxLayout, QWidget, QStackedLayout, QSizePolicy
 
 from app.ui.qt.widgets import AnnotationOverlayWidget, VideoDisplayWidget
 
@@ -65,6 +64,7 @@ class PreviewContainer(QWidget):
     bbox_marquee_selected = Signal(list)
     bboxes_moved = Signal(list, int, int)
     viewport_state_changed = Signal(float, float, float)
+    open_video_requested = Signal()
 
     def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
@@ -75,12 +75,15 @@ class PreviewContainer(QWidget):
         # Visual layer is underneath; interactive detection overlay sits on top.
         self.video_layer = VideoDisplayWidget()
         self.bbox_layer = AnnotationOverlayWidget()
+        self.empty_state_layer = self._build_empty_state()
 
         # 2. Stack them (Top to Bottom)
         self._layout: QStackedLayout = QStackedLayout(self)
         self._layout.setStackingMode(QStackedLayout.StackingMode.StackAll)
-        self._layout.addWidget(self.bbox_layer)  # Index 0 (Top - Interactive)
-        self._layout.addWidget(self.video_layer)  # Index 1 (Bottom - Visual)
+        self._layout.addWidget(self.video_layer)
+        self._layout.addWidget(self.bbox_layer)
+        self._layout.addWidget(self.empty_state_layer)
+        self._layout.setCurrentWidget(self.empty_state_layer)
 
         # 3. Internal Event Routing
         # When the video resizes and calculates new letterbox margins,
@@ -106,6 +109,36 @@ class PreviewContainer(QWidget):
         self.bbox_layer.zoom_requested.connect(self._handle_zoom)
         self.bbox_layer.pan_requested.connect(self._handle_pan)
 
+    def _build_empty_state(self) -> QWidget:
+        overlay = QWidget(self)
+        overlay_layout = QVBoxLayout(overlay)
+        overlay_layout.setContentsMargins(16, 16, 16, 16)
+        overlay_layout.addStretch(1)
+
+        card = QFrame(overlay)
+        card.setObjectName("emptyPreviewCard")
+        card.setMaximumWidth(360)
+        card_layout = QVBoxLayout(card)
+        card_layout.setContentsMargins(24, 22, 24, 22)
+        card_layout.setSpacing(10)
+
+        title = QLabel("Start with a video")
+        title.setStyleSheet("font-size: 15pt; font-weight: 600;")
+        title.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self._empty_state_message = QLabel("Open a video to detect, review, and track subjects.")
+        self._empty_state_message.setObjectName("mutedText")
+        self._empty_state_message.setWordWrap(True)
+        self._empty_state_message.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        open_button = QPushButton("Open Video")
+        open_button.setProperty("emphasis", "primary")
+        open_button.clicked.connect(self.open_video_requested.emit)
+        card_layout.addWidget(title)
+        card_layout.addWidget(self._empty_state_message)
+        card_layout.addWidget(open_button)
+        overlay_layout.addWidget(card, 0, Qt.AlignmentFlag.AlignHCenter)
+        overlay_layout.addStretch(1)
+        return overlay
+
     # --- Public Facade API for EditorController ---
     
 
@@ -117,6 +150,7 @@ class PreviewContainer(QWidget):
             image: RGB image to display in the preview.
         """
         self.video_layer.set_image(image)
+        self._layout.setCurrentWidget(self.bbox_layer)
 
     def set_box_border_width(self, width: int) -> None:
         """
@@ -143,7 +177,9 @@ class PreviewContainer(QWidget):
             message: Text to show when no frame is displayed; also cancels box editing.
         """
         self.video_layer.set_message(message)
+        self._empty_state_message.setText(message)
         self.bbox_layer.cancel_edit()
+        self._layout.setCurrentWidget(self.empty_state_layer)
 
     def set_tool_mode(self, mode: ToolMode) -> None:
         """

@@ -30,7 +30,7 @@ from PySide6.QtWidgets import (
 )
 
 from app.domain import TrackingStrategy, VideoDataLayer
-from app.shared.app_preferences import AppPreferences
+from app.shared.app_preferences import AppPreferences, SUPPORTED_THEMES
 from app.ui.qt.shared.layout_shortcuts import create_hbox_layout, create_vbox_layout
 from app.ui.qt.shared.widget_factories import (
     create_blur_strength_spinbox,
@@ -107,6 +107,9 @@ class PreferencesDialog(QDialog):
         self._hint_label.setWordWrap(True)
 
         self._startup_fullscreen_checkbox = QCheckBox("Launch app in fullscreen mode")
+        self._theme_combo_box = QComboBox()
+        for theme in SUPPORTED_THEMES:
+            self._theme_combo_box.addItem(theme.title(), theme)
 
         self._model_combo_box = QComboBox()
         for model in self._available_models:
@@ -187,7 +190,7 @@ class PreferencesDialog(QDialog):
             "Higher values produce smoother curves across gaps."
         )
         self._box_border_width_tooltip = (
-            "Default editor-preview box outline thickness, from 1 to 10 pixels. "
+            "Default editor-preview outline weight, scaled with the displayed video size and zoom. "
             "This setting does not affect exported video."
         )
         self._show_preview_mask_tooltip = (
@@ -251,6 +254,7 @@ class PreferencesDialog(QDialog):
 
         ui_group = QGroupBox("App")
         ui_form = QFormLayout(ui_group)
+        ui_form.addRow("Default theme:", self._theme_combo_box)
         ui_form.addRow("", self._startup_fullscreen_checkbox)
         content.addWidget(ui_group)
 
@@ -285,7 +289,7 @@ class PreferencesDialog(QDialog):
         preview_group = QGroupBox("Default Preview Settings")
         preview_form = QFormLayout(preview_group)
         preview_form.addRow("", self._draw_boxes_checkbox)
-        self._box_border_width_label = QLabel("Box border width (px):")
+        self._box_border_width_label = QLabel("Outline weight:")
         self._box_border_width_label.setToolTip(self._box_border_width_tooltip)
         preview_form.addRow(self._box_border_width_label, self._box_border_width_spinbox)
         preview_form.addRow("", self._show_preview_mask_checkbox)
@@ -345,6 +349,9 @@ class PreferencesDialog(QDialog):
             dialog._populate_from_preferences(preferences)
         """
         self._startup_fullscreen_checkbox.setChecked(preferences.startup_fullscreen)
+        theme_index = self._theme_combo_box.findData(preferences.default_theme)
+        if theme_index >= 0:
+            self._theme_combo_box.setCurrentIndex(theme_index)
 
         model_index = self._model_combo_box.findData(preferences.default_detection_model_name)
         if model_index >= 0:
@@ -455,6 +462,7 @@ class PreferencesDialog(QDialog):
         """
         return AppPreferences(
             startup_fullscreen=self._startup_fullscreen_checkbox.isChecked(),
+            default_theme=cast(str, self._theme_combo_box.currentData()),
             default_detection_model_name=cast(str, self._model_combo_box.currentData()),
             default_min_detection_confidence=float(self._min_confidence_spinbox.value()),
             default_chosen_labels=[

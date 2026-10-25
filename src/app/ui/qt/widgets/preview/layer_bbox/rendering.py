@@ -33,6 +33,22 @@ if TYPE_CHECKING:
     from PySide6.QtGui import QPainter
 
 
+def scale_bbox_border_width(border_width: int, displayed_video_height: int) -> int:
+    """Scale the configured outline against the displayed video canvas.
+
+    Args:
+        border_width: Configured reference width at a 480-pixel video height.
+        displayed_video_height: Current fitted/zoomed video height in widget pixels.
+
+    Returns:
+        Visible pen width clamped to the range 1–12 widget pixels.
+    """
+    if displayed_video_height <= 0:
+        return max(1, min(12, border_width))
+    scaled_width = int(border_width * displayed_video_height / 480 + 0.5)
+    return max(1, min(12, scaled_width))
+
+
 def draw_active_bbox(painter: QPainter, rect: QRect, border_width: int = 2) -> None:
     """
     Draw the active bbox with center marker and drag handles.
