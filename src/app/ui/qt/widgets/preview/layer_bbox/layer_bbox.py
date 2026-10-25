@@ -23,7 +23,7 @@ from __future__ import annotations
 from typing import final, override, TYPE_CHECKING
 
 from PySide6.QtCore import Qt, Signal, QPoint, QRect
-from PySide6.QtGui import QPainter, QCursor, QPen
+from PySide6.QtGui import QColor, QPainter, QCursor, QPen
 from PySide6.QtWidgets import QWidget, QMenu
 
 from app.shared.logging_cfg import get_logger
@@ -57,6 +57,8 @@ from app.ui.qt.widgets.preview.layer_bbox.menu import (
 )
 from app.ui.qt.widgets.preview.layer_bbox.rendering import (
     draw_active_bbox,
+    draw_bbox_caption,
+    draw_bbox_outline,
     draw_selected_bbox,
     scale_bbox_border_width,
 )
@@ -75,7 +77,8 @@ from app.ui.view_state.preview_state import ToolMode
 logger = get_logger("UI->Preview->Bbox Layer")
 
 if TYPE_CHECKING:
-    from app.domain.base.dtypes import BBoxXYXYTuple
+    from app.domain.base.dtypes import BBoxXYXYTuple, ListOfBoxes
+    from app.domain.views import BBoxViewModel
 
 
 # --- Constants ---
@@ -135,6 +138,7 @@ class AnnotationOverlayWidget(QWidget):
 
         self._tool_mode: ToolMode = ToolMode.EDIT
         self._active_bboxes: dict[str, BBoxXYXYTuple] = {}
+        self._annotations: dict[str, BBoxViewModel] = {}
         self._editing_bbox_id: str | None = None
         self._tracker_actions_enabled: bool = False
         self._selected_bbox_keys: set[str] = set()
@@ -205,10 +209,24 @@ class AnnotationOverlayWidget(QWidget):
             Keeps only selected keys still present and cancels editing if the edited box disappeared.
         """
         self._active_bboxes = bboxes
+        self._annotations = {key: box for key, box in self._annotations.items() if key in bboxes}
         self._selected_bbox_keys.intersection_update(bboxes)
         if self._editing_bbox_id and self._editing_bbox_id not in bboxes:
             self.cancel_edit()
         self.update()
+
+    def set_annotations(self, boxes: ListOfBoxes) -> None:
+        """Replace visible annotation geometry, colors, and captions.
+
+        Args:
+            boxes: Current-frame annotations, or an empty list to hide them.
+
+        Side Effects:
+            Prunes stale selection and editing through `set_active_bboxes`.
+            Annotations are displayed without modifying their source models.
+        """
+        self._annotations = {box.key: box for box in boxes}
+        self.set_active_bboxes({box.key: box.bbox_xyxy for box in boxes})
 
     def set_selected_bbox_keys(self, box_keys: list[str]) -> None:
         """
@@ -561,12 +579,17 @@ class AnnotationOverlayWidget(QWidget):
     @override
     def paintEvent(self, event: QPaintEvent) -> None:
         """
-        Render the current bounding detection with selection handles and center point.
+        Paint all annotations, then selection outlines, edit handles, and marquee.
 
         Args:
             event: Qt event being handled.
         """
-        if not self._state.has_valid_rect and self._marquee_rect.isNull() and not self._selected_bbox_keys:
+        if (
+            not self._annotations
+            and not self._state.has_valid_rect
+            and self._marquee_rect.isNull()
+            and not self._selected_bbox_keys
+        ):
             return
 
         painter = QPainter(self)
@@ -577,14 +600,32 @@ class AnnotationOverlayWidget(QWidget):
         if self._group_drag_keys and self._state.drag_mode == DragMode.MOVE:
             group_drag_delta = self._state.rect.topLeft() - self._state.rect_at_drag_start.topLeft()
 
+        visible_annotations = []
+        for box_key, box in self._annotations.items():
+            annotation_rect = self._image_rect_to_widget_space(*self._active_bboxes[box_key])
+            if box_key == self._editing_bbox_id and self._state.has_valid_rect:
+                annotation_rect = self._state.rect
+            elif box_key in self._group_drag_keys:
+                annotation_rect = annotation_rect.translated(group_drag_delta)
+            if annotation_rect.intersects(self.rect()):
+                color = QColor(box.color_hex)
+                visible_annotations.append((annotation_rect, color, box))
+                draw_bbox_outline(painter, annotation_rect, color, border_width)
+
         for box_key in self._selected_bbox_keys:
             bbox_xyxy = self._active_bboxes.get(box_key)
             if bbox_xyxy is None:
                 continue
             selected_rect = self._image_rect_to_widget_space(*bbox_xyxy)
-            if box_key in self._group_drag_keys:
+            if box_key == self._editing_bbox_id and self._state.has_valid_rect:
+                selected_rect = self._state.rect
+            elif box_key in self._group_drag_keys:
                 selected_rect = selected_rect.translated(group_drag_delta)
             draw_selected_bbox(painter, selected_rect, border_width)
+        for annotation_rect, color, box in visible_annotations:
+            draw_bbox_caption(
+                painter, annotation_rect, color, f"{box.id}  {box.label}  {box.confidence_txt}", self.rect()
+            )
         if self._state.has_valid_rect:
             draw_active_bbox(painter, self._state.rect, border_width)
         if not self._marquee_rect.isNull():

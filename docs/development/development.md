@@ -32,6 +32,28 @@ stubs; video worker integration tests are skipped unless
 may require model weights and compatible hardware. The default suite does not
 require downloading model weights.
 
+### Qt UI state transitions
+
+Cover both the initial and resulting widget states in UI regression tests.
+In particular, `QStackedLayout.StackAll` leaves its child widgets visible;
+`setCurrentWidget()` raises a widget but does not hide the others. An empty
+preview overlay can therefore remain over a loaded video unless its visibility
+is changed explicitly. This escaped earlier coverage because the test checked
+the empty-state button but did not load a frame and assert that the overlay
+disappeared.
+
+For visual changes, run the relevant Qt tests and inspect the affected empty and
+populated states in the application at the target window size. Check for
+overlapping text, clipped controls, and overlays that remain after a state
+change.
+
+For annotation rendering, exercise ordinary as well as selected boxes with
+low-resolution and 4K frames at the same canvas size. Previously, width-scaling
+tests covered the Qt selection pens while ordinary outlines and captions were
+still rasterized into the source frame and shrank with it. Live preview now
+paints both in the Qt overlay. Pixel-level checks verify that changing source
+resolution does not change visible outline weight.
+
 ## Package builds
 
 ```console

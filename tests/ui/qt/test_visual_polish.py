@@ -8,8 +8,11 @@ from PySide6.QtGui import QColor, QImage, QPainter, QPalette
 from PySide6.QtWidgets import QApplication, QPushButton
 
 from app.shared.app_preferences import AppPreferences
+from app.domain.detection import BoxSource
+from app.domain.views import BBoxViewModel
 from app.ui.qt.dialogs.preferences import PreferencesDialog
 from app.ui.qt.sections.bottom_data_panel import BottomDataPanelContainer
+from app.ui.qt.sections.right_panel import RightControlPanel
 from app.ui.qt.shared.theme import apply_application_theme
 from app.ui.qt.widgets.color_swatch_delegate import COLOR_SWATCH_ROLE, ColorSwatchDelegate
 from app.ui.qt.widgets.preview.preview_container import PreviewContainer
@@ -43,6 +46,7 @@ def test_color_column_renders_a_swatch_and_keeps_hex_accessible(qtbot) -> None:
     BottomDataPanelContainer.set_data_table_boxes([box], table, set())
     panel.show()
     qtbot.wait(20)
+    table.scrollToItem(table.item(0, 5))
 
     color_item = table.item(0, 5)
     assert color_item.text() == ""
@@ -61,6 +65,25 @@ def test_color_column_renders_a_swatch_and_keeps_hex_accessible(qtbot) -> None:
     assert image.pixelColor(x, y) == QColor("#12ab34")
 
 
+def test_annotation_action_buttons_use_compact_accessible_icons(qtbot) -> None:
+    panel = BottomDataPanelContainer()
+    qtbot.addWidget(panel)
+
+    buttons = (
+        panel.edit_box_btn,
+        panel.relabel_box_btn,
+        panel.delete_box_btn,
+        panel.delete_next_occurrences_btn,
+        panel.delete_prev_occurrences_btn,
+        panel.copy_to_prev_btn,
+        panel.copy_to_next_btn,
+    )
+    assert all(button.text() == "" for button in buttons)
+    assert all(not button.icon().isNull() for button in buttons)
+    assert all(button.toolTip() == button.accessibleName() for button in buttons)
+    assert all(button.height() <= 28 for button in buttons)
+
+
 def test_explicit_theme_updates_palette_and_stylesheet(qtbot) -> None:
     application = QApplication.instance()
     assert application is not None
@@ -75,13 +98,120 @@ def test_explicit_theme_updates_palette_and_stylesheet(qtbot) -> None:
         apply_application_theme(application, "system")
 
 
+def test_right_panel_fits_compact_desktop_width_without_horizontal_scrolling(qtbot) -> None:
+    application = QApplication.instance()
+    assert application is not None
+    apply_application_theme(application, "dark")
+    panel = RightControlPanel()
+    qtbot.addWidget(panel)
+    panel.resize(320, 760)
+    panel.show()
+    qtbot.wait(20)
+
+    assert panel.widget().width() <= panel.viewport().width()
+    assert panel.widget().minimumSizeHint().width() <= panel.viewport().width()
+    assert panel.horizontalScrollBar().maximum() == 0
+    assert panel.detect_btn.text() == "Detect Frame"
+    assert panel.detect_all_btn.text() == "Detect All Frames"
+    assert panel.provider_combo_box.x() == panel.min_confidence_spinbox.x()
+    assert panel.model_combo_box.x() == panel.min_confidence_spinbox.x()
+    assert panel.detect_btn.y() == panel.detect_all_btn.y()
+    assert panel.track_btn.y() == panel.imp_exp_tracks_button.y()
+
+    apply_application_theme(application, "system")
+
+
 def test_empty_preview_open_video_action_emits_request(qtbot) -> None:
     preview = PreviewContainer()
     qtbot.addWidget(preview)
     preview.set_message("Select a video to continue.")
     assert preview._empty_state_message.text() == "Select a video to continue."
+    assert preview.video_layer._placeholder_text == ""
+    assert not preview.empty_state_layer.isHidden()
+
+    preview.set_image(QImage(4, 4, QImage.Format.Format_RGB32))
+    assert preview.empty_state_layer.isHidden()
+    assert preview._layout.currentWidget() is preview.bbox_layer
+
+    preview.set_message("Video closed.")
+    assert not preview.empty_state_layer.isHidden()
+
     button = preview.empty_state_layer.findChild(QPushButton)
     assert button is not None
 
     with qtbot.waitSignal(preview.open_video_requested):
         button.click()
+
+
+def test_preview_annotations_remain_readable_independently_of_source_resolution(qtbot) -> None:
+    preview = PreviewContainer()
+    qtbot.addWidget(preview)
+    preview.resize(960, 540)
+    preview.show()
+    outline_samples = []
+
+    for width, height in ((640, 360), (1920, 1080), (3840, 2160)):
+        image = QImage(width, height, QImage.Format.Format_RGB32)
+        image.fill(Qt.GlobalColor.white)
+        box = BBoxViewModel(
+            id="person-1",
+            source=BoxSource.DETECTION,
+            label="person",
+            bbox_xyxy=(width // 4, height // 4, width * 3 // 4, height * 3 // 4),
+            color_hex="#00ff00",
+            confidence=0.9,
+            key="box-1",
+        )
+        preview.set_annotations([box])
+        preview.set_image(image)
+        qtbot.wait(10)
+
+        rect = preview.bbox_layer._image_rect_to_widget_space(*box.bbox_xyxy)
+        rendered = QImage(preview.bbox_layer.size(), QImage.Format.Format_ARGB32)
+        rendered.fill(Qt.GlobalColor.transparent)
+        painter = QPainter(rendered)
+        preview.bbox_layer.render(painter, QPoint())
+        painter.end()
+        sample = [
+            rendered.pixelColor(rect.left() + offset, rect.center().y()).name()
+            for offset in range(-5, 6)
+        ]
+        outline_samples.append(sample)
+        assert sample.count("#00ff00") >= 2
+        assert rendered.pixelColor(rect.left() + 4, rect.top() - 4).name() == "#151a22"
+        assert image.pixelColor(width // 4, height // 4) == QColor(Qt.GlobalColor.white)
+
+    assert outline_samples[0] == outline_samples[1] == outline_samples[2]
+
+    preview.set_annotations([])
+    assert not preview.bbox_layer._annotations
+
+
+def test_intersecting_box_outlines_do_not_cross_captions(qtbot) -> None:
+    preview = PreviewContainer()
+    qtbot.addWidget(preview)
+    preview.resize(960, 540)
+    image = QImage(960, 540, QImage.Format.Format_RGB32)
+    image.fill(Qt.GlobalColor.white)
+    preview.set_image(image)
+    preview.set_annotations([
+        BBoxViewModel(
+            id="first", source=BoxSource.DETECTION, label="person",
+            bbox_xyxy=(200, 200, 600, 500), color_hex="#00ff00", confidence=0.9, key="first",
+        ),
+        BBoxViewModel(
+            id="second", source=BoxSource.DETECTION, label="person",
+            bbox_xyxy=(240, 100, 500, 400), color_hex="#ff0000", confidence=0.8, key="second",
+        ),
+    ])
+    preview.show()
+    qtbot.wait(10)
+    rendered = QImage(preview.bbox_layer.size(), QImage.Format.Format_ARGB32)
+    rendered.fill(Qt.GlobalColor.transparent)
+    painter = QPainter(rendered)
+    preview.bbox_layer.render(painter, QPoint())
+    painter.end()
+
+    first = preview.bbox_layer._image_rect_to_widget_space(200, 200, 600, 500)
+    second = preview.bbox_layer._image_rect_to_widget_space(240, 100, 500, 400)
+    assert rendered.pixelColor(second.left(), first.top() - 3).name() == "#151a22"

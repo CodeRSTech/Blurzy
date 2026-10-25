@@ -27,6 +27,7 @@ class ExportWorkerInterface(Protocol):
     progress_updated = SignalInstance
     succeeded = SignalInstance
     finished_processing = SignalInstance
+    finished = SignalInstance
     cancelled = SignalInstance
     error_occurred = SignalInstance
 

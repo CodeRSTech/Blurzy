@@ -1,10 +1,11 @@
 from __future__ import annotations
 
 from types import SimpleNamespace
+from unittest.mock import MagicMock
 
 from PySide6.QtCore import Qt
 
-from app.domain import AnnotationContextActions, VideoDataLayer
+from app.domain import AnnotationContextActions, Direction, VideoDataLayer, VideoDataLayerGroup
 from app.ui.handlers.annotation_handler import AnnotationHandler
 from app.ui.view_state.preview_state import ToolMode
 from app.ui.view_state.bbox_selection_state import BBoxSelectionState
@@ -80,6 +81,43 @@ class _StubWindow:
 
     def set_status_text(self, text: str) -> None:
         self._status_text = text
+
+
+def test_directional_toolbar_actions_delete_each_selected_track_id() -> None:
+    window = _StubWindow(selection_keys=["track:-4", "track:-5"])
+    window.active_tab_index = VideoDataLayerGroup.TRACKING
+    handler = AnnotationHandler.__new__(AnnotationHandler)
+    handler._window = window
+    handler._controller = MagicMock()
+    handler._app = MagicMock()
+    handler._app.get_layer_box_by_key.side_effect = lambda s_id, layer, key: SimpleNamespace(
+        id=key.split(":")[1], key=key
+    )
+
+    handler.on_delete_next_occurrences()
+    handler.on_delete_prev_occurrences()
+
+    calls = handler._app.delete_tracks_by_id_and_direction.call_args_list
+    assert [call.args for call in calls] == [
+        ("session-1", "-4", Direction.NEXT), ("session-1", "-5", Direction.NEXT),
+        ("session-1", "-4", Direction.PREV), ("session-1", "-5", Direction.PREV),
+    ]
+    assert handler._controller.render_frame_for_session_id.call_count == 2
+
+
+def test_directional_context_actions_share_toolbar_deletion_path() -> None:
+    window = _StubWindow(selection_keys=["track:-4"])
+    window.active_tab_index = VideoDataLayerGroup.TRACKING
+    handler = AnnotationHandler.__new__(AnnotationHandler)
+    handler._window = window
+    handler._delete_occurrences = MagicMock()
+
+    handler.on_preview_context_action(AnnotationContextActions.DELETE_NEXT.value, "track:-4")
+    handler.on_preview_context_action(AnnotationContextActions.DELETE_PREV.value, "track:-4")
+
+    assert [call.args for call in handler._delete_occurrences.call_args_list] == [
+        (Direction.NEXT, ["track:-4"]), (Direction.PREV, ["track:-4"]),
+    ]
 
 
 def test_get_effective_selection_keys_uses_shared_selection() -> None:

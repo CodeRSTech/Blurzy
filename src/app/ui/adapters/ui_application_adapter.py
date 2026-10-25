@@ -89,6 +89,14 @@ class UIApplicationAdapter(UIApplicationInterface):
         """
         self._app.start_detection_worker(s_id)
 
+    def get_detection_frame_coverage(self, s_id: SessionId) -> tuple[int, int]:
+        """Return stored detection-frame coverage and video frame count.
+
+        Args:
+            s_id: Session to inspect before tracking.
+        """
+        return self._app.get_detection_frame_coverage(s_id)
+
     def start_tracking_worker(
         self,
         s_id: SessionId,

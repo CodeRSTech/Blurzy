@@ -108,15 +108,15 @@ class ExportHandler(QObject):
     @property
     def is_exporting(self) -> bool:
         """
-        Return whether any export worker is currently running.
+        Return whether any export worker is active or awaiting GUI-thread cleanup.
 
         Returns:
-            `True` while a single-session or all-session export is running.
+            `True` until native thread completion has been handled on the GUI thread.
         """
         return (
-            self.has_export_worker and self._export_worker.isRunning()
+            self.has_export_worker
         ) or (
-                self.has_export_all_worker and self._export_all_worker.isRunning()
+            self.has_export_all_worker
         )
 
     @property
@@ -405,7 +405,7 @@ class ExportHandler(QObject):
         self._export_worker.succeeded.connect(self._on_export_succeeded)
         self._export_worker.cancelled.connect(self._on_export_cancelled)
         self._export_worker.error_occurred.connect(self._on_export_failed)
-        self._export_worker.finished_processing.connect(self._cleanup_export_worker)
+        self._export_worker.finished.connect(self._cleanup_export_worker)
 
         # ====================================================================
         # 7. START EXPORT WORKER
@@ -509,7 +509,7 @@ class ExportHandler(QObject):
         self._export_all_worker.progress_updated.connect(self._on_export_all_progress)
         self._export_all_worker.session_failed.connect(self._on_export_all_session_failed)
         self._export_all_worker.cancelled.connect(self._on_export_all_cancelled)
-        self._export_all_worker.finished_processing.connect(self._on_export_all_finished)
+        self._export_all_worker.finished.connect(self._on_export_all_finished)
 
         # ====================================================================
         # 8. START BATCH EXPORT WORKER
@@ -588,7 +588,7 @@ class ExportHandler(QObject):
         Clean up single-session export worker after completion.
 
         Note:
-            Triggered by `ExportWorker.finished_processing` signal.
+            Triggered by native `QThread.finished`, after `run()` has returned.
 
             Action: Schedule worker deletion and clear busy view_state.
         """
@@ -656,7 +656,7 @@ class ExportHandler(QObject):
         Handle completion of batch export (all sessions done or cancelled).
 
         Note:
-            Triggered by `ExportAllWorker.finished_processing` signal.
+            Triggered by native `QThread.finished`, after `run()` has returned.
 
             Flow:
                 _on_export_all_finished() [this slot]

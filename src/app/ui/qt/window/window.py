@@ -141,10 +141,10 @@ class Window(QtWidgets.QMainWindow):
         )
 
         top_bar = QtWidgets.QWidget(self)
-        top_bar_layout = create_vbox_layout(top_bar, margins=(10, 6, 10, 6), spacing=0)
+        top_bar_layout = create_vbox_layout(top_bar, margins=(5, 2, 5, 2), spacing=0)
         menu_row = QtWidgets.QHBoxLayout()
         menu_row.setContentsMargins(0, 0, 0, 0)
-        menu_row.setSpacing(8)
+        menu_row.setSpacing(4)
         menu_row.addWidget(menu_bar)
         menu_row.addStretch(1)
         menu_row.addWidget(self.project_label)
@@ -155,7 +155,7 @@ class Window(QtWidgets.QMainWindow):
     def _build_ui(self) -> None:
         central = QtWidgets.QWidget()
         central.setObjectName("centralWidget")
-        root_layout = create_vbox_layout(central, margins=(8, 8, 8, 8), spacing=8)
+        root_layout = create_vbox_layout(central, margins=(4, 4, 4, 4), spacing=4)
 
         root_layout.addWidget(self._build_main_splitter(), 1)
         self.setCentralWidget(central)
@@ -193,7 +193,7 @@ class Window(QtWidgets.QMainWindow):
 
     def _build_preview_stack(self) -> QtWidgets.QWidget:
         container = QtWidgets.QWidget(self)
-        layout = create_vbox_layout(container, margins=(0, 0, 0, 0), spacing=6)
+        layout = create_vbox_layout(container, margins=(0, 0, 0, 0), spacing=3)
         layout.addWidget(self.preview_container, 1)
         layout.addLayout(self.transport_panel)
         return container
@@ -400,6 +400,33 @@ class Window(QtWidgets.QMainWindow):
             event.ignore()
             return
         super().closeEvent(event)
+
+    def confirm_incomplete_detections(self, processed: int, total: int) -> bool:
+        """Ask whether to track with incomplete detection coverage.
+
+        Args:
+            processed: Frames with stored detection results, including empty results.
+            total: Total video frames.
+
+        Returns:
+            `True` only when the user explicitly chooses Proceed Anyway.
+            Okay or closing the dialog leaves existing tracking untouched.
+        """
+        dialog = QtWidgets.QMessageBox(self)
+        dialog.setIcon(QtWidgets.QMessageBox.Icon.Warning)
+        dialog.setWindowTitle("Incomplete Detections")
+        dialog.setText(
+            f"Detection results are available for {processed} of {total} frames.\n\n"
+            "It is recommended that you run Detect All Frames and wait for it to "
+            "finish before starting tracking. Tracking now may miss subjects in "
+            "unprocessed frames."
+        )
+        okay = dialog.addButton("Okay", QtWidgets.QMessageBox.ButtonRole.RejectRole)
+        proceed = dialog.addButton("Proceed Anyway", QtWidgets.QMessageBox.ButtonRole.AcceptRole)
+        dialog.setDefaultButton(okay)
+        dialog.setEscapeButton(okay)
+        dialog.exec()
+        return dialog.clickedButton() == proceed
 
     def confirm_export_in_progress_exit(self) -> bool:
         """

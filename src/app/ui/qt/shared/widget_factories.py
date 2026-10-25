@@ -38,7 +38,7 @@ def create_qhbox_with_widgets(widgets: list[QWidget] | tuple[QWidget, ...]) -> Q
     Returns:
         Horizontal layout containing `widgets`.
     """
-    return create_hbox_layout(widgets=widgets)
+    return create_hbox_layout(widgets=widgets, spacing=4)
 
 
 def create_progress_bar(

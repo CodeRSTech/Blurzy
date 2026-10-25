@@ -102,6 +102,7 @@ class PreferencesHandler(QObject):
         self._store.save(self._preferences)
         apply_application_theme(self._controller.q_app, self._preferences.default_theme)
         self._window.transport_panel.refresh_theme_icons()
+        self._window.bottom_panel.refresh_action_icons()
         self._apply_window_preferences()
         self._window.set_status_text(
             "Settings saved. New session defaults will apply to videos opened from now on."

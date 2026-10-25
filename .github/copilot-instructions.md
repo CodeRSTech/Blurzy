@@ -62,6 +62,15 @@ do not introduce unrelated architectural migrations.
   Python 3.12 target, 120-character lines, double quotes, four-space indentation.
 - Add focused regression coverage for behavior changes and update related guides
   and docstrings. Keep edits scoped; preserve unrelated work.
+- For Qt overlays and stacked widgets, verify both sides of every state
+  transition. `QStackedLayout.StackAll` keeps siblings visible, so selecting a
+  current widget alone does not hide an overlay; explicitly manage visibility
+  and test that a loaded frame removes the empty state.
+- For visible UI changes, inspect the rendered states that changed (including
+  empty and populated views) at the target window size. A test of initial
+  construction or button signals alone does not prove that the UI updates.
+  Preview annotation checks must include ordinary and selected boxes on
+  low-resolution and 4K frames; test rendered pixels, not just a width helper.
 
 See the [engineering and docstring conventions](../docs/development/documentation-style.md).
 

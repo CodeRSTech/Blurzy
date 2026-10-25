@@ -17,6 +17,7 @@ from typing import TYPE_CHECKING
 from PySide6.QtWidgets import QWidget, QPushButton
 
 from app.ui.qt.shared.layout_shortcuts import create_vbox_layout
+
 if TYPE_CHECKING:
     from PySide6.QtWidgets import QVBoxLayout, QHBoxLayout
 
@@ -47,9 +48,9 @@ class CollapsiblePanel(QWidget):
 
         # Content area holds the actual widgets
         self.content_area: QWidget = QWidget()
-        self.content_layout: QVBoxLayout = create_vbox_layout(self.content_area, margins=(10, 4, 10, 10), spacing=7)
+        self.content_layout: QVBoxLayout = create_vbox_layout(self.content_area, margins=(4, 1, 4, 2), spacing=2)
 
-        main_layout = create_vbox_layout(self, margins=(0, 0, 0, 0), spacing=2)
+        main_layout = create_vbox_layout(self, margins=(0, 0, 0, 0), spacing=1)
         main_layout.addWidget(self.toggle_button)
         main_layout.addWidget(self.content_area)
 

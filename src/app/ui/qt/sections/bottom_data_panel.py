@@ -13,7 +13,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, final, cast
 
-from PySide6.QtCore import Signal, Slot, Qt, QSignalBlocker
+from PySide6.QtCore import Signal, Slot, Qt, QSignalBlocker, QSize
+from PySide6.QtGui import QIcon, QPalette
 from PySide6.QtWidgets import (
     QHeaderView,
     QListWidget,
@@ -27,9 +28,11 @@ from PySide6.QtWidgets import (
 )
 
 from app.domain import SessionId, VideoDataLayerGroup
+from app.shared.distribution import bundled_resource_path
 from app.shared.logging_cfg import get_logger
-from app.ui.qt.shared.layout_shortcuts import create_vbox_layout
-from app.ui.qt.shared.widget_factories import create_qhbox_with_widgets, post_data_table_init
+from app.ui.qt.shared.icons import create_tinted_icon
+from app.ui.qt.shared.layout_shortcuts import create_hbox_layout, create_vbox_layout
+from app.ui.qt.shared.widget_factories import post_data_table_init
 from app.ui.qt.widgets.color_swatch_delegate import COLOR_SWATCH_ROLE, ColorSwatchDelegate
 
 if TYPE_CHECKING:
@@ -57,17 +60,59 @@ class BottomDataPanelContainer(QWidget):
         super().__init__(parent)
 
         self._init_widgets()
+        self._configure_action_buttons()
         self._build_ui()
         self._initialize_data_panels()
         self._connect_signals()
         self._update_frame_box_buttons_state()
+        self.refresh_action_icons()
+
+    def _configure_action_buttons(self) -> None:
+        """Replace verbose annotation actions with compact, accessible icon buttons."""
+        action_buttons = (
+            (self.edit_box_btn, "Edit selected annotation", "edit-box-line.svg"),
+            (self.relabel_box_btn, "Relabel selected annotation", "label-tag-line.svg"),
+            (self.delete_box_btn, "Delete selected annotations", "delete-bin-2-line.svg"),
+            (self.delete_next_occurrences_btn, "Delete next tracked occurrences", "delete-next-line.svg"),
+            (self.delete_prev_occurrences_btn, "Delete previous tracked occurrences", "delete-previous-line.svg"),
+            (self.copy_to_prev_btn, "Duplicate to previous frame", "duplicate-previous-line.svg"),
+            (self.copy_to_next_btn, "Duplicate to next frame", "duplicate-next-line.svg"),
+        )
+        self._action_icon_bindings = action_buttons
+        self._icons_dir = bundled_resource_path("icons")
+        for button, accessible_name, _ in action_buttons:
+            button.setText("")
+            button.setObjectName("annotationAction")
+            button.setAccessibleName(accessible_name)
+            button.setToolTip(accessible_name)
+            button.setIconSize(QSize(16, 16))
+            button.setFixedSize(30, 28)
+
+    def refresh_action_icons(self) -> None:
+        """Tint annotation-action icons for the current application palette."""
+        palette = self.edit_box_btn.palette()
+        normal_tint = palette.color(QPalette.ColorGroup.Active, QPalette.ColorRole.ButtonText)
+        disabled_tint = palette.color(QPalette.ColorGroup.Disabled, QPalette.ColorRole.ButtonText)
+        icon_size = QSize(16, 16)
+
+        for button, _, filename in self._action_icon_bindings:
+            icon_path = self._icons_dir / filename
+            if not icon_path.exists():
+                logger.warning("Annotation action icon missing: {}", icon_path)
+                continue
+
+            icon = create_tinted_icon(icon_path, icon_size, normal_tint, disabled_tint)
+            if icon.isNull():
+                logger.warning("Could not load annotation action icon: {}", icon_path)
+                icon = QIcon(str(icon_path))
+            button.setIcon(icon)
 
     def _build_ui(self):
         self.data_tab.addTab(self.detection_tab_frame_data_table, "Detected objects")
         self.data_tab.addTab(self.tracker_tab_frame_data_table, "Tracking results")
         self.session_tab.addTab(self.session_file_list, "Opened files")
 
-        bottom_layout = create_vbox_layout(self, margins=(0, 0, 0, 0))
+        bottom_layout = create_vbox_layout(self, margins=(0, 0, 0, 0), spacing=3)
 
         bottom_splitter = QSplitter(Qt.Orientation.Horizontal)
         bottom_splitter.addWidget(self.data_tab)
@@ -75,16 +120,16 @@ class BottomDataPanelContainer(QWidget):
         bottom_splitter.setStretchFactor(0, 6)
         bottom_splitter.setStretchFactor(1, 5)
 
-        # Unified action row (non-reset actions only; reset controls are now exposed via Edit menu)
-        action_row = create_qhbox_with_widgets([
-            self.edit_box_btn,
-            self.relabel_box_btn,
-            self.delete_box_btn,
-            self.delete_next_occurrences_btn,
-            self.delete_prev_occurrences_btn,
-            self.copy_to_prev_btn,
-            self.copy_to_next_btn,
-        ])
+        action_row = create_hbox_layout(margins=(0, 0, 0, 0), spacing=2)
+        for group in (
+            (self.edit_box_btn, self.relabel_box_btn),
+            (self.copy_to_prev_btn, self.copy_to_next_btn),
+            (self.delete_box_btn, self.delete_prev_occurrences_btn, self.delete_next_occurrences_btn),
+        ):
+            if action_row.count():
+                action_row.addSpacing(8)
+            for button in group:
+                action_row.addWidget(button)
         action_row.addStretch()
 
         bottom_layout.addWidget(bottom_splitter)
@@ -117,7 +162,7 @@ class BottomDataPanelContainer(QWidget):
 
     def _initialize_data_panels(self) -> None:
         detection_data_table = self.detection_tab_frame_data_table
-        detection_data_table.setHorizontalHeaderLabels(["ID", "Source", "Label", "Detection Confidence", "BBox", "Color"])
+        detection_data_table.setHorizontalHeaderLabels(["ID", "Source", "Label", "Confidence", "Bounds", "Color"])
         post_data_table_init(detection_data_table)
         detection_data_table.setAlternatingRowColors(True)
         detection_data_table.setItemDelegateForColumn(5, ColorSwatchDelegate(detection_data_table))
@@ -127,7 +172,7 @@ class BottomDataPanelContainer(QWidget):
         detection_data_table.horizontalHeaderItem(5).setTextAlignment(Qt.AlignmentFlag.AlignCenter)
 
         tracker_data_table = self.tracker_tab_frame_data_table
-        tracker_data_table.setHorizontalHeaderLabels(["ID", "Source", "Label", "Tracker Confidence", "BBox", "Color"])
+        tracker_data_table.setHorizontalHeaderLabels(["ID", "Source", "Label", "Confidence", "Bounds", "Color"])
         post_data_table_init(tracker_data_table)
         tracker_data_table.setAlternatingRowColors(True)
         tracker_data_table.setItemDelegateForColumn(5, ColorSwatchDelegate(tracker_data_table))

@@ -3,7 +3,7 @@ Frame rendering and UI view_state management handler.
 
 See Also:
     - [`UIController`][app.ui.uicontroller.UIController] — coordinates the UI handlers
-    - [`draw_frame_overlays`][app.shared.frame_overlay.draw_frame_overlays] — renders annotation overlays on frames
+    - [`PreviewContainer`][app.ui.qt.widgets.preview.preview_container.PreviewContainer] — renders frames and canvas-space annotations
 
 Layer: Presentation.
 Context: Converts user actions and worker signals into application calls and UI feedback.
@@ -15,7 +15,6 @@ from typing import TYPE_CHECKING, final, override
 
 from PySide6.QtCore import Slot
 
-from app.shared.frame_overlay import draw_frame_overlays
 from app.shared.image_utils import rgb_frame_to_q_image
 from app.shared.logging_cfg import get_logger
 from app.shared.masked_blur import (
@@ -302,19 +301,19 @@ class UIHandler:
         draw_boxes: bool = True,
     ) -> None:
         """
-        Draw bounding boxes on frame and update UI preview.
+        Display a frame and supply annotations to the canvas-space Qt overlay.
 
         Note:
             Flow:
                 `_update_frame_with_bboxes(frame, tab_index, boxes, draw_boxes=True)`
                   ├── Set active bboxes for overlay highlighting
-                  ├── Draw boxes_to_draw onto frame
+                  ├── Supply colors and captions to the Qt overlay
                   ├── Convert RGB frame to QImage
                   ├── Display QImage in preview container
                   └──> Populate data tabs with detection and tracking boxes
 
             Handles:
-                Box drawing with color/label overlays.
+                Canvas-space box drawing with readable color/label overlays.
                 RGB to QImage conversion for Qt display.
                 Data tab population independent of preview outline visibility.
 
@@ -322,19 +321,20 @@ class UIHandler:
             frame: RGB image to display.
             tab_index: Active Detection or Tracking table.
             boxes: Current-frame active-tab boxes, including when outlines are hidden.
-            border_width: Preview border width in pixels.
+            border_width: Outline weight relative to a 480-pixel displayed video height.
             draw_boxes: Whether to draw preview outlines; never filters table data.
         Raises:
             Exception: Logs UI rendering failures and keeps the event loop alive.
 
         Note:
-            The width is shared by raster outlines and interactive Qt selection pens.
+            Frames remain free of rasterized outlines. Qt paints ordinary and selected
+            annotations using the same canvas-scaled width, independent of source resolution.
 
         Example:
             handler._update_frame_with_bboxes(frame, tab_index, boxes, border_width=2)
         """
         try:
-            boxes_to_draw = boxes if draw_boxes else None
+            boxes_to_draw = boxes if draw_boxes else []
             logger.trace(
                 "Rendering {} frame boxes for tab {}; preview outlines enabled={}",
                 len(boxes), tab_index, draw_boxes,
@@ -343,29 +343,17 @@ class UIHandler:
             # 1. SET ACTIVE BBOXES FOR OVERLAY HIGHLIGHTING
             # ================================================================
             # [NOTE] Highlights selected boxes in the preview container
-            active_bboxes = (
-                {box.key: box.bbox_xyxy for box in boxes_to_draw}
-                if boxes_to_draw is not None
-                else {}
-            )
-            self._window.preview_container.set_active_bboxes(active_bboxes)
-            selected_keys = (
-                self._window.selected_frame_box_keys if boxes_to_draw is not None else []
-            )
+            self._window.preview_container.set_annotations(boxes_to_draw)
+            selected_keys = self._window.selected_frame_box_keys if draw_boxes else []
             logger.trace("Rendering {} selected overlay boxes: {}", len(selected_keys), selected_keys)
             self._window.preview_container.set_selected_bbox_keys(selected_keys)
 
             self._window.preview_container.set_box_border_width(border_width)
 
             # ================================================================
-            # 2. DRAW BOXES ON FRAME
+            # 2. CONVERT TO QIMAGE AND DISPLAY
             # ================================================================
-            frame_out = draw_frame_overlays(frame, boxes_to_draw, border_width)
-
-            # ================================================================
-            # 3. CONVERT TO QIMAGE AND DISPLAY
-            # ================================================================
-            self._window.preview_container.set_image(rgb_frame_to_q_image(frame_out))
+            self._window.preview_container.set_image(rgb_frame_to_q_image(frame))
 
             # ================================================================
             # 4. POPULATE DATA TABS WITH BOXES

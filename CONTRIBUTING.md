@@ -38,6 +38,20 @@ points to suitable local media. The default suite does not require downloading
 model weights. See [`tests/README.md`](tests/README.md) for the full test
 layout.
 
+### Qt UI regression checks
+
+Test state transitions, not only initial rendering or emitted button signals.
+For example, a preview's empty-state overlay must disappear after a frame is
+shown and return when the frame is cleared. This regression was missed because
+`QStackedLayout.StackAll` keeps every child visible: changing its current widget
+does not hide the empty-state sibling, and the existing test covered only the
+empty-state action. Explicitly manage overlay visibility and assert the
+empty-to-loaded-to-empty transition in a focused Qt test.
+
+When changing layout or styling, inspect the affected populated and empty states
+in the running application at the intended window size; automated widget tests
+do not catch every clipping or overlap issue.
+
 ## Documentation
 
 Documentation uses MkDocs Material and is built from `docs/` plus generated

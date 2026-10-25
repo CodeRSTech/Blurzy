@@ -37,7 +37,7 @@ class VideoDisplayWidget(QWidget):
 
         self._image: QImage | None = None
         self._pixmap_rect: QRect = QRect()
-        self._placeholder_text: str = "No preview available"
+        self._placeholder_text: str = ""
         self._last_emitted: tuple[QRect, QSize] | None = None
 
         # --- Viewport Transform State ---
@@ -125,7 +125,7 @@ class VideoDisplayWidget(QWidget):
         if self._image is not None:
             # We only draw the portion of the image that intersects the physical screen!
             painter.drawImage(self._pixmap_rect, self._image)
-        else:
+        elif self._placeholder_text:
             painter.setPen(QColor(160, 160, 160))
             painter.drawText(
                 self.rect(), Qt.AlignmentFlag.AlignCenter, self._placeholder_text

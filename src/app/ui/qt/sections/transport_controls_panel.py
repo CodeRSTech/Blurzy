@@ -100,7 +100,7 @@ class TransportControlsPanel(QVBoxLayout):
     def _configure_mode_buttons(self) -> None:
         for button in (self.add_mode_btn, self.edit_mode_btn, self.delete_mode_btn):
             button.setCursor(Qt.CursorShape.PointingHandCursor)
-            button.setMinimumHeight(24)
+            button.setMinimumHeight(20)
             button.setStyleSheet(
                 "QRadioButton {"
                 " spacing: 6px;"
@@ -126,7 +126,7 @@ class TransportControlsPanel(QVBoxLayout):
         ):
             button.setFlat(True)
             button.setCursor(Qt.CursorShape.PointingHandCursor)
-            button.setFixedSize(40, 40)
+            button.setFixedSize(34, 34)
             button.setStyleSheet(
                 "QPushButton {"
                 " border: none;"

@@ -14,6 +14,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, final
 
 from app.application.adapters import ApplicationAdapter
+from app.application.services.helpers.layer_seeding import seed_layer_frame_from_layer
 from app.domain import VideoDataLayer, BoxSource, str_iterable_as_set_without_null_values, VideoDataLayerGroup, Direction, FrameBoxesViewModel
 from app.domain.views.bounding_box_view_model import BBoxViewModel
 from app.domain.helpers.functions import new_passes_filter
@@ -33,7 +34,6 @@ if TYPE_CHECKING:
     from collections.abc import Iterable
     from app.application.application import Application
     from app.domain.session import SessionId
-    from app.infrastructure.session.session import Session
 
 logger = get_logger("Application->UnifiedLayerService")
 
@@ -355,13 +355,13 @@ class UnifiedLayerService:
 
         if tab == VideoDataLayerGroup.DETECTION:
             # Compatibility seeding for Layer B frames not initialized by detection.
-            _seed_layer_frame_from_layer(
+            seed_layer_frame_from_layer(
                 source=VideoDataLayer.A, target=VideoDataLayer.B, session=session, frame_index=frame_index
             )
             boxes = session.data.get_boxes_for_layer_at_frame_index_as_list(VideoDataLayer.B, frame_index)
         elif tab == VideoDataLayerGroup.TRACKING:
             # Compatibility seeding for Layer D frames not initialized by tracking.
-            _seed_layer_frame_from_layer(
+            seed_layer_frame_from_layer(
                 source=VideoDataLayer.C, target=VideoDataLayer.D, session=session, frame_index=frame_index
             )
             boxes = session.data.get_boxes_for_layer_at_frame_index_as_list(VideoDataLayer.D, frame_index)
@@ -557,37 +557,3 @@ class UnifiedLayerService:
         item.bbox_xyxy = bbox_xyxy
 
         logger.info("Updated item {} in session_state {} frame {}", item_key, s_id, frame_index)
-
-
-def _seed_layer_frame_from_layer(
-        source: VideoDataLayer, target: VideoDataLayer, session: Session, frame_index: int
-) -> None:
-    """
-    Compatibility seeder for editable-layer frames not populated by current writers.
-    """
-    logger.trace("Seeding Layer {} from Layer {} for frame {}", target, source, frame_index)
-
-    # A frame remains initialized after its final box is deleted. This must not
-    # be treated as an uninitialized frame and repopulated from the source layer.
-    if session.data.has_frame_for_layer_at_frame_index(target, frame_index):
-        logger.trace("Layer {} frame {} is already initialized.", target, frame_index)
-        return
-
-    # FAST CHECK: If Layer A is empty for this frame, skip.
-    if not session.data.has_boxes_for_layer_at_frame_index(source, frame_index):
-        logger.trace("Layer {} is empty for frame {}", source, frame_index)
-        return
-
-    # Fetch pristine source boxes and apply the destination layer's current filters.
-    raw_boxes = session.data.get_boxes_for_layer_at_frame_index_as_list(source, frame_index)
-    copied_boxes = [
-        box.clone()
-        for box in raw_boxes
-        if new_passes_filter(target, box, session.state.settings)
-    ]
-
-    # Inject into Layer B
-    logger.trace(
-        "Injecting {} boxes into Layer {} data for frame {}", len(copied_boxes), target, frame_index
-    )
-    session.data.overwrite_layer_at_index_with_boxes(target, frame_index, copied_boxes)
