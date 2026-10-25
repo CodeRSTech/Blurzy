@@ -21,6 +21,24 @@ behavior and known limitations explicitly. Check ownership, data conversions,
 failure paths, and lifecycle claims against source; a common interface does not
 guarantee identical provider capabilities or crash-proof execution.
 
+## Material reading aids
+
+Use the enabled Material features to make the workflow easier to learn, not to
+hide essential facts:
+
+| Feature | Use it for | Keep visible |
+| --- | --- | --- |
+| Admonitions (`!!! note`, `!!! warning`, `!!! example`) | Ownership boundaries, limitations, or a small worked example | Safety and failure-path warnings |
+| Collapsible details (`??? example`) | Optional calculations or implementation detail | The main explanation and its conclusions |
+| Content tabs (`=== "Label"`) | Parallel alternatives, such as tracking strategies | A short comparison table before the tabs |
+| Tables | Comparing roles, settings, payloads, or outcomes | Short cells rather than paragraphs squeezed into columns |
+| Mermaid fences | Data flow, state transitions, or signal sequences | Arrow semantics and an equivalent prose explanation |
+
+Content tabs use `pymdownx.tabbed` with Material's alternate style. Prefer
+plain Mermaid labels without fixed colors so Material can apply the current
+light/dark palette. Label synthetic examples as illustrative rather than
+presenting them as recorded inference output.
+
 ## Assets and formats
 
 Keep component assets in `docs/assets/api/<component_name>/`, using a stable

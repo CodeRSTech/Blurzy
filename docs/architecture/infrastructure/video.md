@@ -32,6 +32,31 @@ until it is roughly 45 frames ahead of the playback playhead, then throttles.
 The ring buffer retains up to 90 frames; deactivation clears it to release the
 memory used by cached images.
 
+```mermaid
+flowchart TB
+    Active{"Worker active?"} -->|No| Sleep["Sleep briefly"]
+    Sleep --> Active
+    Active -->|Yes| Seek{"Pending seek?"}
+    Seek -->|Yes| Refill["Clear cache, read target, cache frame"]
+    Refill --> Notify["Signal seek completion"]
+    Notify --> Active
+    Seek -->|No| Ahead{"At least 45 frames ahead?"}
+    Ahead -->|Yes| Throttle["Throttle decoding"]
+    Throttle --> Active
+    Ahead -->|No| Decode["Read next frame and push to ring buffer"]
+    Decode --> Active
+```
+
+Arrows show the normal decode loop, not its exception paths. Seek requests are
+serviced while the worker is active; requesting a seek does not itself activate
+an inactive worker.
+
+| Resource or limit | Current value | Purpose |
+| --- | --- | --- |
+| Ring buffer capacity | 90 frames | Bound the number of cached images |
+| Decode-ahead threshold | 45 frames beyond the playhead | Throttle when playback already has enough lookahead |
+| Deactivation | Clear the ring buffer | Release cached frame memory for inactive sessions |
+
 The Application decode manager activates the new session at its current frame
 and deactivates the previous session during an active-session switch. The
 session frame accessor reads cached frames when available and requests a seek
@@ -41,3 +66,9 @@ thread while allowing the UI to remain responsive during playback and scrubbing.
 The reader and worker are created by [session initialization](../application/managers.md)
 and closed during [session teardown](session.md). Playback state and the
 bounded buffer type belong to the [video domain](../domain/video.md).
+
+!!! tip "Do not confuse the caches"
+
+    Playback caches decoded **pixels**. The detection worker caches
+    **inference results**, and the session store holds **annotations**.
+    Clearing playback's ring buffer does not delete Layers A-D.

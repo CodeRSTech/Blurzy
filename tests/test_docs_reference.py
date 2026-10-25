@@ -76,6 +76,46 @@ class ReferenceTests(unittest.TestCase):
     def config(self):
         return load_config(config_file=str(self.root / "mkdocs.yml"), strict=True)
 
+    def test_material_architecture_reading_aids_render(self):
+        self.write(
+            "docs/architecture/reading-aids.md",
+            """# Reading aids
+
+=== "Observed"
+
+    Detector-backed box.
+
+=== "Estimated"
+
+    Predicted box.
+
+!!! warning "Review coverage"
+
+    Estimates are not detector observations.
+
+??? example "Padding calculation"
+
+    Half a second at 30 FPS is 15 frames.
+
+```mermaid
+flowchart LR
+    A["Detection"] --> B["Tracking"]
+```
+""",
+        )
+        build(self.config())
+        html = (self.root / "site" / "docs" / "architecture" / "reading-aids" / "index.html").read_text(
+            encoding="utf-8"
+        )
+        self.assertIn('class="tabbed-set tabbed-alternate"', html)
+        self.assertIn('class="tabbed-block"', html)
+        self.assertIn("Detector-backed box.", html)
+        self.assertIn("Predicted box.", html)
+        self.assertIn('class="admonition warning"', html)
+        self.assertIn('<details class="example">', html)
+        self.assertIn('<pre class="mermaid">', html)
+        self.assertNotIn('=== "Observed"', html)
+
     def test_module_and_package_index_names_do_not_collide(self):
         self.write("src/app/index.py", "VALUE = 1\n")
         modules = self.modules()
