@@ -23,6 +23,7 @@ from app.shared.logging_cfg import get_logger
 if TYPE_CHECKING:
     from collections.abc import Iterable
     from app.application.application import Application
+    from app.application.services.session_service import SessionService
     from app.infrastructure.dtypes import RGBFrame
     from app.domain.session.session_state import SessionState
 
@@ -130,7 +131,7 @@ class SessionManager:
         """
         return self._sessions.values()
 
-    def bind_session_service(self, session_service):
+    def bind_session_service(self, session_service: SessionService):
         """
         Bind the session service used for session lifecycle operations.
 

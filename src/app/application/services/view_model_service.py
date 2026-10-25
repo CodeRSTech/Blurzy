@@ -10,6 +10,14 @@ Context: Keeps UI-facing model preparation behind the application boundary,
 using the application object as the source of session and domain data.
 """
 
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from app.application.application import Application
+
+
 class ViewModelService:
     """
     Provide application-backed view-model operations to presentation code.
@@ -18,7 +26,7 @@ class ViewModelService:
     Context: Coordinates use-case behavior through domain services and application contracts.
     """
 
-    def __init__(self, app):
+    def __init__(self, app: Application):
         """
         Bind the service to the application that owns the relevant sessions.
 

@@ -146,7 +146,7 @@ here and areas where planned capabilities are already implemented.
 
 | Bug                                                                                                                                     | Priority | Status                                   |
 |-----------------------------------------------------------------------------------------------------------------------------------------|----------|------------------------------------------|
-| Settings window is not scrollable and goes out of bounds vertically on FHD display                                                      | High     | Open                                     | 
+| Settings window is not scrollable and goes out of bounds vertically on FHD display                                                      | High     | Resolved                                 | 
 | "Start Tracking" does not prompt the user to run detections first                                                                       | Medium   | Open                                     |
 | Video export closes the app upon completion                                                                                             | Medium   | Open                                     |
 | Backward seek times out waiting for frame `n-1` in `get_frame_by_index`                                                                 | Low      | Open                                     |
