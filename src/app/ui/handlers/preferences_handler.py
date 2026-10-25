@@ -36,7 +36,7 @@ class PreferencesHandler(QObject):
 
 
     Args:
-        controller supplying application settings operations and the preferences window.
+        controller: Controller supplying application settings operations and the preferences window.
     """
 
     def __init__(self, controller: UIController) -> None:

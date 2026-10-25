@@ -34,7 +34,7 @@ class ProjectHandler(QObject):
 
 
     Args:
-        controller supplying project operations, the project window, and session-list refresh callbacks.
+        controller: Controller supplying project operations, the project window, and session-list refresh callbacks.
     """
     def __init__(self, controller: UIController) -> None:
         super().__init__()

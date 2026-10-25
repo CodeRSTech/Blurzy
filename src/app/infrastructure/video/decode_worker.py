@@ -94,7 +94,7 @@ class VideoDecodeWorker(QThread):
         parent: Optional Qt parent object.
     """
     def __init__(
-            self, path: str, playback: PlaybackState, parent=None
+            self, path: str, playback: PlaybackState, parent: QObject | None = None
     ) -> None:
         """
         Initialize decode worker for `path` with reference to `playback` view_state.

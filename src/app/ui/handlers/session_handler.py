@@ -58,7 +58,7 @@ class SessionHandler(QObject):
 
 
     Args:
-        controller supplying session lifecycle operations and the window and panel to refresh.
+        controller: Controller supplying session lifecycle operations and the window and panel to refresh.
     """
 
     def __init__(self, controller: UIController) -> None:

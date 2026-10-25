@@ -490,7 +490,9 @@ class UnifiedLayerService:
         else:
             raise UnsupportedLayerOperationException("reset_frame_for_layer", layer_name)
 
-    def change_xyxy_for_boxes_at_current_idx_by_keys_and_dxdy(self, s_id, layer_name, item_keys, dx, dy) -> int:
+    def change_xyxy_for_boxes_at_current_idx_by_keys_and_dxdy(
+        self, s_id: SessionId, layer_name: VideoDataLayer, item_keys: Iterable[str], dx: int, dy: int
+    ) -> int:
         # ============================================================
         # Get session
         # ============================================================

@@ -2,7 +2,7 @@
 
 Tests are organized to mirror the layers in `src/app`:
 
-- `tests/domain/` and `tests/application/` contain focused unit tests.
+- `tests/domain/`, `tests/application/`, and `tests/shared/` contain focused unit tests.
 - `tests/infrastructure/` covers integrations and adapters.
 - `tests/ui/` covers UI handlers and state.
 - `tests/integration/` contains tests spanning multiple layers, including

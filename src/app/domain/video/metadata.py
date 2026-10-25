@@ -107,7 +107,7 @@ class VideoMetadata:
         """
         return self._frame_count
 
-    def calculate_interval_in_mas(self):
+    def calculate_interval_in_mas(self) -> int:
         """
         Calculate the approximate frame interval in milliseconds.
 

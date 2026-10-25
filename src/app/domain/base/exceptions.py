@@ -18,5 +18,5 @@ class EmptySetGeneratedFromKeysError(Exception):
     Args:
         message: Message describing the error or condition.
     """
-    def __init__(self, message):
+    def __init__(self, message: str):
         super().__init__(f"{message}\nEmpty set generated from keys.")
