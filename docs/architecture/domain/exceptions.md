@@ -11,5 +11,6 @@ normalizes and validates a collection of string keys. This exception belongs
 to the domain base package; exceptions in the shared layer or in adapters are
 separate and are not domain exceptions.
 
-See [domain base types and exceptions](base.md) for package ownership and the
-generated API reference for the exception's exact definition.
+See [domain base](base.md) for shared domain ownership and the
+[generated API reference](../../reference/api/index.md) for the exact
+exception definition.

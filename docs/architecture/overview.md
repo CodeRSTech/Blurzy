@@ -66,22 +66,20 @@ layers and is not another step in the dependency chain.
     `src/main.py` bootstraps Qt and wires Application, Window, and UIController.
     Domain owns core types and rules, not Qt workflows or model-specific code.
 
-## Layer responsibilities and component map
+## Layer responsibilities
 
-| Layer                                               | Responsibility                                                                            | Main packages                                                                                           |
-|-----------------------------------------------------|-------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------|
-| [UI](ui/index.md)                         | Qt widgets and dialogs, user-action handlers, controller, and view state                  | `ui/handlers`, `ui/qt`, `ui/adapters`                                                                   |
-| [Application](application/index.md)       | Workflow facade, services, session lifecycle, manager coordination, and worker interfaces | `application/services`, `application/managers`, `application/interfaces`                                |
-| [Domain](domain/index.md)                 | Video/session/detection/tracking/export types and rules                                   | `domain/video`, `domain/session`, `domain/detection`, `domain/tracking`                                 |
-| [Infrastructure](infrastructure/index.md) | Video I/O, inference and tracking algorithms, background workers, persistence             | `infrastructure/video`, `infrastructure/detection`, `infrastructure/tracking`, `infrastructure/project` |
-| [Shared](shared/index.md)                 | Cross-cutting logging, exceptions, image and annotation utilities                         | `shared/`                                                                                               |
+| Layer | Responsibility | Source |
+| --- | --- | --- |
+| Layer | Responsibility | Guide |
+| --- | --- | --- |
+| UI | Qt widgets and dialogs, user-action handlers, controller, and view state | [UI components](ui/index.md) |
+| Application | Workflow facade, services, session lifecycle, manager coordination, and worker interfaces | [Application workflows](application/index.md) |
+| Domain | Video/session/detection/tracking/export types and rules | [Domain concepts](domain/index.md) |
+| Infrastructure | Video I/O, inference and tracking algorithms, background workers, persistence | [Infrastructure components](infrastructure/index.md) |
+| Shared | Cross-cutting logging, exceptions, image and annotation utilities | [Shared utilities](shared/index.md) |
 
-??? info
-    
-    Package-level component stubs follow the meaningful source-package structure.
-    They provide a place to add detailed design notes without creating a page for
-    every Python module. See the component links in the navigation and the
-    [package-note introduction](index.md).
+The [generated API reference](../reference/api/index.md) documents individual
+modules and their contracts. This guide focuses on how the layers collaborate.
 
 ### Important components
 
@@ -99,6 +97,13 @@ layers and is not another step in the dependency chain.
   `ProjectStore`.
 - Application interfaces define worker/factory contracts consumed by
   application adapters and infrastructure implementations.
+
+Begin with [detection](infrastructure/detection/worker.md) to follow a video
+from decoded frames into the detection layers, or
+[tracking](infrastructure/tracking.md) to see how detections become tracks,
+how tracklets are stitched, and how privacy coverage controls affect boxes.
+The [session guide](infrastructure/session.md) explains where runtime state,
+frame access, and Layers A-D meet.
 
 ## Runtime workflows
 

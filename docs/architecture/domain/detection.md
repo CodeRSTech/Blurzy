@@ -2,14 +2,21 @@
 
 Source: `src/app/domain/detection`
 
-`Box` is the shared bounding-box value used by detection and tracking;
-`DetectionResult` represents one model inference result, and `BoxSource`
-classifies whether a displayed box came from detection, tracking, or manual
-annotation. `AnnotationContextActions` names the editing actions available to
-the annotation workflow. UI-facing rows are represented separately by
-[`BBoxViewModel`](views.md).
+`DetectionResult` is the provider-neutral value returned for one model
+prediction. It carries a label, confidence, box coordinates, and an identifier;
+the detection engine and provider mapper keep their library-specific result
+objects behind that boundary. The shared `Box` geometry is reused by detection
+and tracking, while `BoxSource` records whether a view-model box represents
+detection, tracking, or manual annotation.
 
-Application services convert inference results into session layer data. The
-four layer roles are summarized in [Architecture](../overview.md);
-related values include [video layers](video.md) and
-[tracking strategy](tracking.md).
+Before displaying or editing a result, the application maps it to a
+`BBoxViewModel`. That value adds presentation and interaction metadata such as
+an identity key, source, display color, and tracking observation age. This
+conversion is why an inference result and an editable annotation are related
+but not the same object. See [Bounding box](bounding-box.md) and
+[view models](views.md).
+
+The detection service applies selected-label and confidence filters before it
+stores machine results in A and refreshes B's machine boxes. User-created
+boxes remain separate from model output; see the
+[four-layer workflow](video.md) and [Detection services](../application/services/detection.md).

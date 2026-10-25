@@ -2,13 +2,19 @@
 
 Source: `src/app/ui/qt/workers`
 
-This package contains UI-oriented background work, currently asynchronous
-detection-model loading through `ModelLoadWorker`, so model setup does not
-block the window's event loop. It is distinct from video-wide detection,
-tracking, decoding, and export workers, which belong to Infrastructure and
-have Application contracts.
+`ModelLoadWorker` performs the potentially slow setup of a selected model away
+from the Qt window's event loop. It emits completion or error signals so the
+model-selection UI can remain responsive while loading. The handler owns the
+user-facing progress/error response and applies the selected model after a
+successful result.
 
-The model handler coordinates the UI worker's completion and error
-presentation; model execution and session workflows are handled by the
-[Application detection service](../../application/services/detection.md) and
+This UI worker is intentionally different from video-wide detection,
+tracking, decoding, and export workers. Those implement infrastructure
+workflows, are started through Application services/managers, and report
+results via application-owned contracts. The model-loading worker exists to
+keep UI setup asynchronous; it does not read video frames or populate Layers A
+and B.
+
+See [UI handlers](../handlers.md),
+[Detection services](../../application/services/detection.md), and
 [detection infrastructure](../../infrastructure/detection/index.md).

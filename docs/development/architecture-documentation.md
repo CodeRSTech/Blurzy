@@ -11,8 +11,9 @@ than presenting only class inventories.
 
 The generated **API reference** is the technical counterpart: signatures,
 fields, method contracts, and detailed behavior belong in Python docstrings.
-Link to those pages instead of copying their inventories. Keep package-note
-`Source:` mappings so the documentation hook can add the corresponding API link.
+Link to those pages instead of copying their inventories. Add a component page
+only when it teaches a meaningful workflow or design concept; do not create
+source-only package inventories, since the API reference already covers modules.
 See [Reference documentation](reference-documentation.md) for generation details.
 
 Explain the implementation, not just the intended design. Label proposed
