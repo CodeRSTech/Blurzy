@@ -220,9 +220,6 @@ class HungarianIoUTracker:
     """
     Associate frame detections with active tracks by global IoU assignment.
 
-    Layer: Infrastructure tracking.
-    Context: Owns the live track set used by a tracking strategy adapter.
-
     Args:
         iou_threshold: Minimum IoU required to accept a detection-track match.
         confidence_decay: Confidence decrease applied to a track per missed frame.

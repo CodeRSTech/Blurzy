@@ -57,9 +57,6 @@ class DetectionExportService(QObject):
         which is useful for long videos.
 
 
-    Layer: Application.
-    Context: Coordinates use-case behavior through domain services and application contracts.
-
 
     Args:
         app: Application adapted for session lookup and reading detection-layer boxes for export.

@@ -30,9 +30,6 @@ class UIApplicationAdapter(UIApplicationInterface):
     """
     Expose only the application surface currently needed by UI handlers.
 
-    Layer: Presentation.
-    Context: Supports user interaction and delegates application work through presentation contracts.
-
 
     Args:
         app: Concrete application whose session, detection, tracking, and settings methods are delegated.

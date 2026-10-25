@@ -38,9 +38,6 @@ class ApplicationAdapter(UIApplicationInterface):
     - Make session-repository dependencies visible and mockable in tests
       without depending on the entire `Application` instance.
 
-    Layer: Application.
-    Context: Coordinates use-case behavior through domain services and application contracts.
-
     Args:
         app: Concrete application wrapped to expose the session operations required by application services.
     """

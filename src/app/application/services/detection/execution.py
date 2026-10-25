@@ -33,9 +33,6 @@ class DetectionExecutionService:
     """
     Run current-frame detection while delegating engine lifecycle to the manager.
 
-    Layer: Application.
-    Context: Coordinates use-case behavior through domain services and application contracts.
-
 
     Args:
         session_repo: Interface used to retrieve the session and its current frame for inference.

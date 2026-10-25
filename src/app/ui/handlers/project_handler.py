@@ -32,9 +32,6 @@ class ProjectHandler(QObject):
     """
     Represent project handler.
 
-    Layer: Presentation.
-    Context: Supports user interaction and delegates application work through presentation contracts.
-
 
     Args:
         controller supplying project operations, the project window, and session-list refresh callbacks.

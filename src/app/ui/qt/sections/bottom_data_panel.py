@@ -36,9 +36,6 @@ class BottomDataPanelContainer(QWidget):
     """
     Represent bottom data panel container.
 
-    Layer: Presentation.
-    Context: Supports user interaction and delegates application work through presentation contracts.
-
 
     Args:
         parent: Optional Qt parent object.

@@ -25,9 +25,6 @@ class VideoDisplayWidget(QWidget):
     """
     Provide the video display widget presentation component.
 
-    Layer: Presentation.
-    Context: Supports user interaction and delegates application work through presentation contracts.
-
 
     Args:
         parent: Optional Qt parent object.

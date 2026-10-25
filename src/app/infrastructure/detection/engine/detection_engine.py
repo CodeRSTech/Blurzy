@@ -1,21 +1,12 @@
 """
-`DetectionEngine` is the application-facing wrapper around a detection model.
-It loads the named model when created, then passes each image or frame to that model’s `detect()` method and
-returns the resulting `DetectionResult` list. It can also replace the active model at runtime with `set_model()`.
+Application-facing model loading and frame-detection delegation.
 
-See Also:
-    - [`BaseDetectionModel`][app.infrastructure.detection.model.base.BaseDetectionModel] — performs model-specific inference
-    - [`load_detection_model`][app.infrastructure.detection.model.loader.load_detection_model] — resolves the configured implementation
-
-!!! quote "Simple explanation"
-
-    A `DetectionEngine` takes an input image and returns a list of detected objects as `List[DetectionResult]`
-
-The engine itself does not appear to perform image preprocessing, inference, or result conversion:
-those responsibilities are delegated to the loaded model implementation.
-In this code, `detect()` returns the model’s results directly,
-so the docstring’s reference to mapping raw output to `DetectionResult`
-objects describes the expected model-layer behavior, not a conversion performed by the engine.
+The engine selects a provider through
+[`load_detection_model`][app.infrastructure.detection.model.loader.load_detection_model]
+and returns that provider's results directly. Preprocessing, inference, and
+conversion to domain results belong to the
+[`BaseDetectionModel`][app.infrastructure.detection.model.base.BaseDetectionModel]
+implementation, not this wrapper.
 
 Layer: Infrastructure.
 Context: Implements concrete processing and I/O behind application-facing contracts.
@@ -38,38 +29,45 @@ logger = get_logger("Infrastructure->Video->Detection Engine")
 
 class DetectionEngine:
     """
-    Loads and manages a detection model, then delegates frame inference to it.
-    The generated API page lists supported model names from the model registry.
+    Manage one model instance and delegate synchronous frame inference to it.
 
-    Attributes:
-        _model_name (str): Current detection model name, such as `"YOLOv8n"`.
-        _model (BaseDetectionModel): Loaded detection model instance.
+    The generated API page lists registered model names. Model construction and
+    inference run in the calling thread; application workers are responsible for
+    keeping expensive operations off the GUI thread. This wrapper adds no
+    synchronization or result copying.
 
-    Design:
-        - Single responsibility: load or switch model and run inference only.
-        - Decoupling: delegates model loading to `load_detection_model()`.
-        - Immutability: `detect()` returns a new list and does not mutate view_state.
+    !!! note "Provider requirements"
 
-    Example:
+        Real models may load or acquire weights and require compatible runtimes
+        or hardware. Input handling and inference-failure behavior are
+        provider-specific; some providers log failures and return an empty list.
 
-    ```python title="example.py"
-    engine = DetectionEngine("YOLOv8n")
-    detections: list[DetectionResult] = engine.detect(frame)
+    Examples:
+        Given a NumPy `frame` prepared for the selected provider:
 
-    engine.set_model("YOLOv8s")  # Switch to a different model at runtime
-    detections = engine.detect(frame)
-    ```
+        ```python
+        from app.infrastructure.detection.engine.detection_engine import DetectionEngine
 
+        engine = DetectionEngine("YOLOv8n")
+        detections = engine.detect(frame)
+        engine.set_model("YOLOv8s")
+        ```
 
-    Layer: Infrastructure.
-    Context: Implements concrete processing or I/O behind application-facing contracts.
-
-
-    Args:
-        model_name: Registered name of the detection model.
+        This illustrative example may require model weights; documentation
+        builds do not execute it.
     """
     def __init__(self, model_name: str) -> None:
-        """Load a detection model by `model_name` (e.g., "YOLOv8n")."""
+        """Load the named provider synchronously.
+
+        Args:
+            model_name: Registered model name, or `"None"` for the dummy model.
+
+        Raises:
+            app.infrastructure.detection.exceptions.DetectionModelError: If the
+                name is not registered.
+
+        Provider construction errors propagate without translation.
+        """
         logger.info("Initializing DetectionEngine with model {}", model_name)
         self._model_name = model_name
         self._model = self._load_model(model_name)
@@ -79,10 +77,11 @@ class DetectionEngine:
 
     @property
     def model_name(self) -> str:
-        """Return the currently loaded model name.
+        """Return the last model name assigned during initialization or switching.
 
         Returns:
-            Registered name of the model currently loaded by this engine.
+            Requested model name. After a failed switch, it can differ from
+            the name associated with the retained model instance.
         """
         logger.trace("Returning current model name")
         return self._model_name
@@ -91,7 +90,20 @@ class DetectionEngine:
         """Switch to a different detection model by `model_name`.
 
         Args:
-            model_name: Name of the detection model.
+            model_name: Registered model name, or `"None"` for the dummy model.
+
+        Raises:
+            app.infrastructure.detection.exceptions.DetectionModelError: If the
+                name is not registered.
+
+        Provider construction errors also propagate.
+
+        !!! warning "A failed switch is not atomic"
+
+            The name is assigned before loading. If loading fails, the previous
+            model instance remains active but `model_name` reports the requested
+            name. This method does not roll back the name or coordinate concurrent
+            inference.
         """
         logger.trace("Setting detection model to {}", model_name)
         self._model_name = model_name
@@ -100,11 +112,21 @@ class DetectionEngine:
 
     def detect(self, frame: np.ndarray) -> list[DetectionResult]:
         """
-        Run detection model inference on `frame`, returning list of `DetectionResult` objects.
+        Delegate one frame to the current provider without label selection.
 
-        Note:
-            Workflow: raw model output is mapped to `DetectionResult` objects and
-            returned as a new list.
+        Args:
+            frame: Image array prepared for the selected provider. The model
+                interface describes RGB input; this wrapper does not validate
+                shape, dtype, channel order, or copy the array.
+
+        Returns:
+            The provider's list of
+            [`DetectionResult`][app.domain.detection.result.DetectionResult]
+            objects, unchanged and without an additional copy. An empty list
+            may mean no detections or a failure handled by the provider.
+
+        Errors not handled by the provider propagate to the caller. This wrapper
+        does not guarantee that inference leaves the supplied array unchanged.
         """
         logger.trace("Detecting boxes in frame")
         results = self._model.detect(frame, None)
@@ -118,6 +140,15 @@ class DetectionEngine:
 
     @staticmethod
     def _load_model(model_name: str) -> BaseDetectionModel:
-        """Load detection model via factory `load_detection_model()`."""
+        """Delegate model construction to the registry-backed factory.
+
+        Args:
+            model_name: Name passed unchanged to the model loader.
+
+        Returns:
+            Provider instance returned by the loader.
+
+        Loader and provider errors propagate to the caller.
+        """
         logger.info("Loading detection model {}", model_name)
         return load_detection_model(model_name)

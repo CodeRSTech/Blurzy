@@ -23,9 +23,6 @@ class ExportWorkerAdapter(ExportWorkerInterface):
     """
     Delegate `ExportWorker` thread control and signals through the interface seam.
 
-    Layer: Infrastructure.
-    Context: Implements concrete processing or I/O behind application-facing contracts.
-
 
     Args:
         worker: Concrete export worker wrapped by this adapter.

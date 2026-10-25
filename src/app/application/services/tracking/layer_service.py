@@ -54,9 +54,6 @@ class TrackingLayerService(QObject):
             Layer C is immutable reference point.
 
 
-    Layer: Application.
-    Context: Coordinates use-case behavior through domain services and application contracts.
-
 
     Args:
         app: Application adapted for session lookup and tracking-layer reads and mutations.

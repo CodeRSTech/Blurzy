@@ -24,9 +24,6 @@ class InlineSpinnerLabel(QLabel):
     """
     Small animated inline spinner label for lightweight loading states.
 
-    Layer: Presentation.
-    Context: Supports user interaction and delegates application work through presentation contracts.
-
 
     Args:
         text: Initial text displayed by the widget.

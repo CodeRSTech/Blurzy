@@ -41,9 +41,6 @@ class VideoRingBuffer:
         buffer.clear()  # Free memory for inactive session
 
 
-    Layer: Domain.
-    Context: Represents application concepts without UI or infrastructure dependencies.
-
 
     Args:
         capacity: Number of frame slots allocated in the ring buffer.

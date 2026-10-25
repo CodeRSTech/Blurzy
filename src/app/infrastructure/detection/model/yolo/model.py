@@ -48,9 +48,6 @@ class YoloDetectionModel(BaseDetectionModel):
         variants (tiny, nano, small, medium, large, extra).
 
 
-    Layer: Infrastructure.
-    Context: Implements concrete processing or I/O behind application-facing contracts.
-
 
     Args:
         model_file_name: Model file name or path used to load weights.

@@ -66,9 +66,6 @@ class ExportService(QObject):
         Selected box interiors remain fully blurred; editor preview is unchanged.
 
 
-    Layer: Application.
-    Context: Coordinates use-case behavior through domain services and application contracts.
-
 
     Args:
         app: Application used to resolve the session, read its frames, and coordinate video export.

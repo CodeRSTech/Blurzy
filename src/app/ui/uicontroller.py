@@ -56,9 +56,6 @@ class UIController(QObject):
             Controller triggers frame renders, status updates, dialog creation.
 
 
-    Layer: Presentation.
-    Context: Supports user interaction and delegates application work through presentation contracts.
-
 
     Args:
         q_app: Qt application instance.

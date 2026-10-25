@@ -34,9 +34,6 @@ class PreferencesHandler(QObject):
     """
     Manage persistent app preferences and session-default application.
 
-    Layer: Presentation.
-    Context: Supports user interaction and delegates application work through presentation contracts.
-
 
     Args:
         controller supplying application settings operations and the preferences window.

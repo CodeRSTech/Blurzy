@@ -238,6 +238,13 @@ When moving source packages, update affected notes' Source lines too.
 
 ## Docstring and narrative authoring
 
+Follow the [project-wide docstring standard](documentation-style.md#4-docstring-standard)
+for contracts, examples, and Material markup. Griffe parses Google-style
+sections; Markdown extensions and Material render their content. Types normally
+come from signature annotations, so repeating them in `Args:` is optional.
+Material's [reference](https://squidfunk.github.io/mkdocs-material/reference/)
+documents available features, while `mkdocs.yml` determines which work here.
+
 Put API-level explanations beside the implementation:
 
 - Module docstrings summarize purpose and boundaries.
@@ -249,6 +256,13 @@ Put API-level explanations beside the implementation:
 - Use single Markdown backticks for inline code in new text.
 - Use fenced `python` blocks in `Examples:`; keep the fence and body at the
   same indentation within the section.
+- Use correctly indented Material admonitions for important context, keeping
+  ownership and safety warnings visible. Optional detail can use `???`/`???+`.
+  Put constructor arguments on the constructor rather than duplicating them
+  on the class. Article front matter does not belong in source docstrings.
+- Explain live references versus copies, locking boundaries, side effects, and
+  partial failures when relevant; an attractive rendering does not prove a
+  behavioral guarantee. State example prerequisites and use qualified API links.
 
 For example:
 

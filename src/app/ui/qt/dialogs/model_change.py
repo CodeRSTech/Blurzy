@@ -26,9 +26,6 @@ class ModelChangeWarningDialog(QDialog):
     and offers to retain manual annotations.
 
 
-    Layer: Presentation.
-    Context: Supports user interaction and delegates application work through presentation contracts.
-
 
     Args:
         parent: Optional Qt parent object.

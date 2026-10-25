@@ -29,9 +29,6 @@ class EditAnnotationDialog(QDialog):
     """
     Full edit dialog shown when modifying an existing detection (label + bbox coords).
 
-    Layer: Presentation.
-    Context: Supports user interaction and delegates application work through presentation contracts.
-
 
     Args:
         parent: Optional Qt parent object.

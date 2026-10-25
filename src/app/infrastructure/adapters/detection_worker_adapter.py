@@ -39,9 +39,6 @@ class DetectionWorkerAdapter(DetectionWorkerInterface):
         reference to the concrete `DetectionWorker` directly.
 
 
-    Layer: Infrastructure.
-    Context: Implements concrete processing or I/O behind application-facing contracts.
-
 
     Args:
         worker: Concrete detection worker wrapped by this adapter.

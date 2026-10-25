@@ -73,9 +73,6 @@ class DetectionImportService(QObject):
         detection/export workers report progress today.
 
 
-    Layer: Application.
-    Context: Coordinates use-case behavior through domain services and application contracts.
-
 
     Args:
         app: Application adapted for resolving sessions and writing imported detection-layer boxes.

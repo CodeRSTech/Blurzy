@@ -67,9 +67,6 @@ class ImportExportHandler(QObject):
         that very large files do not freeze the UI during deserialisation.
 
 
-    Layer: Presentation.
-    Context: Supports user interaction and delegates application work through presentation contracts.
-
 
     Args:
         controller: Controller supplying import/export actions, the active window, and post-import rendering.

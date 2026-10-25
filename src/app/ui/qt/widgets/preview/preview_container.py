@@ -49,9 +49,6 @@ class PreviewContainer(QWidget):
      Separate aforementioned responsibilities into separate classes.
 
 
-    Layer: Presentation.
-    Context: Supports user interaction and delegates application work through presentation contracts.
-
 
     Args:
         parent: Optional Qt parent object.

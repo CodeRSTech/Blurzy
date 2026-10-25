@@ -624,6 +624,9 @@ OMIT_ME = create_singleton()
         self.write("src/app/infrastructure/detection/model/__init__.py", "")
         self.write("src/app/infrastructure/detection/model/base.py", "class BaseDetectionModel: pass\n")
         self.write("src/app/infrastructure/detection/model/loader.py", "def load_detection_model(): pass\n")
+        self.write("src/app/domain/__init__.py", "")
+        self.write("src/app/domain/detection/__init__.py", "")
+        self.write("src/app/domain/detection/result.py", "class DetectionResult: pass\n")
         build(self.config())
         html = (self.root / "site" / "docs" / "reference" / "api" / "app" / "engine" / "index.html").read_text(
             encoding="utf-8"
@@ -640,12 +643,108 @@ OMIT_ME = create_singleton()
         self.assertNotIn("get_logger(", html)
         self.assertIn('id="app.engine.DetectionEngine.model_name"', html)
         self.assertIn('class="doc doc-label doc-label-property"', html)
-        self.assertIn("Switch to a different model at runtime", html)
-        self.assertNotRegex(html, r"<h[1-6][^>]*>[^<]*Switch to a different model")
+        self.assertIn("A failed switch is not atomic", html)
+        self.assertIn('class="admonition warning"', html)
+        self.assertIn("Provider requirements", html)
+        self.assertIn("unchanged and without an additional copy", html)
+        self.assertIn(
+            'href="../domain/detection/result/#app.domain.detection.result.DetectionResult"',
+            html,
+        )
         self.assertIn('class="language-python highlight"', html)
         self.assertIn("<pre>", html)
-        self.assertIn('class="c1"', html)
         self.assertIn('class="api-module-path"', html)
+
+    def test_material_features_in_articles_and_docstrings(self):
+        self.write(
+            "src/app/example.py",
+            '''"""Example contracts."""
+def frame_exists(frame_index: int) -> bool:
+    """Check for an initialized frame.
+
+    Args:
+        frame_index: Zero-based frame index.
+
+    Returns:
+        Whether the entry exists.
+
+    !!! warning "Shared ownership"
+
+        Coordinate access with the store lock.
+
+    Examples:
+        ```python
+        initialized = frame_exists(0)
+        ```
+    """
+    return False
+''',
+        )
+        self.write(
+            "docs/development/reference-documentation.md",
+            '''# Material examples
+
+=== "PowerShell"
+
+    ```powershell
+    python -m pytest -q
+    ```
+
+=== "Bash"
+
+    ```bash
+    python -m pytest -q
+    ```
+
+<figure markdown="span">
+  ![Sample diagram](../assets/sample.svg){ width="48" }
+  <figcaption>Equivalent content in both themes.</figcaption>
+</figure>
+
+| Feature | Status |
+| --- | --- |
+| Tables | Enabled |
+
+```{ .python .annotate }
+value = 1  # (1)
+```
+
+1. An opt-in explanation.
+
+??? info "Optional details"
+
+    Supplemental context.
+''',
+        )
+        self.write("docs/assets/sample.svg", '<svg xmlns="http://www.w3.org/2000/svg"></svg>')
+        config = self.config()
+        self.assertNotIn("content.code.annotate", config.theme["features"])
+        self.assertNotIn("content.tabs.link", config.theme["features"])
+        build(config)
+        site = self.root / "site" / "docs"
+        article = (site / "development" / "reference-documentation" / "index.html").read_text(encoding="utf-8")
+        for expected in (
+            'class="tabbed-set tabbed-alternate"',
+            "<figure>",
+            "<figcaption>Equivalent content in both themes.</figcaption>",
+            'alt="Sample diagram"',
+            'width="48"',
+            "<table>",
+            'class="language-python annotate highlight"',
+            '<details class="info">',
+        ):
+            self.assertIn(expected, article)
+        api = (site / "reference" / "api" / "app" / "example" / "index.html").read_text(encoding="utf-8")
+        for expected in (
+            'class="admonition warning"',
+            "Shared ownership",
+            "Zero-based frame index.",
+            "Whether the entry exists.",
+            'class="language-python highlight"',
+            'class="doc-param-annotation"',
+            '<span title="int">int</span>',
+        ):
+            self.assertIn(expected, api)
 
 
 if __name__ == "__main__":

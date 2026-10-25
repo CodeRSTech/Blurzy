@@ -25,9 +25,6 @@ class TrackingResultProcessor:
     """
     Refresh Layer C and replace Layer D machine boxes while preserving edits.
 
-    Layer: Application.
-    Context: Coordinates use-case behavior through domain services and application contracts.
-
 
     Args:
         session_repo: Interface used to retrieve a session and persist post-processed tracking boxes.

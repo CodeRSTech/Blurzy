@@ -58,9 +58,6 @@ class TrackingService:
             `DataLayer.D` — User-editable tracking results (eagerly seeded from C).
 
 
-    Layer: Application.
-    Context: Coordinates use-case behavior through domain services and application contracts.
-
 
     Args:
         app: Application adapted for tracking-worker startup and result processing against session data.

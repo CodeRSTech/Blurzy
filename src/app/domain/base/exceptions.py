@@ -14,9 +14,6 @@ class EmptySetGeneratedFromKeysError(Exception):
     """
     Raised when converting iterable of keys to set results in empty set (all falsy).
 
-    Layer: Domain.
-    Context: Represents application concepts without UI or infrastructure dependencies.
-
 
     Args:
         message: Message describing the error or condition.

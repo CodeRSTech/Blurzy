@@ -66,15 +66,179 @@ UI handlers must:
 
 ### 4. Docstring Standard
 
-- Give every public module, class, method, and function a useful docstring.
-- Use imperative summary lines; expand behavioral details and Google-style
-  sections (`Args:`, `Returns:`, `Raises:`, `Attributes:`) when relevant.
-- Keep a docstring to one line only when the behavior and contract are truly
-  self-evident.
-- Document trigger/source signal for slots and emitted side effects where useful.
-- Prefer describing **why** and lifecycle guarantees over repeating obvious code.
-- Keep Python docstrings compatible with static Griffe parsing; documentation
-  builds must not need to import Qt or optional model providers.
+This is the project-wide standard for new and revised docstrings. Apply it
+incrementally; an existing file is not a model merely because its API page builds.
+
+#### The documentation stack
+
+**MkDocs** builds the site. **mkdocstrings-python/Griffe** statically collects
+annotations and parses Google-style API sections. **Markdown extensions** process
+embedded markup, and **Material for MkDocs** supplies the theme and interactive
+presentation. Material is not a replacement docstring parser.
+
+Consult the [Material reference](https://squidfunk.github.io/mkdocs-material/reference/)
+and `mkdocs.yml` together: features on the upstream website are not all enabled
+here, and examples must work with the versions pinned in `requirements-docs.txt`.
+Documentation builds must not import Qt/model providers or run inference.
+
+#### Content and contracts
+
+- Give public modules, classes, methods, and functions useful documentation.
+  Begin with a concrete purpose or behavior summary, not an `Attributes:` block.
+  Use imperative summaries for operations; describe module/class responsibilities.
+- Treat signature annotations as the source of truth for types. Mkdocstrings
+  infers parameter/return types; `frame_index: Zero-based frame index.` is valid.
+  Repeat a type only when needed, keeping it consistent with the annotation.
+- Use `Args:`, `Returns:`, `Yields:`, `Raises:`, `Attributes:`, and `Examples:`
+  when relevant, not as mandatory boilerplate. Do not document `self`, trivial
+  `None` returns, or the same constructor arguments on both class and constructor.
+  Prefer constructor arguments on `__init__` so its rendered entry is useful.
+- Explain units, coordinate conventions, valid choices, and `None`/empty meanings.
+  Distinguish caller preconditions from validation the implementation performs.
+- Document copying versus live aliases, ownership, side effects, lock scope,
+  worker signals/cancellation, and partial updates on failure where material.
+  An internal lock does not make a returned mutable object safe after release.
+- In `Raises:`, name actionable exception types and their conditions verified in
+  code. Describe provider/callback exception propagation in prose when no fixed
+  type is promised. Do not invent exhaustive lists or guarantees of rollback.
+- Describe what code actually does. Avoid speculative prose, stale method names,
+  unsupported complexity claims, and promises of immutability or fresh results
+  without checking the implementation.
+- Link related APIs with qualified mkdocstrings references, such as
+  ``[`VideoDataLayer`][app.domain.video.layer.VideoDataLayer]``.
+  Describe public contracts rather than inventorying private attributes.
+  Keep cross-component architecture explanations in `docs/architecture`.
+
+#### Sections, examples, and callouts
+
+Keep the opening summary, closing quotes, and top-level prose at the same Python
+indentation. Indent Google section entries and Material block bodies an additional
+four spaces. Use blank lines to separate paragraphs, sections, and fenced blocks.
+Do not put article YAML front matter in a Python docstring.
+
+Examples belong in `Examples:` with fenced, language-labelled code. Include
+imports/setup or explicitly state prerequisites; mark illustrative snippets that
+need media, a Qt application, hardware, or model weights. Builds do not execute
+examples, so a successful render is not evidence that an example works.
+
+````python
+def has_frame(self, frame_index: int) -> bool:
+    """Check whether a frame entry exists, including an intentionally empty one.
+
+    Args:
+        frame_index: Zero-based frame index to look up.
+
+    Returns:
+        `True` for an initialized entry, even when it contains no boxes.
+
+    Examples:
+        Given an initialized `store`:
+
+        ```python
+        initialized = store.has_frame(0)
+        ```
+    """
+    ...
+````
+
+This is a template, not a method to call on `SessionDataStore`. Compare the vague
+alternative `"""Instantly gets frame data; fully thread-safe."""`: it supplies
+neither the return contract nor evidence for its speed/threading claims.
+
+Use callouts for important context, not decoration. The configured
+[`admonition`, `details`, and SuperFences extensions](https://squidfunk.github.io/mkdocs-material/reference/admonitions/)
+support `!!! warning "Title"` for visible content, `??? info "Title"` for
+optional collapsed detail, and `???+ info "Title"` for initially expanded detail.
+Quote custom titles and use supported types such as `note`, `warning`, `info`,
+or `example`, rather than inventing Google section names like `Design:`.
+Keep safety, mutation, and ownership warnings visible, not hidden in details.
+
+````python
+def boxes(self) -> list[Box]:
+    """Return the stored list, not a snapshot.
+
+    Returns:
+        The live list owned by this object.
+
+    !!! warning "Shared mutable data"
+
+        The read lock is released before return. Coordinate subsequent access
+        with the owner's locking contract; do not mutate this list unprotected.
+    """
+    ...
+````
+
+#### Material authoring features
+
+Use these features in articles or docstrings only when they improve the
+explanation. Do not add every feature to every API. Article links are
+page-relative; generated API assets use the existing `api-asset:` convention
+described in [Reference documentation](reference-documentation.md).
+
+| Feature | Configured support | Authoring rule |
+| --- | --- | --- |
+| Code blocks | Highlight, InlineHilite, SuperFences, copy button | Label the language; optional titles/highlighting must clarify the example. |
+| Content tabs | `pymdownx.tabbed`, alternate style | Group genuine alternatives, not sequential required steps. |
+| Images/captions | `attr_list`, `md_in_html` | Supply useful alt text; use `figure`/`figcaption` for captions. |
+| Tables | `tables` | Compare structured facts; avoid oversized prose tables. |
+| Code annotations | Per-block `.annotate` with `attr_list` | Opt in only where numbered explanations help; global annotations are disabled. |
+| Diagrams | Mermaid custom fence or themed SVG assets | Verify readable equivalent content in both themes. |
+
+For example, these tabs show alternative headless-test commands. Use the syntax
+of the current shell:
+
+=== "PowerShell"
+
+    ```powershell
+    $env:QT_QPA_PLATFORM = "offscreen"
+    python -m pytest -q
+    ```
+
+=== "Bash"
+
+    ```bash
+    QT_QPA_PLATFORM=offscreen python -m pytest -q
+    ```
+
+This caption uses Markdown in HTML, not an unconfigured caption extension:
+
+<figure markdown="span">
+  ![Blurzy application icon](../assets/icon.ico){ width="48" }
+  <figcaption>The application icon; explanatory diagrams need descriptive alt text too.</figcaption>
+</figure>
+
+Opt-in annotations use a language class first and an explanation after the fence:
+
+```{ .python .annotate }
+from app.domain.video.layer import VideoDataLayer
+
+editable_detections = VideoDataLayer.B  # (1)
+```
+
+1. Layer B contains reviewed/editable detections, distinct from the original output in A.
+
+Use Material's Mermaid integration rather than imposing a light-only palette.
+If a single SVG cannot suit both themes, use equivalent `#only-light` and
+`#only-dark` images. Preserve editable diagram sources. See
+[Writing architecture guides](architecture-documentation.md) for asset rules.
+Content tabs are not globally linked, and annotations are not globally enabled;
+do not assume optional features such as snippets or a lightbox are available.
+
+#### Author and reviewer checklist
+
+- Do descriptions agree with the implementation, including empty and failure paths?
+- Are units, ownership/aliasing, mutation, lock scope, and partial failures clear?
+- Do section names, annotations, references, and examples identify real APIs?
+- Are required warnings visible and optional details genuinely optional?
+- Do sections, fences, callouts, tabs, captions, and annotations render correctly?
+- Are diagrams and text readable in both themes, without relying on color alone?
+
+Run `python -m mkdocs build --strict` for documentation/source-docstring changes.
+For configuration or documentation-tooling changes, also run
+`python -m unittest discover -s tests -p "test_docs_reference.py"`.
+Inspect the rendered pages and interactive features in both palettes when
+browser access is available; builds and HTML checks alone cannot prove contrast,
+Mermaid execution, or interaction. Report any unavailable visual checks.
 
 ---
 

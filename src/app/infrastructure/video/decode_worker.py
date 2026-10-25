@@ -62,18 +62,18 @@ class VideoDecodeWorker(QThread):
         _mutex (QMutex): Guards mutable cross-thread view_state.
 
     Notes:
-        !!! info "Core loop behavior"
+        ???+ info "Core loop behavior"
             1. If inactive, sleep briefly.
             2. If a seek is requested, perform a hard seek and emit completion.
             3. If the buffer is sufficiently ahead, throttle decode rate.
             4. Otherwise, decode the next frame and push to the ring buffer.
 
-        !!! info "Memory behavior"
+        ???+ info "Memory behavior"
             - Buffer capacity is 90 frames.
             - Buffer is cleared on seek and when deactivated.
             - Deactivation is used to aggressively release cached frame memory.
 
-        !!! info "Thread lifecycle (caller responsibility)"
+        ???+ info "Thread lifecycle (caller responsibility)"
             Call in this order: `stop()` -> `quit()` -> `wait()` -> `deleteLater()`.
 
     Example:
@@ -86,9 +86,6 @@ class VideoDecodeWorker(QThread):
 
             UI resumes decode with `set_active(True)`
 
-
-    Layer: Infrastructure.
-    Context: Implements concrete processing or I/O behind application-facing contracts.
 
 
     Args:

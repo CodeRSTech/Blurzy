@@ -89,9 +89,6 @@ class SessionService(QObject):
     - When switching sessions: old worker paused → new worker resumed
 
 
-    Layer: Application.
-    Context: Coordinates use-case behavior through domain services and application contracts.
-
 
     Args:
         app: Application that owns this Qt service and receives active-session change notifications.

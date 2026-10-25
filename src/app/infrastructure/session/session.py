@@ -96,9 +96,6 @@ class Session(QObject):
         tracking_worker: Tracking worker, if initialized.
 
 
-    Layer: Infrastructure.
-    Context: Implements concrete processing or I/O behind application-facing contracts.
-
 
     Args:
         s_id: Identifier of the session associated with this object.

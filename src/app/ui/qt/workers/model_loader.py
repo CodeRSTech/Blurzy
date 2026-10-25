@@ -38,9 +38,6 @@ class ModelLoadWorker(QThread):
     Background worker to load a detection model without freezing the UI.
 
 
-    Layer: Presentation.
-    Context: Supports user interaction and delegates application work through presentation contracts.
-
 
     Args:
         app: Application used to apply the loaded model and update affected session layers.

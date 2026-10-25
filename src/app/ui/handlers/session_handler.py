@@ -56,9 +56,6 @@ class SessionHandler(QObject):
             - Triggers UI updates to reflect session view_state changes.
 
 
-    Layer: Presentation.
-    Context: Supports user interaction and delegates application work through presentation contracts.
-
 
     Args:
         controller supplying session lifecycle operations and the window and panel to refresh.

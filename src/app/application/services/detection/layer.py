@@ -53,9 +53,6 @@ class DetectionLayerService(QObject):
             Export `DataLayer.B` to video.
 
 
-    Layer: Application.
-    Context: Coordinates use-case behavior through domain services and application contracts.
-
 
     Args:
         app: Application adapted for session lookup and manual or filtered detection-layer updates.

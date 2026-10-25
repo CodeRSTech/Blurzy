@@ -62,9 +62,6 @@ class DetectionBatchProcessor:
         ```
 
 
-    Layer: Application.
-    Context: Coordinates use-case behavior through domain services and application contracts.
-
 
     Args:
         session_repo: Interface used to retrieve a session and write its frame-indexed detections.

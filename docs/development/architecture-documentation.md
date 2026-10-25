@@ -41,6 +41,12 @@ presenting them as recorded inference output.
 
 ## Assets and formats
 
+Use the configured [Material authoring features](documentation-style.md#material-authoring-features)
+and the official [Material reference](https://squidfunk.github.io/mkdocs-material/reference/).
+The current configuration supports image attributes and `figure`/`figcaption`
+captions via `attr_list` and `md_in_html`. Do not assume caption extensions,
+lightboxes, or other optional features are installed.
+
 Keep component assets in `docs/assets/api/<component_name>/`, using a stable
 snake_case name. Despite its historical `api` name, this directory also holds
 architecture illustrations. Detection-engine assets, for example, belong in

@@ -38,9 +38,6 @@ class VideoDecodeWorkerControlAdapter(VideoDecodeWorkerControlInterface):
     signal internals stay on the concrete worker.
 
 
-    Layer: Infrastructure.
-    Context: Implements concrete processing or I/O behind application-facing contracts.
-
 
     Args:
         worker: Concrete video decode worker controlled by this adapter.

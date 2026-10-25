@@ -38,9 +38,6 @@ class DetectionEngineAdapter(DetectionEngineInterface):
     - Act as the canonical reference implementation of the interface.
 
 
-    Layer: Infrastructure.
-    Context: Implements concrete processing or I/O behind application-facing contracts.
-
 
     Args:
         engine: Concrete detection engine delegated to by this adapter.

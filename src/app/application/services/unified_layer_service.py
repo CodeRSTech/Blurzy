@@ -70,9 +70,6 @@ class UnifiedLayerService:
         - `Tracking` Tab ↔ `DataLayer.D` (editable, seeded from `DataLayer.C`).
 
 
-    Layer: Application.
-    Context: Coordinates use-case behavior through domain services and application contracts.
-
 
     Args:
         app: Application providing detection/tracking layer services and session access for this facade.

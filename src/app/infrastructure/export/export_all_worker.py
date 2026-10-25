@@ -72,9 +72,6 @@ class ExportAllWorker(QThread):
         worker.stop()
 
 
-    Layer: Infrastructure.
-    Context: Implements concrete processing or I/O behind application-facing contracts.
-
 
     Args:
         app: Application used to look up sessions, prepare detection/tracking output, and export each video.

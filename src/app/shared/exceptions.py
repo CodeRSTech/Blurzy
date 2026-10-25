@@ -49,9 +49,6 @@ class SessionAlreadyExistsException(DomainException):
     """
     Signal the session already exists error condition.
 
-    Layer: Shared utilities.
-    Context: Provides reusable cross-layer behavior without owning workflow state.
-
 
     Args:
         message: Message describing the error or condition.
@@ -66,9 +63,6 @@ class SessionAlreadyExistsException(DomainException):
 class NoNewOpenedSessionsException(DomainException):
     """
     Signal the no new opened sessions error condition.
-
-    Layer: Shared utilities.
-    Context: Provides reusable cross-layer behavior without owning workflow state.
 
 
     Args:
@@ -85,9 +79,6 @@ class NoItemsInSessionListException(DomainException):
     """
     Signal the no items in session list error condition.
 
-    Layer: Shared utilities.
-    Context: Provides reusable cross-layer behavior without owning workflow state.
-
 
     Args:
         session_list: Session entries available to the operation.
@@ -100,9 +91,6 @@ class NoItemsInSessionListException(DomainException):
 class UnsupportedLayerException(DomainException):
     """
     Signal the unsupported layer error condition.
-
-    Layer: Shared utilities.
-    Context: Provides reusable cross-layer behavior without owning workflow state.
 
 
     Args:
@@ -126,9 +114,6 @@ class TrackingWorkerAlreadyRunningException(DomainException):
     """
     Signal the tracking worker already running error condition.
 
-    Layer: Shared utilities.
-    Context: Provides reusable cross-layer behavior without owning workflow state.
-
 
     Args:
         message: Message describing the error or condition.
@@ -145,9 +130,6 @@ class TrackingWorkerAlreadyRunningException(DomainException):
 class EmptyLayerException(DomainException):
     """
     Signal the empty layer error condition.
-
-    Layer: Shared utilities.
-    Context: Provides reusable cross-layer behavior without owning workflow state.
 
 
     Args:
@@ -169,9 +151,6 @@ class InvalidSessionIdException(DomainException):
     """
     Signal the invalid session id error condition.
 
-    Layer: Shared utilities.
-    Context: Provides reusable cross-layer behavior without owning workflow state.
-
 
     Args:
         message: Message describing the error or condition.
@@ -188,9 +167,6 @@ class InvalidSessionIdException(DomainException):
 class TrackingWorkerNotFoundException(DomainException):
     """
     Signal the tracking worker not found error condition.
-
-    Layer: Shared utilities.
-    Context: Provides reusable cross-layer behavior without owning workflow state.
 
 
     Args:
@@ -209,9 +185,6 @@ class WorkerAlreadyRunningException(DomainException):
     """
     Signal the worker already running error condition.
 
-    Layer: Shared utilities.
-    Context: Provides reusable cross-layer behavior without owning workflow state.
-
 
     Args:
         message: Message describing the error or condition.
@@ -228,9 +201,6 @@ class WorkerAlreadyRunningException(DomainException):
 class NullModelNameException(DomainException):
     """
     Signal the null model name error condition.
-
-    Layer: Shared utilities.
-    Context: Provides reusable cross-layer behavior without owning workflow state.
 
 
     Args:
@@ -249,9 +219,6 @@ class VideoFileOpenException(InfrastructureException):
     """
     Signal the video file open error condition.
 
-    Layer: Shared utilities.
-    Context: Provides reusable cross-layer behavior without owning workflow state.
-
 
     Args:
         path: Filesystem path of the video or resource.
@@ -266,9 +233,6 @@ class VideoStreamStateException(InfrastructureException):
     """
     Signal the video stream state error condition.
 
-    Layer: Shared utilities.
-    Context: Provides reusable cross-layer behavior without owning workflow state.
-
 
     Args:
         path: Filesystem path of the video or resource.
@@ -282,9 +246,6 @@ class VideoStreamStateException(InfrastructureException):
 class VideoReadFrameException(InfrastructureException):
     """
     Signal the video read frame error condition.
-
-    Layer: Shared utilities.
-    Context: Provides reusable cross-layer behavior without owning workflow state.
 
 
     Args:
@@ -302,9 +263,6 @@ class EndOfVideoStreamException(InfrastructureException):
     """
     Signal the end of video stream error condition.
 
-    Layer: Shared utilities.
-    Context: Provides reusable cross-layer behavior without owning workflow state.
-
 
     Args:
         path: Filesystem path of the video or resource.
@@ -317,9 +275,6 @@ class EndOfVideoStreamException(InfrastructureException):
 class UnsupportedLayerOperationException(DomainException):
     """
     Signal the unsupported layer operation error condition.
-
-    Layer: Shared utilities.
-    Context: Provides reusable cross-layer behavior without owning workflow state.
 
 
     Args:
@@ -336,9 +291,6 @@ class ImmutableLayerOperationException(DomainException):
     """
     Signal the immutable layer operation error condition.
 
-    Layer: Shared utilities.
-    Context: Provides reusable cross-layer behavior without owning workflow state.
-
 
     Args:
         operation: Name of the attempted operation.
@@ -354,9 +306,6 @@ class UnsupportedDirectionException(DomainException):
     """
     Signal the unsupported direction error condition.
 
-    Layer: Shared utilities.
-    Context: Provides reusable cross-layer behavior without owning workflow state.
-
 
     Args:
         direction: Frame-navigation direction.
@@ -369,9 +318,6 @@ class UnsupportedDirectionException(DomainException):
 class UnsupportedTabException(DomainException):
     """
     Signal the unsupported tab error condition.
-
-    Layer: Shared utilities.
-    Context: Provides reusable cross-layer behavior without owning workflow state.
 
 
     Args:
@@ -386,9 +332,6 @@ class UnknownFrameItemException(DomainException):
     """
     Signal the unknown frame item error condition.
 
-    Layer: Shared utilities.
-    Context: Provides reusable cross-layer behavior without owning workflow state.
-
 
     Args:
         item_key: Key identifying the frame item.
@@ -401,9 +344,6 @@ class UnknownFrameItemException(DomainException):
 class UnsupportedImportExportFormatException(DomainException):
     """
     Signal the unsupported import export format error condition.
-
-    Layer: Shared utilities.
-    Context: Provides reusable cross-layer behavior without owning workflow state.
 
 
     Args:
@@ -421,9 +361,6 @@ class UnsupportedImportExportFormatException(DomainException):
 class ProjectFormatException(DomainException):
     """
     Signal the project format error condition.
-
-    Layer: Shared utilities.
-    Context: Provides reusable cross-layer behavior without owning workflow state.
 
 
     Args:

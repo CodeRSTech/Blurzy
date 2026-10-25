@@ -41,9 +41,6 @@ class SessionFrameAccessor:
       5. Synchronize session view_state on successful retrieval.
 
 
-    Layer: Infrastructure.
-    Context: Implements concrete processing or I/O behind application-facing contracts.
-
 
     Args:
         timeout_seconds: Maximum time to wait for a decoded frame.

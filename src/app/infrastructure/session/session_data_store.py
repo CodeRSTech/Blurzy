@@ -1,10 +1,12 @@
 """
-Thread-safe CRUD store for bounding boxes with four-layer architecture support.
+Session-owned annotation storage indexed by layer and frame.
 
-See Also:
-    - [`SessionDataStoreInterface`][app.application.interfaces.session.session_data_store_interface.SessionDataStoreInterface] — describes the application-facing storage contract
-    - [`VideoDataLayer`][app.domain.video.layer.VideoDataLayer] — identifies the stored annotation layers
-
+Implements the
+[`SessionDataStoreInterface`][app.application.interfaces.session.session_data_store_interface.SessionDataStoreInterface]
+contract for the four
+[`VideoDataLayer`][app.domain.video.layer.VideoDataLayer]
+values. Store operations use a reentrant lock, but read methods can expose live
+mutable objects; callers must respect the ownership and locking rules below.
 
 Layer: Infrastructure.
 Context: Implements concrete processing and I/O behind application-facing contracts.
@@ -35,47 +37,49 @@ logger = get_logger("Infrastructure->SessionDataStore")
 @final
 class SessionDataStore(QObject):
     """
-    Attributes:
-        _s_id (SessionId): Session ID that owns this store.
-        _lock (threading.RLock): Reentrant lock protecting all store mutations.
-        _data (dict[VideoDataLayer, dict[int, ListOfBoxes]]): Layer and frame indexed
-            detection storage.
+    Store a session's detection and tracking boxes by layer and frame index.
 
     ???+ abstract "Architecture"
-        - Structure: `dict[DataLayer, dict[int, ListOfBoxes]]` for O(1)
-          access.
+
+        - Structure: `dict[VideoDataLayer, dict[int, ListOfBoxes]]`.
         - Layers: A (raw detections), B (user-edited detections), C (raw tracks),
           and D (user-edited tracks).
-        - Threading: protected by `threading.RLock()` for UI and worker access.
+        - Missing frames and initialized frames with no boxes are distinct states.
+        - Layer roles are workflow conventions, not access restrictions enforced
+          by this store; mutation methods accept any layer.
 
-    ???+ info "Usage patterns"
-        - Read: `get_boxes_for_layer_at_frame_index_as_list(A, 100)`.
-        - Write: `add_boxes_to_layer_at_frame_index(B, 100, boxes)`.
-        - Filter: `apply_filters_to_layer_b(settings)` preserves manual boxes while
-          re-filtering AI boxes.
-        - Clear: `clear_layer_by_name(B)` clears all boxes or preserves manual
-          ones.
-        - Copy: `overwrite_source_layer_to_target_layer(A, B)` deep-clones data.
+    !!! warning "Live data is not a thread-safe snapshot"
 
-    ???+ success "Thread safety"
-        all methods use the RLock context manager, and manual boxes with
-        `source = AnnotationBoxSource.MANUAL` are preserved across filters and selective clears.
+        Getters release the lock before returning lists or mappings owned by the
+        store. Coordinate subsequent access with `data_lock` or use store methods
+        to mutate annotations. Replacement operations can detach previously
+        returned lists. Box objects may also be shared with callers, depending on
+        the write method. A lock does not provide rollback on failure.
 
-    ???+ info "Design notes"
-        - `defaultdict(list)` provides automatic empty frame allocation.
-        - Box mutation occurs in place after the lock is acquired.
+    Frame indices are conventionally zero-based; this store does not generally
+    validate bounds against a video. Manual-box preservation is method-specific,
+    not a guarantee of every clear, overwrite, or delete operation.
 
+    Examples:
+        Given an initialized `store` and an iterable of `detections`:
 
-    Layer: Infrastructure.
-    Context: Implements concrete processing or I/O behind application-facing contracts.
+        ```python
+        from app.domain.video.layer import VideoDataLayer
 
-
-    Args:
-        s_id: Identifier of the session associated with this object.
-        parent: Optional Qt parent object.
+        store.add_boxes_to_layer_at_frame_index(VideoDataLayer.A, 0, detections)
+        store.overwrite_source_layer_to_target_layer(VideoDataLayer.A, VideoDataLayer.B)
+        with store.data_lock:
+            count = len(store.get_boxes_for_layer_at_frame_index_as_list(VideoDataLayer.B, 0))
+        ```
     """
 
     def __init__(self, s_id: SessionId, parent: QObject | None = None) -> None:
+        """Create empty storage for all four annotation layers.
+
+        Args:
+            s_id: Identifier of the session owning this store.
+            parent: Optional Qt parent controlling QObject ownership.
+        """
         super().__init__(parent)
         self._s_id = s_id
         self._lock = threading.RLock()
@@ -94,10 +98,14 @@ class SessionDataStore(QObject):
     @property
     def data_lock(self) -> threading.RLock:
         """
-        Return reentrant lock protecting `_data` (used internally by all CRUD methods).
+        Return the lock used to coordinate access to stored annotation data.
 
         Returns:
-            The reentrant lock guarding the store's layer data.
+            The existing reentrant lock, not an acquired lock or a new instance.
+
+        Use it as a context manager when accessing live data across multiple
+        calls. Acquiring it does not protect against callers that bypass the
+        locking contract.
         """
         logger.trace("Attempting to acquire data lock for session '{}'", self._s_id)
         return self._lock
@@ -108,14 +116,15 @@ class SessionDataStore(QObject):
             self, layer: VideoDataLayer, frame_index: int
     ) -> ListOfBoxes:
         """
-        Retrieve all boxes for a given frame and layer in O(1) time.
+        Retrieve the stored box list for a frame without cloning it.
 
         Args:
             layer: Layer whose frame data is requested.
             frame_index: Zero-based frame index to retrieve.
 
         Returns:
-            The stored box list, or an empty list if the frame has no entry.
+            The live stored list, or a new empty list if the frame has no entry.
+            Reading an absent frame does not initialize its entry.
 
         Note:
             An existing list is returned directly, not cloned. Use store mutation
@@ -134,13 +143,19 @@ class SessionDataStore(QObject):
         Returns:
             The live mapping from frame indices to box lists; callers should use
             store methods rather than mutating this mapping directly.
+
+        !!! warning "Lock lifetime"
+
+            The method releases its lock before returning. Hold `data_lock`
+            around subsequent iteration when concurrent store writes are possible.
+            Indexing a missing key in this `defaultdict` creates an empty entry.
         """
         with self.data_lock:
             return self._data[layer]
 
     def has_boxes_for_layer(self, layer: VideoDataLayer) -> bool:
         """
-        Extremely fast boolean check if a layer contains any boxes across all frames.
+        Check whether any frame in a layer contains boxes.
 
         Args:
             layer: Layer to check.
@@ -153,7 +168,7 @@ class SessionDataStore(QObject):
 
     def has_boxes_for_layer_at_frame_index(self, layer: VideoDataLayer, frame_index: int) -> bool:
         """
-        Extremely fast boolean check if any boxes exist for a frame.
+        Check whether a frame contains at least one box.
 
         Args:
             layer: Layer to check.
@@ -175,6 +190,9 @@ class SessionDataStore(QObject):
 
         Returns:
             `True` if an entry exists for the frame, even when its box list is empty.
+
+        Unlike the box-presence checks, this distinguishes an initialized empty
+        frame from one that has never been stored.
         """
         with self.data_lock:
             return frame_index in self._data[layer]
@@ -185,12 +203,15 @@ class SessionDataStore(QObject):
             self, layer: VideoDataLayer, frame_index: int, box: BBoxViewModel
     ) -> None:
         """
-        Inserts a single bounding detection in true O(1) append time.
+        Append one box to a frame, initializing its entry when absent.
 
         Args:
             layer: Layer receiving the box.
             frame_index: Zero-based frame index to update.
             box: Box to append to that frame.
+
+        The box is stored by reference; later in-place changes affect callers
+        sharing that object.
         """
         with self.data_lock:
             self._data[layer][frame_index].append(box)
@@ -199,12 +220,16 @@ class SessionDataStore(QObject):
             self, layer: VideoDataLayer, frame_index: int, boxes: Iterable[BBoxViewModel]
     ) -> None:
         """
-        Appends new boxes to the specified layer and frame natively.
+        Append boxes to a frame without cloning their objects.
 
         Args:
             layer: Layer receiving the boxes.
             frame_index: Zero-based frame index to update.
             boxes: Boxes to append to that frame.
+
+        Falsy containers are ignored without initializing a frame. Other
+        iterables are consumed under the lock; an empty iterator can initialize
+        an empty entry, and an iterator error can leave a partially extended list.
         """
         if not boxes:
             return
@@ -215,7 +240,7 @@ class SessionDataStore(QObject):
             self, layer: VideoDataLayer, min_conf: float, frame_index: int
     ) -> None:
         """
-        Instantly deletes all AI boxes below a confidence threshold in a specific layer.
+        Remove scored, non-manual boxes below a frame's confidence threshold.
 
         Args:
             layer: Layer from which low-confidence machine boxes are removed.
@@ -224,6 +249,8 @@ class SessionDataStore(QObject):
 
         Note:
             Manual boxes and boxes without a confidence score are retained.
+            The stored list is replaced, but retained box objects are not cloned.
+            An absent frame is initialized with an empty list.
         """
         with self.data_lock:
             self._data[layer][frame_index] = [
@@ -248,6 +275,10 @@ class SessionDataStore(QObject):
 
         Returns:
             Number of matching boxes whose coordinates were updated.
+
+        Updates shared box objects in place, converting each translated
+        coordinate with `int()` and without clipping to video bounds. Looking up
+        an absent frame initializes an empty entry.
         """
         moved = 0
         with self.data_lock:
@@ -269,7 +300,7 @@ class SessionDataStore(QObject):
             self, layer: VideoDataLayer, frame_index: int, keys: set[str], delta_x: float, delta_y: float
     ) -> int:
         """
-        Move manual boxes only (`source = AnnotationBoxSource.MANUAL`) by delta, return count moved.
+        Move only matching boxes whose `is_manual` property is true.
 
         Args:
             layer: Layer containing the boxes.
@@ -280,6 +311,9 @@ class SessionDataStore(QObject):
 
         Returns:
             Number of matching manual boxes whose coordinates were updated.
+
+        Coordinates are updated in place using `int()` after translation, without
+        clipping to video bounds. An absent frame is initialized as empty.
         """
         moved = 0
         with self.data_lock:
@@ -301,7 +335,7 @@ class SessionDataStore(QObject):
 
     def purge_boxes_in_layer_by_minimum_confidence(self, layer: VideoDataLayer, min_conf: float) -> None:
         """
-        Delete all AI boxes below `min_conf` across all frames (preserves manual boxes).
+        Remove scored, non-manual boxes below `min_conf` across stored frames.
 
         Args:
             layer: Layer from which low-confidence machine boxes are removed.
@@ -309,6 +343,8 @@ class SessionDataStore(QObject):
 
         Note:
             Manual boxes and boxes without a confidence score are retained.
+            Each frame list is replaced while retained box objects keep their
+            identity. No new frame indices are introduced.
         """
         with self.data_lock:
             for frame_index, boxes in self._data[layer].items():
@@ -335,8 +371,16 @@ class SessionDataStore(QObject):
 
         Note:
             Existing manual boxes in each target frame are cloned and retained.
-            Machine boxes are cloned from the source layer before filtering. A
-            target frame is replaced only when its resulting box count differs.
+            Source boxes that pass `new_passes_filter` are cloned, then combined
+            with the retained manual clones. Only source frame indices are
+            visited; missing target entries are initialized as empty.
+
+        !!! warning "Count-based replacement"
+
+            A target list is replaced only when its resulting box count differs.
+            Equal-count changes to identity, coordinates, or content are not
+            applied. Source and target should be distinct layers. Filter or clone
+            failures propagate and may leave earlier frames updated.
         """
 
         changed_frames = 0
@@ -365,10 +409,13 @@ class SessionDataStore(QObject):
 
     def clear_all_layers(self, keep_manual: bool = False) -> None:
         """
-        Wipes all tracking and detection layers.
+        Clear all layers while holding the lock across the operation.
 
         Args:
             keep_manual: Whether to retain manual boxes in editable layers B and D.
+
+        Layers A and C are always fully cleared. When preserving manual boxes,
+        B/D frame entries remain present, even if their lists become empty.
         """
         with self.data_lock:
             self.clear_layer_by_name(VideoDataLayer.A)
@@ -379,11 +426,15 @@ class SessionDataStore(QObject):
 
     def clear_layer_by_name(self, layer: VideoDataLayer, keep_manual: bool = False) -> None:
         """
-        Clears boxes for a specific layer.
+        Clear a layer, optionally retaining its manual boxes.
 
         Args:
             layer: Layer to clear.
             keep_manual: Whether to retain only manual boxes in the layer.
+
+        With `keep_manual=False`, frame entries are removed. Otherwise existing
+        entries remain, their lists are replaced, and retained boxes are not
+        cloned. This method does not restrict manual preservation to B/D.
         """
         with self.data_lock:
             if not keep_manual:
@@ -394,21 +445,28 @@ class SessionDataStore(QObject):
 
     def clear_layers_by_name(self, layers: list[VideoDataLayer]) -> None:
         """
-        Clear layers by name.
+        Clear each requested layer using separate lock acquisitions.
 
         Args:
             layers: Layers whose contents should be cleared.
+
+        The sequence is not atomic across layers. Callers needing a single
+        critical section can hold `data_lock` around the call.
         """
         for layer in layers:
             self.clear_layer_by_name(layer)
 
     def delete_boxes_from_layer_by_id(self, layer: VideoDataLayer, box_ids: Iterable[str]) -> None:
         """
-        Deletes specific boxes from a layer by their string keys/IDs.
+        Delete boxes whose key matches a requested identifier across frames.
 
         Args:
             layer: Layer from which matching boxes are removed.
             box_ids: Box keys (or IDs when a key is absent) to remove across frames.
+
+        The iterable is consumed once into a set. An empty set does nothing.
+        An existing empty `key` does not fall back to `id`. Frame entries remain
+        initialized; retained box objects are not cloned.
         """
         with self.data_lock:
             ids_to_drop = set(box_ids)
@@ -424,7 +482,7 @@ class SessionDataStore(QObject):
             self, layer: VideoDataLayer, box_ids: Iterable[str], frame_index: int
     ) -> bool:
         """
-        Instantly deletes specific boxes from a layer at a single frame index.
+        Delete boxes with matching keys from one existing frame.
 
         Args:
             layer: Layer from which boxes are removed.
@@ -433,6 +491,10 @@ class SessionDataStore(QObject):
 
         Returns:
             `True` if at least one box was removed; otherwise `False`.
+
+        An absent frame is not initialized. An existing empty `key` does not fall
+        back to `id`. When boxes are removed, the frame list is replaced without
+        cloning retained objects.
         """
         with self.data_lock:
             ids_to_drop = set(box_ids)
@@ -467,6 +529,10 @@ class SessionDataStore(QObject):
             source_layer: Layer providing source boxes.
             target_layer: Layer whose box list at `index` will be replaced.
             index: Zero-based frame index.
+
+        Boxes are cloned before replacing the target list. An absent or empty
+        source produces an initialized empty target entry. Passing the same
+        layer clones that frame in place; cloning errors leave its old list intact.
         """
         with self.data_lock:
             source_boxes = self._data[source_layer].get(index, [])
@@ -484,15 +550,27 @@ class SessionDataStore(QObject):
         Args:
             source_layer: Layer providing box data.
             target_layer: Layer replaced by the copy.
-            filter_fn: Optional predicate that rejects source boxes.
-        Raises:
-            Exception: Propagates errors from the optional predicate.
+            filter_fn: Acceptance predicate; `True` includes a box. `None`
+                accepts all source boxes. Runs under the store lock.
 
-        Note:
-            Existing target data is cleared before cloned source boxes are written.
+        !!! warning "Destructive replacement"
 
-        Example:
+            Use distinct source and target layers: the target is cleared first,
+            so copying a layer onto itself clears its source too. Predicate or
+            cloning errors propagate and may leave the target partially written.
+
+        Only non-empty source frames are visited. Accepted boxes are cloned;
+        a predicate rejecting every box still produces an empty target entry
+        for that non-empty source frame.
+
+        Examples:
+            Given an initialized `store`:
+
+            ```python
             store.overwrite_source_layer_to_target_layer(VideoDataLayer.A, VideoDataLayer.B)
+            ```
+
+            Import `VideoDataLayer` from `app.domain.video.layer`.
         """
         with self.data_lock:
             self.clear_layer_by_name(target_layer)
@@ -517,6 +595,10 @@ class SessionDataStore(QObject):
         Note:
             Empty lists are omitted from storage. Each non-empty list is shallow
             copied; its box objects are not cloned.
+
+        Supply a mapping independent of this layer's live mapping: the layer
+        is cleared before input iteration. Failures during iteration/copying
+        propagate without restoring the previous contents.
         """
         with self.data_lock:
             self.clear_layer_by_name(layer)
@@ -555,16 +637,23 @@ class SessionDataStore(QObject):
             layer: Target layer whose machine boxes are refreshed.
             frame_index: Zero-based frame to replace.
             boxes: New machine-produced boxes for the frame.
-            filter_fn: Optional predicate applied before new boxes are cloned.
-        Raises:
-            Exception: Propagates errors raised by `filter_fn`.
+            filter_fn: Acceptance predicate for non-manual candidates; `True`
+                includes a box and `None` accepts all. Runs under the store lock.
 
         Note:
             Manual boxes remain in their current order and retain their identity;
             each accepted machine box is cloned to keep layers independently editable.
+            Manual candidates in `boxes` are ignored. An empty result still
+            initializes the frame. Iteration, predicate, and cloning errors
+            propagate before the replacement list is assigned.
 
-        Example:
+        Examples:
+            Given `store`, candidate `detections`, and `VideoDataLayer` imported
+            from `app.domain.video.layer`:
+
+            ```python
             store.replace_machine_boxes_at_frame_index(VideoDataLayer.B, 0, detections)
+            ```
         """
         with self.data_lock:
             self._replace_machine_boxes_unlocked(layer, frame_index, boxes, filter_fn)
@@ -583,17 +672,30 @@ class SessionDataStore(QObject):
             layer: Target layer whose machine boxes are refreshed.
             boxes_by_frame: New machine boxes keyed by zero-based frame index.
             frame_count: Number of frames to refresh, covering `0..frame_count - 1`.
-            filter_fn: Optional predicate applied before new boxes are cloned.
+            filter_fn: Acceptance predicate for non-manual candidates; `True`
+                includes a box and `None` accepts all. Runs under the store lock.
+
         Raises:
             ValueError: If `frame_count` is negative.
-            Exception: Propagates errors raised by `filter_fn`.
 
         Note:
             Existing manual boxes are retained on every frame, including frames with
             no machine detections. Frames outside the requested range are unchanged.
+            Every frame in the range is initialized, even when empty. A zero
+            count performs no updates; input entries outside the range are ignored.
 
-        Example:
+        !!! warning "No rollback"
+
+            Iteration, predicate, or cloning errors propagate. Earlier frames
+            remain updated even though the failing frame is not replaced.
+
+        Examples:
+            Given `store`, a `tracked` frame mapping, the video `frame_count`,
+            and `VideoDataLayer` imported from `app.domain.video.layer`:
+
+            ```python
             store.replace_machine_boxes_for_frames(VideoDataLayer.D, tracked, frame_count)
+            ```
         """
         if frame_count < 0:
             raise ValueError("frame_count must be non-negative.")
@@ -618,16 +720,15 @@ class SessionDataStore(QObject):
             layer: Layer being updated.
             frame_index: Zero-based target frame.
             boxes: Candidate machine boxes.
-            filter_fn: Optional acceptance predicate.
-        Raises:
-            Exception: Propagates filtering and cloning errors.
+            filter_fn: Acceptance predicate; `True` includes a non-manual box.
+                `None` accepts all non-manual candidates.
 
         Note:
             This helper deliberately does not acquire the lock so bulk updates can
-            process every frame in one critical section.
-
-        Example:
-            store._replace_machine_boxes_unlocked(layer, 0, boxes, predicate)
+            process every frame in one critical section. The caller must hold
+            `data_lock`. Manual objects retain their identity; machine objects
+            are cloned. Filtering, iteration, and cloning errors propagate
+            before assignment.
         """
         current = self._data[layer].get(frame_index, [])
         manual_boxes = [box for box in current if box.is_manual]
@@ -643,6 +744,10 @@ class SessionDataStore(QObject):
 
         Returns:
             Nested mapping of layer name to frame-index strings to serialized box dictionaries.
+
+        All four layer keys are included; empty frames are omitted. Serialization
+        creates new dictionaries and coordinate lists under one lock acquisition.
+        It does not write a file or preserve initialized-empty frame entries.
         """
         with self.data_lock:
             payload: dict[str, dict[str, list[dict[str, object]]]] = {}
@@ -662,11 +767,21 @@ class SessionDataStore(QObject):
             payload: Mapping from layer names to frame-index strings and serialized box mappings.
 
         Raises:
-            ValueError: If a layer name or frame-index string cannot be parsed.
+            ValueError: If a layer name, frame-index string, or serialized box
+                source cannot be parsed.
             KeyError: If a serialized box is missing a required field.
+            TypeError: If a frame key cannot be converted to an integer or box
+                coordinates cannot be iterated.
 
-        Note:
-            All four layers are cleared before the payload is loaded.
+        !!! warning "Loading is not transactional"
+
+            All four layers are cleared before parsing begins. Conversion errors
+            propagate and may leave partially loaded data; the old contents are
+            not restored. Validate external project data before calling.
+
+        Frame keys are passed to `int()` without checking video bounds. Empty
+        lists create initialized entries, omitted layers remain empty, and box
+        objects are reconstructed rather than shared with the payload.
         """
         with self.data_lock:
             for layer in VideoDataLayer:

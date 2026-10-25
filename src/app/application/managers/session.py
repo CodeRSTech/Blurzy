@@ -39,9 +39,6 @@ class SessionManager:
     worker) is delegated to `SessionInitializer`.
 
 
-    Layer: Application.
-    Context: Coordinates use-case behavior through domain services and application contracts.
-
 
     Args:
         app: Application that owns the manager and is notified when the active session changes.

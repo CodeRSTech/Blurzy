@@ -47,9 +47,6 @@ class ZeroStreamsInVideoException(VideoStreamStateException):
     """
     Signal the zero streams in video error condition.
 
-    Layer: Infrastructure.
-    Context: Implements concrete processing or I/O behind application-facing contracts.
-
 
     Args:
         msg: Error message to include in the exception.
@@ -107,9 +104,6 @@ class VideoReader:
         reader.close()
         ```
 
-
-    Layer: Infrastructure.
-    Context: Implements concrete processing or I/O behind application-facing contracts.
 
 
     Args:

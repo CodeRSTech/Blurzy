@@ -69,9 +69,6 @@ class ExportWorker(QThread):
         worker.stop()
 
 
-    Layer: Infrastructure.
-    Context: Implements concrete processing or I/O behind application-facing contracts.
-
 
     Args:
         export_service: Service that renders the session export.

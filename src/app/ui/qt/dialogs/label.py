@@ -23,9 +23,6 @@ class LabelDialog(QDialog):
     """
     Simple dialog to collect a label string after a bbox has been drawn interactively.
 
-    Layer: Presentation.
-    Context: Supports user interaction and delegates application work through presentation contracts.
-
 
     Args:
         parent: Optional Qt parent object.

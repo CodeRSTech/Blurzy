@@ -27,9 +27,6 @@ class CollapsiblePanel(QWidget):
     Clicking the toggle button shows/hides the child widgets.
 
 
-    Layer: Presentation.
-    Context: Supports user interaction and delegates application work through presentation contracts.
-
 
     Args:
         title: Text displayed in the panel's header.

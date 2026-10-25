@@ -38,9 +38,6 @@ class TrackingWorkerManager:
     """
     Canonical owner for tracking worker start/stop/switch transitions.
 
-    Layer: Application.
-    Context: Coordinates use-case behavior through domain services and application contracts.
-
 
     Args:
         app_adapter: Adapter that exposes application operations through the expected interface.

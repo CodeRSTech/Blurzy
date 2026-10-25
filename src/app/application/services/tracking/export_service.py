@@ -59,9 +59,6 @@ class TrackingExportService(QObject):
         surfacing a friendly warning when the user tries to export an empty layer.
 
 
-    Layer: Application.
-    Context: Coordinates use-case behavior through domain services and application contracts.
-
 
     Args:
         app: Application used to resolve sessions and read tracking-layer boxes for export.

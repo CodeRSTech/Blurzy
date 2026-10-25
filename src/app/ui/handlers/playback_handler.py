@@ -56,9 +56,6 @@ class PlaybackHandler(QObject):
             Uses QTimer to trigger periodic `on_playback_tick()` calls during playback.
 
 
-    Layer: Presentation.
-    Context: Supports user interaction and delegates application work through presentation contracts.
-
 
     Args:
         controller: Provides playback operations, transport controls, and frame rendering.

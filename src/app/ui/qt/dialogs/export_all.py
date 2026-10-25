@@ -25,9 +25,6 @@ class ExportAllDialog(QDialog):
     Requires an output directory and allows optional prefix/suffix.
 
 
-    Layer: Presentation.
-    Context: Supports user interaction and delegates application work through presentation contracts.
-
 
     Args:
         parent: Optional Qt parent object.

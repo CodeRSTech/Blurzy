@@ -96,9 +96,6 @@ class AnnotationOverlayWidget(QWidget):
      - Paint primitives live in `rendering.py`.
 
 
-    Layer: Presentation.
-    Context: Supports user interaction and delegates application work through presentation contracts.
-
 
     Args:
         parent: Optional Qt parent object.

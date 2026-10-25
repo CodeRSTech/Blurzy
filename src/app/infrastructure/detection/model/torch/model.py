@@ -44,9 +44,6 @@ class TorchDetectionModel(BaseDetectionModel):
         Confidence threshold: `DEFAULT_TORCH_CONFIDENCE_THRESHOLD` (0.50).
 
 
-    Layer: Infrastructure.
-    Context: Implements concrete processing or I/O behind application-facing contracts.
-
 
     Args:
         model_name: Registered name of the detection model.

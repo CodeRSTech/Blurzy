@@ -45,9 +45,6 @@ class VideoDecodeWorkerManager:
     unit-testable without a live `Application` instance.
 
 
-    Layer: Application.
-    Context: Coordinates use-case behavior through domain services and application contracts.
-
 
     Args:
         session_repo: Interface used to resolve sessions and coordinate their decode workers.

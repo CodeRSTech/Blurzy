@@ -36,9 +36,6 @@ class TransportControlsPanel(QVBoxLayout):
     """
     Provide the transport controls panel presentation component.
 
-    Layer: Presentation.
-    Context: Supports user interaction and delegates application work through presentation contracts.
-
 
     Args:
         parent: Optional Qt parent object.

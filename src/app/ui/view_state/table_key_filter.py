@@ -28,9 +28,6 @@ class FrameTableKeyFilter(QObject):
     """
     Represent frame table key filter.
 
-    Layer: Presentation.
-    Context: Supports user interaction and delegates application work through presentation contracts.
-
 
     Args:
         annotation_handler: Handler that applies annotation interactions.

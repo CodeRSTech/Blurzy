@@ -57,9 +57,6 @@ class DetectionService:
         `start_detection_worker_for_session_id()` — Background detection (threading).
 
 
-    Layer: Application.
-    Context: Coordinates use-case behavior through domain services and application contracts.
-
 
     Args:
         app: Application adapted for session access, model management, detection, and worker coordination.

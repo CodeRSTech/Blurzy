@@ -45,9 +45,6 @@ class MTCNNTorchDetectionModel(BaseDetectionModel):
         Returns detections with label `"person"`.
 
 
-    Layer: Infrastructure.
-    Context: Implements concrete processing or I/O behind application-facing contracts.
-
 
     Args:
         loader: Backend-specific model loader.
