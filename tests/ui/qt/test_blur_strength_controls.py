@@ -13,6 +13,19 @@ pytestmark = pytest.mark.skipif(
 )
 
 
+def test_preferences_form_scrolls_with_buttons_visible(qtbot):
+    dialog = PreferencesDialog(AppPreferences(), available_models=[])
+    qtbot.addWidget(dialog)
+    dialog.resize(600, 480)
+    dialog.show()
+
+    qtbot.waitUntil(lambda: dialog._scroll_area.verticalScrollBar().maximum() > 0)
+
+    assert dialog._button_box.isVisible()
+    assert dialog._button_box.geometry().bottom() <= dialog.rect().height()
+    assert dialog.maximumHeight() <= int(dialog.screen().availableGeometry().height() * 0.9)
+
+
 @pytest.mark.parametrize("strength", [15.0, 101.0, 255.0])
 def test_render_panel_restores_higher_blur_strength_without_clamping(qtbot, strength):
     panel = RightControlPanel()
