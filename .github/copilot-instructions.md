@@ -98,8 +98,16 @@ commands and platform prerequisites; do not assume local checks exactly match CI
 
 ## Documentation
 
+Code must be well documented with mkdocstrings-compatible docstrings. Document
+public modules, classes, and functions with useful behavioral contracts,
+Google-style sections, and fenced examples where relevant.
 Architecture pages explain workflows and ownership; API contracts belong in
-Python docstrings using Google-style sections and fenced examples.
+Python docstrings.
+For every code change, review affected documentation articles under `docs/` and
+update them when behavior, workflows, interfaces, or architecture change.
+Documentation diagrams may use Mermaid or SVG and must remain readable in both
+light and dark themes. Use theme-aware Mermaid styling or equivalent light/dark
+SVG variants, preserving editable sources and checking both themes.
 Follow [architecture authoring](../docs/development/architecture-documentation.md)
 for diagrams, themed assets, and reproducible examples, and
 [reference generation](../docs/development/reference-documentation.md) for API rules.
