@@ -23,6 +23,7 @@ class TestAppPreferencesStore:
         preferences = AppPreferencesStore(_FakeSettings()).load()
 
         assert preferences.startup_fullscreen is False
+        assert preferences.default_theme == "system"
         assert preferences.default_detection_model_name == "None"
         assert preferences.default_chosen_labels == ["person", "cat", "dog"]
         assert preferences.default_reid_embedding_dim == 256
@@ -34,6 +35,7 @@ class TestAppPreferencesStore:
             _FakeSettings(
                 {
                     "preferences/startup_fullscreen": "true",
+                    "preferences/default_theme": "DARK",
                     "preferences/default_min_detection_confidence": "0.55",
                     "preferences/default_chosen_labels": "person, car , bike",
                     "preferences/default_blur_enabled": "1",
@@ -46,6 +48,7 @@ class TestAppPreferencesStore:
         preferences = store.load()
 
         assert preferences.startup_fullscreen is True
+        assert preferences.default_theme == "dark"
         assert preferences.default_min_detection_confidence == 0.55
         assert preferences.default_chosen_labels == ["person", "car", "bike"]
         assert preferences.default_blur_enabled is True
@@ -57,6 +60,7 @@ class TestAppPreferencesStore:
         store = AppPreferencesStore(fake_settings)
         preferences = AppPreferences(
             startup_fullscreen=True,
+            default_theme="light",
             default_detection_model_name="yolov8n",
             default_chosen_labels=["person", "face"],
             default_offline_stitching_enabled=False,
@@ -77,6 +81,7 @@ class TestAppPreferencesStore:
 
         assert fake_settings.synced is True
         assert loaded.startup_fullscreen is True
+        assert loaded.default_theme == "light"
         assert loaded.default_detection_model_name == "yolov8n"
         assert loaded.default_chosen_labels == ["person", "face"]
         assert loaded.default_offline_stitching_enabled is False
@@ -92,3 +97,8 @@ class TestAppPreferencesStore:
         assert loaded.default_export_directory == "/exports"
         assert loaded.default_export_prefix == "final_"
         assert loaded.default_export_suffix == "_done"
+
+    def test_load_uses_system_theme_for_invalid_saved_value(self) -> None:
+        store = AppPreferencesStore(_FakeSettings({"preferences/default_theme": "solarized"}))
+
+        assert store.load().default_theme == "system"

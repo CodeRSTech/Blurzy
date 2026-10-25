@@ -14,13 +14,23 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, final, cast
 
 from PySide6.QtCore import Signal, Slot, Qt, QSignalBlocker
-from PySide6.QtWidgets import QWidget, QPushButton, QTableWidget, QTabWidget, QListWidget, \
-    QSplitter, QListWidgetItem, QTableWidgetItem
+from PySide6.QtWidgets import (
+    QHeaderView,
+    QListWidget,
+    QListWidgetItem,
+    QPushButton,
+    QSplitter,
+    QTabWidget,
+    QTableWidget,
+    QTableWidgetItem,
+    QWidget,
+)
 
 from app.domain import SessionId, VideoDataLayerGroup
 from app.shared.logging_cfg import get_logger
 from app.ui.qt.shared.layout_shortcuts import create_vbox_layout
 from app.ui.qt.shared.widget_factories import create_qhbox_with_widgets, post_data_table_init
+from app.ui.qt.widgets.color_swatch_delegate import COLOR_SWATCH_ROLE, ColorSwatchDelegate
 
 if TYPE_CHECKING:
     from app.domain.views import SessionFileListViewModel
@@ -107,14 +117,24 @@ class BottomDataPanelContainer(QWidget):
 
     def _initialize_data_panels(self) -> None:
         detection_data_table = self.detection_tab_frame_data_table
-        detection_data_table.setHorizontalHeaderLabels(
-            ["ID", "Source", "Label", "Detection Confidence", "BBox", "Color"])
+        detection_data_table.setHorizontalHeaderLabels(["ID", "Source", "Label", "Detection Confidence", "BBox", "Color"])
         post_data_table_init(detection_data_table)
+        detection_data_table.setAlternatingRowColors(True)
+        detection_data_table.setItemDelegateForColumn(5, ColorSwatchDelegate(detection_data_table))
+        detection_data_table.horizontalHeader().setStretchLastSection(False)
+        detection_data_table.horizontalHeader().setSectionResizeMode(5, QHeaderView.ResizeMode.Fixed)
+        detection_data_table.setColumnWidth(5, 56)
+        detection_data_table.horizontalHeaderItem(5).setTextAlignment(Qt.AlignmentFlag.AlignCenter)
 
         tracker_data_table = self.tracker_tab_frame_data_table
-        tracker_data_table.setHorizontalHeaderLabels(
-            ["ID", "Source", "Label", "Tracker Confidence", "BBox", "Color"])
+        tracker_data_table.setHorizontalHeaderLabels(["ID", "Source", "Label", "Tracker Confidence", "BBox", "Color"])
         post_data_table_init(tracker_data_table)
+        tracker_data_table.setAlternatingRowColors(True)
+        tracker_data_table.setItemDelegateForColumn(5, ColorSwatchDelegate(tracker_data_table))
+        tracker_data_table.horizontalHeader().setStretchLastSection(False)
+        tracker_data_table.horizontalHeader().setSectionResizeMode(5, QHeaderView.ResizeMode.Fixed)
+        tracker_data_table.setColumnWidth(5, 56)
+        tracker_data_table.horizontalHeaderItem(5).setTextAlignment(Qt.AlignmentFlag.AlignCenter)
 
 
     def _connect_signals(self) -> None:
@@ -460,14 +480,19 @@ class BottomDataPanelContainer(QWidget):
 
                 data_table.setItem(row_idx, 0, box_id)
 
-                for col_idx, attr in [(1, 'source'),
-                                      (2, 'label'),
-                                      (3, 'confidence_txt'),
-                                      (4, 'bbox_txt'),
-                                      (5, 'color_hex')]:
+                for col_idx, attr in [(1, "source"),
+                                      (2, "label"),
+                                      (3, "confidence_txt"),
+                                      (4, "bbox_txt")]:
                     data_table.setItem(row_idx,
                                        col_idx,
                                        QTableWidgetItem(item.__getattribute__(attr)))
+
+                color_item = QTableWidgetItem("")
+                color_item.setData(COLOR_SWATCH_ROLE, item.color_hex)
+                color_item.setToolTip(f"Color: {item.color_hex}")
+                color_item.setData(Qt.ItemDataRole.AccessibleTextRole, f"Object color {item.color_hex}")
+                data_table.setItem(row_idx, 5, color_item)
 
                 if item.key in selected_box_keys:
                     rows_to_select.append(row_idx)

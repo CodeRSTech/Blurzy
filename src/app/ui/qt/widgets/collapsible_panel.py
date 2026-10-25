@@ -37,17 +37,17 @@ class CollapsiblePanel(QWidget):
         super().__init__(parent)
         self._title: str = title
         self.is_expanded: bool = True
+        self.setObjectName("controlSection")
 
         # Toggle button acts as the section header.
         self.toggle_button = QPushButton(f"▼ {self._title}")
-        self.toggle_button.setStyleSheet(
-            "text-align: left; font-weight: bold; padding: 6px;"
-        )
+        self.toggle_button.setObjectName("sectionHeader")
+        self.toggle_button.setFlat(True)
         self.toggle_button.clicked.connect(self.toggle)
 
         # Content area holds the actual widgets
         self.content_area: QWidget = QWidget()
-        self.content_layout: QVBoxLayout = create_vbox_layout(self.content_area, margins=(15, 5, 5, 10))
+        self.content_layout: QVBoxLayout = create_vbox_layout(self.content_area, margins=(10, 4, 10, 10), spacing=7)
 
         main_layout = create_vbox_layout(self, margins=(0, 0, 0, 0), spacing=2)
         main_layout.addWidget(self.toggle_button)

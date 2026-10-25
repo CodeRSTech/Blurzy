@@ -141,7 +141,7 @@ class Window(QtWidgets.QMainWindow):
         )
 
         top_bar = QtWidgets.QWidget(self)
-        top_bar_layout = create_vbox_layout(top_bar, margins=(6, 4, 6, 4), spacing=0)
+        top_bar_layout = create_vbox_layout(top_bar, margins=(10, 6, 10, 6), spacing=0)
         menu_row = QtWidgets.QHBoxLayout()
         menu_row.setContentsMargins(0, 0, 0, 0)
         menu_row.setSpacing(8)
@@ -154,7 +154,8 @@ class Window(QtWidgets.QMainWindow):
 
     def _build_ui(self) -> None:
         central = QtWidgets.QWidget()
-        root_layout = create_vbox_layout(central, margins=(6, 6, 6, 6), spacing=6)
+        central.setObjectName("centralWidget")
+        root_layout = create_vbox_layout(central, margins=(8, 8, 8, 8), spacing=8)
 
         root_layout.addWidget(self._build_main_splitter(), 1)
         self.setCentralWidget(central)
@@ -203,6 +204,7 @@ class Window(QtWidgets.QMainWindow):
         self.bottom_panel.tab_changed.connect(self._on_tab_changed)
         self.bottom_panel.session_selected.connect(self.session_selected.emit)
         self.open_videos_action.triggered.connect(self._choose_video_files)
+        self.preview_container.open_video_requested.connect(self._choose_video_files)
         self.preview_container.viewport_state_changed.connect(self.transport_panel.set_viewport_state)
         # Route menu reset actions through the existing reset buttons to preserve handler connections.
         self._connect_reset_actions()
@@ -218,7 +220,9 @@ class Window(QtWidgets.QMainWindow):
         self.bottom_panel.setMinimumHeight(0)
 
         self.info_label = QtWidgets.QLabel("No session loaded")
+        self.info_label.setObjectName("mutedText")
         self.project_label = QtWidgets.QLabel("Project: none")
+        self.project_label.setObjectName("mutedText")
         progress_minimum, progress_maximum = self._splitter_defaults.progress_range
         self.export_progress_bar = create_progress_bar(
             minimum=progress_minimum,

@@ -51,6 +51,7 @@ class TestMainStartup:
         ui_controller_cls = MagicMock()
         apply_custom_qt_reprs = MagicMock()
         apply_qt_ui_shortcuts = MagicMock()
+        apply_application_theme = MagicMock()
 
         def _package(name: str) -> types.ModuleType:
             module = types.ModuleType(name)
@@ -67,6 +68,8 @@ class TestMainStartup:
         qt_debug_module.apply_custom_qt_reprs = apply_custom_qt_reprs
         qt_ui_shortcuts_module = types.ModuleType("app.ui.qt.shared.qt_ui_shortcuts")
         qt_ui_shortcuts_module.apply_qt_ui_shortcuts = apply_qt_ui_shortcuts
+        theme_module = types.ModuleType("app.ui.qt.shared.theme")
+        theme_module.apply_application_theme = apply_application_theme
         ui_controller_module = types.ModuleType("app.ui.uicontroller")
         ui_controller_module.UIController = ui_controller_cls
 
@@ -80,6 +83,7 @@ class TestMainStartup:
         monkeypatch.setitem(sys.modules, "app.ui.qt.window", window_module)
         monkeypatch.setitem(sys.modules, "app.ui.qt.shared.qt_debug_repr", qt_debug_module)
         monkeypatch.setitem(sys.modules, "app.ui.qt.shared.qt_ui_shortcuts", qt_ui_shortcuts_module)
+        monkeypatch.setitem(sys.modules, "app.ui.qt.shared.theme", theme_module)
         monkeypatch.setitem(sys.modules, "app.ui.uicontroller", ui_controller_module)
 
         with pytest.raises(SystemExit) as exc_info:
@@ -98,6 +102,7 @@ class TestMainStartup:
         configure_qt_application_metadata.assert_called_once_with(q_app_instance)
         app_preferences_store_cls.assert_called_once_with()
         preferences_store.load.assert_called_once_with()
+        apply_application_theme.assert_called_once_with(q_app_instance, "system")
         app_cls.assert_called_once_with()
         window_cls.assert_called_once_with()
         ui_controller_cls.assert_called_once_with(
@@ -123,6 +128,7 @@ class TestMainStartup:
         ui_controller_cls = MagicMock()
         apply_custom_qt_reprs = MagicMock()
         apply_qt_ui_shortcuts = MagicMock()
+        apply_application_theme = MagicMock()
 
         def _package(name: str) -> types.ModuleType:
             module = types.ModuleType(name)
@@ -139,6 +145,8 @@ class TestMainStartup:
         qt_debug_module.apply_custom_qt_reprs = apply_custom_qt_reprs
         qt_ui_shortcuts_module = types.ModuleType("app.ui.qt.shared.qt_ui_shortcuts")
         qt_ui_shortcuts_module.apply_qt_ui_shortcuts = apply_qt_ui_shortcuts
+        theme_module = types.ModuleType("app.ui.qt.shared.theme")
+        theme_module.apply_application_theme = apply_application_theme
         ui_controller_module = types.ModuleType("app.ui.uicontroller")
         ui_controller_module.UIController = ui_controller_cls
 
@@ -152,11 +160,13 @@ class TestMainStartup:
         monkeypatch.setitem(sys.modules, "app.ui.qt.window", window_module)
         monkeypatch.setitem(sys.modules, "app.ui.qt.shared.qt_debug_repr", qt_debug_module)
         monkeypatch.setitem(sys.modules, "app.ui.qt.shared.qt_ui_shortcuts", qt_ui_shortcuts_module)
+        monkeypatch.setitem(sys.modules, "app.ui.qt.shared.theme", theme_module)
         monkeypatch.setitem(sys.modules, "app.ui.uicontroller", ui_controller_module)
 
         with pytest.raises(SystemExit) as exc_info:
             main_module.main()
 
         assert exc_info.value.code == 0
+        apply_application_theme.assert_called_once_with(q_app_instance, "system")
         window_instance.show.assert_not_called()
         window_instance.showFullScreen.assert_called_once_with()

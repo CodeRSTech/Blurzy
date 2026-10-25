@@ -18,6 +18,7 @@ from PySide6.QtGui import QAction
 from PySide6.QtWidgets import (
     QCheckBox,
     QComboBox,
+    QFrame,
     QLabel,
     QLineEdit,
     QPushButton,
@@ -95,10 +96,11 @@ class RightControlPanel(QScrollArea):
         super().__init__(parent)
         self.setWidgetResizable(True)
         self.setMinimumWidth(280)
+        self.setFrameShape(QFrame.Shape.NoFrame)
 
         # Container to hold everything inside the scroll area
         self._container = QWidget()
-        self._layout = create_vbox_layout(self._container, margins=(5, 5, 5, 5), spacing=10)
+        self._layout = create_vbox_layout(self._container, margins=(8, 8, 8, 8), spacing=9)
         # All widgets are strictly instantiated as instance attributes here.
         self._init_widgets()
         self._build_ui()
@@ -165,6 +167,7 @@ class RightControlPanel(QScrollArea):
         #   [             Start Background Detection             ]
         #   [====================================================]
         self.detect_all_btn = QPushButton("Start Background Detection")
+        self.detect_all_btn.setProperty("emphasis", "primary")
         #
         #   [====================================================]
         #   [                   Import / Export                  ]
@@ -341,6 +344,7 @@ class RightControlPanel(QScrollArea):
         #   [                   Start Tracking                   ]
         #   [====================================================]
         self.track_btn = QPushButton("Start Tracking")        #
+        self.track_btn.setProperty("emphasis", "primary")
         #   [====================================================]
         #   [                   Import / Export                  ]
         #   [====================================================]
@@ -439,11 +443,11 @@ class RightControlPanel(QScrollArea):
             "This setting only affects the editor viewport and never draws boxes on the exported video."
         )
         self.draw_boxes_checkbox.setToolTip(self.draw_boxes_tooltip)
-        self.box_border_width_label = QLabel("Box Border Width:")
+        self.box_border_width_label = QLabel("Outline Weight:")
         self.box_border_width_spinbox = create_int_spinbox(1, 10, 1, 2)
         self.box_border_width_tooltip = (
-            "Adjust the line thickness (1–10 px) of bounding box borders in the editor preview. "
-            "Useful for high-resolution 4K footage where thin borders are hard to see."
+            "Adjust the editor-only outline weight. Thickness scales with the displayed video size "
+            "and zoom, using a 480-pixel video height as the reference."
         )
         self.box_border_width_label.setToolTip(self.box_border_width_tooltip)
         self.box_border_width_spinbox.setToolTip(self.box_border_width_tooltip)
@@ -495,6 +499,7 @@ class RightControlPanel(QScrollArea):
         #   [                    Export Video                    ]
         #   [====================================================]
         self.export_btn = QPushButton("Export Video")
+        self.export_btn.setProperty("emphasis", "primary")
         self.export_all_btn = QPushButton("Export All")
         self.export_all_action = QAction("Export All...", self)
 

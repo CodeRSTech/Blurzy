@@ -20,6 +20,7 @@ from app.infrastructure.detection.model.helpers import get_detection_model_names
 from app.shared.app_preferences import AppPreferences, AppPreferencesStore
 from app.shared.logging_cfg import get_logger
 from app.ui.qt.dialogs import PreferencesDialog
+from app.ui.qt.shared.theme import apply_application_theme
 
 if TYPE_CHECKING:
     from app.domain.session import SessionId
@@ -99,6 +100,8 @@ class PreferencesHandler(QObject):
 
         self._preferences = dialog.get_preferences()
         self._store.save(self._preferences)
+        apply_application_theme(self._controller.q_app, self._preferences.default_theme)
+        self._window.transport_panel.refresh_theme_icons()
         self._apply_window_preferences()
         self._window.set_status_text(
             "Settings saved. New session defaults will apply to videos opened from now on."

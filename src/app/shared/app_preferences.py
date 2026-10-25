@@ -33,6 +33,8 @@ DEFAULT_SHOW_PREVIEW_MASK = False
 DEFAULT_PREVIEW_BLUR_ENABLED = False
 DEFAULT_BLUR_ENABLED = False
 DEFAULT_BLUR_STRENGTH = 15.0
+DEFAULT_THEME = "system"
+SUPPORTED_THEMES = ("system", "light", "dark")
 
 
 def _parse_labels(value: str) -> list[str]:
@@ -114,6 +116,11 @@ def _coerce_str(value: object, default: str) -> str:
     return str(value)
 
 
+def _coerce_theme(value: object, default: str) -> str:
+    candidate = _coerce_str(value, default).strip().lower()
+    return candidate if candidate in SUPPORTED_THEMES else default
+
+
 class _SettingsBackend(Protocol):
     def value(self, key: str, defaultValue: object | None = None) -> object:
         """
@@ -159,6 +166,7 @@ class AppPreferences:
     Context: Provides reusable cross-layer behavior without owning workflow state.
     """
     startup_fullscreen: bool = False
+    default_theme: str = DEFAULT_THEME
     default_detection_model_name: str = DEFAULT_DETECTION_MODEL_NAME
     default_min_detection_confidence: float = DEFAULT_MIN_DETECTION_CONFIDENCE
     default_chosen_labels: list[str] = field(default_factory=lambda: list(DEFAULT_CHOSEN_LABELS))
@@ -243,6 +251,7 @@ class AppPreferencesStore:
     """
     _KEYS = {
         "startup_fullscreen": "preferences/startup_fullscreen",
+        "default_theme": "preferences/default_theme",
         "default_detection_model_name": "preferences/default_detection_model_name",
         "default_min_detection_confidence": "preferences/default_min_detection_confidence",
         "default_chosen_labels": "preferences/default_chosen_labels",
@@ -308,6 +317,10 @@ class AppPreferencesStore:
             startup_fullscreen=_coerce_bool(
                 self._settings.value(self._KEYS["startup_fullscreen"], defaults.startup_fullscreen),
                 defaults.startup_fullscreen,
+            ),
+            default_theme=_coerce_theme(
+                self._settings.value(self._KEYS["default_theme"], defaults.default_theme),
+                defaults.default_theme,
             ),
             default_detection_model_name=_coerce_str(
                 self._settings.value(
@@ -432,6 +445,7 @@ class AppPreferencesStore:
             store.save(AppPreferences(default_max_stitch_gap=25))
         """
         self._settings.setValue(self._KEYS["startup_fullscreen"], preferences.startup_fullscreen)
+        self._settings.setValue(self._KEYS["default_theme"], _coerce_theme(preferences.default_theme, DEFAULT_THEME))
         self._settings.setValue(
             self._KEYS["default_detection_model_name"], preferences.default_detection_model_name
         )
