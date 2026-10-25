@@ -38,7 +38,8 @@ That stable boundary keeps provider-specific result objects out of callers.
 Switching providers does not require each caller to learn a new output format,
 but it does not make providers equivalent: a face detector and a general object
 detector do not find the same things. See [Detection models](model.md) for that
-integration boundary.
+integration boundary and the [generated API reference](../../../reference/api/index.md)
+for exact provider contracts.
 
 ## Load once, then process images
 
@@ -118,9 +119,9 @@ downward. A box gives its top-left and bottom-right pixel coordinates in the
 original **960 x 540** image. Confidence is the model's score, not a guarantee
 that a prediction is correct. The mapper's `yolo-N` IDs are local to its output;
 they are **not tracking IDs** and do not identify the same person across frames.
-`color_hex` is presentation metadata, not another model prediction.
-See [Bounding box](../../domain/bounding-box.md) and
-[Detection values](../../domain/detection.md).
+`color_hex` is presentation metadata, not another model prediction. See
+[Bounding box](../../domain/bounding-box.md) and
+[Detection domain values](../../domain/detection.md).
 
 [Download all results and run metadata (JSON)](../../../assets/api/detection_engine/snapshot-results.json).
 The file includes full-precision scores, coordinates, counts, image and weights

@@ -2,17 +2,24 @@
 
 Source: `src/app/application`
 
-The Application layer exposes a facade to the UI and coordinates use cases
-through services, managers, adapters, and interfaces. The facade composes
-workflow services and session ownership; services validate and sequence
-operations, managers own selected long-lived session and worker lifecycles,
-and adapters bind contracts to current infrastructure implementations.
-Application code uses domain state and does not make Qt widgets part of service
-logic.
+The Application layer is the workflow coordinator between the UI and
+infrastructure. The UI calls a facade, services validate and sequence use
+cases, managers own selected long-lived session/worker lifecycles, and
+adapters connect application-owned contracts to concrete infrastructure
+implementations. Application policy uses domain values and does not manipulate
+Qt widgets.
 
-At runtime, UI handlers call the facade, services coordinate work against
-session data and domain values, and workers report results through contracts
-and signals. See [Architecture](../overview.md) for the end-to-end flows.
+For example, detection service code validates model/session state, asks a
+manager/factory for a worker, and processes its emitted batches into A/B.
+Tracking similarly validates an A/B source and synchronizes completed output
+into C/D. The worker performs frame/model/tracker work in the background;
+Application owns the meaning and placement of its results.
+
+This is not yet a strict dependency-inversion boundary: some Application
+composition and lifecycle code imports concrete infrastructure classes.
+`src/main.py` wires the top-level runtime and the facade coordinates services;
+see the [architecture overview](../overview.md),
+[managers](managers.md), and [services](services/index.md).
 
 ## Packages
 

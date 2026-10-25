@@ -4,8 +4,10 @@
 
     Blurzy has a Preferences dialog and session-level processing settings.
     The ideas below describe possible improvements and additional defaults, not
-    the absence of a settings UI. See the [Qt dialog notes](../../architecture/ui/qt/dialogs.md)
-    for the presentation layer.
+    the absence of a settings UI. See the
+    [Qt dialog notes](../../architecture/ui/qt/dialogs.md) and
+    [processing settings](../../architecture/domain/export.md) for current
+    presentation and configuration details.
 
 ## What this is
 

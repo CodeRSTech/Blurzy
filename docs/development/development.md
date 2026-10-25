@@ -85,7 +85,7 @@ artifacts and are not committed.
 
 Reference documentation has two complementary parts:
 
-- **Package notes** in `docs/architecture/` are beginner-friendly, visual
+- **Architecture guides** in `docs/architecture/` are beginner-friendly, visual
   explanations of workflows and collaboration, including
   ownership rules, lifecycle notes, and diagrams. Keep the `Source:` line
   pointing to the corresponding source package, using a page-relative path or
@@ -107,10 +107,10 @@ python -m mkdocs build --strict
 
 The Pages workflow runs both.
 
-The **Architecture** menu starts with Overview, followed by UI, Application,
-Infrastructure, Domain, and Shared package notes. **API reference** starts directly
-at application, domain, infrastructure, shared, and UI packages. Package titles
-open their index pages without extra Overview links.
+The **Architecture** menu starts with Overview and includes authored guides
+grouped by their directories. **API reference** starts directly at application,
+domain, infrastructure, shared, and UI packages. Package titles open their
+index pages without extra Overview links.
 
 Public defining-module members appear even without docstrings. Module-level
 runtime wiring (including loggers), private names, imported members, and

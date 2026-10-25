@@ -1,13 +1,16 @@
-# Architecture package notes
+# Architecture guides
 
-Package notes explain responsibilities, ownership, and design. The separate
-**API reference** menu is generated from `src/app` on every documentation build: signatures,
-type annotations, and docstrings come directly from the source.
+The Architecture section is the beginner-friendly guide to how Blurzy works.
+Start with the [overview](overview.md) for layer boundaries and end-to-end
+workflows, then follow the component guides for detection, tracking, sessions,
+video decoding, and export.
 
-Start with [Architecture](overview.md) for cross-layer workflows, or
-browse the [generated API](../reference/api/index.md) for individual modules.
+Use the separate [generated API reference](../reference/api/index.md) when you
+need exact module signatures, fields, and method contracts.
 
-Generated pages are not edited or committed. Improve API explanations in
-Python docstrings; keep diagrams and cross-component design notes in the
-handwritten package pages. See [Reference documentation](../development/reference-documentation.md)
-for the parsing pipeline, authoring guidelines, and troubleshooting.
+Architecture pages explain responsibilities and data flow with examples and
+visuals; they are not a second module catalog. See
+[Writing architecture guides](../development/architecture-documentation.md)
+for authoring conventions and
+[Reference documentation](../development/reference-documentation.md) for how
+the API pages are generated.

@@ -19,6 +19,5 @@ The diagram uses a detection as an example. Tracking and manually created boxes
 use the same visual geometry, while their source and other metadata depend on
 how the box was produced.
 
-See [detection values](detection.md) and [view models](views.md) for the
-package-level roles; the generated API reference documents their full fields
-and behavior.
+The [generated API reference](../../reference/api/index.md) documents the full
+fields and behavior of these values.

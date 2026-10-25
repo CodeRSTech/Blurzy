@@ -199,7 +199,7 @@ Class-member visibility is controlled by mkdocstrings filters. An explicitly
 authored directive can override visibility for a selected private API when
 there is a real documentation need.
 
-## Navigation, links, and package notes
+## Navigation and authored architecture pages
 
 The **API reference** menu starts at `app`'s children, without an `app` wrapper.
 Its page inventory is automatic, including new root-level modules. Material's
@@ -212,26 +212,25 @@ pages instead of rendering duplicate API objects. Defining modules own canonical
 symbol anchors. External and cyclic re-export chains are not followed into
 runtime imports.
 
-Handwritten package notes retain their Markdown and must include a valid
-`Source:` mapping:
+An authored architecture page can include a `Source:` mapping when it should
+link to the corresponding generated API package:
 
 ```markdown
-# Video domain
+# Detection engine
 
-Source: `../../../src/app/domain/video/`
+Source: `../../../src/app/infrastructure/detection/engine/`
 
-Explain ownership and lifecycle here.
+Explain the workflow here.
 ```
 
 Source paths can be relative to the note's directory, as above for
-`docs/architecture/domain/video.md`, or repository-relative (`src/app/domain/video/`).
+`docs/architecture/infrastructure/detection/engine.md`, or repository-relative
+(`src/app/infrastructure/detection/engine/`).
 The hook validates that package and adds an API link to the **build-time copy**
-of the note, leaving the committed file unchanged. A Source mapping that names a
-nonexistent package fails explicitly. Pages without a
-Source line remain narrative-only. Package notes are organized from their titles
-and directories. The Architecture menu starts with Overview, then UI,
-Application, Infrastructure, Domain, and Shared. Additional groups are discovered
-automatically and sorted before Domain and Shared.
+of the page, leaving the committed file unchanged. A Source mapping that names a
+nonexistent package fails explicitly. Pages without a Source line remain
+narrative-only. Architecture pages are grouped in navigation by their titles
+and directories; only add pages that teach a useful workflow or design concept.
 
 Generated pages link to the actual Python source and do not offer an edit link
 to nonexistent Markdown. Handwritten notes retain their usual edit links.
@@ -269,8 +268,8 @@ def seek(frame_index: int) -> None:
 ````
 
 Keep cross-component workflows, lifecycle diagrams, architecture decisions,
-and signal-flow explanations in handwritten package notes or architecture pages.
-Link to API pages rather than duplicating signatures or inventories there.
+and signal-flow explanations in authored architecture guides. Link to API pages
+rather than duplicating signatures or inventories there.
 
 Existing docstrings can be improved incrementally. Missing docstrings do not
 fail builds; stale or misleading prose still needs human review. Generation

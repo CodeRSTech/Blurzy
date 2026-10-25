@@ -15,5 +15,6 @@ consistent without introducing additional runtime objects.
 
 These aliases describe boundaries and payloads; the owning domain packages
 define the richer values such as `BBoxViewModel`, `SessionId`, and
-`ProcessingSettings`. See [base types](base.md) and the generated API reference
-for exact annotations and settings fields.
+`ProcessingSettings`. See [domain base types](base.md) for identity and shared
+aliases, and the [generated API reference](../../reference/api/index.md) for
+exact annotations and settings fields.
