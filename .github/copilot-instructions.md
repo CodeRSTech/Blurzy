@@ -103,6 +103,16 @@ public modules, classes, and functions with useful behavioral contracts,
 Google-style sections, and fenced examples where relevant.
 Architecture pages explain workflows and ownership; API contracts belong in
 Python docstrings.
+Follow the [project docstring standard](../docs/development/documentation-style.md#4-docstring-standard)
+and [Material for MkDocs reference](https://squidfunk.github.io/mkdocs-material/reference/).
+Griffe parses Google-style contracts; Markdown extensions and Material render
+their content. Keep annotations as the type source instead of repeating types
+in every `Args:` entry. Document ownership, side effects, locking, and failure
+semantics accurately; do not infer guarantees from formatting.
+Use only features enabled in `mkdocs.yml`: correctly indented admonitions,
+collapsible details, language-labelled fences, content tabs, figures/captions,
+tables, and opt-in code annotations. Keep essential warnings visible.
+Do not put article front matter in docstrings or require decorative markup.
 For every code change, review affected documentation articles under `docs/` and
 update them when behavior, workflows, interfaces, or architecture change.
 Documentation diagrams may use Mermaid or SVG and must remain readable in both
