@@ -85,7 +85,7 @@ def test_tracking_preview_and_render_controls_restore_bounds_tooltips_and_depend
         )
     )
 
-    assert panel.offline_stitching_checkbox.text() == "Bridge & Smooth Gaps (GSI)"
+    assert panel.offline_stitching_checkbox.text() == "Bridge Gaps (GSI)"
     assert panel.max_stitch_gap_spinbox.minimum() == 1
     assert panel.max_stitch_gap_spinbox.maximum() == 60
     assert panel.max_stitch_gap_spinbox.value() == 40
@@ -165,7 +165,7 @@ def test_reid_controls_restore_dimensions_and_emit_changes(qtbot):
     assert panel.reid_embedding_dim_combo_box.currentData() == 512
     assert emitted_dimensions == []
     assert panel.reid_embedding_dim_combo_box.count() == 3
-    assert panel.reid_embedding_dim_label.text() == "Re-ID Embedding Size"
+    assert panel.reid_embedding_dim_label.text() == "Re-ID size:"
     assert [panel.reid_embedding_dim_combo_box.itemText(i) for i in range(3)] == [
         "128 (Fast)",
         "256 (Balanced)",

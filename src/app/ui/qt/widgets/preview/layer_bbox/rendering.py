@@ -17,8 +17,8 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 
-from PySide6.QtCore import QPoint, Qt
-from PySide6.QtGui import QBrush, QPen
+from PySide6.QtCore import QPoint, QRect, Qt
+from PySide6.QtGui import QBrush, QColor, QFontMetrics, QPen
 
 from app.ui.qt.shared.geometry_ui import get_handle_points_from_rect
 from app.ui.qt.widgets.preview.layer_bbox.constants import (
@@ -29,7 +29,6 @@ from app.ui.qt.widgets.preview.layer_bbox.constants import (
     _HANDLE_DRAW_R,
 )
 if TYPE_CHECKING:
-    from PySide6.QtCore import QRect
     from PySide6.QtGui import QPainter
 
 
@@ -47,6 +46,64 @@ def scale_bbox_border_width(border_width: int, displayed_video_height: int) -> i
         return max(1, min(12, border_width))
     scaled_width = int(border_width * displayed_video_height / 480 + 0.5)
     return max(1, min(12, scaled_width))
+
+
+def draw_bbox_outline(
+    painter: QPainter,
+    rect: QRect,
+    color: QColor,
+    border_width: int,
+) -> None:
+    """Draw a canvas-space box with a dark halo for contrast over busy footage.
+
+    Args:
+        painter: Active painter, whose state is restored before returning.
+        rect: Projected box geometry in widget pixels.
+        color: Annotation color shared with the table swatch.
+        border_width: Canvas-scaled outline width.
+    """
+    painter.save()
+    painter.setBrush(Qt.BrushStyle.NoBrush)
+    painter.setPen(QPen(QColor(0, 0, 0, 200), border_width + 2))
+    painter.drawRect(rect)
+    painter.setPen(QPen(color, border_width))
+    painter.drawRect(rect)
+    painter.restore()
+
+
+def draw_bbox_caption(painter: QPainter, rect: QRect, color: QColor, caption: str, viewport: QRect) -> None:
+    """Draw an opaque caption at UI font size, bounded by the visible canvas.
+
+    Args:
+        painter: Active painter, whose state is restored before returning.
+        rect: Projected box geometry in widget pixels.
+        color: Annotation color used for the caption's leading stripe.
+        caption: Display ID, label, and confidence; long text is elided.
+        viewport: Visible canvas used to bound caption size and placement.
+
+    Note:
+        Paint captions after all outlines so intersecting boxes do not draw
+        lines through text. Caption font size does not grow during zoom.
+    """
+    painter.save()
+    font = painter.font()
+    font.setBold(True)
+    painter.setFont(font)
+    metrics = QFontMetrics(font)
+    text = metrics.elidedText(caption, Qt.TextElideMode.ElideRight, min(280, viewport.width() - 16))
+    tag_width = min(viewport.width(), metrics.horizontalAdvance(text) + 14)
+    tag_height = metrics.height() + 6
+    tag_x = max(viewport.left(), min(rect.left(), viewport.right() - tag_width + 1))
+    tag_y = rect.top() - tag_height
+    if tag_y < viewport.top():
+        tag_y = rect.top()
+    tag_y = max(viewport.top(), min(tag_y, viewport.bottom() - tag_height + 1))
+    tag_rect = QRect(tag_x, tag_y, tag_width, tag_height)
+    painter.fillRect(tag_rect, QColor("#151a22"))
+    painter.fillRect(QRect(tag_x, tag_y, 3, tag_height), color)
+    painter.setPen(QColor("#ffffff"))
+    painter.drawText(tag_rect.adjusted(8, 0, -4, 0), Qt.AlignmentFlag.AlignVCenter, text)
+    painter.restore()
 
 
 def draw_active_bbox(painter: QPainter, rect: QRect, border_width: int = 2) -> None:

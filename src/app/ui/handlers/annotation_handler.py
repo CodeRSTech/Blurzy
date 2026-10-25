@@ -1060,23 +1060,11 @@ class AnnotationHandler(QObject):
             self.on_delete_selected()
             return
         elif action == AnnotationContextActions.DELETE_NEXT.value:
-            if not selected_keys:
-                return
-            for key in selected_keys:
-                box = self._app.get_layer_box_by_key(s_id, VideoDataLayer.D, key)
-                if box is None:
-                    continue
-                self._app.delete_tracks_by_id_and_direction(s_id, box.id, Direction.NEXT)
-            should_render = True
+            self._delete_occurrences(Direction.NEXT, selected_keys)
+            return
         elif action == AnnotationContextActions.DELETE_PREV.value:
-            if not selected_keys:
-                return
-            for key in selected_keys:
-                box = self._app.get_layer_box_by_key(s_id, VideoDataLayer.D, key)
-                if box is None:
-                    continue
-                self._app.delete_tracks_by_id_and_direction(s_id, box.id, Direction.PREV)
-            should_render = True
+            self._delete_occurrences(Direction.PREV, selected_keys)
+            return
         elif action == AnnotationContextActions.RELABEL.value:
             self._window.bbox_selection_state.set_selection(selected_keys)
             self.on_relabel_selected()
@@ -1108,7 +1096,7 @@ class AnnotationHandler(QObject):
             return
 
         tab = self._window.active_tab_index
-        if tab != 1:
+        if tab != VideoDataLayerGroup.TRACKING:
             self._window.show_error(
                 "Operation Invalid",
                 "This action is only available in the Tracking tab.",
@@ -1123,6 +1111,7 @@ class AnnotationHandler(QObject):
                     self._app.delete_tracks_by_id_and_direction(s_id, box.id, direction)
             self._controller.render_frame_for_session_id(s_id)
         except Exception as exc:
+            logger.opt(exception=True).error("Delete {} occurrences failed for session '{}'", direction, s_id)
             self._window.show_error("Delete Occurrences Failed", str(exc))
 
     def copy_to_direction(self, direction: Direction, keys: list[str] | None = None) -> None:

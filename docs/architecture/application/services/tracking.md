@@ -2,6 +2,23 @@
 
 Source: `src/app/application/services/tracking`
 
+Before starting tracking, the UI checks detection coverage through
+`TrackingService.get_detection_frame_coverage`. Stored Layer A entries count
+as processed even when detection found no subjects; missing frame entries do
+not. Partial coverage prompts **Okay** (cancel) or **Proceed Anyway** before
+loading state changes or existing C/D results are cleared. Running detection
+must finish first. Coverage in imported or older projects reflects stored
+entries, not a persisted guarantee that a background detection run completed.
+
+Directional occurrence deletion edits only Layer D, excluding the current
+frame. The service resolves a track's display ID (for example `-4`) to stored
+keys (for example `track:-4`) in each affected frame. Older projects with missing
+D frames use the same filtered C-to-D compatibility seeding as Tracking-tab
+reads before the edit. Existing D entries, including intentionally empty ones,
+are preserved, and deleting the last box leaves an initialized empty frame so
+later reads cannot resurrect it from C. Toolbar and canvas context-menu actions
+share this path.
+
 Tracking services coordinate the path from reviewed detections to editable
 tracks. They validate the selected source, ask a manager to create and start
 the worker, then retrieve the completed frame-indexed cache and commit it to

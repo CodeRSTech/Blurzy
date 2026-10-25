@@ -13,16 +13,18 @@ from __future__ import annotations
 
 from typing import final, cast, TYPE_CHECKING
 
-from PySide6.QtCore import Signal, QSignalBlocker, Slot
+from PySide6.QtCore import Qt, Signal, QSignalBlocker, Slot
 from PySide6.QtGui import QAction
 from PySide6.QtWidgets import (
     QCheckBox,
     QComboBox,
     QFrame,
+    QHBoxLayout,
     QLabel,
     QLineEdit,
     QPushButton,
     QScrollArea,
+    QSizePolicy,
     QWidget,
 )
 
@@ -97,16 +99,42 @@ class RightControlPanel(QScrollArea):
         self.setWidgetResizable(True)
         self.setMinimumWidth(280)
         self.setFrameShape(QFrame.Shape.NoFrame)
+        self.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
 
         # Container to hold everything inside the scroll area
         self._container = QWidget()
-        self._layout = create_vbox_layout(self._container, margins=(8, 8, 8, 8), spacing=9)
+        self._container.setMinimumWidth(0)
+        self._layout = create_vbox_layout(self._container, margins=(3, 3, 3, 3), spacing=3)
         # All widgets are strictly instantiated as instance attributes here.
         self._init_widgets()
         self._build_ui()
+        self._configure_compact_combo_widths()
+        self._align_control_rows()
         self._connect_signals()
 
         self.setWidget(self._container)
+
+    def _configure_compact_combo_widths(self) -> None:
+        """Allow long option text to elide within the available sidebar width."""
+        for combo_box in self._container.findChildren(QComboBox):
+            combo_box.setMinimumWidth(96)
+            combo_box.setMinimumContentsLength(8)
+            combo_box.setSizeAdjustPolicy(QComboBox.SizeAdjustPolicy.AdjustToMinimumContentsLengthWithIcon)
+            size_policy = combo_box.sizePolicy()
+            size_policy.setHorizontalPolicy(QSizePolicy.Policy.Ignored)
+            combo_box.setSizePolicy(size_policy)
+
+    def _align_control_rows(self) -> None:
+        """Give form labels a shared, font-aware column without stretching them."""
+        labels = []
+        for row in self._container.findChildren(QHBoxLayout):
+            first_item = row.itemAt(0)
+            if first_item is not None and isinstance(label := first_item.widget(), QLabel):
+                labels.append(label)
+        label_width = max((label.fontMetrics().horizontalAdvance(label.text()) for label in labels), default=0)
+        for label in labels:
+            label.setFixedWidth(label_width + 8)
+            label.setObjectName("controlLabel")
 
     def _init_widgets(self) -> None:
         """
@@ -161,12 +189,14 @@ class RightControlPanel(QScrollArea):
         #   [====================================================]
         #   [               Detect Current Frame                 ]
         #   [====================================================]
-        self.detect_btn = QPushButton("Detect Current Frame")
+        self.detect_btn = QPushButton("Detect Frame")
+        self.detect_btn.setToolTip("Run detection on the currently displayed frame.")
         #
         #   [====================================================]
         #   [             Start Background Detection             ]
         #   [====================================================]
-        self.detect_all_btn = QPushButton("Start Background Detection")
+        self.detect_all_btn = QPushButton("Detect All Frames")
+        self.detect_all_btn.setToolTip("Run detection across every frame in the current video.")
         self.detect_all_btn.setProperty("emphasis", "primary")
         #
         #   [====================================================]
@@ -242,7 +272,7 @@ class RightControlPanel(QScrollArea):
         self.strategy_label.setToolTip(self.strategy_tooltip)
         self.tracking_strategy_combo_box.setToolTip(self.strategy_tooltip)
         self.strategy_selection = create_qhbox_with_widgets([self.strategy_label, self.tracking_strategy_combo_box])
-        self.reid_embedding_dim_label = QLabel("Re-ID Embedding Size")
+        self.reid_embedding_dim_label = QLabel("Re-ID size:")
         self.reid_embedding_dim_combo_box = QComboBox()
         for label, dimension in (
             ("128 (Fast)", 128),
@@ -293,7 +323,7 @@ class RightControlPanel(QScrollArea):
         #   Decay:      | 0.05                                     [ ^ | v ] |
         #               +----------------------------------------------------+
         self.confidence_decay_spinbox = create_spinbox(min_val=0.0, max_val=1.0, step=0.01, default=0.05)
-        self.confidence_decay_label = QLabel("Confidence Decay:")
+        self.confidence_decay_label = QLabel("Decay:")
         self.confidence_decay_tooltip = (
             "Per-frame confidence penalty applied when a tracker coasts without a matching detection. "
             "Unbridged tracks that never reconnect decay at 2x this rate so boxes disappear quickly "
@@ -307,7 +337,7 @@ class RightControlPanel(QScrollArea):
         #
         #   [ ] Bridge & Smooth Gaps (GSI)
         #
-        self.offline_stitching_checkbox = QCheckBox("Bridge & Smooth Gaps (GSI)")
+        self.offline_stitching_checkbox = QCheckBox("Bridge Gaps (GSI)")
         self.offline_stitching_tooltip = (
             "When enabled, runs a two-pass bidirectional stitcher after tracking to reconnect broken "
             "tracks across missed detections and smoothly interpolates the gap using Gaussian Smoothed "
@@ -315,7 +345,7 @@ class RightControlPanel(QScrollArea):
             "floating ghost blurs."
         )
         self.offline_stitching_checkbox.setToolTip(self.offline_stitching_tooltip)
-        self.max_stitch_gap_label = QLabel("Max Stitch Gap (frames):")
+        self.max_stitch_gap_label = QLabel("Max gap:")
         self.max_stitch_gap_spinbox = create_int_spinbox(1, 60, 1, 25)
         self.max_stitch_gap_tooltip = (
             "Maximum number of consecutive missed frames (1–60) over which two broken track segments "
@@ -327,7 +357,7 @@ class RightControlPanel(QScrollArea):
         self.max_stitch_gap_selection = create_qhbox_with_widgets(
             [self.max_stitch_gap_label, self.max_stitch_gap_spinbox]
         )
-        self.gsi_smoothness_label = QLabel("GSI Smoothness:")
+        self.gsi_smoothness_label = QLabel("Smoothness:")
         self.gsi_smoothness_spinbox = create_spinbox(1.0, 30.0, 0.5, 10.0)
         self.gsi_smoothness_tooltip = (
             "Controls the Gaussian kernel lengthscale (tau) used to smooth bounding box trajectories "
@@ -380,7 +410,7 @@ class RightControlPanel(QScrollArea):
             "immediately when the subject grows larger."
         )
         self.resist_box_shrinking_checkbox.setToolTip(self.resist_box_shrinking_tooltip)
-        self.shrink_resistance_label = QLabel("Shrink Resistance:")
+        self.shrink_resistance_label = QLabel("Shrink:")
         self.shrink_resistance_spinbox = create_spinbox(0.0, 0.99, 0.05, 0.85)
         self.shrink_resistance_tooltip = (
             "Controls how strongly bounding boxes resist contracting over short intervals "
@@ -392,7 +422,7 @@ class RightControlPanel(QScrollArea):
         self.shrink_resistance_selection = create_qhbox_with_widgets(
             [self.shrink_resistance_label, self.shrink_resistance_spinbox]
         )
-        self.pre_detection_padding_sec_label = QLabel("Pre-Detection Buffer (s):")
+        self.pre_detection_padding_sec_label = QLabel("Before (s):")
         self.pre_detection_padding_sec_spinbox = create_spinbox(0.0, 5.0, 0.1, 0.5)
         self.pre_detection_padding_sec_tooltip = (
             "Time in seconds (0.0–5.0 s) to display and backfill a tracked bounding box before the "
@@ -404,7 +434,7 @@ class RightControlPanel(QScrollArea):
         self.pre_detection_padding_sec_selection = create_qhbox_with_widgets(
             [self.pre_detection_padding_sec_label, self.pre_detection_padding_sec_spinbox]
         )
-        self.post_detection_padding_sec_label = QLabel("Post-Detection Hold (s):")
+        self.post_detection_padding_sec_label = QLabel("After (s):")
         self.post_detection_padding_sec_spinbox = create_spinbox(0.0, 5.0, 0.1, 0.5)
         self.post_detection_padding_sec_tooltip = (
             "Time in seconds (0.0–5.0 s) to keep displaying a tracked bounding box after the subject's "
@@ -416,7 +446,7 @@ class RightControlPanel(QScrollArea):
         self.post_detection_padding_sec_selection = create_qhbox_with_widgets(
             [self.post_detection_padding_sec_label, self.post_detection_padding_sec_spinbox]
         )
-        self.box_safety_padding_pct_label = QLabel("Safety Margin (%):")
+        self.box_safety_padding_pct_label = QLabel("Margin (%):")
         self.box_safety_padding_pct_spinbox = create_spinbox(0.0, 50.0, 1.0, 10.0)
         self.box_safety_padding_pct_tooltip = (
             "Expands tracked bounding boxes outward by a safety percentage (0–50%) so fast-moving faces, "
@@ -520,8 +550,7 @@ class RightControlPanel(QScrollArea):
         self.detection_box.add_layout(self.min_confidence_selection)
         self.detection_box.add_layout(self.labels_selection)
 
-        self.detection_box.add_widget(self.detect_btn)
-        self.detection_box.add_widget(self.detect_all_btn)
+        self.detection_box.add_layout(create_qhbox_with_widgets([self.detect_btn, self.detect_all_btn]))
         self.detection_box.add_widget(self.imp_exp_detections_button)
         self._reset_detection_progress_bar()
         self.detection_box.add_widget(self.detection_progress_bar)
@@ -535,8 +564,7 @@ class RightControlPanel(QScrollArea):
         self.tracking_box.add_widget(self.offline_stitching_checkbox)
         self.tracking_box.add_layout(self.max_stitch_gap_selection)
         self.tracking_box.add_layout(self.gsi_smoothness_selection)
-        self.tracking_box.add_widget(self.track_btn)
-        self.tracking_box.add_widget(self.imp_exp_tracks_button)
+        self.tracking_box.add_layout(create_qhbox_with_widgets([self.track_btn, self.imp_exp_tracks_button]))
         self._reset_tracking_progress_bar()
         self.tracking_box.add_widget(self.tracking_progress_bar)
 
@@ -562,15 +590,14 @@ class RightControlPanel(QScrollArea):
         self.preview_box.add_widget(self.preview_blur_checkbox)
         self.render_box.add_widget(self.blur_checkbox)
         self.render_box.add_layout(self.blur_strength_selection)
-        self.render_box.add_widget(self.export_btn)
-        self.render_box.add_widget(self.export_all_btn)
+        self.render_box.add_layout(create_qhbox_with_widgets([self.export_btn, self.export_all_btn]))
 
         # --- Final Assembly ---
         self._layout.addWidget(self.detection_box)
         self._layout.addWidget(self.tracking_box)
-        self._layout.addWidget(self.privacy_features_box)
         self._layout.addWidget(self.preview_box)
         self._layout.addWidget(self.render_box)
+        self._layout.addWidget(self.privacy_features_box)
         self._layout.addStretch()
 
     def _connect_signals(self) -> None:

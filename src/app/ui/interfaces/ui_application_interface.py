@@ -84,6 +84,14 @@ class UIApplicationInterface(Protocol):
         """
         ...
 
+    def get_detection_frame_coverage(self, s_id: SessionId) -> tuple[int, int]:
+        """Return processed detection-frame count and video length.
+
+        Args:
+            s_id: Session to inspect before tracking.
+        """
+        ...
+
     def start_tracking_worker(
         self,
         s_id: SessionId,

@@ -20,14 +20,11 @@ from app.application.adapters import (
 from app.application.managers.tracking_worker import TrackingWorkerManager
 from app.application.services.tracking.result_processor import TrackingResultProcessor
 
+from app.domain import VideoDataLayer
 from app.shared import get_logger
 from app.shared.exceptions import (
     InvalidSessionIdException,
 )
-if TYPE_CHECKING:
-    from app.domain import VideoDataLayer
-
-
 if TYPE_CHECKING:
     from app.application.application import Application
     from app.domain.session import SessionId
@@ -71,6 +68,25 @@ class TrackingService:
             worker_factory=TrackingWorkerFactoryAdapter(),
         )
         self._result_processor = TrackingResultProcessor(self._app_adapter)
+
+    def get_detection_frame_coverage(self, s_id: SessionId) -> tuple[int, int]:
+        """Return detection-frame coverage and total video frames before tracking.
+
+        Args:
+            s_id: Session to inspect without changing its annotation layers.
+
+        Returns:
+            Pair of initialized Layer A frame count and video frame count.
+            Empty detection results count as processed; absent frames do not.
+            Older/imported data can only provide evidence from stored entries,
+            not proof that a particular background worker completed.
+        """
+        session = self._app_adapter.get_session_by_id(s_id)
+        total = session.state.metadata.frame_count
+        with session.data.data_lock:
+            frames = session.data.get_all_boxes_for_layer_as_dict_of_lists(VideoDataLayer.A)
+            processed = sum(0 <= frame_index < total for frame_index in frames)
+        return processed, total
 
     def start_background_tracking(
             self, s_id: SessionId, strategy_name: str, source_layer_name: VideoDataLayer

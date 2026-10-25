@@ -27,7 +27,7 @@ if TYPE_CHECKING:
     from app.ui.view_state.preview_state import ToolMode
 
 if TYPE_CHECKING:
-    from app.domain.base.dtypes import BBoxXYXYTuple
+    from app.domain.base.dtypes import BBoxXYXYTuple, ListOfBoxes
 
 logger = get_logger("UI->Preview->Container")
 
@@ -112,29 +112,30 @@ class PreviewContainer(QWidget):
     def _build_empty_state(self) -> QWidget:
         overlay = QWidget(self)
         overlay_layout = QVBoxLayout(overlay)
-        overlay_layout.setContentsMargins(16, 16, 16, 16)
+        overlay_layout.setContentsMargins(8, 8, 8, 8)
         overlay_layout.addStretch(1)
 
         card = QFrame(overlay)
         card.setObjectName("emptyPreviewCard")
-        card.setMaximumWidth(360)
+        card.setFixedWidth(260)
         card_layout = QVBoxLayout(card)
-        card_layout.setContentsMargins(24, 22, 24, 22)
-        card_layout.setSpacing(10)
+        card_layout.setContentsMargins(12, 8, 12, 8)
+        card_layout.setSpacing(4)
 
-        title = QLabel("Start with a video")
-        title.setStyleSheet("font-size: 15pt; font-weight: 600;")
+        title = QLabel("No video loaded")
+        title.setStyleSheet("font-weight: 600;")
         title.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self._empty_state_message = QLabel("Open a video to detect, review, and track subjects.")
+        self._empty_state_message = QLabel("Open a video to begin.")
         self._empty_state_message.setObjectName("mutedText")
         self._empty_state_message.setWordWrap(True)
         self._empty_state_message.setAlignment(Qt.AlignmentFlag.AlignCenter)
         open_button = QPushButton("Open Video")
         open_button.setProperty("emphasis", "primary")
+        open_button.setMaximumWidth(144)
         open_button.clicked.connect(self.open_video_requested.emit)
         card_layout.addWidget(title)
         card_layout.addWidget(self._empty_state_message)
-        card_layout.addWidget(open_button)
+        card_layout.addWidget(open_button, 0, Qt.AlignmentFlag.AlignHCenter)
         overlay_layout.addWidget(card, 0, Qt.AlignmentFlag.AlignHCenter)
         overlay_layout.addStretch(1)
         return overlay
@@ -144,12 +145,13 @@ class PreviewContainer(QWidget):
 
     def set_image(self, image: QImage) -> None:
         """
-        Passes the raw video frame down to the display layer.
+        Display a video frame and hide the empty-state overlay.
 
         Args:
             image: RGB image to display in the preview.
         """
         self.video_layer.set_image(image)
+        self.empty_state_layer.hide()
         self._layout.setCurrentWidget(self.bbox_layer)
 
     def set_box_border_width(self, width: int) -> None:
@@ -171,14 +173,16 @@ class PreviewContainer(QWidget):
 
     def set_message(self, message: str) -> None:
         """
-        Passes placeholder text down to the display layer.
+        Show an empty-state message and clear the displayed frame.
 
         Args:
             message: Text to show when no frame is displayed; also cancels box editing.
         """
-        self.video_layer.set_message(message)
+        self.video_layer.set_message("")
         self._empty_state_message.setText(message)
         self.bbox_layer.cancel_edit()
+        self.bbox_layer.set_annotations([])
+        self.empty_state_layer.show()
         self._layout.setCurrentWidget(self.empty_state_layer)
 
     def set_tool_mode(self, mode: ToolMode) -> None:
@@ -197,6 +201,15 @@ class PreviewContainer(QWidget):
             bboxes: Mapping from box key to `(x1, y1, x2, y2)` coordinates.
         """
         self.bbox_layer.set_active_bboxes(bboxes)
+
+    def set_annotations(self, boxes: ListOfBoxes) -> None:
+        """Display current-frame annotations independently of video resolution.
+
+        Args:
+            boxes: Visible annotations, including geometry, color, and caption.
+                Pass an empty list when preview outlines are disabled.
+        """
+        self.bbox_layer.set_annotations(boxes)
 
     def set_selected_bbox_keys(self, box_keys: list[str]) -> None:
         """

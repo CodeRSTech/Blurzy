@@ -30,6 +30,7 @@ class ExportAllWorkerInterface(Protocol):
     progress_updated = SignalInstance
     session_export_progress_updated = SignalInstance
     finished_processing = SignalInstance
+    finished = SignalInstance
     cancelled = SignalInstance
 
     def start(self) -> None:
@@ -57,4 +58,8 @@ class ExportAllWorkerInterface(Protocol):
         """
         Schedule worker object deletion on the Qt event loop.
         """
+        ...
+
+    def wait(self) -> None:
+        """Wait for the batch-export thread to finish during application shutdown."""
         ...

@@ -2,7 +2,7 @@
 Module for frame overlay; provides reusable helpers across application layers.
 
 See Also:
-    - [`UIHandler`][app.ui.handlers.ui_handler.UIHandler] — composes overlays for displayed frames
+    - [`UIHandler`][app.ui.handlers.ui_handler.UIHandler] — supplies live-preview annotations to the Qt overlay
     - [`BBoxViewModel`][app.domain.views.bounding_box_view_model.BBoxViewModel] — provides annotation geometry and styling
 
 Layer: Shared utilities.
@@ -29,7 +29,7 @@ def draw_frame_overlays(
         border_width: int = 2,
 ) -> RGBFrame:
     """
-    Draw preview box borders and labels onto a copy of an RGB frame.
+    Draw raster box borders and labels onto a copy of an RGB frame.
 
     Args:
         frame: RGB frame to annotate.
@@ -43,7 +43,9 @@ def draw_frame_overlays(
         ValueError: If `border_width` is outside the inclusive range 1..10.
 
     Note:
-        This helper is editor-only; exported video rendering never calls it.
+        This is a standalone raster helper. The live editor paints annotations
+        in its Qt overlay so their size is independent of source resolution.
+        Exported video rendering never calls this helper.
 
     Example:
         preview = draw_frame_overlays(frame, tracked_boxes, border_width=3)

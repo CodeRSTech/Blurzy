@@ -16,10 +16,12 @@ from typing import TYPE_CHECKING, final, override
 from PySide6.QtCore import QObject
 
 from app.application.adapters import ApplicationAdapter
+from app.application.services.helpers.layer_seeding import seed_layer_frame_from_layer
 from app.domain import VideoDataLayer
 
 from app.domain.video.direction import Direction
 from app.shared.logging_cfg import get_logger
+from app.shared.exceptions import UnsupportedDirectionException
 if TYPE_CHECKING:
     from app.domain.session import SessionId
 
@@ -80,17 +82,23 @@ class TrackingLayerService(QObject):
     # DELETE
     # =======================
 
-    def delete_tracks_by_id_and_direction(self, s_id: SessionId, t_id: str, direction: Direction):
-        # ============================================================
-        # Get session
-        # ============================================================
+    def delete_tracks_by_id_and_direction(self, s_id: SessionId, t_id: str, direction: Direction) -> None:
         """
-        Delete tracks by id and direction.
+        Delete a track's later or earlier occurrences in reviewed Layer D.
 
         Args:
             s_id: Identifier of the session whose tracks are edited.
             t_id: Track identifier to delete from subsequent or preceding frames.
             direction: Whether to delete forward from or backward before the current frame.
+
+        Raises:
+            UnsupportedDirectionException: If direction is neither NEXT nor PREV.
+
+        Side Effects:
+            Seeds absent D frames from C using the same filters as tab reads.
+            Resolves display IDs to storage keys before deletion. Current frame,
+            initialized edits, and immutable C remain intact; empty D entries
+            prevent deleted tracks from being re-seeded on subsequent reads.
         """
         session = self._app_adapter.get_session_by_id(s_id)
 
@@ -98,12 +106,19 @@ class TrackingLayerService(QObject):
             start = session.state.playback.current_frame_index + 1
             max_frame = max(session.state.metadata.frame_count - 1, 0)
             index_range = range(start, max_frame + 1)
-        else:
+        elif direction == Direction.PREV:
             start = session.state.playback.current_frame_index - 1
             index_range = range(start, -1, -1)
+        else:
+            raise UnsupportedDirectionException(direction)
 
+        changed_frames = 0
         for frame_index in index_range:
-            session.data.delete_boxes_from_layer_by_id_at_frame_index(VideoDataLayer.D, [t_id], frame_index)
-
-    # def delete_tracker_all_occurrences(self, s_id: SessionId, t_id: str):
-    #    self.delete_tracker_all_occurences(s_id, t_id)
+            with session.data.data_lock:
+                seed_layer_frame_from_layer(VideoDataLayer.C, VideoDataLayer.D, session, frame_index)
+                boxes = session.data.get_boxes_for_layer_at_frame_index_as_list(VideoDataLayer.D, frame_index)
+                keys = [box.key for box in boxes if box.id == t_id]
+                changed_frames += session.data.delete_boxes_from_layer_by_id_at_frame_index(
+                    VideoDataLayer.D, keys, frame_index
+                )
+        logger.info("Deleted track '{}' in {} {} frames for session '{}'", t_id, changed_frames, direction, s_id)

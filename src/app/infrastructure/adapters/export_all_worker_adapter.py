@@ -77,6 +77,11 @@ class ExportAllWorkerAdapter(ExportAllWorkerInterface):
         return self._worker.finished_processing
 
     @property
+    def finished(self):
+        """Forward native thread completion, safe for worker disposal."""
+        return self._worker.finished
+
+    @property
     def cancelled(self):
         """
         Forward the worker cancellation signal.
@@ -109,3 +114,7 @@ class ExportAllWorkerAdapter(ExportAllWorkerInterface):
         Schedule this Qt object for deletion.
         """
         self._worker.deleteLater()
+
+    def wait(self) -> None:
+        """Wait until the wrapped batch-export thread has fully exited."""
+        self._worker.wait()

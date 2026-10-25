@@ -218,6 +218,18 @@ class TrackingHandler(QObject):
             return
 
         try:
+            session = self._app.get_session_by_id(s_id)
+            if session.has_running_detection_worker:
+                self._window.show_error(
+                    "Action Not Allowed",
+                    "Please wait for detection to finish before starting tracking.",
+                )
+                return
+            processed, total = self._app.get_detection_frame_coverage(s_id)
+            if processed < total and not self._window.confirm_incomplete_detections(processed, total):
+                logger.info("Tracking cancelled for session '{}': incomplete detection coverage {}/{}", s_id,
+                            processed, total)
+                return
             # ================================================================
             # 5. UPDATE UI LOADING STATE
             # ================================================================

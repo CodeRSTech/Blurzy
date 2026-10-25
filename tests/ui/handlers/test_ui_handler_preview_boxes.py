@@ -12,6 +12,7 @@ from PySide6.QtWidgets import QApplication, QTableWidget
 from app.domain import SessionId, VideoDataLayer, VideoDataLayerGroup
 from app.domain.detection import BoxSource
 from app.domain.views import BBoxViewModel, SessionSettingsViewModel
+from app.shared.masked_blur import apply_masked_blur, compute_blur_alpha_mask, overlay_alpha_mask
 from app.ui.handlers import ui_handler as ui_handler_module
 from app.ui.handlers.ui_handler import UIHandler
 from app.ui.qt.sections.bottom_data_panel import BottomDataPanelContainer
@@ -86,17 +87,17 @@ def test_outline_toggle_preserves_tables_selection_and_render_settings(
     handler = UIHandler(SimpleNamespace(window=window, app=app))
     logger = MagicMock()
     monkeypatch.setattr(ui_handler_module, "logger", logger)
-    overlays = MagicMock(wraps=ui_handler_module.draw_frame_overlays)
     blur = MagicMock(wraps=ui_handler_module.apply_masked_blur)
     mask = MagicMock(wraps=ui_handler_module.compute_blur_alpha_mask)
     convert_image = MagicMock(wraps=ui_handler_module.rgb_frame_to_q_image)
-    monkeypatch.setattr(ui_handler_module, "draw_frame_overlays", overlays)
     monkeypatch.setattr(ui_handler_module, "apply_masked_blur", blur)
     monkeypatch.setattr(ui_handler_module, "compute_blur_alpha_mask", mask)
     monkeypatch.setattr(ui_handler_module, "rgb_frame_to_q_image", convert_image)
     frame = np.random.default_rng(0).integers(0, 256, (64, 64, 3), dtype=np.uint8)
     original_frame = frame.copy()
     table_snapshots = []
+    display_annotations = MagicMock(wraps=preview.set_annotations)
+    monkeypatch.setattr(preview, "set_annotations", display_annotations)
 
     for draw_boxes in (True, False, True):
         settings.draw_boxes = draw_boxes
@@ -123,12 +124,17 @@ def test_outline_toggle_preserves_tables_selection_and_render_settings(
         assert preview.bbox_layer._selected_bbox_keys == (
             set(selected_keys) if draw_boxes else set()
         )
-        assert overlays.call_args.args[1] is (boxes if draw_boxes else None)
-        assert overlays.call_args.args[2] == settings.box_border_width
-        if draw_boxes and populated:
-            assert np.any(convert_image.call_args.args[0] != overlays.call_args.args[0])
-        else:
-            np.testing.assert_array_equal(convert_image.call_args.args[0], overlays.call_args.args[0])
+        assert display_annotations.call_args.args[0] == (boxes if draw_boxes else [])
+        assert preview.bbox_layer._box_border_width == settings.box_border_width
+        assert preview.empty_state_layer.isHidden()
+        displayed_frame = convert_image.call_args.args[0]
+        expected_frame = original_frame.copy()
+        if populated and blur_enabled and preview_blur_enabled:
+            expected_frame = apply_masked_blur(expected_frame, boxes, settings.blur_strength)
+        if populated and show_preview_mask:
+            alpha_mask = compute_blur_alpha_mask(expected_frame.shape, boxes)
+            expected_frame = overlay_alpha_mask(expected_frame, alpha_mask)
+        np.testing.assert_array_equal(displayed_frame, expected_frame)
         expected_blur_calls = (
             populate_table.call_count if populated and blur_enabled and preview_blur_enabled else 0
         )

@@ -93,34 +93,32 @@ def apply_application_theme(application: QApplication, theme: str) -> None:
         QWidget {{
             color: {colors["text"]};
             font-family: "Segoe UI", "Noto Sans", sans-serif;
-            font-size: 10pt;
         }}
         QMainWindow, QDialog, QWidget#centralWidget {{
             background: {colors["window"]};
         }}
         QWidget#controlSection {{
-            background: {colors["surface"]};
-            border: 1px solid {colors["border"]};
-            border-radius: 8px;
+            background: transparent;
+            border: 0;
         }}
         QPushButton#sectionHeader {{
             color: {colors["text"]};
-            background: {colors["surface"]};
+            background: transparent;
             border: 0;
-            border-radius: 7px;
+            border-bottom: 1px solid {colors["border"]};
+            border-radius: 0;
             font-weight: 600;
-            padding: 9px 10px;
+            padding: 5px 4px;
             text-align: left;
         }}
         QPushButton#sectionHeader:hover {{
             background: {colors["surface_raised"]};
         }}
         QFrame#emptyPreviewCard {{
-            background: {colors["surface"]};
-            border: 1px solid {colors["border"]};
-            border-radius: 12px;
+            background: transparent;
+            border: 0;
         }}
-        QLabel#mutedText {{
+        QLabel#mutedText, QLabel#controlLabel {{
             color: {colors["muted"]};
         }}
         QMenuBar, QStatusBar {{
@@ -128,8 +126,8 @@ def apply_application_theme(application: QApplication, theme: str) -> None:
             border: 0;
         }}
         QMenuBar::item {{
-            padding: 7px 12px;
-            border-radius: 5px;
+            padding: 3px 8px;
+            border-radius: 3px;
         }}
         QMenuBar::item:selected, QMenu::item:selected {{
             background: {colors["selection"]};
@@ -137,14 +135,13 @@ def apply_application_theme(application: QApplication, theme: str) -> None:
         QMenu {{
             background: {colors["surface"]};
             border: 1px solid {colors["border"]};
-            padding: 5px;
+            padding: 2px;
         }}
         QPushButton {{
             background: {colors["surface_raised"]};
             border: 1px solid {colors["border"]};
-            border-radius: 6px;
-            padding: 7px 11px;
-            min-height: 20px;
+            border-radius: 4px;
+            padding: 3px 7px;
         }}
         QPushButton:hover {{
             border-color: {colors["accent"]};
@@ -166,12 +163,20 @@ def apply_application_theme(application: QApplication, theme: str) -> None:
         QPushButton[emphasis="primary"]:hover {{
             background: {colors["accent_hover"]};
         }}
+        QPushButton#annotationAction {{
+            background: transparent;
+            border: 1px solid transparent;
+            padding: 1px;
+        }}
+        QPushButton#annotationAction:hover, QPushButton#annotationAction:focus {{
+            background: {colors["selection"]};
+            border-color: {colors["accent"]};
+        }}
         QLineEdit, QComboBox, QSpinBox, QDoubleSpinBox {{
             background: {colors["input"]};
             border: 1px solid {colors["border"]};
-            border-radius: 5px;
-            padding: 5px 7px;
-            min-height: 20px;
+            border-radius: 3px;
+            padding: 1px 4px;
             selection-background-color: {colors["selection"]};
         }}
         QLineEdit:focus, QComboBox:focus, QSpinBox:focus, QDoubleSpinBox:focus {{
@@ -195,7 +200,7 @@ def apply_application_theme(application: QApplication, theme: str) -> None:
             background: {colors["surface_raised"]};
             border: 0;
             border-bottom: 1px solid {colors["border"]};
-            padding: 7px 8px;
+            padding: 3px 6px;
             font-weight: 600;
         }}
         QTabWidget::pane {{
@@ -207,8 +212,8 @@ def apply_application_theme(application: QApplication, theme: str) -> None:
             color: {colors["muted"]};
             background: transparent;
             border: 0;
-            padding: 8px 12px;
-            margin-right: 3px;
+            padding: 4px 8px;
+            margin-right: 2px;
         }}
         QTabBar::tab:selected {{
             color: {colors["text"]};
@@ -217,8 +222,8 @@ def apply_application_theme(application: QApplication, theme: str) -> None:
         }}
         QScrollBar:vertical {{
             background: transparent;
-            width: 10px;
-            margin: 2px;
+            width: 8px;
+            margin: 1px;
         }}
         QScrollBar::handle:vertical {{
             background: {colors["border"]};
@@ -232,7 +237,7 @@ def apply_application_theme(application: QApplication, theme: str) -> None:
             color: {colors["text"]};
             background: {colors["surface"]};
             border: 1px solid {colors["border"]};
-            padding: 5px;
+            padding: 3px;
         }}
         QSplitter::handle {{
             background: {colors["window"]};

@@ -724,6 +724,15 @@ class Application(QObject):
     # ══════════════════════════════════════════════════════════════════════════════════════════════════════════════════
 
     # Used by TrackingHandler
+    def get_detection_frame_coverage(self, s_id: SessionId) -> tuple[int, int]:
+        """Return processed detection-frame count and video length for tracking preflight.
+
+        Args:
+            s_id: Session whose detection coverage is inspected.
+        """
+        return self.tracking_svc.get_detection_frame_coverage(s_id)
+
+    # Used by TrackingHandler
     def start_tracking_worker(
             self, s_id: SessionId, strategy: str, source: VideoDataLayer
     ) -> None:

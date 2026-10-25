@@ -42,6 +42,13 @@ service's next progress callback. The callback raises the worker's
 write operation in the middle of a frame. The worker distinguishes success,
 cancel, and error signals, then always signals that processing finished.
 
+Processing completion is not thread termination: `finished_processing` is
+emitted from inside `run()`. The handler retains the worker and keeps export
+controls busy until native `QThread.finished` arrives, then schedules deletion
+on the GUI thread. Deleting a still-running QThread can abort the application.
+The same lifecycle applies to batch export; both adapters expose `wait()` for
+orderly cancellation and shutdown.
+
 ## Multi-session export
 
 `ExportAllWorker` processes sessions sequentially. For each session, it checks
