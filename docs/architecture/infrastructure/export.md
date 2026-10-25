@@ -7,6 +7,25 @@ workers keep that expensive frame loop off the UI event loop and relay progress
 and outcomes. Annotation interchange (JSON/CSV) is a separate data workflow,
 not video rendering.
 
+```mermaid
+flowchart TB
+    Start["Resolve session for export"] --> D{"Does Layer D contain boxes?"}
+    D -->|Yes| UseD["Select Layer D for the video"]
+    D -->|No| C{"Does Layer C contain boxes?"}
+    C -->|Yes| UseC["Select Layer C for the video"]
+    C -->|No| Error["Reject: no tracking data"]
+    UseD --> Render["Read frame, optionally blur, write frame"]
+    UseC --> Render
+    Render --> Progress["Progress callback and cancellation check"]
+    Progress --> More{"More frames?"}
+    More -->|Yes| Render
+    More -->|No| Done["Release writer and report success"]
+```
+
+Arrows show selection and the normal render path. Layer selection is made for
+the export as a whole: an empty frame in D does not trigger a per-frame fallback
+to C. Exceptions and cancellation leave the render loop through cleanup.
+
 ## One-session export
 
 `ExportWorker` calls the Application service for one session and destination.
@@ -37,6 +56,17 @@ progress, and per-frame export progress. A stop request can stop active
 detection or tracking workers and prevents subsequent stages/sessions. If
 export is already rendering, cancellation is observed at its progress
 callback; this differs from interrupting an individual frame operation.
+
+!!! warning "A stop request is not a rollback"
+
+    Both export paths observe cancellation at a progress callback, not halfway
+    through a frame operation. The writer is released, but cancellation does
+    not guarantee removal of a partially written output file.
+
+| Workflow | Work unit | Progress | Terminal outcome |
+| --- | --- | --- | --- |
+| `ExportWorker` | One session | Frame count | Success, cancellation, or error; always processing-finished |
+| `ExportAllWorker` | Sequential sessions with detect/track preparation as needed | Session count plus frame count for the current export | Per-session success/failure and optional batch cancellation |
 
 The four layers and export fallback are described in
 [Video layers](../domain/video.md). For exact blur composition and rendering

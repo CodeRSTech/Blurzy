@@ -68,8 +68,6 @@ layers and is not another step in the dependency chain.
 
 ## Layer responsibilities
 
-| Layer | Responsibility | Source |
-| --- | --- | --- |
 | Layer | Responsibility | Guide |
 | --- | --- | --- |
 | UI | Qt widgets and dialogs, user-action handlers, controller, and view state | [UI components](ui/index.md) |

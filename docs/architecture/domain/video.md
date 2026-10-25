@@ -11,6 +11,23 @@ boundaries; opening files and decoding pixels are Infrastructure responsibilitie
 
 The A/B/C/D split preserves machine output separately from user corrections:
 
+```mermaid
+flowchart TB
+    Detector["Detector and selection filters"] --> A["A: machine detections"]
+    A -->|Seed or refresh| B["B: editable detections"]
+    B -->|Usual input| Tracker["Tracking and post-processing"]
+    A -.->|Alternative input| Tracker
+    Tracker --> C["C: machine tracks"]
+    C -->|Seed or refresh| D["D: editable tracks"]
+    User["User review"] --> B
+    User --> D
+    D -->|Preferred when populated| Export["Blurred-video export"]
+    C -.->|Fallback when D is empty| Export
+```
+
+Arrows show data flow, not Python dependencies. Dashed arrows are alternatives,
+not additional processing stages. User edits belong to B/D, not A/C.
+
 | Layer | Meaning | Typical writer |
 | --- | --- | --- |
 | **A** | Detector-produced boxes, retained as the machine detection source for review and tracking. Current detection settings (selected labels and minimum confidence) are applied before storage. | Detection batch processor |

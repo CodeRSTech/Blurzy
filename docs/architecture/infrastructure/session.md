@@ -24,18 +24,21 @@ flowchart LR
 
 ## Runtime responsibilities
 
-- **`SessionState`** holds video metadata, playback position/status, current
-  frame data, settings, and per-session annotation identity state. It does not
-  own workers or decode pixels.
-- **`SessionDataStore`** owns the A/B/C/D annotation layers and synchronizes
-  access to the mutable layer structures. Its bulk replacement operations
-  distinguish machine-generated boxes from manual edits.
-- **`SessionFrameAccessor`** serves current, next, previous, and indexed frames.
-  It first uses the decode worker's ring buffer and coordinates a seek/read
-  fallback when the requested frame is not cached.
-- **Reader and workers** perform actual media I/O and long-running processing;
-  the session exposes access and lifecycle methods without moving that work
-  onto the UI thread.
+The diagram's arrows show construction/attachment and collaborator references,
+not a sequence of frame reads.
+
+| Collaborator | Owns or coordinates | Does not own |
+| --- | --- | --- |
+| `SessionState` | Metadata, playback, current frame, settings, annotation identity counter | Decoder, workers, annotation layers |
+| `SessionDataStore` | A/B/C/D storage and synchronized machine/manual box operations | Video pixels or project-file writing |
+| `SessionFrameAccessor` | Current/next/previous/indexed frame retrieval via cache and seek | Inference or tracking association |
+| Reader and workers | Media I/O and long-running processing | Direct Qt widget updates |
+
+!!! info "Session state is not the entire session"
+
+    A domain `SessionState` can describe playback and settings, but it cannot
+    supply annotations or decode the next frame on its own. The infrastructure
+    `Session` assembles those runtime collaborators around it.
 
 When a session closes, it requests its detection, tracking, and decode workers
 to stop and closes its reader. The owning manager removes it from the open

@@ -44,6 +44,17 @@ one frame or take a snapshot while processing continues. Batches contain up to
 30 frames; the final smaller batch is flushed when the video ends or a stop is
 requested.
 
+!!! example "A 65-frame video"
+
+    | Batch | Zero-based frame indices | Frames in batch |
+    | --- | --- | ---: |
+    | First full batch | 0-29 | 30 |
+    | Second full batch | 30-59 | 30 |
+    | Final flush at stream end | 60-64 | 5 |
+
+    A batch of 30 frames is **not** a single 30-image model call. The worker
+    calls `detect(frame)` once per frame, then groups results for delivery.
+
 The batch processor maps inference values to box view models, applies the
 session's selected labels and minimum detection confidence, then stores the
 selected output in **A** and machine-generated copies in **B**. Existing A data
@@ -52,6 +63,13 @@ while machine-produced boxes are replaced. Thus worker output stays separate
 from the editable review layer; see [detection layers](../../domain/video.md).
 
 ## Progress, failures, and cancellation
+
+| Signal | Payload | Meaning |
+| --- | --- | --- |
+| `batch_ready` | Session ID, frame-to-results map, processing time | Application can synchronize another batch |
+| `progress_updated` | Processed frame count, total, ETA | Processing position, separate from batch delivery |
+| `error_occurred` | Error message | An exception reached the worker's error handler |
+| `finished_processing` | No payload | The processing loop exited; not necessarily successful completion |
 
 The worker reports frame progress (including an ETA estimate), emits an error
 message if frame reading or a non-recovered inference call fails, and always
@@ -65,3 +83,11 @@ interrupt a model call already in progress. On an early stop, already emitted
 work remains available and the current partial batch is still flushed. The
 service/manager owns worker lifecycle and signal connections; the worker never
 accesses Qt widgets directly.
+
+!!! warning "Stop and failure are different paths"
+
+    A requested stop flushes the current partial batch after the loop exits.
+    An exception jumps to the error handler instead: results still only in
+    that partial batch are not flushed by that path. Previously emitted
+    batches are not rolled back. Completion alone does not mean all frames
+    were processed successfully.
