@@ -60,10 +60,17 @@ Open **Edit → Settings...** to change persistent app preferences and defaults
 for newly opened videos. The settings form scrolls on shorter displays, while
 the dialog stays within the available screen area.
 
+The **Default theme** preference offers **System**, **Light**, and **Dark** themes.
+The sidebar groups Detection, Tracking, Preview, Render, and optional Privacy
+Features into collapsible sections. Preview annotations use canvas-scaled
+outlines and readable captions; table colors are swatches with exact values in
+tooltips. Hover an annotation toolbar icon to see its action.
+
 ???+ example "Typical workflow"
 
     1. Open a video.
-    2. Select an available YOLO, TorchVision, or MTCNN model and run detection.
+    2. Select an available YOLO, TorchVision, or MTCNN model, choose labels and
+       confidence, then run **Detect All Frames** and wait for completion.
     3. Review detections in the editable detection layer, then choose Hungarian,
        ByteTrack, DeepSORT, or BoT-SORT and run tracking.
     4. Review and edit the resulting tracks in the editable tracking layer.
@@ -72,6 +79,26 @@ the dialog stays within the available screen area.
     6. Save the project when you want to preserve session state. Import or export
        detection/tracking layers as JSON or CSV when exchanging annotations.
     7. Export the processed video and review the result.
+
+If stored detection results cover only part of the video, **Start Tracking**
+warns before replacing existing tracking output. **Okay** cancels by default;
+**Proceed Anyway** explicitly accepts potentially missing subjects. Tracking
+cannot start while detection is running. Stored empty detection results count
+as processed frames; imported/older data is not proof a full detection run
+completed.
+
+The **Detected objects** tab shows reviewed detections (B), while **Tracking
+results** shows reviewed tracks (D). In the Tracking tab, the next/previous
+occurrence deletion actions remove the selected tracks strictly after/before
+the current frame, leaving that frame and original C output intact.
+
+!!! warning "Preview masks follow tracking output, not the selected tab"
+
+    Mask/live-blur preview and blurred-video export prefer populated D and
+    otherwise use C for the video as a whole. They do not blur B just because
+    Detected objects is active, and an empty D frame does not fall back to C
+    for that frame. Outlines on the active tab can therefore differ from the
+    regions being blurred. Review Tracking results before export.
 
 ???+ info
 

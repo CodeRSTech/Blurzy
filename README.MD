@@ -26,6 +26,8 @@ experiments can be refined without putting all of that complexity in the UI.
 - Save and load `.blurzy` or JSON projects; import and export annotation and tracking layers as JSON
   or CSV.
 - Keep long-running work off the UI thread and surface progress in the app.
+- Choose System, Light, or Dark appearance; use compact controls and
+  canvas-scaled annotation outlines/captions that remain readable on 4K video.
 
 Blurzy is actively evolving. Model availability depends on the installed
 providers and their hardware/runtime support; the project does not currently
@@ -94,6 +96,10 @@ python -m pytest tests/domain tests/shared -q
 `dev` extra. `requirements.txt` remains available for existing workflows and
 installs the project from that metadata.
 
+Version and changelog maintenance is required for user-visible changes. See
+the [versioning policy](CONTRIBUTING.md#versioning-and-changelog) and
+[changelog](CHANGELOG.md) for the current version and history.
+
 For a distributable build:
 
 ```bash
@@ -147,10 +153,11 @@ here and areas where planned capabilities are already implemented.
 | Bug                                                                                                                                     | Priority | Status                                   |
 |-----------------------------------------------------------------------------------------------------------------------------------------|----------|------------------------------------------|
 | Settings window is not scrollable and goes out of bounds vertically on FHD display                                                      | High     | Resolved                                 | 
-| "Start Tracking" does not prompt the user to run detections first                                                                       | Medium   | Open                                     |
-| Video export closes the app upon completion                                                                                             | Medium   | Open                                     |
+| "Start Tracking" does not prompt the user to run detections first                                                                       | Medium   | Resolved: incomplete-coverage warning     |
+| Video export closes the app upon completion                                                                                             | Medium   | Fixed confirmed worker-cleanup race; original crash not reproduced end-to-end |
 | Backward seek times out waiting for frame `n-1` in `get_frame_by_index`                                                                 | Low      | Open                                     |
-| `app.ui.handlers.annotation_handler.AnnotationHandler._delete_occurrences` does not remove all occurrences of a track from the timeline | Low      | Open                                     |
+| `app.ui.handlers.annotation_handler.AnnotationHandler._delete_occurrences` does not remove all occurrences of a track from the timeline | Low      | Resolved: ID/key matching and D seeding   |
+| Older project shows fewer blurred/masked regions than visible detection boxes ([#24](https://github.com/CodeRSTech/Blurzy/issues/24))      | Medium   | Open; compatibility cause unconfirmed    |
 | Frame 0 unblurred or stale layer seeding during tracking                                                                                | Medium   | Resolved                                 |
 | Nested same-class detections fragment tracks instead of being containment-suppressed                                                    | Medium   | Resolved                                 |
 | Short occlusions cause unblurred flashes when no coast is emitted                                                                       | Medium   | Resolved                                 |
