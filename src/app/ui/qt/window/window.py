@@ -286,12 +286,13 @@ class Window(QtWidgets.QMainWindow):
             current: int,
             total: int,
             label: str,
+            show_percent: bool = False,
     ) -> None:
         maximum = max(total, 1)
         _, progress_maximum = self._splitter_defaults.progress_range
         percent = int((current / maximum) * progress_maximum)
         progress_bar.setValue(max(0, min(percent, progress_maximum)))
-        progress_bar.setFormat(f"{label}: {current}/{total}")
+        progress_bar.setFormat(f"{label}: {percent}%" if show_percent else f"{label}: {current}/{total}")
 
     def _set_export_controls_enabled(self, enabled: bool) -> None:
         self.right_panel.export_btn.setEnabled(enabled)
@@ -479,7 +480,7 @@ class Window(QtWidgets.QMainWindow):
             total: Total number of units.
             label: Text prefix shown beside the progress fraction.
         """
-        self._set_fraction_progress(self.export_progress_bar, current, total, label)
+        self._set_fraction_progress(self.export_progress_bar, current, total, label, show_percent=True)
 
     def set_export_progress_status(self, label: str) -> None:
         """
