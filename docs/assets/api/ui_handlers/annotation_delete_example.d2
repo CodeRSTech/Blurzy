@@ -1,0 +1,21 @@
+shape: sequence_diagram
+user: User
+tbl: "Bottom panel + overlay"
+h: AnnotationHandler
+sel: "Selection + history\n(window state)"
+app: "Application facade\n-> UnifiedLayerService"
+data: "Session layer D\n(frame data)"
+ui: "UIController -> UIHandler"
+user -> tbl: "select box, press Delete"
+tbl -> h: "FrameTableKeyFilter -> handle_delete_key"
+h -> sel: "read selected keys"
+h -> app: "snapshot active-tab boxes (before)"
+h -> app: "delete_boxes_by_keys... (tab)"
+app -> data: "delete keys at current frame"
+h -> sel: "clear selection, record mutation"
+h -> ui: "render_frame_for_session_id"
+ui -> tbl: "redraw preview, table, buttons"
+user -> h: "Ctrl+Z"
+h -> sel: "undo_box_mutation"
+h -> app: "replace_tab_frame_boxes(before)"
+h -> ui: "render again"

@@ -1,0 +1,14 @@
+direction: down
+handler: "UI (GUI thread)\nTrackingHandler: buttons, progress, dialogs"
+facade: "Application (GUI thread)\nUIApplicationAdapter -> Application facade\n-> TrackingService"
+manager: "Application (GUI thread)\nTrackingWorkerManager\nclears C/D, creates worker"
+result: "Application (GUI thread)\nTrackingResultProcessor\nwrites C, refreshes D"
+worker: "Infrastructure (worker thread)\nTHIS PAGE: TrackingWorker + strategies" {
+  style.stroke-width: 4
+}
+handler -> facade: user clicks Track
+facade -> manager: start
+manager -> worker: create + start
+worker -> handler: progress / error / finished signals {style.stroke-dash: 4}
+facade -> result: after finished_processing
+result -> worker: get_tracked_data()

@@ -1,0 +1,23 @@
+direction: down
+main: "Worker loop: repeat while running" {
+  active: "Active?" {shape: diamond}
+  sleep: "Sleep 10 ms"
+  seek: "Seek pending?" {shape: diamond}
+  hard: "Clear buffer\nRead target index\nPush it, emit seek_completed"
+  ahead: "Newest frame >= playhead + 45?" {shape: diamond}
+  throttle: "Sleep 10 ms"
+  next: "Read next frame\nPush to buffer"
+  active -> sleep: no
+  sleep -> active
+  active -> seek: yes
+  seek -> hard: yes
+  seek -> ahead: no
+  ahead -> throttle: yes
+  ahead -> next: no
+}
+fail: "Failure paths (loop keeps running)" {
+  eos: "End of stream\nSleep 100 ms"
+  err: "Read error\nLog it; no seek_completed for a failed seek"
+}
+main.next -> fail.eos: "EndOfVideoStreamException" {style.stroke-dash: 4}
+main.next -> fail.err: "other exception" {style.stroke-dash: 4}

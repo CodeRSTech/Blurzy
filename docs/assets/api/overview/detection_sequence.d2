@@ -1,0 +1,19 @@
+shape: sequence_diagram
+user: User
+ui: "UI handler\n(GUI thread)"
+app: "Application\nfacade + service"
+worker: "DetectionWorker\n(background thread)"
+engine: "DetectionEngine"
+data: "Session layers"
+user -> ui: "click Detect"
+ui -> app: "request detection"
+app -> app: "validate session,\nprepare engine"
+app -> worker: "start()"
+loop: "for each frame / batch" {
+  worker -> engine: "detect(frame)"
+  engine -> worker: "DetectionResult list"
+  worker -> ui: "progress + result batch signals"
+}
+app -> data: "store accepted results in Layer A"
+data -> ui: "layers changed"
+ui -> user: "redraw boxes and tables"

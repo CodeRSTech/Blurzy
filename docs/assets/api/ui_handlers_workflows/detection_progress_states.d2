@@ -1,0 +1,12 @@
+direction: right
+idle: "Idle\nbusy off"
+starting: "Starting\nbusy indicator,\nstatus: Starting..."
+running: "Running\nDetecting frames N/M + ETA"
+rejected: "Rejected\nerror dialog,\nbusy stays on" {style.stroke: "#c0392b"}
+failed: "Failed\nerror dialog,\nthen finished_processing"  {style.stroke: "#c0392b"}
+idle -> starting: "Detect All"
+starting -> running: "progress_updated"
+starting -> rejected: "already running /\nno model / other error" {style.stroke-dash: 4}
+running -> failed: "error_occurred" {style.stroke-dash: 4}
+running -> idle: "finished_processing\n(done or stopped)"
+failed -> idle: "finished_processing"

@@ -1,0 +1,10 @@
+direction: right
+setup: "Example: file has frames 3 (F3) and 5 (F5)\nTarget layer has frame 3 (X) and frame 4 (Y)"
+ow: "OVERWRITE\nLayer becomes: 3=F3, 5=F5\nFrame 4 is gone"
+mr: "MERGE_REPLACE\n3=F3 (X replaced), 4=Y kept, 5=F5"
+mi: "MERGE_IGNORE\n3=X kept (F3 skipped), 4=Y kept, 5=F5"
+mn: "MERGE_RENAME\n3=X + F3 (imp- prefix on key clash), 4=Y, 5=F5"
+setup -> ow
+setup -> mr
+setup -> mi
+setup -> mn

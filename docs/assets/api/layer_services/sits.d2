@@ -1,0 +1,14 @@
+direction: down
+h: "ImportExportHandler\nUI, owns dialogs"
+c: "UIController\nrender frame"
+app: "Application facade\nimport_layer / export_layer"
+svc: "Layer services\nUnified, Detection*, Tracking*" {style.stroke-width: 4}
+hp: "helpers\nseeding, coercion, layer_io"
+st: "SessionDataStore\nlayers A-D"
+h -> app: "layer, path, mode"
+app -> svc
+svc -> hp
+hp -> st: "read / write boxes"
+h -> c: "after import" {style.stroke-dash: 4}
+mgr: "Managers / workers\nnot involved (no background thread)" {style.stroke-dash: 4}
+svc -> mgr: "" {style.stroke-dash: 4}

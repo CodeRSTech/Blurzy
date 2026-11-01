@@ -1,0 +1,17 @@
+shape: sequence_diagram
+user: User
+ph: "ProjectHandler\n(GUI)"
+ps: "ProjectService\n(GUI)"
+store: "ProjectStore"
+sm: "SessionManager"
+sh: "SessionHandler"
+user -> ph: "File > Open Project"
+ph -> user: "QFileDialog (*.blurzy, *.json)"
+user -> ph: "path (empty = cancel, nothing happens)"
+ph -> ps: "Application.load_project(path)"
+ps -> store: "load(path)"
+ps -> sm: "close_all()"
+ps -> sm: "per saved session: open video,\nrestore settings, frame, layers"
+ps -> ph: "ProjectLoadReport"
+ph -> sh: "prepare initial frame hook,\nrefresh_session_views()"
+ph -> user: "warning listing skipped video paths\n(only when some were skipped)"

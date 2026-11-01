@@ -1,0 +1,22 @@
+direction: down
+ui: "UI" {
+  handler: "TrackingHandler\nedits post-processing settings"
+}
+app: "Application" {
+  direction: right
+  service: "TrackingService"
+  result: "TrackingResultProcessor"
+}
+infra: "Infrastructure" {
+  direction: right
+  worker: "TrackingWorker\nworker thread"
+  post: "THIS PAGE\nTrackingPostProcessor" {
+    style.stroke-width: 4
+  }
+  store: "Session data\nLayers C and D"
+  worker -> post: raw frame map
+}
+ui.handler -> app.service: via adapter + facade
+app.service -> infra.worker: get_tracked_data()
+app.service -> app.result
+app.result -> infra.store: write C, refresh D

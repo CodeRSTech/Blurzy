@@ -1,0 +1,21 @@
+direction: down
+main: "src/main.py\nload config, start logging, create QApplication"
+app: "Application()" {
+  direction: right
+  sm: "SessionManager"
+  svc: "Services\ndetection, tracking, session, project,\nexport, unified layers"
+  io: "Layer import / export services"
+}
+window: "Window()\nQt main window and panels"
+ctl: "UIController(q_app, window, app)" {
+  direction: right
+  adapters: "UIApplicationAdapter\nUIControllerAdapter"
+  handlers: "12 handlers\nconnect widget signals in their constructors"
+}
+loop: "Qt event loop"
+main -> app: "1. create"
+main -> window: "2. create"
+main -> ctl: "3. compose"
+ctl.adapters -> app: "wraps facade"
+ctl.handlers -> window: "connect signals"
+ctl -> loop: "4. app.exec()"

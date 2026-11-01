@@ -1,0 +1,12 @@
+direction: down
+key: "Ctrl+Z / Ctrl+Y\nfor (session, active tab)"
+m: "Box-mutation stack has an entry?"
+restore: "replace_tab_frame_boxes()\nwith saved snapshot, restore selection, render"
+s: "Selection stack has an entry?"
+sel: "Restore selection keys only"
+none: "Status: Nothing to undo / redo"
+key -> m
+m -> restore: yes
+m -> s: no
+s -> sel: yes
+s -> none: no

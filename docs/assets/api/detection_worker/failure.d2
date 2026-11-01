@@ -1,0 +1,15 @@
+direction: down
+loop: "run() loop"
+stop: "stop() requested\nor end of stream" {style.stroke-dash: 4}
+err: "Exception in read/detect/\nemit/cache" 
+flush: "Flush partial batch"
+handler: "except: log + emit\nerror_occurred(msg)\n(partial batch NOT flushed)"
+fin: "finally: reader.close()\nemit finished_processing"
+ui: "Handler: hide busy state;\nerror dialog only after error_occurred"
+loop -> stop
+loop -> err
+stop -> flush
+flush -> fin
+err -> handler
+handler -> fin
+fin -> ui

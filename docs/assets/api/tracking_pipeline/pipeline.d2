@@ -1,0 +1,10 @@
+direction: down
+input: "Snapshot of Layer A or B\nframe -> detection boxes"
+dedupe: "1. Remove nested duplicates\nsame class, per frame"
+loop: "2. Frame loop (worker thread)\nread frame, embed, associate"
+post: "3. Offline post-processing\nstitch, fill gaps, bounded coasts"
+privacy: "4. Optional privacy coverage\noff by default"
+result: "Frame-indexed result\nheld by the worker"
+app: "Application service\nwrites Layer C, refreshes Layer D"
+input -> dedupe -> loop -> post -> privacy -> result -> app
+privacy: {style.stroke-dash: 4}

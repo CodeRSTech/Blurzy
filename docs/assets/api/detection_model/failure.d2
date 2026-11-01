@@ -1,0 +1,18 @@
+direction: down
+load: "Loading a model"
+inf: "Running detect() on a frame"
+unk: "Unknown name"
+lib: "Library missing or\nweights fail to load"
+err: "DetectionModelError"
+caught: "Handler error dialog\n(Model Load Failed)"
+yolo: "YOLO, MTCNN: exception caught,\nlogged, returns []"
+torch: "Torch: inference exceptions\nare not caught here"
+w: "DetectionWorker: error_occurred\nand run ends"
+load -> unk
+load -> lib
+unk -> err
+lib -> err
+err -> caught
+inf -> yolo
+inf -> torch
+torch -> w

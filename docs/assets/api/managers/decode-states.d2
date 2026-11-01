@@ -1,0 +1,10 @@
+direction: right
+new: "Constructed\n_is_active = False"
+idle: "Started, inactive\nthread loops, sleeps 10 ms,\nno decoding, empty buffer"
+active: "Active\nseek to resume_idx, then fill\nring buffer ahead of playhead"
+stopped: "Stopped\nthread ended, reader closed"
+new -> idle: "initialize(): start()"
+idle -> active: "set_active(True, resume_idx)"
+active -> idle: "set_active(False)\nbuffer cleared"
+idle -> stopped: "Session.close() -> stop()"
+active -> stopped: "Session.close() -> stop()"

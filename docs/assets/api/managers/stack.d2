@@ -1,0 +1,8 @@
+direction: right
+h: "UI handler\n(GUI thread)"
+c: "UIController /\nUI adapter"
+a: "Application\nfacade"
+s: "Service\n(use-case rules)"
+m: "MANAGERS\n(you are here)" { style.stroke-width: 4 }
+i: "Infrastructure\nSession, workers,\nlayer store"
+h -> c -> a -> s -> m -> i

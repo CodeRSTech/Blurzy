@@ -1,0 +1,15 @@
+direction: down
+ctl: "UIController"
+a: "Most handlers"
+sh: "SessionHandler"
+ph: "ProjectHandler"
+pb: "PlaybackHandler"
+pf: "PreferencesHandler"
+dh: "DialogueHandler"
+mh: "ModelHandler"
+a -> ctl: "normal: ask the boss"
+ctl -> dh: "dialog factories"
+mh -> ctl: "create_model_change_warning_dialog()"
+ph -> sh: "refresh_session_views(), ..." {style.stroke-dash: 4; style.stroke: "#c0392b"}
+sh -> pf: "apply_defaults_to_session()" {style.stroke-dash: 4; style.stroke: "#c0392b"}
+sh -> pb: "stop_playback()" {style.stroke-dash: 4; style.stroke: "#c0392b"}

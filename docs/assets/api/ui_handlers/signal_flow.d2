@@ -1,0 +1,16 @@
+direction: down
+widgets: "Qt widgets\nbuttons, canvas, tables"
+handler: "Handler slot\nGUI thread"
+app: "Application facade\n-> services -> session data"
+ctl: "UIController\nrender_frame_for_session_id"
+ui: "UIHandler\nrender_saved_frame"
+screen: "Preview, tables,\nslider, status bar"
+workers: "Background workers\ndetect / track / decode / export"
+widgets -> handler: "1 signal"
+handler -> app: "2 call"
+app -> handler: "3 returns or raises"
+handler -> ctl: "4 ask to redraw"
+ctl -> ui: "5 delegate"
+ui -> screen: "6 update widgets"
+workers -> handler: "worker signals\n(queued to GUI thread)" {style.stroke-dash: 4}
+handler -> screen: "errors: show_error()\nstatus text" {style.stroke-dash: 4}

@@ -1,0 +1,19 @@
+direction: down
+pick: "Pick layer once\nD has boxes? use D\nelse C has boxes? use C\nelse error"
+open: "Open VideoWriter\nmp4v, source fps + size"
+frame: "Read frame i\nRGB, random access"
+conv: "RGB to BGR"
+boxes: "Boxes for frame i\nfrom the chosen layer"
+blur: "Blur enabled and boxes?" {shape: diamond}
+apply: "apply_masked_blur\nstrength from settings"
+write: "writer.write(frame)"
+cb: "progress_callback(i+1, total)\nraises if stop requested"
+more: "more frames?" {shape: diamond}
+rel: "finally: writer.release()"
+pick -> open -> frame -> conv -> boxes -> blur
+blur -> apply: yes
+blur -> write: no
+apply -> write
+write -> cb -> more
+more -> frame: yes {style.stroke-dash: 4}
+more -> rel: no

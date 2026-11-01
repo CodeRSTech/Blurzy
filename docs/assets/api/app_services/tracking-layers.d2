@@ -1,0 +1,13 @@
+direction: down
+a: "Layer A\ndetector output"
+b: "Layer B\nreviewed detections"
+worker: "TrackingWorker\nruns on a snapshot of the source"
+c: "Layer C\nmachine tracks (overwritten)"
+d: "Layer D\neditable tracks: machine boxes\nreplaced, manual boxes kept"
+a -> b: "seed missing B frames\n(filtered clones)"
+b -> worker: "usual input"
+a -> worker: "alternative input" {
+  style.stroke-dash: 4
+}
+worker -> c: "after finished_processing"
+c -> d: "re-filter by tracker\nconfidence"

@@ -14,37 +14,8 @@ code organization; they are not yet enforced as strict package boundaries.
 
 ## Layer relationships
 
-```mermaid
-%%{init: {"theme": "base", "layout": "elk", "themeVariables": {"fontFamily": "Roboto, Segoe UI, Arial, sans-serif", "fontSize": "15px", "lineColor": "#ffffff", "edgeLabelBackground": "#f8fafc", "textColor": "#0f172a"}, "elk": {"nodePlacementStrategy": "SIMPLE"}, "flowchart": {"htmlLabels": true, "useMaxWidth": true, "rankSpacing": 48, "nodeSpacing": 32, "padding": 10, "curve": "linear"}}}%%
-flowchart TB
-    UI["<div style='width:360px;text-align:center;line-height:1.6;color:#0f172a'><b style='font-size:19px'>UI</b><br/>User interaction and presentation<br/><span style='color:#334155'>Qt windows · widgets · handlers</span></div>"]
-    APP["<div style='width:360px;text-align:center;line-height:1.6;color:#0f172a'><b style='font-size:19px'>Application</b><br/>Workflow coordination and contracts<br/><span style='color:#334155'>Facade · services · interfaces</span></div>"]
-    DOMAIN["<div style='width:360px;text-align:center;line-height:1.6;color:#0f172a'><b style='font-size:19px'>Domain</b><br/>Core types, state, and rules<br/><span style='color:#334155'>Boxes · settings · video metadata</span></div>"]
-    INFRA["<div style='width:360px;text-align:center;line-height:1.6;color:#0f172a'><b style='font-size:19px'>Infrastructure</b><br/>Technical implementations and adapters<br/><span style='color:#334155'>Video I/O · models · workers · storage</span></div>"]
-    SHARED["<div style='width:360px;text-align:center;line-height:1.6;color:#0f172a'><b style='font-size:19px'>Shared</b><br/>Cross-cutting support for all layers<br/><span style='color:#334155'>Logging · exceptions · utilities</span></div>"]
-
-    UI -->|Delegates via UI adapter| APP
-    APP -->|Uses types and rules| DOMAIN
-    %% Invisible links establish visual order, not dependencies.
-    DOMAIN ~~~ INFRA
-    INFRA -->|Conforms to contracts| APP
-    INFRA -->|Uses types and rules| DOMAIN
-    INFRA ~~~ SHARED
-
-    classDef base color:#0f172a,stroke-width:1.5px,rx:8,ry:8;
-    classDef ui fill:#dfe6ef,stroke:#60a5fa;
-    classDef app fill:#dee2ef,stroke:#818cf8;
-    classDef domain fill:#dcede5,stroke:#34d399;
-    classDef infra fill:#dfe7dd,stroke:#fb923c;
-    classDef shared fill:#e8eaec,stroke:#94a3b8,stroke-dasharray:5 4;
-
-    class UI,APP,DOMAIN,INFRA,SHARED base;
-    class UI ui;
-    class APP app;
-    class DOMAIN domain;
-    class INFRA infra;
-    class SHARED shared;
-```
+![Blurzy layers: UI delegates to Application; Application and Infrastructure use Domain; Infrastructure conforms to Application contracts; Shared supports every layer](../assets/api/overview/layers-light.svg#only-light)
+![Blurzy layers: UI delegates to Application; Application and Infrastructure use Domain; Infrastructure conforms to Application contracts; Shared supports every layer](../assets/api/overview/layers-dark.svg#only-dark)
 
 | Principal dependency         | Boundary                                      |
 |------------------------------|-----------------------------------------------|
@@ -117,54 +88,10 @@ through the Application and render them in the preview.
 
 ### Detection
 
-```mermaid
-%%{init: {
-  "theme": "base",
-  "themeVariables": {
-    "fontFamily": "Roboto, Segoe UI, Arial, sans-serif",
-    "fontSize": "18px",
-    "primaryColor": "#dfe6ef",
-    "primaryBorderColor": "#60a5fa",
-    "primaryTextColor": "#0f172a",
-    "actorBkg": "#eff6ff",
-    "actorBorder": "#60a5fa",
-    "actorTextColor": "#0f172a",
-    "actorLineColor": "#94a3b8",
-    "signalColor": "#334155",
-    "signalTextColor": "#0f172a",
-    "labelBoxBkgColor": "#f8fafc",
-    "labelBoxBorderColor": "#cbd5e1",
-    "loopTextColor": "#0f172a"
-  }
-}}%%
-sequenceDiagram
-    autonumber
-    actor User
-    participant UI as UI (Qt Widget)
-    participant App as Application (Facade)
-    participant Worker as DetectionWorker (QThread)
-    participant Engine as DetectionEngine (Model)
-    participant Data as Session Data Layers
+![Detection sequence: the UI handler requests detection, the Application starts a background worker that runs the engine per frame and signals progress, results are stored in Layer A, and the UI redraws](../assets/api/overview/detection_sequence-light.svg#only-light)
+![Detection sequence: the UI handler requests detection, the Application starts a background worker that runs the engine per frame and signals progress, results are stored in Layer A, and the UI redraws](../assets/api/overview/detection_sequence-dark.svg#only-dark)
 
-    User->>UI: Click "Detect"
-    UI->>App: request_detection(session_id)
-    App->>App: Validate session & prepare engine
-    App->>Worker: start() [Background thread]
-    
-    activate Worker
-    loop For each frame / batch
-        Worker->>Engine: run_inference(frame)
-        Engine-->>Worker: detection_results
-        Worker-->>Data: append_results(batch)
-        Worker-->>UI: signal: progress_updated(percent)
-    end
-    deactivate Worker
-
-    Data-->>UI: signal: layers_changed()
-    UI->>User: Render bounding boxes & overlays
-```
-
-Single-frame detection is also available. Background detection reads frames
+Arrows are calls or Qt signals, read top to bottom. Single-frame detection is also available. Background detection reads frames
 and runs inference away from the GUI event loop; Qt signals carry result
 batches, progress, completion, and errors back to application/UI code.
 Detection engine factories and provider-specific model packages keep model

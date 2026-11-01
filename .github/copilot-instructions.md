@@ -124,9 +124,12 @@ tables, and opt-in code annotations. Keep essential warnings visible.
 Do not put article front matter in docstrings or require decorative markup.
 For every code change, review affected documentation articles under `docs/` and
 update them when behavior, workflows, interfaces, or architecture change.
-Documentation diagrams may use Mermaid or SVG and must remain readable in both
-light and dark themes. Use theme-aware Mermaid styling or equivalent light/dark
-SVG variants, preserving editable sources and checking both themes.
+Architecture diagrams are D2-sourced SVG pairs (`*-light.svg`/`*-dark.svg`
+under `docs/assets/api/<component>/`), rendered with
+`python scripts/render_diagrams.py`; do not add Mermaid to architecture pages.
+Explain complex components with several focused diagrams and Material
+admonitions, and cover infrastructure components, application services and
+managers, and UI handlers. Check both themes in a real browser, not CairoSVG.
 Follow [architecture authoring](../docs/development/architecture-documentation.md)
 for diagrams, themed assets, and reproducible examples, and
 [reference generation](../docs/development/reference-documentation.md) for API rules.

@@ -1,0 +1,24 @@
+direction: down
+ui: "UI" {
+  handler: "TrackingHandler\nstores reid_embedding_dim"
+}
+app: "Application" {
+  direction: right
+  service: "TrackingService"
+  manager: "TrackingWorkerManager"
+}
+infra: "Infrastructure (worker thread)" {
+  direction: right
+  worker: "TrackingWorker\nowns the embedder"
+  reid: "THIS PAGE\nPartBasedAppearanceEmbedder" {
+    style.stroke-width: 4
+  }
+  strat: "DeepSORT / BoT-SORT\nuse vectors"
+  post: "TrackingPostProcessor\nuses vectors to stitch"
+  worker -> reid: frame + boxes
+  reid -> strat: vectors
+  worker -> post: isolated vectors
+}
+ui.handler -> app.service: via adapter + facade
+app.service -> app.manager
+app.manager -> infra.worker

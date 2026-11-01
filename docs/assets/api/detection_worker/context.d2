@@ -1,0 +1,15 @@
+direction: down
+handler: "DetectionHandler\nUI handler: button, progress, dialogs"
+ctrl: "UIController\nhands the handler app + window"
+app: "Application facade\nstart_detection_worker()"
+svc: "DetectionService\nchecks, creates, connects"
+mgr: "DetectionEngineManager\nowns the engine per session"
+worker: "DetectionWorker (THIS PAGE)\nQThread: frame loop" {style.stroke-width: 4}
+store: "Session data\nLayer A and B"
+handler -> ctrl: uses
+ctrl -> app: calls
+app -> svc: delegates
+svc -> mgr: create_or_update(model)
+svc -> worker: create + start
+worker -> svc: batch_ready {style.stroke-dash: 4}
+svc -> store: writes A and B

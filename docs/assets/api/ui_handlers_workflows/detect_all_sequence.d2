@@ -1,0 +1,23 @@
+shape: sequence_diagram
+user: User
+dh: "DetectionHandler\n(GUI)"
+svc: "DetectionService\n(GUI)"
+w: "DetectionWorker\n(QThread)"
+eng: "DetectionEngine"
+data: "Layers A and B\n(GUI)"
+user -> dh: "Detect All Frames"
+dh -> dh: "progress bar busy,\nstatus: Starting..."
+dh -> svc: "start_detection_worker(s_id)"
+svc -> svc: "reject if running or model None;\nclear_all_layers();\ncreate engine"
+svc -> w: "create + connect batch_ready,\nprogress_updated; start()"
+dh -> w: "connect progress_updated,\nfinished_processing,\nerror_occurred"
+loop: "each frame until end or stop" {
+  w -> eng: "detect(frame)"
+  eng -> w: "results"
+  w -> svc: "batch_ready every 30 frames\n(queued to GUI)"
+  svc -> data: "write A and B for frames\nwithout Layer A boxes"
+  w -> dh: "progress_updated(done, total, eta_ms)"
+  dh -> user: "progress bar + status text"
+}
+w -> dh: "finished_processing()\n(also after error or stop)"
+dh -> user: "busy off, status bar refreshed"

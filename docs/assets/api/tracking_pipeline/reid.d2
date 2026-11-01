@@ -1,0 +1,8 @@
+direction: right
+box: "Detection box"
+crop: "Clamp and crop\nreject < 2 px side"
+resize: "Resize to 64 x 128"
+feat: "Colour + edge histograms\nHSV, LAB, Sobel"
+norm: "Unit-normalise\n128 / 256 / 512 values"
+vec: "Vector per box\nor None"
+box -> crop -> resize -> feat -> norm -> vec

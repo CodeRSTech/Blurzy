@@ -1,0 +1,10 @@
+direction: right
+stopped: "Stopped\ntimer inactive,\nis_playing = False"
+playing: "Playing\ntimer active,\nis_playing = True"
+stopped -> playing: "Play (needs a selected session)"
+playing -> stopped: "Pause"
+playing -> stopped: "Next / Previous / seek"
+playing -> stopped: "Last frame reached"
+playing -> stopped: "Tick failed"
+playing -> stopped: "Another session selected / app quit"
+stopped -> stopped: "Next / Previous / seek\nstill step one frame"

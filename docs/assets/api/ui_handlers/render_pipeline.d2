@@ -1,0 +1,13 @@
+direction: down
+req: "render_saved_frame(s_id)\n(via UIController)"
+get: "Read session index, frame count,\nget_current_frame()"
+none: "No frame: return\n(nothing redrawn)"
+boxes: "Active tab boxes B or D\n(seeded from A / C on read)"
+blur: "Preview blur / mask overlay\nuses D if populated, else C"
+paint: "Set overlay annotations,\nselection, border width, QImage"
+tables: "Fill data table\nfor the active tab"
+ui: "Frame label, seek slider,\nstatus bar"
+req -> get
+get -> none: "frame is None / error logged" {style.stroke-dash: 4}
+get -> boxes -> blur -> paint -> tables
+paint -> ui

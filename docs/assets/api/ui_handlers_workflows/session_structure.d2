@@ -1,0 +1,30 @@
+direction: down
+ui: "GUI thread: widgets" {
+  win: "Window / BottomPanel\nopen_videos_requested,\nsession_selected,\nproject menu actions"
+}
+handlers: "GUI thread: handlers" {
+  sh: "SessionHandler"
+  ph: "ProjectHandler"
+}
+app: "Application facade\nthin pass-through"
+svc: "Application services" {
+  ss: "SessionService"
+  ps: "ProjectService"
+}
+mgr: "SessionManager\nowns the Session objects"
+infra: "Infrastructure" {
+  store: "ProjectStore\n.blurzy / JSON file"
+  session: "Session\nVideoReader + SessionState\n+ layers A-D"
+  dec: "VideoDecodeWorker\nQThread per session"
+}
+ui.win -> handlers.sh: "signals"
+ui.win -> handlers.ph: "signals"
+handlers.sh -> app: "open, switch"
+handlers.ph -> app: "save, load"
+app -> svc.ss
+app -> svc.ps
+svc.ss -> mgr: "create sessions"
+svc.ps -> mgr: "close_all, restore"
+svc.ps -> infra.store: "read / write"
+mgr -> infra.session: "creates"
+infra.session -> infra.dec: "starts"

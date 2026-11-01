@@ -1,0 +1,16 @@
+shape: sequence_diagram
+user: User
+ov: "Preview overlay"
+h: "AnnotationHandler"
+hist: "SelectionHistoryState"
+app: "Application facade\nlayer service"
+ctl: UIController
+user -> ov: "drag box"
+ov -> h: "bbox_edited(key, x1..y2)"
+h -> app: "get_layer_box_by_key (B or D by tab)"
+h -> hist: "snapshot boxes + selection (before)" 
+h -> app: "update_box_in_layer_at_current_frame"
+h -> hist: "record_box_mutation (before/after)"
+h -> ctl: "render_frame_for_session_id"
+ctl -> ov: "redraw from layer data"
+h -> user: "on exception: show_error('Edit Failed')"

@@ -1,0 +1,15 @@
+shape: sequence_diagram
+user: User
+h: "ImportExportHandler\n(GUI)"
+dlg: "ImportExportDialog\n(GUI, modal)"
+app: "Application facade\n(GUI)"
+svc: "Import / Export service\nA,B detection - C,D tracking"
+data: "Session layers"
+user -> h: "Import / Export button\n(detections or tracks)"
+h -> dlg: "exec() with scope layers"
+dlg -> h: "ImportExportConfig\n(import? layer, format, path, mode)"
+h -> app: "import_layer(...) or export_layer(...)"
+app -> svc: "route by layer"
+svc -> data: "import: parse .json/.csv,\napply mode;\nexport: serialize layer"
+svc -> h: "number of boxes"
+h -> user: "re-render (import) + status text\nor Import / Export Failed dialog"

@@ -1,0 +1,14 @@
+direction: right
+click: "Detect current frame"
+check: "No model selected,\nor frame not decodable?" {
+  shape: diamond
+}
+stop: "Return quietly\n(logged, no layer change)"
+engine: "Create engine if missing\nthen engine.detect(frame)"
+filter: "Filter by\nlabels + confidence"
+a: "Layer A\nadd at current frame"
+b: "Layer B\nreplace machine boxes\nmanual boxes survive"
+click -> check
+check -> stop: yes
+check -> engine: no
+engine -> filter -> a -> b

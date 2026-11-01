@@ -1,0 +1,21 @@
+direction: down
+start: "Start Tracking clicked\n(strategy, source layer A or B)"
+g1: "Selected session\nis the active one?"
+g2: "Tracking already\nrunning?"
+g3: "Detection still\nrunning?"
+g4: "Detection coverage\nprocessed < total?"
+confirm: "Dialog: Incomplete Detections\nProceed Anyway only"
+go: "Show busy state;\nstart_tracking_worker()"
+quiet: "Return silently"
+err: "Error dialog\nAction Not Allowed" {style.stroke: "#c0392b"}
+start -> g1
+g1 -> quiet: "no" {style.stroke-dash: 4}
+g1 -> g2: "yes"
+g2 -> err: "yes" {style.stroke-dash: 4}
+g2 -> g3: "no"
+g3 -> err: "yes" {style.stroke-dash: 4}
+g3 -> g4: "no"
+g4 -> go: "complete"
+g4 -> confirm: "incomplete"
+confirm -> go: "Proceed Anyway"
+confirm -> quiet: "Okay / close" {style.stroke-dash: 4}

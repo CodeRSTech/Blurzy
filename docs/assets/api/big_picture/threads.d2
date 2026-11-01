@@ -1,0 +1,19 @@
+direction: down
+gui: "GUI thread (Qt event loop)" {
+  direction: right
+  widgets: "Widgets + handlers\nslots run here"
+  facade: "Application facade,\nservices, managers"
+  widgets -> facade: "method calls"
+}
+bg: "Background threads (one per running job)" {
+  direction: right
+  decode: "Decode worker\nring buffer"
+  det: "Detection\nworker"
+  trk: "Tracking\nworker"
+  exp: "Export\nworkers"
+}
+data: "Session layers A-D, decoded-frame buffer" {style.stroke-dash: 4}
+gui -> bg: "activate, seek, start, stop, cancel"
+bg -> gui: "Qt signals: progress, batches, finished, error" {style.stroke-dash: 4}
+gui -> data: "read / write layers"
+bg.decode -> data: "fills buffer"

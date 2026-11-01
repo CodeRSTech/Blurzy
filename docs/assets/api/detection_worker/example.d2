@@ -1,0 +1,20 @@
+shape: sequence_diagram
+user: "User"
+h: "DetectionHandler"
+s: "DetectionService"
+w: "DetectionWorker\n(thread)"
+bp: "BatchProcessor"
+user -> h: "click Detect all"
+h -> h: "busy bar on"
+h -> s: "via facade: start_detection_worker"
+s -> s: "reject if running / no model;\nclear layers; load engine"
+s -> w: "create, connect, start()"
+h -> w: "connect progress, finished, error"
+loop: "until stream ends" {
+  w -> w: "read, detect, cache"
+  w -> h: "progress_updated: bar + status text"
+  w -> s: "batch_ready (each 30 frames)"
+  s -> bp: "process_batch"
+  bp -> bp: "write Layer A, refresh B"
+}
+w -> h: "finished_processing: busy off, status bar"

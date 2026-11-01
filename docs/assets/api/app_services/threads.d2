@@ -1,0 +1,19 @@
+direction: right
+handlers: "GUI thread\nHandlers: start work, show dialogs"
+services: "GUI thread\nServices: validate, write layers"
+det: "Background\nDetectionWorker"
+trk: "Background\nTrackingWorker"
+exp: "Background\nExportWorker (runs ExportService)"
+handlers -> services: facade call
+services -> det: create + start
+services -> trk: create + start
+handlers -> exp: create + start
+det -> services: batch_ready {
+  style.stroke-dash: 4
+}
+trk -> handlers: finished {
+  style.stroke-dash: 4
+}
+exp -> handlers: progress / result {
+  style.stroke-dash: 4
+}

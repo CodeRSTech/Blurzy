@@ -1,0 +1,14 @@
+shape: sequence_diagram
+h: "TrackingHandler"
+w: "TrackingWorker\n(worker thread)"
+r: "VideoReader"
+s: "TrackingService"
+w -> r: open local video file
+r -> w: raises (file unreadable)
+w -> w: log exception, tracked data stays empty
+w -> h: error_occurred(msg)
+h -> h: clear busy state, show error dialog
+w -> h: finished_processing()
+h -> s: sync_tracking_cache
+s -> s: write empty result to C, refresh D
+h -> h: switch to Tracking tab, render frame

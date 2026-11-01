@@ -1,0 +1,26 @@
+direction: down
+ui: "UI (GUI thread)" {
+  direction: right
+  handler: "TrackingHandler\nconnects signals"
+  adapter: "UIApplicationAdapter"
+}
+app: "Application (GUI thread)" {
+  direction: right
+  facade: "Application facade"
+  service: "TrackingService"
+  manager: "TrackingWorkerManager"
+}
+infra: "Infrastructure" {
+  direction: right
+  worker: "THIS PAGE\nTrackingWorker (QThread)" {
+    style.stroke-width: 4
+  }
+  session: "Session\nholds tracking_worker"
+}
+ui.handler -> ui.adapter
+ui.adapter -> app.facade
+app.facade -> app.service
+app.service -> app.manager
+app.manager -> infra.worker: create(start=True)
+app.manager -> infra.session: attach / detach
+infra.worker -> ui.handler: progress, error, finished {style.stroke-dash: 4}
