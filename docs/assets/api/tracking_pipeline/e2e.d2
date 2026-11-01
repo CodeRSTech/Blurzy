@@ -1,0 +1,22 @@
+shape: sequence_diagram
+u: "User"
+h: "TrackingHandler"
+a: "Adapter and\nApplication facade"
+s: "TrackingService"
+m: "WorkerManager"
+w: "TrackingWorker\n(worker thread)"
+u -> h: click Track
+h -> h: checks, busy progress bar
+h -> a: start_tracking_worker
+a -> s: start_background_tracking
+s -> m: start(s_id, strategy, layer)
+m -> m: seed B from A if needed, clear C and D
+m -> w: construct (copy, dedupe) + start
+h -> w: connect 3 signals
+w -> h: progress_updated(i, total)
+w -> h: finished_processing()
+h -> a: sync_tracking_cache
+a -> s: sync_tracking_cache
+s -> w: get_tracked_data()
+s -> s: write C, refresh D
+h -> h: show Tracking tab, render frame

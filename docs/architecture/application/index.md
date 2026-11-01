@@ -2,26 +2,70 @@
 
 Source: `src/app/application`
 
-The Application layer is the workflow coordinator between the UI and
-infrastructure. The UI calls a facade, services validate and sequence use
-cases, managers own selected long-lived session/worker lifecycles, and
-adapters connect application-owned contracts to concrete infrastructure
-implementations. Application policy uses domain values and does not manipulate
-Qt widgets.
+The Application layer decides **what should happen** when the user asks Blurzy
+to do something: run detection, track objects, save a project, export a video.
+The UI owns windows and dialogs; infrastructure owns models, video files, and
+threads; Application sits between them and turns requests into checked,
+ordered steps.
 
-For example, detection service code validates model/session state, asks a
-manager/factory for a worker, and processes its emitted batches into A/B.
-Tracking similarly validates an A/B source and synchronizes completed output
-into C/D. The worker performs frame/model/tracker work in the background;
-Application owns the meaning and placement of its results.
+![UI handlers call the Application facade, which delegates to services; services use managers and infrastructure workers and write session layers](../../assets/api/app_services/map-light.svg#only-light)
+![UI handlers call the Application facade, which delegates to services; services use managers and infrastructure workers and write session layers](../../assets/api/app_services/map-dark.svg#only-dark)
 
-This is not yet a strict dependency-inversion boundary: some Application
-composition and lifecycle code imports concrete infrastructure classes.
-`src/main.py` wires the top-level runtime and the facade coordinates services;
-see the [architecture overview](../overview.md),
-[managers](managers.md), and [services](services/index.md).
+Solid arrows are calls; dashed arrows are indirect or signal-based. Handlers
+call the **facade**, the facade delegates, and services use managers and
+infrastructure to do the work.
 
-## Packages
+| Part | Role in one sentence | Page |
+| --- | --- | --- |
+| Facade (`Application`) | One thin object the UI calls; it creates the services and forwards requests | [Services map](services/index.md) |
+| Services | Validate a use case, sequence its steps, and write results into layers A-D | [Services](services/index.md) |
+| Managers | Own long-lived per-session objects: engines, tracking worker, decode worker, session registry | [Managers](managers.md) |
+| Adapters / interfaces | Application-owned contracts plus factories that build concrete workers | covered inside the pages above |
 
+!!! info "Ownership boundaries"
+    Application code never touches Qt widgets. **Handlers own user-facing
+    dialogs and connect most worker signals**; services own validation, layer
+    writes, and logging at the failure boundary. Workers do the slow work on
+    background threads.
+
+!!! warning "Not a strict dependency-inversion boundary"
+    Services and managers import some concrete infrastructure classes
+    (for example `ProjectStore`, and lazily the detection and tracking
+    workers). Video rendering itself lives in the Application export service.
+    The layout is a convention to follow, not an enforced Clean Architecture.
+
+## Who runs on which thread
+
+![GUI-thread handlers and services start background detection, tracking, and export workers, which report back by Qt signals](../../assets/api/app_services/threads-light.svg#only-light)
+![GUI-thread handlers and services start background detection, tracking, and export workers, which report back by Qt signals](../../assets/api/app_services/threads-dark.svg#only-dark)
+
+Solid arrows start work; dashed arrows are signals coming back. Detection
+batches return to `DetectionService`, while tracking completion and export
+progress are handled by UI handlers.
+
+!!! note "Thread-affinity limitation"
+    `DetectionService` is a plain Python object (not a `QObject`), yet its
+    batch slot's docstring says it runs on the main thread. Qt cannot use
+    object thread affinity for such a receiver, so this guarantee is **not
+    established by the service code itself**; treat it as unverified.
+
+## Layers A-D in the services
+
+Detection writes **A** (detector output) and **B** (reviewed copy). Tracking
+reads A or B and writes **C** (machine tracks) and **D** (editable tracks).
+Export reads **D**, falling back to **C**. Services keep machine output and
+manual edits apart; see [Detection](services/detection.md) and
+[Tracking](services/tracking.md).
+
+## Pages
+
+- [Services map](services/index.md) - how the pieces connect
+- [Detection services](services/detection.md)
+- [Tracking services](services/tracking.md)
+- [Session and project services](services/session-project.md)
+- [Video export service](services/export.md)
+- [Layer services](services/layers.md) and [helpers](services/helpers.md)
 - [Managers](managers.md)
-- [Services](services/index.md)
+
+See also the [architecture overview](../overview.md) and the
+[generated API reference](../../reference/api/index.md).

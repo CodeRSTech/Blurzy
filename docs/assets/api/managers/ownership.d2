@@ -1,0 +1,22 @@
+direction: down
+ui: "UI handlers\nAsk for a use case; show dialogs"
+app: "Application facade\nThin delegation"
+svc: "Services\nDecide WHAT should happen" {
+  s1: "SessionService"
+  s2: "DetectionService"
+  s3: "TrackingService"
+}
+mgr: "Managers\nOwn HOW session resources change" {
+  m1: "SessionManager\n+ SessionInitializer"
+  m2: "VideoDecodeWorkerManager"
+  m3: "DetectionEngineManager"
+  m4: "TrackingWorkerManager"
+}
+session: "Session (infrastructure)\nReader, state, data layers A-D,\ndecode / detection / tracking workers, engine"
+ui -> app
+app -> svc
+svc.s1 -> mgr.m2: switch decode worker
+svc.s2 -> mgr.m3: create / update / remove
+svc.s3 -> mgr.m4: start / stop / read
+app -> mgr.m1: open, close, active id
+mgr -> session: attach, replace, detach

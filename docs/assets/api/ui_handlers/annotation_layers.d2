@@ -1,0 +1,15 @@
+direction: right
+a: "Layer A\ndetector output\n(read only)"
+b: "Layer B\nreviewed detections"
+c: "Layer C\ntracker output\n(read only)"
+d: "Layer D\nreviewed tracks"
+dt: "Detection tab edits" 
+tt: "Tracking tab edits"
+a -> b: "seed an absent frame\n(first read, filtered)"
+c -> d: "seed an absent frame\n(first read, filtered)"
+a -> b: "Reset frame / all" {style.stroke-dash: 4}
+c -> d: "Reset frame / all" {style.stroke-dash: 4}
+dt -> b: "move, resize, relabel,\ndelete, paste, copy to adjacent"
+tt -> d: "same operations"
+draw: "Draw new box\n(always layer B)"
+draw -> b

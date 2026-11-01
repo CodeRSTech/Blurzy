@@ -1,0 +1,20 @@
+direction: down
+name: "model_name string\nfrom the UI dropdown"
+none: "name is None (string)?" {shape: diamond}
+torch: "in TORCH_MODELS?" {shape: diamond}
+yolo: "in ULTRALYTICS_YOLO_MODELS?" {shape: diamond}
+mt: "MTCNN-Tensorflow or\nMTCNN-Pytorch?" {shape: diamond}
+dummy: "DummyDetectionModel"
+tm: "TorchDetectionModel\n(function, weights)"
+ym: "YoloDetectionModel\n(.pt file)"
+mm: "MTCNNTF / MTCNNTorch\nDetectionModel"
+err: "raise DetectionModelError\nUnknown detection model"
+name -> none
+none -> dummy: yes
+none -> torch: no
+torch -> tm: yes
+torch -> yolo: no
+yolo -> ym: yes
+yolo -> mt: no
+mt -> mm: yes
+mt -> err: no

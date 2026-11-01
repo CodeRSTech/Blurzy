@@ -1,0 +1,16 @@
+direction: down
+gui: "GUI thread" {
+  direction: right
+  manager: "TrackingWorkerManager\nclears C/D, creates worker"
+  handler: "TrackingHandler\nstarts, shows progress,\nowns dialogs"
+  service: "TrackingService\nsync_tracking_cache()"
+}
+bg: "Worker thread (QThread)" {
+  direction: right
+  worker: "TrackingWorker.run()\nframe loop + post-processing"
+  strat: "Selected strategy\nupdate_frame()"
+  worker -> strat: one frame at a time
+}
+gui.manager -> bg.worker: create(start=True)
+bg.worker -> gui.handler: Qt signals {style.stroke-dash: 4}
+gui.service -> bg.worker: get_tracked_data()

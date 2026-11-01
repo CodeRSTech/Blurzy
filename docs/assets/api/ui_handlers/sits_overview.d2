@@ -1,0 +1,12 @@
+direction: right
+h: "UI handlers (12)\nGUI thread"  { style.bold: true; style.stroke-width: 4 }
+c: "UIController\n+ UIApplicationAdapter"
+a: "Application facade\nthin delegation"
+s: "Application services"
+m: "SessionManager,\nworker managers"
+i: "Session store,\nworkers, video I/O"
+h -> c
+c -> a
+a -> s
+s -> m
+m -> i

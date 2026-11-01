@@ -1,0 +1,16 @@
+direction: down
+manager: "SessionManager\nowns the open sessions, picks the active one"
+init: "SessionInitializer\nfills the shell after creation"
+session: "Session (QObject): one open video" {
+  grid-columns: 3
+  sid: "s_id\nSessionId"
+  state: "state\nSessionState\n(playback, settings)"
+  data: "data\nSessionDataStore\nlayers A-D"
+  reader: "video_reader\nmetadata reader"
+  decode: "video_decode_worker\nthread with its own reader"
+  accessor: "_frame_accessor\nframe lookup helper"
+  det: "detection_engine\ndetection_worker"
+  trk: "tracking_worker"
+}
+manager -> session: "creates empty shell"
+init -> session: "attaches state, reader,\nand starts decode worker" {style.stroke-dash: 4}

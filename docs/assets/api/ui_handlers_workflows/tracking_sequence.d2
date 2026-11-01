@@ -1,0 +1,20 @@
+shape: sequence_diagram
+user: User
+th: "TrackingHandler\n(GUI)"
+mgr: "TrackingService +\nTrackingWorkerManager\n(GUI)"
+w: "TrackingWorker\n(QThread)"
+data: "Layers C and D\n(GUI)"
+user -> th: "Start Tracking"
+th -> mgr: "start_tracking_worker(s_id, strategy, source)"
+mgr -> mgr: "empty source: EmptyLayerException;\nclear layers C and D;\ndeep-copy source data"
+mgr -> w: "create + start()"
+th -> w: "connect progress_updated,\nfinished_processing, error_occurred"
+loop: "each frame" {
+  w -> th: "progress_updated(current, total)"
+  th -> user: "progress + status text"
+}
+w -> w: "post-process: stitching,\nsmoothing, padding"
+w -> th: "finished_processing()"
+th -> mgr: "sync_tracking_cache(s_id)"
+mgr -> data: "overwrite C; replace machine boxes in D"
+th -> user: "Tracking tab, re-render\nor Tracking Error dialog"

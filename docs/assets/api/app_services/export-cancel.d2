@@ -1,0 +1,13 @@
+shape: sequence_diagram
+ui: "Export handler\n(GUI thread)"
+wk: "ExportWorker\n(QThread)"
+svc: "ExportService"
+ui -> wk: "start()"
+wk -> svc: "export_session(progress_callback)"
+svc -> wk: "callback(frame, total)"
+wk -> ui: "progress_updated"
+ui -> wk: "stop() : sets flag"
+svc -> wk: "next callback"
+wk -> svc: "raises ExportCancelled"
+svc -> svc: "writer.release(); partial file stays on disk"
+wk -> ui: "cancelled, then finished_processing"

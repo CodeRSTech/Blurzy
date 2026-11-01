@@ -1,0 +1,19 @@
+direction: down
+req: "Frame requested\nindex"
+clamp: "Clamp to 0 .. frame_count - 1"
+hit: "In ring buffer?" {shape: diamond}
+ret: "Set playhead and current frame\nReturn frame"
+decide: "Needs a seek?\nindex is more than 1 away from playhead,\nor current frame has no cached image" {shape: diamond}
+seek: "worker.request_seek(index)\nbuffer cleared"
+poll: "Poll every 10 ms, up to 2 s (200 checks)"
+found: "Frame arrived?" {shape: diamond}
+none: "Log error, return None"
+req -> clamp -> hit
+hit -> ret: yes
+hit -> decide: no
+decide -> seek: yes
+seek -> poll
+decide -> poll: "no: wait for sequential decode"
+poll -> found
+found -> ret: yes
+found -> none: "timeout" {style.stroke-dash: 4}

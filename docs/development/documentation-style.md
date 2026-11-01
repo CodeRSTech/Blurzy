@@ -182,7 +182,7 @@ described in [Reference documentation](reference-documentation.md).
 | Images/captions | `attr_list`, `md_in_html` | Supply useful alt text; use `figure`/`figcaption` for captions. |
 | Tables | `tables` | Compare structured facts; avoid oversized prose tables. |
 | Code annotations | Per-block `.annotate` with `attr_list` | Opt in only where numbered explanations help; global annotations are disabled. |
-| Diagrams | Mermaid custom fence or themed SVG assets | Verify readable equivalent content in both themes. |
+| Diagrams | Themed SVG pairs rendered from D2 sources (no Mermaid in architecture pages) | Verify readable equivalent content in both themes. |
 
 For example, these tabs show alternative headless-test commands. Use the syntax
 of the current shell:
@@ -217,8 +217,7 @@ editable_detections = VideoDataLayer.B  # (1)
 
 1. Layer B contains reviewed/editable detections, distinct from the original output in A.
 
-Use Material's Mermaid integration rather than imposing a light-only palette.
-If a single SVG cannot suit both themes, use equivalent `#only-light` and
+Do not impose a light-only palette: provide equivalent `#only-light` and
 `#only-dark` images. Preserve editable diagram sources. See
 [Writing architecture guides](architecture-documentation.md) for asset rules.
 Content tabs are not globally linked, and annotations are not globally enabled;

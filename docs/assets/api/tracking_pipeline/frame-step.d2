@@ -1,0 +1,12 @@
+direction: down
+stop: "Stop flag set?"
+exit: "Return early"
+read: "Read frame i\nVideoReader, if a local file exists"
+embed: "Embed each box crop\nNone when no frame or bad crop"
+update: "strategy.update_frame()\nboxes + frame + embeddings"
+store: "Store frame i result\nobserved and coasted boxes"
+iso: "Keep isolated appearance\nonly detection-backed boxes with IoU < 0.25 to others"
+tick: "Emit progress_updated(i+1, total)"
+stop -> exit: yes {style.stroke-dash: 4}
+stop -> read: no
+read -> embed -> update -> store -> iso -> tick

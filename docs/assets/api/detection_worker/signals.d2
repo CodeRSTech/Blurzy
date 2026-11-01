@@ -1,0 +1,13 @@
+shape: sequence_diagram
+ui: "Handler / Service\n(GUI side)"
+w: "DetectionWorker\n(worker thread)"
+ui -> w: "start()"
+loop: "Each frame" {
+  w -> w: "detect, cache"
+  w -> ui: "batch_ready (every 30 frames)"
+  w -> ui: "progress_updated(done, total, ETA)"
+}
+ui -> w: "stop() sets a flag"
+w -> w: "finish current frame, exit loop"
+w -> ui: "batch_ready (partial batch)"
+w -> ui: "finished_processing"

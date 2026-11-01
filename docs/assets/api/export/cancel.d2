@@ -1,0 +1,13 @@
+shape: sequence_diagram
+c: "UIController\n(close / shutdown)"
+h: "ExportHandler"
+w: "Worker thread"
+r: "Render / sub-workers"
+c -> h: "stop_exports(wait=True)"
+h -> w: "stop(): sets flag"
+w -> r: "batch only: stop detection/tracking worker"
+r -> r: "next progress callback raises"
+r -> w: "ExportCancelled or RuntimeError"
+w -> h: "cancelled signal (single: cancelled;\nbatch: cancelled after loop)"
+w -> h: "finished_processing"
+h -> c: "wait() returns; deleteLater"

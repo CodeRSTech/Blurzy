@@ -1,0 +1,11 @@
+direction: down
+raw: "Strategy output\nobserved + coasted boxes"
+obs: "Keep observations only\ndetection_backed and age 0"
+tl: "Split into tracklets\nunbroken runs per ID"
+stitch: "Link tracklets\nHungarian + cost + ambiguity check"
+gsi: "GSI fills accepted gaps"
+tail: "Bounded coast tails\nunlinked ends"
+priv: "Privacy coverage\noptional"
+out: "Final frame map"
+raw -> obs -> tl -> stitch -> gsi -> tail -> priv -> out
+priv.style.stroke-dash: 4

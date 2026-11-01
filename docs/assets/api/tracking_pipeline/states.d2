@@ -1,0 +1,17 @@
+direction: down
+created: "Created\ncopy + dedupe on GUI thread"
+running: "Running\nframe loop"
+post: "Post-processing\nno progress ticks"
+done: "Completed\nis_complete = True"
+failed: "Failed\nerror_occurred(msg)"
+stopped: "Stop requested\nreturns early"
+end: "finished_processing()\nalways emitted"
+created -> running: start()
+running -> post: all frames read
+post -> done: result stored
+running -> stopped: stop() flag seen {style.stroke-dash: 4}
+running -> failed: exception {style.stroke-dash: 4}
+post -> failed: exception {style.stroke-dash: 4}
+done -> end
+failed -> end
+stopped -> end

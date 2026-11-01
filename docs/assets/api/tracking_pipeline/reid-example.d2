@@ -1,0 +1,12 @@
+shape: sequence_diagram
+w: "TrackingWorker"
+x: "Appearance embedder"
+s: "DeepSORT / BoT-SORT"
+p: "PostProcessor"
+w -> x: frame i + boxes
+x -> w: unit vector per box, or None
+w -> s: update_frame(i, boxes, embeddings)
+s -> w: tracked boxes
+w -> w: keep vectors of observed, isolated boxes
+w -> p: process(result, vectors by frame and ID)
+p -> p: compare tracklet tail and head vectors

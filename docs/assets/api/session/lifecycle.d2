@@ -1,0 +1,18 @@
+shape: sequence_diagram
+mgr: "SessionManager"
+init: "SessionInitializer"
+s: "Session"
+w: "Decode worker"
+create: "OPEN" {
+  mgr -> s: "Session(s_id): empty shell, empty store"
+  mgr -> init: "initialize(session)"
+  init -> s: "reader, SessionState attached"
+  init -> w: "create with playback state, start()"
+  init -> s: "video_decode_worker attached"
+}
+close: "CLOSE (discard_session / close_all)" {
+  mgr -> s: "close()"
+  s -> w: "stop() after detection and tracking workers"
+  s -> s: "video_reader.close()"
+  mgr -> mgr: "drop from dict, re-pick active id"
+}

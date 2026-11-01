@@ -1,0 +1,16 @@
+direction: down
+batch: "One batch\nframe_index -> DetectionResult list"
+has: "Layer A already has boxes\nfor this frame?" {
+  shape: diamond
+}
+skip: "Skip frame\ncount as skipped_existing"
+map: "map_detections_to_bbox()\nBoxes in Blurzy format"
+filter: "Settings filter\nchosen labels + min confidence"
+a: "Layer A\nadd filtered boxes"
+b: "Layer B\nreplace machine boxes only"
+report: "DetectionBatchProcessReport\ntotal / written / skipped / boxes"
+batch -> has
+has -> skip: yes
+has -> map: no
+map -> filter -> a -> b -> report
+skip -> report

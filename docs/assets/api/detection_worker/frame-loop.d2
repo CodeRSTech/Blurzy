@@ -1,0 +1,23 @@
+direction: down
+check: "stop requested?" {shape: diamond}
+read: "read_next_frame()\nindex + RGB frame"
+end: "EndOfVideoStreamException?" {shape: diamond}
+detect: "engine.detect(frame)"
+cache: "Store in cache under mutex\n_detections_by_frame_index[i]"
+batch: "Add to current batch"
+full: "batch has 30 frames?" {shape: diamond}
+emit: "emit batch_ready(s_id, batch, time)\nstart new batch"
+progress: "emit progress_updated(i+1, total, ETA)"
+flush: "Flush partial batch (if any)"
+done: "finally: close reader, emit finished_processing"
+check -> read: no
+read -> end
+end -> detect: no
+detect -> cache -> batch -> full
+full -> emit: yes
+full -> progress: no
+emit -> progress
+progress -> check: next frame
+end -> flush: "yes: mark complete, stop()" {style.stroke-dash: 4}
+check -> flush: "yes" {style.stroke-dash: 4}
+flush -> done

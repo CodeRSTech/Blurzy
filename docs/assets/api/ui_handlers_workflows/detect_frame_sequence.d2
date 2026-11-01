@@ -1,0 +1,14 @@
+shape: sequence_diagram
+user: User
+dh: "DetectionHandler\n(GUI)"
+app: "UIApplicationAdapter\n-> Application\n(GUI)"
+ex: "DetectionExecutionService\n(GUI)"
+eng: "DetectionEngine\n(GUI)"
+data: "Layers A and B\n(GUI)"
+user -> dh: "Detect (current frame)"
+dh -> app: "active_session_id = s_id;\ndetect_current_frame(s_id)"
+app -> ex: "execute_for_current_frame"
+ex -> eng: "detect(frame)\nblocks the GUI thread"
+eng -> ex: "DetectionResult list"
+ex -> data: "filter by labels + min confidence;\nwrite A and machine boxes in B"
+dh -> user: "render_frame_for_session_id()\nor Detection Failed dialog"

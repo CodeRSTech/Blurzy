@@ -1,0 +1,18 @@
+shape: sequence_diagram
+user: "User"
+h: "ExportHandler\n(GUI)"
+w: "ExportWorker\n(thread)"
+s: "ExportService"
+user -> h: "click Export"
+h -> h: "not already exporting?\nsession_is_ready_for_export?"
+h -> user: "save dialog: path"
+h -> w: "create, connect, start()"
+w -> s: "export_session(path, callback)"
+loop: "each frame" {
+  s -> w: "callback(i, total)"
+  w -> h: "progress_updated: bar + status"
+}
+s -> w: "return"
+w -> h: "succeeded: 'Export completed.'"
+w -> h: "finished_processing"
+h -> h: "native finished: busy off, deleteLater"

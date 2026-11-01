@@ -1,0 +1,17 @@
+direction: down
+start: "Read frame N of tab\n(Detection=B, Tracking=D)"
+lock: "Take session data lock"
+q1: "Target frame already\ninitialized?" {shape: diamond}
+q2: "Source frame (A or C)\nhas boxes?" {shape: diamond}
+keep: "Do nothing\nKeeps edits, even an\nintentionally empty frame"
+none: "Do nothing\nNo target entry created"
+seed: "Clone source boxes that pass\nthe filter; store in B or D"
+read: "Return boxes from B or D"
+start -> lock -> q1
+q1 -> keep: yes
+q1 -> q2: no
+q2 -> none: no
+q2 -> seed: yes
+keep -> read
+none -> read
+seed -> read

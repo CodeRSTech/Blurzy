@@ -1,0 +1,15 @@
+shape: sequence_diagram
+user: User
+bp: "BottomPanel"
+sh: "SessionHandler"
+app: "Application.active_session_id\nsetter"
+dm: "VideoDecodeWorkerManager"
+w: "Decode workers\n(old and new)"
+user -> bp: "click a file row"
+bp -> sh: "session_selected(s_id)"
+sh -> sh: "playback_handler.stop_playback()"
+sh -> app: "active_session_id = s_id"
+app -> dm: "handle_active_session_changed(old, new)"
+dm -> w: "old.set_active(False)"
+dm -> w: "new.set_active(True, resume_idx)"
+sh -> bp: "restore_session_settings(view model),\nreset_viewport(),\nrender_frame_for_session_id()"

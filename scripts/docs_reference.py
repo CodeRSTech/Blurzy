@@ -305,7 +305,7 @@ def note_navigation(pages: dict[PurePosixPath, str]) -> list:
     result: list = [{"Overview": str(NOTE_ROOT / "overview.md")}]
     entries = {path.relative_to(NOTE_ROOT).parts[0] for path in pages}
     entries -= {"index.md", "overview.md"}
-    order = ["ui", "application", "infrastructure"]
+    order = ["big-picture.md", "ui", "application", "infrastructure"]
     ordered = [entry for entry in order if entry in entries]
     ordered += sorted(entries - set(order) - {"domain", "shared"})
     ordered += [entry for entry in ("domain", "shared") if entry in entries]

@@ -1,0 +1,12 @@
+direction: down
+ui: "UI\nUser interaction and presentation\nQt windows, widgets, handlers"
+app: "Application\nWorkflow coordination and contracts\nFacade, services, managers, interfaces"
+domain: "Domain\nCore types, state, and rules\nBoxes, settings, video metadata"
+infra: "Infrastructure\nTechnical implementations\nVideo I/O, models, workers, storage"
+shared: "Shared\nLogging, exceptions, utilities\nUsed by every layer" {
+  style.stroke-dash: 4
+}
+ui -> app: "delegates via UI adapter"
+app -> domain: "uses types and rules"
+infra -> app: "conforms to contracts"
+infra -> domain: "uses types and rules"

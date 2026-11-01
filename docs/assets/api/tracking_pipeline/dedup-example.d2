@@ -1,0 +1,10 @@
+shape: sequence_diagram
+w: "TrackingWorker\n(constructor)"
+d: "suppress_nested_\nsame_class_boxes"
+f: "Frame loop\n(worker thread)"
+w -> w: deep-copy source layer
+w -> d: frame 7: full-body + torso boxes
+d -> d: IoMin 0.99 >= 0.80, same class
+d -> w: one box, union bounds
+w -> f: cleaned snapshot after all frames
+f -> f: associate one box, not two

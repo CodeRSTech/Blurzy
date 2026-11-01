@@ -1,0 +1,17 @@
+direction: down
+set: "SessionManager.active_session_id = new\n(also via initialize_active_session)"
+same: "Same id as current?"
+noop: "Return: nothing changes" { style.stroke-dash: 4 }
+store: "Store new id; old id captured\n(None when nothing was active)"
+app: "Application.handle_active_session_changed(old, new)"
+svc: "SessionService.handle_active_session_changed"
+mgr: "VideoDecodeWorkerManager.switch_active_session" {
+  direction: down
+  d: "deactivate(old)\nset_active(False): clear ring buffer"
+  a: "activate(new)\nset_active(True, resume_idx=playhead)"
+  d -> a
+}
+set -> same
+same -> noop: yes { style.stroke-dash: 4 }
+same -> store: no
+store -> app -> svc -> mgr

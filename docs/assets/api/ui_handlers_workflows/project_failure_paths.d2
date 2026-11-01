@@ -1,0 +1,24 @@
+direction: down
+start: "Open Project\nchosen path"
+load: "ProjectStore.load()"
+close: "close_all()\nexisting sessions are gone"
+each: "For each saved session"
+exists: "Video file exists?"
+restore: "Open video, restore\nsettings and layers"
+skipA: "Skip + log warning\nadd to skipped list"
+skipB: "Discard session + log\nadd to skipped list"
+done: "Report: restored / skipped"
+dlg: "Error dialog\nOpen Project Failed" {style.stroke: "#c0392b"}
+warn: "Warning dialog\nProject Partially Loaded"
+start -> load
+load -> dlg: "exception: file unreadable/invalid;\nsessions still open (close_all not reached)" {style.stroke-dash: 4}
+load -> close
+close -> each
+each -> exists
+exists -> skipA: "no" {style.stroke-dash: 4}
+exists -> restore: "yes"
+restore -> skipB: "any exception" {style.stroke-dash: 4}
+restore -> done
+skipA -> done
+skipB -> done
+done -> warn: "skipped not empty"

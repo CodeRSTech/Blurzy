@@ -1,0 +1,14 @@
+shape: sequence_diagram
+w: "TrackingWorker"
+p: "PostProcessor"
+l: "Link solver"
+g: "GSI filler"
+w -> p: process(frame map, total frames, vectors)
+p -> p: keep observations, split tracklets
+p -> l: A ends at 10, B starts at 14
+l -> p: accept link (cost low, not ambiguous)
+p -> g: fill frames 11 to 13
+g -> p: 3 boxes, detection_backed = False
+p -> p: rename B to A's ID and colour
+p -> p: add bounded coast tails
+p -> w: final frame map

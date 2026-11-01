@@ -1,0 +1,15 @@
+direction: down
+close: "close_all()  /  discard_session(s_id)"
+loop: "For each session: Session.close()" {
+  direction: down
+  det: "detection_worker.stop()"
+  trk: "tracking_worker.stop()\n(sets a flag; thread exits at next check)"
+  dec: "video_decode_worker.stop()\nquit, wait 500 ms, terminate if stuck,\nclose its reader"
+  rd: "video_reader.close()"
+  det -> trk -> dec -> rd
+}
+after: "Forget sessions" {
+  a1: "close_all: clear dict,\nactive id = empty"
+  a2: "discard: pop first; if it was active,\npick first remaining id\n(no decode-worker switch)"
+}
+close -> loop -> after

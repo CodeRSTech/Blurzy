@@ -1,0 +1,21 @@
+direction: down
+svc: "DetectionService / managers\nApplication layer"
+worker: "DetectionWorker\nframes loop, batches"
+engine: "DetectionEngine\none image in, results out"
+loader: "load_detection_model\nname to wrapper"
+yolo: "YOLO\nUltralytics"
+torch: "Torch\ntorchvision"
+mtcnn: "MTCNN x2\nTF / PyTorch"
+dummy: "Dummy\nno-op"
+res: "list[DetectionResult]\ncommon shape for every provider"
+svc -> worker: starts
+worker -> engine: "detect(frame)"
+engine -> loader: "built once with a name"
+loader -> yolo
+loader -> torch
+loader -> mtcnn
+loader -> dummy
+yolo -> res
+torch -> res
+mtcnn -> res
+dummy -> res: "always []"

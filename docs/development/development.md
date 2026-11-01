@@ -121,9 +121,8 @@ before publishing.
 
 For architecture explanations, asset locations, diagram formats, and real
 input/output examples, follow [Writing architecture guides](architecture-documentation.md).
-New component illustrations use editable sources and light/dark SVG renders.
-Existing fenced Mermaid diagrams remain supported through Material's
-SuperFences integration; no wholesale migration is required.
+Component illustrations are D2 sources with light/dark SVG renders produced by
+`python scripts/render_diagrams.py`; architecture pages do not use Mermaid.
 
 The published layout is:
 

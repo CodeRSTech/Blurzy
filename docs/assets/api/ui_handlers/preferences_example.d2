@@ -1,0 +1,17 @@
+shape: sequence_diagram
+user: User
+win: "Window menu"
+h: PreferencesHandler
+dlg: PreferencesDialog
+store: AppPreferencesStore
+q: "Theme, icons, window"
+sh: "SessionHandler (later)"
+user -> win: "Edit > Settings..."
+win -> h: "preferences_action.triggered"
+h -> dlg: "exec() with current preferences"
+dlg -> h: "Accepted; get_preferences()"
+h -> store: "save()"
+h -> q: "apply theme, refresh icons, full-screen"
+h -> win: "status text: defaults apply to new videos"
+sh -> h: "on next video open: apply_defaults_to_session"
+h -> sh: "update_session_settings(**defaults)"

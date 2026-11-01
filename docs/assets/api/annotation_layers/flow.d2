@@ -1,0 +1,19 @@
+direction: right
+detector: "Detector +\nselection filters"
+a: "A\nmachine detections"
+b: "B\neditable detections"
+tracker: "Tracking +\npost-processing"
+c: "C\nmachine tracks"
+d: "D\neditable tracks"
+export: "Blurred-video export"
+user: "User review"
+detector -> a
+a -> b: "seed / refresh"
+b -> tracker: "usual input"
+a -> tracker: "alternative input" {style.stroke-dash: 4}
+tracker -> c
+c -> d: "seed / refresh"
+d -> export: "preferred when populated"
+c -> export: "fallback when D is empty" {style.stroke-dash: 4}
+user -> b: edits
+user -> d: edits

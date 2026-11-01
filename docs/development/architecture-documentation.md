@@ -32,11 +32,9 @@ hide essential facts:
 | Collapsible details (`??? example`) | Optional calculations or implementation detail | The main explanation and its conclusions |
 | Content tabs (`=== "Label"`) | Parallel alternatives, such as tracking strategies | A short comparison table before the tabs |
 | Tables | Comparing roles, settings, payloads, or outcomes | Short cells rather than paragraphs squeezed into columns |
-| Mermaid fences | Data flow, state transitions, or signal sequences | Arrow semantics and an equivalent prose explanation |
+| SVG diagrams (D2) | Structure, data flow, state transitions, or signal sequences | Arrow semantics and an equivalent prose explanation |
 
-Content tabs use `pymdownx.tabbed` with Material's alternate style. Prefer
-plain Mermaid labels without fixed colors so Material can apply the current
-light/dark palette. Label synthetic examples as illustrative rather than
+Content tabs use `pymdownx.tabbed` with Material's alternate style. Label synthetic examples as illustrative rather than
 presenting them as recorded inference output.
 
 ## Assets and formats
@@ -59,11 +57,22 @@ architecture illustrations. Detection-engine assets, for example, belong in
 | Inference results | Downloadable structured data, such as JSON, alongside the images |
 | Generation instructions | Tool requirements and exact commands in the relevant guide |
 
-Prefer exported SVG pairs for new component illustrations. Existing fenced
-Mermaid diagrams remain supported; these conventions do not require migrating
-all existing diagrams. Keep diagram sources editable, whether they are D2 files
-or an appropriate source format for another renderer. Do not commit only an
-unmaintainable screenshot of a diagram.
+Architecture diagrams are **SVG pairs rendered from D2 sources**; do not add
+Mermaid fences to architecture pages. (The Mermaid fence remains configured in
+`mkdocs.yml` only for backwards compatibility.) Keep the editable `.d2` source
+beside its renders; never commit only a screenshot of a diagram.
+
+Explain a component with several focused diagrams rather than one dense one,
+for example: structure and ownership, runtime flow, a signal sequence
+(`shape: sequence_diagram`), a lifecycle or state machine, and failure paths.
+Aim for about a dozen nodes or fewer per diagram so text stays readable at page
+width, and say in one or two sentences what the arrows mean.
+
+Cover infrastructure components, application services and managers, and UI
+handlers with this approach. Small helpers do not need their own article: give
+them a clear section and diagram on the page of the component they serve (the
+video decode worker, for example, is explained on the video page). Adapter and
+interface classes are explained only where they clarify a workflow.
 
 Reference theme variants using Material's image fragments. From
 `docs/architecture/infrastructure/detection/engine.md`, for example:
@@ -78,16 +87,18 @@ themes, and arrows whose meaning is clear. Define whether arrows represent data,
 calls, or dependencies; use a legend when necessary. Do not rely on color alone.
 Both theme variants must carry the same information.
 
-For D2 diagrams, install the D2 CLI separately and run from the repository root
-(PowerShell example; `d2` must be on PATH):
+Install the D2 CLI separately (`d2` must be on PATH) and render every source
+below `docs/assets/api`, or one directory, from the repository root:
 
-```powershell
-d2 --theme 0 --pad 24 docs\assets\api\detection_engine\flow.d2 docs\assets\api\detection_engine\flow-light.svg
-d2 --theme 200 --pad 24 docs\assets\api\detection_engine\flow.d2 docs\assets\api\detection_engine\flow-dark.svg
+```console
+python scripts/render_diagrams.py
+python scripts/render_diagrams.py docs/assets/api/detection_engine
 ```
 
-Use the actual source/output names for each diagram. Record other renderer
-requirements and commands when choosing a different editable format.
+The script runs `d2 --theme 0 --pad 24` for `*-light.svg` and
+`d2 --theme 200 --pad 24` for `*-dark.svg`. Check the result in a real browser
+(for example headless Chromium); generic SVG converters such as CairoSVG do not
+render D2 styling faithfully.
 
 ## Worked examples are evidence
 
@@ -123,7 +134,8 @@ needed by readers and keep regeneration separate.
 - Do diagrams, prose, and examples agree on responsibilities and actual behavior?
 - Are intended behavior and current limitations clearly distinguished?
 - Are editable sources, asset locations, commands, and provenance recorded?
-- Do both themes have equivalent readable diagrams and useful alt text?
+- Is every diagram a D2-sourced SVG pair, and do both themes have equivalent readable diagrams and useful alt text?
+- Do admonitions carry ownership boundaries, limitations, and failure paths?
 - Do annotations, tables, and downloadable results describe the same real run?
 - Are media permissions established and attribution accurate?
 - Do navigation, relative links, images, and downloads work in the built site?

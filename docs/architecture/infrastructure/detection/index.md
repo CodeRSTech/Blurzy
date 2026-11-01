@@ -2,22 +2,37 @@
 
 Source: `src/app/infrastructure/detection`
 
-Detection infrastructure forms a three-step boundary between model providers
-and application workflows:
+Detecting objects in a video is three separate jobs, and Blurzy keeps them in
+three packages so that each can change without the others noticing:
 
-1. **Models** load provider libraries and map provider outputs into
-   `DetectionResult` values.
-2. **Engine** resolves a selected model and gives callers one-image inference.
-3. **Worker** reads video frames, invokes the engine off the GUI thread, caches
-   results, and emits bounded batches for Application to store.
+| Package | Job | Page |
+| --- | --- | --- |
+| `model` | Load one provider's network and translate its output into `DetectionResult` values | [Models and providers](model.md) |
+| `engine` | Hold the selected model and answer "what is in this one image?" | [Engine](engine.md) |
+| `worker` | Loop over video frames on a background thread, batch results, report progress | [Worker](worker.md) |
 
-The engine does not iterate video, while the worker does not decide the
-annotation layer policy. See the
-[Detection service](../../application/services/detection.md) for how those
-batches become A/B data.
+## Where this sits
 
-## Packages
+![The Application layer starts a DetectionWorker, which calls DetectionEngine; the engine asks load_detection_model for a YOLO, Torch, MTCNN or Dummy wrapper; every wrapper returns the same list of DetectionResult](../../../assets/api/detection_model/package-map-light.svg#only-light)
+![The Application layer starts a DetectionWorker, which calls DetectionEngine; the engine asks load_detection_model for a YOLO, Torch, MTCNN or Dummy wrapper; every wrapper returns the same list of DetectionResult](../../../assets/api/detection_model/package-map-dark.svg#only-dark)
 
-- [Engine](engine.md)
-- [Models and providers](model.md)
-- [Worker](worker.md)
+Arrows read top to bottom as ownership and call direction. The four provider
+boxes are **alternatives**: one is chosen when the engine is built, not run
+in sequence. Whatever is chosen, callers receive the same result shape.
+
+!!! info "Ownership boundaries"
+
+    - The engine does not iterate video; the worker does.
+    - Neither decides annotation layers. The Application
+      [Detection service](../../application/services/detection.md) stores batches
+      as Layer A (original detector output) and seeds Layer B (reviewed,
+      editable detections). See [Video layers](../../domain/video.md).
+    - Selecting a model is a UI/Application workflow; the model package only
+      knows how to turn a name into a wrapper.
+
+## Reading order
+
+1. [Models and providers](model.md): how a name such as `YOLOv8n` becomes a
+   wrapper, what each provider family does, and how mappers normalise output.
+2. [Engine](engine.md): the one-image boundary and its failure behaviour.
+3. [Worker](worker.md): the frame loop, caching and batch signals.

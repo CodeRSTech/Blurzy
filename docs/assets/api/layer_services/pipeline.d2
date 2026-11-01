@@ -1,0 +1,20 @@
+direction: down
+dlg: "Import/Export handler\nowns dialogs and status text"
+app: "Application.import_layer / export_layer\nA,B -> detection services; C,D -> tracking services"
+co: "Coercion\nensure_layer_enum / ensure_import_mode"
+guard: "Layer guard\nand file checks" {shape: diamond}
+io: "layer_io\nread or write JSON / CSV"
+merge: "apply_import_to_layer\nImportMode strategy"
+store: "SessionDataStore\nlayer under data lock"
+count: "Return box count"
+err: "Exception raised\nService does not show dialogs" {style.stroke-dash: 4}
+dlg -> app -> co -> guard
+guard -> io: ok
+io -> merge: "import"
+merge -> store
+io -> count: "export"
+store -> count
+guard -> err: rejected {style.stroke-dash: 4}
+io -> err: bad file {style.stroke-dash: 4}
+err -> dlg: "caught; error dialog" {style.stroke-dash: 4}
+count -> dlg: "status text"

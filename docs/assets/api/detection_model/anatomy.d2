@@ -1,0 +1,11 @@
+direction: down
+wrap: "XxxDetectionModel\nBaseDetectionModel.detect(frame, labels)"
+lf: "XxxLoaderFactory\nimports library, loads weights;\nraises DetectionModelError"
+lib: "Provider library\nUltralytics / torchvision /\nmtcnn / facenet_pytorch"
+map: "XxxDetectionMapper\nthreshold, label filter,\nDetectionResult"
+out: "list[DetectionResult]\npixel box, label, score,\nitem id, colour"
+wrap -> lf: "built once in __init__"
+lf -> lib: load
+wrap -> lib: "detect(): predict"
+lib -> map: raw predictions
+map -> out

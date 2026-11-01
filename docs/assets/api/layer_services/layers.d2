@@ -1,0 +1,22 @@
+direction: down
+det: "DETECTION pair" {
+  a: "Layer A\nMachine detector output\nRead-only by convention"
+  b: "Layer B\nReviewed detections\nUser-editable"
+  a -> b: "seed / reset\n(clone + filter)"
+}
+trk: "TRACKING pair" {
+  c: "Layer C\nMachine tracker output\nRead-only by convention"
+  d: "Layer D\nReviewed tracks\nUser-editable"
+  c -> d: "seed / reset\n(clone + filter)"
+}
+det.a -> trk.c: "tracker input is A or B,\nnormally reviewed B" {
+  style.stroke-dash: 4
+}
+det.b -> trk.c: "" {
+  style.stroke-dash: 4
+}
+render: "Blurred-video export\nuses D if populated,\notherwise C"
+trk.d -> render: preferred
+trk.c -> render: fallback {
+  style.stroke-dash: 4
+}
