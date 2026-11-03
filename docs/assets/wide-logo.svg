@@ -29,7 +29,6 @@
   </defs>
 
   <!-- Canvas Background -->
-
   <!-- Viewfinder / Detection Bounding Box Corners -->
   <g stroke="#38bdf8" stroke-width="2.5" stroke-linecap="round" opacity="0.35">
     <path d="M 120,95 L 120,65 L 150,65" fill="none" />
