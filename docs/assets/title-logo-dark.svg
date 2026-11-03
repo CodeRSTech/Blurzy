@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 90" width="100%" height="100%" style="font-family:&#39;Inter&#39;, -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, sans-serif;">
+  <defs>
+    <linearGradient id="hZyGradLight" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#0284c7" />
+      <stop offset="100%" stop-color="#0096c7" />
+    </linearGradient>
+
+    <filter id="hMotionLight" x="-40%" y="-20%" width="180%" height="140%">
+      <feGaussianBlur stdDeviation="8 0.5" />
+    </filter>
+  </defs>
+
+  <g transform="translate(18, 63)">
+    <!-- Motion shadow trails -->
+    <text x="-6" y="0" font-size="54" font-weight="900" fill="#0284c7" opacity="0.3" letter-spacing="3" filter="url(#hMotionLight)">BLUR</text>
+    <text x="-2" y="0" font-size="54" font-weight="900" fill="#0f172a" opacity="0.2" letter-spacing="3" filter="url(#hMotionLight)">BLUR</text>
+
+    <!-- Sharp text -->
+    <text x="0" y="0" font-size="54" font-weight="900" fill="#0f172a" letter-spacing="3">BLUR<tspan fill="url(#hZyGradLight)">ZY</tspan></text>
+  </g>
+</svg>
