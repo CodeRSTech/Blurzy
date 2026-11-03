@@ -29,7 +29,6 @@
   </defs>
 
   <!-- Canvas Background -->
-  <rect width="960" height="360" fill="url(#bannerSpotlight)" />
 
   <!-- Viewfinder / Detection Bounding Box Corners -->
   <g stroke="#38bdf8" stroke-width="2.5" stroke-linecap="round" opacity="0.35">
