@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 90" width="100%" height="100%" style="font-family:&#39;Inter&#39;, -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, sans-serif;">
+  <defs>
+    <linearGradient id="hZyGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#00f2fe" />
+      <stop offset="100%" stop-color="#38bdf8" />
+    </linearGradient>
+
+    <!-- Horizontal Motion Blur Filter -->
+    <filter id="hMotion" x="-40%" y="-20%" width="180%" height="140%">
+      <feGaussianBlur stdDeviation="10 0.5" />
+    </filter>
+
+    <!-- Neon Glow Filter -->
+    <filter id="hGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="4.5" result="blur" />
+      <feMerge>
+        <feMergeNode in="blur" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Typography Block -->
+  <g transform="translate(18, 63)">
+    <!-- Chromatic Underlayer (Red/Violet offset) -->
+    <text x="-3" y="0" font-size="54" font-weight="900" fill="#ff0055" opacity="0.3" letter-spacing="3" filter="url(#hMotion)">BLUR</text>
+    
+    <!-- Chromatic Underlayer (Cyan offset) -->
+    <text x="3" y="0" font-size="54" font-weight="900" fill="#00f2fe" opacity="0.45" letter-spacing="3" filter="url(#hMotion)">BLUR</text>
+    
+    <!-- Main Crisp Wordmark -->
+    <text x="0" y="0" font-size="54" font-weight="900" fill="#f8fafc" letter-spacing="3">BLUR<tspan fill="url(#hZyGrad)" filter="url(#hGlow)">ZY</tspan></text>
+  </g>
+</svg>
