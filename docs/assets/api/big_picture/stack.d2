@@ -1,0 +1,29 @@
+direction: down
+ui: "UI layer (GUI thread)" {
+  direction: down
+  window: "Window + widgets\nPreview, tables, panels, dialogs"
+  handlers: "12 handlers\nsession, project, playback, annotation,\ndetection, tracking, model, export,\nimport/export, preferences, dialogue, ui"
+  controller: "UIController\nowns handlers + adapters"
+  window -> handlers: "Qt signals"
+  handlers -> controller: "owned by"
+}
+app: "Application layer" {
+  direction: down
+  facade: "Application facade\npass-through methods only"
+  services: "Services\ndetection, tracking, session, project,\nexport, unified layers, import/export"
+  managers: "Managers\nsessions, decode / detection / tracking workers"
+  facade -> services: "delegates"
+  services -> managers: "worker + session lifecycle"
+}
+infra: "Infrastructure" {
+  direction: right
+  workers: "Workers\ndecode, detection, tracking, export"
+  store: "Session + SessionDataStore\nLayers A-D, frame access"
+  io: "VideoReader, models,\ntrackers, ProjectStore"
+}
+domain: "Domain + Shared\ntypes, settings, rules, logging" {style.stroke-dash: 4}
+ui.controller -> app.facade: "UI application adapter"
+app.services -> infra.store: "read / write layers"
+app.managers -> infra.workers: "create, start, stop"
+infra.workers -> infra.io: "decode, infer, track, render"
+infra.workers -> ui.handlers: "Qt signals (progress, results, errors)" {style.stroke-dash: 4}

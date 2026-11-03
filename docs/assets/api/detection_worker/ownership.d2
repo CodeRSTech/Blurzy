@@ -1,0 +1,20 @@
+direction: down
+gui: "GUI thread" {
+  handler: "DetectionHandler\nOwns dialogs and progress bar"
+  app: "Application facade\nstart_detection_worker()"
+  service: "DetectionService\nValidates, creates, connects"
+  session: "Session\nholds detection_worker"
+  handler -> app: Detect all
+  app -> service: delegates
+  service -> session: stores worker {
+    style.stroke-dash: 4
+  }
+}
+bg: "Background thread" {
+  worker: "DetectionWorker\nIS a QThread; run() is the loop"
+  reader: "VideoReader\nopened inside run()"
+  engine: "DetectionEngine\nreused, one model"
+  worker -> reader: read_next_frame()
+  worker -> engine: detect(frame)
+}
+gui.service -> bg.worker: "create() via factory,\nthen start()"

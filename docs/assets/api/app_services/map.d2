@@ -1,0 +1,24 @@
+direction: down
+ui: "UI handlers\nValidate input, show dialogs, connect worker signals"
+facade: "Application facade\nThin delegation, owns the services"
+services: "Services (this section)" {
+  direction: right
+  det: "Detection"
+  trk: "Tracking"
+  sp: "Session +\nProject"
+  exp: "Export"
+}
+managers: "Managers\nEngine, tracking worker, decode worker, sessions"
+infra: "Infrastructure\nWorkers, models, video I/O, project store"
+data: "Session data\nLayers A-D, settings"
+ui -> facade: calls
+facade -> services: delegates
+services -> managers: lifecycles
+services -> infra: workers, store, writer {
+  style.stroke-dash: 4
+}
+managers -> infra: create / start / stop
+services -> data: write layers
+infra -> ui: Qt signals {
+  style.stroke-dash: 4
+}

@@ -1,0 +1,13 @@
+direction: down
+req: "DetectionService / execution service\nrequests an engine for a session"
+q: "session.detection_engine is None?"
+create: "create(model_name) via factory\nLoads weights; assign to session"
+update: "engine.set_model(model_name)\nKeep the same engine object"
+rm: "remove(s_id)\nsession.detection_engine = None\n(model name 'None')"
+err: "Loader error propagates\nto the service caller" { style.stroke-dash: 4 }
+req -> q
+q -> create: yes
+q -> update: no
+create -> err: load fails { style.stroke-dash: 4 }
+update -> err: load fails { style.stroke-dash: 4 }
+req -> rm: remove path { style.stroke-dash: 4 }

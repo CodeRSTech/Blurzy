@@ -1,0 +1,22 @@
+direction: down
+ui: "UI (GUI thread)" {
+  handler: "TrackingHandler"
+}
+app: "Application (GUI thread)" {
+  direction: right
+  service: "TrackingService"
+  manager: "TrackingWorkerManager\nreads layer A or B"
+}
+infra: "Infrastructure" {
+  direction: right
+  worker: "TrackingWorker constructor\nruns on the GUI thread"
+  dedupe: "THIS PAGE\nsuppress_nested_same_class_boxes()" {
+    style.stroke-width: 4
+  }
+  loop: "Frame loop\nworker thread"
+  worker -> dedupe: each frame's boxes
+  dedupe -> loop: cleaned snapshot
+}
+ui.handler -> app.service: via adapter + facade
+app.service -> app.manager
+app.manager -> infra.worker: source layer data

@@ -11,19 +11,8 @@ boundaries; opening files and decoding pixels are Infrastructure responsibilitie
 
 The A/B/C/D split preserves machine output separately from user corrections:
 
-```mermaid
-flowchart TB
-    Detector["Detector and selection filters"] --> A["A: machine detections"]
-    A -->|Seed or refresh| B["B: editable detections"]
-    B -->|Usual input| Tracker["Tracking and post-processing"]
-    A -.->|Alternative input| Tracker
-    Tracker --> C["C: machine tracks"]
-    C -->|Seed or refresh| D["D: editable tracks"]
-    User["User review"] --> B
-    User --> D
-    D -->|Preferred when populated| Export["Blurred-video export"]
-    C -.->|Fallback when D is empty| Export
-```
+![Annotation layers: detector output fills A, which seeds editable B; B (or A) feeds tracking, which fills C, which seeds editable D; export prefers D and falls back to C; user review edits B and D](../../assets/api/annotation_layers/flow-light.svg#only-light)
+![Annotation layers: detector output fills A, which seeds editable B; B (or A) feeds tracking, which fills C, which seeds editable D; export prefers D and falls back to C; user review edits B and D](../../assets/api/annotation_layers/flow-dark.svg#only-dark)
 
 Arrows show data flow, not Python dependencies. Dashed arrows are alternatives,
 not additional processing stages. User edits belong to B/D, not A/C.

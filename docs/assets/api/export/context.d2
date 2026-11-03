@@ -1,0 +1,15 @@
+direction: down
+handler: "ExportHandler\nfile dialog, progress, dialogs"
+ctrl: "UIController\nhands the handler app + window"
+facade: "Application facade\nsession_is_ready_for_export()\nexport_session()"
+svc: "ExportService\nrender loop: layer pick, blur, encode"
+worker: "ExportWorker / ExportAllWorker\n(THIS PAGE) QThreads" {style.stroke-width: 4}
+store: "Session\nLayers C/D, video reader, settings"
+file: "Output MP4 file"
+handler -> ctrl: uses
+ctrl -> facade: calls
+handler -> worker: "create via factory,\nstart(), connect signals"
+worker -> svc: "export_session(callback)"
+worker -> facade: "batch only: detect,\ntrack, export"
+svc -> store: reads
+svc -> file: writes

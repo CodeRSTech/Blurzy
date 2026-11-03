@@ -1,0 +1,21 @@
+direction: down
+playhead: "Playhead\nPlaybackState.current_frame_index\nwritten by the GUI thread" {
+  style.stroke-width: 3
+}
+buffer: "Ring buffer: 90 slots, one contiguous index range" {
+  direction: right
+  behind: "Behind the playhead\nkept until overwritten"
+  now: "Playhead frame"
+  ahead: "Ahead of the playhead\nfilled by the worker"
+  behind -> now -> ahead
+}
+limit: "Throttle line\nplayhead + 45\nworker pauses once newest frame reaches it"
+seek: "Seek (scrub, jump, activation)\nclear buffer, decode target, buffer restarts there"
+playhead -> buffer: "frame lookups happen at the playhead"
+buffer.ahead -> limit: "worker stops here"
+playhead -> seek: "far miss or set_active(True)" {
+  style.stroke-dash: 4
+}
+seek -> buffer: "new contiguous window" {
+  style.stroke-dash: 4
+}

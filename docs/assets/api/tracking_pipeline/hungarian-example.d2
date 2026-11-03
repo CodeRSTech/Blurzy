@@ -1,0 +1,16 @@
+shape: sequence_diagram
+w: "TrackingWorker"
+s: "HungarianStrategy"
+e: "HungarianIoUTracker"
+w -> s: frame 0: one person box
+s -> e: update
+e -> s: new track 1, observed
+s -> w: track-1, detection_backed = True
+w -> s: frame 1: no boxes (occluded)
+s -> e: update with no detections
+e -> s: track 1 coasts, confidence - decay
+s -> w: track-1, detection_backed = False, age 1
+w -> s: frame 2: person box near predicted spot
+s -> e: update
+e -> s: IoU >= min_iou, match track 1
+s -> w: track-1, detection_backed = True, age 0

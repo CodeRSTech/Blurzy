@@ -2,199 +2,130 @@
 
 Source: `src/app/infrastructure/tracking`
 
-Tracking turns detections from one selected layer into frame-indexed subject
-tracks. The worker snapshots its input, processes frames on a background Qt
-thread, then runs an offline refinement pass before exposing results to
-Application services. Application validates the selected input (A or B) and
-places the resulting machine output in C while maintaining editable D; see
-[Tracking services](../application/services/tracking.md).
+A detector looks at each frame on its own, so it cannot say that the person in
+frame 40 is the same person as in frame 41. **Tracking adds that memory.** It
+reads detections for every frame, decides which boxes belong to the same
+subject, and gives each subject a stable ID and colour. Blurred export needs
+this: you select a subject once and every frame of that subject is blurred.
 
-```mermaid
-flowchart TB
-    Input["Snapshot of Layer A or B"] --> Dedupe["Suppress nested same-class boxes"]
-    Dedupe --> Frames["Read each frame and extract available appearance features"]
-    Frames --> Strategy["Selected strategy: associate boxes with track IDs"]
-    Strategy --> Offline["Post-process: stitching, GSI, bounded coasts"]
-    Offline --> Privacy{"Privacy features enabled?"}
-    Privacy -->|Yes| Coverage["Protect size, pad time, inflate bounds"]
-    Privacy -->|No| Result["Completed frame-indexed result"]
-    Coverage --> Result
-    Result --> C["Application writes Layer C"]
-    C --> D["Refresh filtered machine boxes in D"]
-```
+This page is the map. Deeper pages cover each part:
 
-Arrows show processing order. The per-frame association loop finishes before
-offline refinement begins; Layer D is updated by Application, not by the worker.
+| Page | Question it answers |
+| --- | --- |
+| [Tracking worker](tracking/worker.md) | How does the background thread run, report progress, stop, and fail? |
+| [Tracking strategies](tracking/strategies.md) | How does each algorithm match boxes between frames? |
+| [Appearance embeddings](tracking/reid.md) | How does the app describe what a subject looks like? |
+| [Post-processing](tracking/post-processing.md) | How are broken tracks repaired after the frame loop? |
 
-## The tracking pass
+## Where this sits
 
-Before association, the worker suppresses nested same-class duplicates within
-each frame. Containment is measured against the smaller box's area; suppressed
-boxes are unioned into the retained bounds to preserve their visible coverage.
-Each strategy then receives the boxes in frame order. Detection-backed outputs
-are distinguished from coasted predictions with observation metadata, so later
-processing can use actual observations without mistaking a prediction for one.
+![The tracking handler calls the Application facade and tracking service; the worker manager creates the tracking worker on a background thread; progress signals return to the handler and the result processor reads the finished data and writes Layers C and D](../../assets/api/tracking_pipeline/stack-overview-light.svg#only-light)
+![The tracking handler calls the Application facade and tracking service; the worker manager creates the tracking worker on a background thread; progress signals return to the handler and the result processor reads the finished data and writes Layers C and D](../../assets/api/tracking_pipeline/stack-overview-dark.svg#only-dark)
 
-| Strategy | Association evidence | Appearance used in association? |
+Solid arrows are calls; the dashed arrow is Qt signals travelling back from the
+worker thread. The thick box is this article's subject. Infrastructure only
+computes tracks; **Application decides which layer receives them**. See
+[Tracking services](../application/services/tracking.md) and the
+[domain tracking settings](../domain/tracking.md).
+
+!!! info "Layers touched"
+
+    Tracking reads **Layer A** (original detections) or, normally, **Layer B**
+    (reviewed detections). The finished tracks become **Layer C** (original
+    tracking output) and seed **Layer D** (reviewed/editable tracks). Export
+    prefers D and falls back to C. See [Video layers](../domain/video.md).
+
+!!! warning "Starting tracking clears Layers C and D"
+
+    Application clears both C and D *before* the worker is created. Manual
+    edits in D from an earlier run are discarded at that moment, and if the
+    run fails or is stopped the layers stay empty. Earlier documentation said
+    D edits were preserved. The result processor does keep manual D boxes when
+    it refreshes D, but after the start-time clear there are none to keep.
+
+## The pipeline
+
+![Pipeline: snapshot of Layer A or B, remove nested duplicates, frame loop, offline post-processing, optional privacy coverage, result held by the worker, Application writes Layer C and refreshes D](../../assets/api/tracking_pipeline/pipeline-light.svg#only-light)
+![Pipeline: snapshot of Layer A or B, remove nested duplicates, frame loop, offline post-processing, optional privacy coverage, result held by the worker, Application writes Layer C and refreshes D](../../assets/api/tracking_pipeline/pipeline-dark.svg#only-dark)
+
+Arrows show processing order; the dashed box is off by default. The frame loop
+finishes completely before post-processing begins, so repairs can use frames
+*after* a gap. Layer writes happen only at the end, in Application.
+
+1. **Snapshot and de-duplicate.** The worker deep-copies the input and
+   suppresses nested same-class boxes (a torso inside a full-body box).
+2. **Frame loop.** For each frame the worker reads pixels, computes an
+   appearance vector per box, and asks the chosen strategy to assign IDs.
+3. **Post-processing.** Fragments of the same subject are linked, short gaps
+   are filled, and short coast tails are added.
+4. **Privacy coverage** (optional) enlarges and extends boxes for safer blur.
+
+### Observed versus predicted boxes
+
+Every output box says whether a detector actually saw it. `detection_backed`
+is `True` for an observation; a *coasted* box is a prediction made while the
+subject was missing, with `detection_backed=False` and `time_since_update`
+counting missed frames. Post-processing keeps only observations
+(`detection_backed` and age 0) when it rebuilds tracks, so a guess is never
+mistaken for evidence.
+
+## Choosing a strategy
+
+| Strategy | Association evidence | Uses appearance to match? |
 | --- | --- | --- |
-| Hungarian IoU | Predicted box overlap | No |
-| ByteTrack | Motion and strong/weak detection groups | No |
-| DeepSORT | Age-ordered motion/overlap and appearance memory | When available |
-| BoT-SORT | Kalman motion, confidence groups, and appearance | When available |
-| Dummy | No association: copies detections | No |
+| Hungarian IoU | Overlap with each track's predicted box | No |
+| ByteTrack | Motion, strong then weak detections | No |
+| DeepSORT | Motion/overlap in age order, appearance memory | When vectors exist |
+| BoT-SORT | Kalman motion, confidence groups, appearance | When vectors exist |
+| Dummy | None: copies detections | No |
 
-### Follow one strategy
+Details and diagrams are in [Tracking strategies](tracking/strategies.md).
+Appearance vectors are computed for **every** strategy, because
+post-processing also uses them to stitch tracks (see
+[Appearance embeddings](tracking/reid.md)).
 
-=== "Hungarian IoU"
+## Worked example: one subject, end to end
 
-    **A motion/overlap baseline.** Predict each active track using its last
-    centroid velocity, build a track-to-detection overlap (IoU) matrix, and
-    solve a global Hungarian assignment. Reject matches below the configured
-    IoU threshold.
+Follow one person who walks behind a pillar. The numbers are illustrative.
 
-    Unmatched detections start tracks. Unmatched tracks coast and lose
-    confidence until they fall below the retention floor. Their output boxes
-    are explicitly marked as predictions, not new detector observations.
+![Sequence from the user clicking Track through handler, adapter and facade, service, worker manager and worker thread, back to the handler's sync and the service writing Layer C and refreshing D](../../assets/api/tracking_pipeline/e2e-light.svg#only-light)
+![Sequence from the user clicking Track through handler, adapter and facade, service, worker manager and worker thread, back to the handler's sync and the service writing Layer C and refreshing D](../../assets/api/tracking_pipeline/e2e-dark.svg#only-dark)
 
-=== "ByteTrack"
+Time flows downward; each arrow is a call or signal. The first half runs on
+the GUI thread; only the worker's own box runs on the background thread.
 
-    **Use weak detections to recover an existing identity.** Blurzy wraps
-    Ultralytics' ByteTrack, adapts its confidence split to each frame, and
-    associates stronger detections before trying the weaker group.
+??? example "Frame by frame"
 
-    The adapter maps provider output into Blurzy's common box/ID format. A
-    bounded motion-based fallback reconciles IDs when library output cannot
-    continue an identity safely. Lower-confidence recovery cannot bring back a
-    detection that was already removed from the selected input layer.
+    The detector saw the person in frames 0-10, lost them behind the pillar
+    for frames 11-13, and found them again in frames 14-20 (Layer B).
 
-=== "DeepSORT"
+    1. **Start.** Application checks that no tracker is running and that the
+       source layer is A or B and not empty, seeds missing B frames from A,
+       clears C and D, and builds the worker. The constructor copies the data
+       and de-duplicates boxes (on the GUI thread).
+    2. **Frames 0-10.** The strategy opens `track-1` and matches it each frame.
+       Every box is observed.
+    3. **Frames 11-13.** Nothing matches. The strategy emits predicted boxes
+       with `detection_backed=False` and falling confidence.
+    4. **Frame 14.** A new box appears. Depending on the strategy it may
+       rejoin `track-1` or start `track-2`.
+    5. **Post-processing.** If it became `track-2`, the linker sees one
+       fragment ending at frame 10 and another starting at 14 (a three-frame
+       gap), checks class, motion, size and appearance, and accepts. The ID
+       `track-1` is carried across and frames 11-13 are filled by
+       interpolation (see [Post-processing](tracking/post-processing.md)).
+    6. **Finish.** `progress_updated` reports the final count,
+       `finished_processing` fires, and the handler calls
+       `sync_tracking_cache()`. Application writes the frame map into Layer C
+       and refreshes Layer D from it.
 
-    **Give recent tracks first claim, then try appearance recovery.**
-    Confirmed tracks are matched in age order using motion/IoU and appearance
-    cost. A wider-radius recovery pass considers unambiguous appearance
-    matches; tentative tracks then use IoU matching.
+## Limitations
 
-    Normalized embeddings form per-track appearance memory. Only isolated
-    observations update that memory, reducing contamination from overlapping
-    subjects. Without valid appearance data, the appearance recovery pass
-    cannot help.
+!!! warning "Things to know"
 
-=== "BoT-SORT"
-
-    **Predict motion, then associate in stages.** A Kalman filter predicts
-    center, width, and height. High-confidence detections use overlap with
-    gated appearance evidence, followed by conservative appearance
-    re-identification for remaining tracks.
-
-    Lower-confidence detections then provide motion-only recovery. Appearance
-    memory updates use isolated high-confidence observations; missing features
-    leave the strategy operating on motion/overlap rather than invented Re-ID.
-
-=== "Dummy"
-
-    **Pass through boxes without persistent association.** The strategy copies
-    detections and retags them as tracking output. Use it for debugging the
-    pipeline, not as a method for maintaining subject identity.
-
-Hungarian, DeepSORT, and BoT-SORT create boxes for still-active unmatched
-tracks with `detection_backed=False` and an increasing `time_since_update`.
-ByteTrack also normalizes backend/coast outputs into that metadata. Downstream
-post-processing uses this distinction to avoid treating a prediction as a new
-observation.
-
-DeepSORT and BoT-SORT use frame-derived appearance embeddings when a local
-video can be read. Embeddings are aligned to the input boxes and only valid
-crops contribute. Linking combines appearance with class, projected geometry,
-box scale, and ambiguity checks; it does not equate similar appearance with
-identity by itself. Configured embedding dimensions are 128, 256, or 512. If
-the session path is missing or is not a file, tracking continues without
-frame-derived appearance; an existing but unreadable file is a worker error.
-
-## Offline stitching and GSI
-
-With offline stitching enabled (the default), the post-processor extracts
-continuous runs of observed boxes into tracklets. It considers later
-same-class fragments with a gap no longer than the configured maximum (25
-frames by default). Candidate links must pass projected geometry and scale
-checks, and the global assignment is rejected when a competing link is too
-ambiguous. Appearance embeddings can strengthen or reject a candidate.
-
-!!! example "One gap, two possible outcomes"
-
-    Suppose one fragment ends at frame 10 and a second begins at frame 14.
-    Frames 11-13 are missing. The following is an illustrative timeline, not
-    recorded inference output.
-
-    | Frame | Input evidence | If the link is accepted |
-    | --- | --- | --- |
-    | 10 | Last observation of the earlier fragment | Retain the observed box |
-    | 11-13 | No observation for this subject | Generate three GSI boxes under the earlier identity |
-    | 14 | First observation of the later fragment | Retain the observation under the linked identity |
-
-    If geometry, class, appearance, or ambiguity checks reject the link, GSI
-    does not fill this gap. The separate, bounded coast policy may still add
-    predictions after the earlier fragment.
-
-For an accepted link, the same identity is carried across the gap and missing
-boxes are interpolated from both endpoints. Each endpoint box is projected
-toward the missing frame using its local motion estimate; Gaussian weights
-make nearer endpoint estimates contribute more:
-
-$$
-w_L = \exp\left(-\frac{d_L^2}{2\sigma^2}\right), \qquad
-w_R = \exp\left(-\frac{d_R^2}{2\sigma^2}\right)
-$$
-
-$$
-B_t = \frac{w_L\widehat{B}_{L,t}+w_R\widehat{B}_{R,t}}{w_L+w_R}
-$$
-
-Here $d_L$ and $d_R$ are frame distances to the observed endpoints, $\sigma$
-is the configured GSI smoothness, and each $\widehat{B}$ is that endpoint's
-projected `xyxy` box. This is an offline operation: it uses a later observation
-to refine earlier missing frames, so it is not a live prediction.
-
-| Post-processing mode | Gap handling | Unbridged tails |
-| --- | --- | --- |
-| Offline stitching enabled | Link accepted fragments and fill their gaps with GSI | Up to six frames, with twice the configured confidence decay |
-| Offline stitching disabled | No cross-gap links or GSI; retain causal strategy coasts | Normal confidence decay, subject to the retention floor |
-
-!!! note "Interpolation needs future evidence"
-
-    GSI uses a later observation to refine earlier missing frames. It is an
-    offline reconstruction, not a live prediction or a new detector observation.
-
-## Privacy-oriented coverage controls
-
-When enabled, privacy post-processing runs after track stitching:
-
-| Control | What changes | Why it can help |
-| --- | --- | --- |
-| Shrink resistance | Expand immediately when boxes grow; damp contraction of the running size envelope | A partial-body observation need not abruptly expose the rest of a subject |
-| Pre/post padding | Extend coverage around the first/last observation using damped endpoint motion | Cover short delays at the start/end of observed tracks |
-| Safety padding | Enlarge the box and clamp to known frame bounds | Add spatial margin around uncertain edges |
-
-Temporal padding is configured in seconds and converted using the video frame
-rate. Generated padding confidence declines toward the configured floor.
-!!! warning "Coverage is not detection completeness"
-
-    These controls enlarge or extend existing tracks. They cannot guarantee
-    that every subject was detected or that generated boxes are ground truth.
-
-Defaults are stitching enabled, a maximum gap of 25 frames, GSI smoothness 10,
-shrink resistance 0.85, 0.5 seconds of pre- and post-detection padding, and
-10% safety padding. Settings validation allows gaps up to 60 frames, padding
-up to five seconds on either side, and safety padding up to 50%.
-
-??? example "Interpret the padding units"
-
-    At 30 FPS, 0.5 seconds corresponds to 15 frames on each configured side of
-    the observed track, limited by the video bounds and projection checks.
-    A 100 x 200 pixel box with 10% safety padding grows to approximately
-    110 x 220 pixels before frame-edge clipping: the added width and height
-    are split evenly across opposite edges.
-
-The worker returns frame-indexed results only after processing completes;
-Application writes those results to C and seeds/refreshes machine boxes in D
-while preserving user-created D annotations. See the [tracking settings](../domain/tracking.md)
-and [four annotation layers](../domain/video.md).
+    * Tracking quality is bounded by detection quality: a subject never
+      detected is never tracked or blurred.
+    * Stopping is cooperative and results of a stopped run are discarded; see
+      [the worker lifecycle](tracking/worker.md#stopping-and-failure).
+    * Gap filling and privacy padding add *estimated* boxes, not detector
+      output. They improve coverage but are not ground truth.

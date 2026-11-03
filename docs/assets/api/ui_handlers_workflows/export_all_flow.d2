@@ -1,0 +1,25 @@
+direction: down
+loop: "For each open session, in order (ExportAllWorker thread)"
+stop1: "Stop requested?"
+a: "Layer A has boxes?"
+det: "start_detection_worker();\nwait() for it to finish"
+c: "Layer C has boxes?"
+trk: "start_tracking_worker()\n(source from settings; A if B empty);\nwait(); sync_tracking_cache()"
+ready: "C or D has boxes?"
+exp: "export_session(...)\nprefix + name + suffix .mp4"
+fail: "session_failed signal\nlogged, counted; next session" {style.stroke: "#c0392b"}
+done: "progress_updated(done, total)"
+cancel: "cancelled signal;\nfinished_processing" {style.stroke: "#c0392b"}
+loop -> stop1
+stop1 -> cancel: "yes" {style.stroke-dash: 4}
+stop1 -> a: "no"
+a -> det: "no"
+a -> c: "yes"
+det -> c
+c -> trk: "no"
+c -> ready: "yes"
+trk -> ready
+ready -> fail: "no / any exception" {style.stroke-dash: 4}
+ready -> exp: "yes"
+exp -> done
+fail -> done

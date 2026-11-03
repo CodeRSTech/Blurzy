@@ -1,0 +1,16 @@
+direction: down
+ctor: "Construction (GUI thread)" {
+  c1: "Missing ultralytics\nModuleNotFoundError"
+}
+run: "run() (worker thread)" {
+  r1: "Unreadable video, bad settings,\nor strategy exception"
+  r2: "Stop requested"
+}
+handler: "Start failure\nhandler shows error dialog"
+sig: "error_occurred(msg)"
+fin: "finished_processing()\nalways emitted"
+sync: "Handler still calls\nsync_tracking_cache()"
+ctor.c1 -> handler
+run.r1 -> sig -> fin
+run.r2 -> fin: no error
+fin -> sync

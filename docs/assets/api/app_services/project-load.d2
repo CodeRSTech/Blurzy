@@ -1,0 +1,19 @@
+direction: down
+read: "ProjectStore.load\nvalidate format_version"
+close: "Close all open sessions,\nthen visit each saved video"
+missing: "Video file missing?" {
+  shape: diamond
+}
+skip: "Skip: add to\nskipped_session_paths"
+restore: "Open video, then apply settings,\nframe index, layers"
+fail: "Restore error:\ndiscard session, skip"
+report: "ProjectLoadReport\nrestored count + skipped paths"
+read -> close -> missing
+missing -> skip: yes
+missing -> restore: no
+restore -> fail: exception {
+  style.stroke-dash: 4
+}
+restore -> report
+skip -> report
+fail -> report

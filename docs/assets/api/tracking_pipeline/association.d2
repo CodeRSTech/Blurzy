@@ -1,0 +1,19 @@
+direction: down
+step: "Per frame" {
+  direction: right
+  coast: "Predict: shift each\ntrack by last velocity"
+  iou: "IoU matrix\ntracks x detections"
+  solve: "Hungarian assignment\nminimise 1 - IoU"
+  gate: "Reject\nIoU < min_iou"
+  coast -> iou -> solve -> gate
+}
+matched: "Matched\nupdate box, velocity,\nconfidence = 1.0"
+lost: "Unmatched track\ncoast, lose confidence,\nobserved = False"
+born: "Unmatched detection\nnew track"
+prune: "Drop tracks below\nmin confidence"
+step.gate -> matched
+step.gate -> lost
+step.gate -> born
+matched -> prune
+lost -> prune
+born -> prune

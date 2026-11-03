@@ -1,0 +1,18 @@
+direction: right
+src: "Selection sources" {
+  click: "Canvas click / Ctrl+click\nmarquee, empty click"
+  short: "Ctrl+A / D / I\ncontext menu select"
+  table: "Table row selection\n(bottom panel)"
+}
+apply: "_apply_selection_keys(keys, record_history)"
+st: "BBoxSelectionState\n(single shared list)"
+btn: "Bottom-panel button\nenabled states"
+ov: "Overlay highlight\nset_selected_bbox_keys"
+hist: "SelectionHistoryState\nselection undo stack"
+src.click -> apply
+src.short -> apply
+apply -> st: set_selection
+apply -> btn
+apply -> ov
+apply -> hist: "if record_history\nand keys changed"
+src.table -> st: "writes directly" {style.stroke-dash: 4}

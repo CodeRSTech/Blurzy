@@ -1,0 +1,13 @@
+direction: down
+open: "Edit > Settings... (Ctrl+,)"
+dlg: "PreferencesDialog.exec()"
+rej: "Rejected: nothing changes"
+save: "Keep dialog.get_preferences()\nAppPreferencesStore.save()"
+apply: "Apply theme, refresh icons,\nfull-screen preference"
+status: "Status: new defaults apply\nto videos opened from now on"
+open -> dlg
+dlg -> rej
+dlg -> save: Accepted
+save -> apply -> status
+later: "Later: SessionHandler opens video\n-> apply_defaults_to_session(s_id)"
+later -> status: "reads saved preferences" {style.stroke-dash: 4}

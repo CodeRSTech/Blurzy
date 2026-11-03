@@ -1,0 +1,15 @@
+shape: sequence_diagram
+user: User
+mh: "ModelHandler\n(GUI)"
+dlg: "ModelChangeWarningDialog\n(GUI)"
+th: "QThread +\nModelLoadWorker\n(background)"
+app: "Application ->\nDetectionService\n(background)"
+user -> mh: "pick model in combo"
+mh -> dlg: "exec()\nunless Don't ask again or 'None'"
+dlg -> mh: "Accept + keep_manual\nor Reject: combo reset, stop"
+mh -> mh: "store detection_model_name setting;\nloading spinner on"
+mh -> th: "moveToThread; thread.start()"
+th -> app: "set_detection_model(s_id, name, keep_manual)\nstop old worker, reset layers B and D,\nload engine weights"
+app -> mh: "finished(s_id, name)\nor failed(s_id, name, error)"
+mh -> user: "clear detection table, status bar, re-render\nor Model Load Failed dialog"
+mh -> th: "thread.finished -> _cleanup:\nspinner off, quit/wait, deleteLater"

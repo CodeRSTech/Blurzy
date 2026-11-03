@@ -1,0 +1,12 @@
+direction: right
+h: "UIHandler, DialogueHandler,\nPreferencesHandler"  { style.bold: true; style.stroke-width: 4 }
+c: "UIController\n(render, dialogs)"
+a: "Application facade\nthin delegation"
+s: "SessionService\n(settings, frames)"
+m: "SessionManager"
+i: "Session data,\nAppPreferencesStore (shared)"
+h -> c
+c -> a
+a -> s
+s -> m
+m -> i

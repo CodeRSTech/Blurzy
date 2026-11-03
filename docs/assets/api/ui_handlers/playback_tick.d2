@@ -1,0 +1,17 @@
+direction: down
+t: "Timer fires: on_playback_tick"
+sel: "Session selected?"
+last: "At last frame?"
+buf: "session_has_buffered_frame()\n(also advances the index when it succeeds)"
+render: "render_frame_for_session_id"
+stop: "stop_playback()"
+skip: "Skip this tick\n(trace log)"
+err: "Exception: stop_playback()\nand log error"
+t -> sel
+sel -> stop: no
+sel -> last: yes
+last -> stop: yes
+last -> buf: no
+buf -> render: "frame ready"
+buf -> skip: "not ready"
+last -> err: "any step raises" {style.stroke-dash: 4}

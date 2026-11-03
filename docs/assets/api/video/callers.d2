@@ -1,0 +1,19 @@
+shape: sequence_diagram
+ui: "GUI thread\nhandlers"
+mgr: "VideoDecodeWorkerManager\n(Application)"
+acc: "Session +\nSessionFrameAccessor"
+w: "VideoDecodeWorker\n(own QThread)"
+buf: "Ring buffer"
+
+setup: "ONCE per session and per active-session switch" {
+  mgr -> w: "set_active(True, resume_idx = playhead)"
+  w -> buf: "seek, refill from playhead"
+  w -> ui: "seek_completed(index) signal"
+}
+play: "EACH playback tick / scrub / step" {
+  ui -> acc: "get frame (next, previous, by index)"
+  acc -> buf: "look up index"
+  buf -> acc: "frame, or miss"
+  acc -> w: "request_seek(index) only on a far miss"
+  acc -> ui: "frame, or None after 2 s"
+}

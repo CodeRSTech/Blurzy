@@ -1,0 +1,12 @@
+shape: sequence_diagram
+h: "Caller handler\n(Annotation / Model)"
+ctl: UIController
+dh: DialogueHandler
+dlg: "Qt dialog"
+h -> ctl: "create_edit_annotation_dialogue()"
+ctl -> dh: "handle_edit_annotation_dialogue()"
+dh -> dlg: "construct with window as parent"
+dh -> h: "return dialog (not executed)"
+h -> dlg: "exec()"
+dlg -> h: "Accepted / Rejected"
+h -> dlg: "get_annotation_data()"

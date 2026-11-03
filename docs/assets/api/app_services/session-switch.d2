@@ -1,0 +1,14 @@
+direction: right
+ui: "Session tab change"
+svc: "SessionService\nhandle_active_session_changed"
+mgr: "VideoDecodeWorkerManager\nswitch_active_session"
+same: "old == new?" {
+  shape: diamond
+}
+noop: "Do nothing"
+pause: "Pause old session's\ndecode worker"
+resume: "Resume new session's\ndecode worker"
+ui -> svc -> mgr -> same
+same -> noop: yes
+same -> pause: no
+pause -> resume

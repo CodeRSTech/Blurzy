@@ -1,0 +1,19 @@
+direction: right
+byte: "ByteTrack (Ultralytics)" {
+  b1: "Split by confidence\nthreshold from frame median"
+  b2: "Strong boxes first,\nweak boxes recover"
+  b3: "App-side GIoU/motion\nfallback keeps IDs"
+  b1 -> b2 -> b3
+}
+deep: "DeepSORT (in-house)" {
+  d1: "Constant-velocity\nprediction"
+  d2: "Confirmed tracks by age:\nIoU + appearance"
+  d3: "Wide Re-ID recovery\nthen tentative IoU"
+  d1 -> d2 -> d3
+}
+bot: "BoT-SORT (in-house)" {
+  t1: "Kalman prediction\ncx, cy, w, h"
+  t2: "High boxes: IoU\ngated by appearance"
+  t3: "Re-ID, then low boxes\nby motion only"
+  t1 -> t2 -> t3
+}

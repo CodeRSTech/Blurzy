@@ -1,0 +1,22 @@
+shape: sequence_diagram
+user: User
+tp: "Transport panel"
+h: PlaybackHandler
+t: "QTimer"
+app: "Application facade\n-> SessionService"
+s: "Session + frame accessor"
+w: "VideoDecodeWorker\n(background thread)"
+ui: "UIController -> UIHandler"
+user -> tp: "click Play"
+tp -> h: "play_btn.clicked"
+h -> app: "start_session_playback (is_playing=True)"
+h -> t: "start(frame interval ms)"
+w -> s: "fills ring buffer ahead"
+t -> h: "timeout: on_playback_tick"
+h -> app: "is_at_last_frame?"
+h -> app: "session_has_buffered_frame()"
+app -> s: "get next frame, advance index"
+h -> ui: "render_frame_for_session_id"
+ui -> tp: "frame, slider, status bar"
+t -> h: "... repeats until last frame"
+h -> t: "stop(); stop_all_playback()"

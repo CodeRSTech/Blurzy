@@ -1,0 +1,20 @@
+shape: sequence_diagram
+user: User
+h: "SessionHandler\n(GUI)"
+a: "Application +\nSessionService"
+sm: SessionManager
+si: SessionInitializer
+dw: "VideoDecodeWorker\n(own thread)"
+dm: "VideoDecodeWorkerManager"
+user -> h: "Open video(s)"
+h -> a: "stop_all_playback(); open_videos(paths)"
+a -> sm: "create_session_from_video_path(path)"
+sm -> si: "initialize(session)"
+si -> dw: "start() (inactive)"
+sm -> a: "session registered"
+a -> sm: "initialize_active_session() if none active"
+sm -> a: "handle_active_session_changed(None, new)"
+a -> dm: "switch_active_session -> activate(new)"
+dm -> dw: "set_active(True, playhead)"
+a -> h: "opened paths"
+h -> user: "render first frame, refresh lists"

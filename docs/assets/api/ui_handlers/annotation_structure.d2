@@ -1,0 +1,19 @@
+direction: right
+inputs: "User input" {
+  canvas: "Preview canvas signals\ndraw / edit / select / move / menu"
+  buttons: "Bottom-panel buttons\nedit, relabel, delete, copy, reset"
+  keys: "Keyboard via\nFrameTableKeyFilter"
+}
+h: "AnnotationHandler" 
+state: "Window view state" {
+  sel: "BBoxSelectionState\nselected keys"
+  hist: "SelectionHistoryState\nundo/redo + clipboard"
+}
+app: "Application facade\n-> UnifiedLayerService"
+ctl: "UIController\nrender_frame_for_session_id"
+inputs.canvas -> h
+inputs.buttons -> h
+inputs.keys -> h
+h -> state: "read / write"
+h -> app: "mutate layer B or D"
+h -> ctl: "refresh after change"

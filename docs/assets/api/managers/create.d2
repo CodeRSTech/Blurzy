@@ -1,0 +1,20 @@
+direction: down
+call: "create_session_from_video_path(path)"
+dup: "SessionId(path) already open?"
+exc: "Raise SessionAlreadyExistsException\n(caller decides: skip)" { style.stroke-dash: 4 }
+shell: "Session(s_id)\nbare shell: no reader, state or workers"
+init: "SessionInitializer.initialize()" {
+  direction: down
+  r: "1. VideoReader(path)"
+  st: "2. SessionState from reader.metadata"
+  w: "3. VideoDecodeWorker(path, playback,\nparent=session); start()"
+  r -> st -> w
+}
+reg: "Register in _sessions[s_id]\n(NOT yet active)"
+skip: "Log error / warning\nNo session registered" { style.stroke-dash: 4 }
+call -> dup
+dup -> exc: yes { style.stroke-dash: 4 }
+dup -> shell: no
+shell -> init
+init -> reg: success
+init -> skip: ZeroStreams / VideoFileOpen /\nVideoStreamState { style.stroke-dash: 4 }

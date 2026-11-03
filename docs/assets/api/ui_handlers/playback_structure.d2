@@ -1,0 +1,13 @@
+direction: right
+tp: "Transport panel\nplay, pause, next, previous,\nrotate, fit, seek slider"
+pb: "PlaybackHandler"
+timer: "QTimer\nGUI thread, repeating"
+app: "Application facade\nsession playback state, frames"
+ctl: "UIController\nrender_frame_for_session_id"
+tp -> pb: "clicked signals"
+tp -> ctl: "seek_pos_changed\n(slider released)"
+ctl -> pb: "on_seek(idx)"
+pb -> timer: "start(interval) / stop()"
+timer -> pb: "timeout -> on_playback_tick"
+pb -> app: "start, stop, next, previous, seek"
+pb -> ctl: "render"

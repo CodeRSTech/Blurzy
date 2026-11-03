@@ -1,0 +1,21 @@
+shape: sequence_diagram
+user: User
+eh: "ExportHandler\n(GUI)"
+w: "ExportWorker\n(QThread)"
+svc: "ExportService\n(runs on worker)"
+file: "Output .mp4"
+user -> eh: "Export button"
+eh -> eh: "guards: not already exporting;\nLayer C or D has boxes"
+eh -> user: "Save dialog\n(default name from prefix/suffix)"
+eh -> eh: "remember directory in project;\nlock export controls"
+eh -> w: "create, connect signals, start()"
+w -> svc: "export_session(s_id, path,\nprogress_callback)"
+loop: "each frame" {
+  svc -> file: "read, blur boxes of D (else C),\nwrite frame"
+  svc -> w: "progress_callback(i, n)"
+  w -> eh: "progress_updated(i, n)\n(queued to GUI)"
+  eh -> user: "progress bar + status"
+}
+w -> eh: "succeeded / cancelled /\nerror_occurred"
+w -> eh: "QThread.finished"
+eh -> user: "status text (+ Export Failed dialog);\nunlock controls, deleteLater"

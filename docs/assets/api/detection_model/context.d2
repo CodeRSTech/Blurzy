@@ -1,0 +1,16 @@
+direction: down
+handler: "ModelHandler\nUI handler: dropdown, dialogs"
+loader: "ModelLoadWorker\nGUI-side QThread helper"
+app: "Application facade\nset_detection_model()"
+svc: "DetectionService\nreset layers, call manager"
+mgr: "DetectionEngineManager\ncreate or set_model"
+eng: "DetectionEngine\none loaded model"
+load: "load_detection_model (THIS PAGE)\nname to provider wrapper" {style.stroke-width: 4}
+prov: "Provider wrapper + mapper\nYOLO / Torch / MTCNN / Dummy"
+handler -> loader: starts
+loader -> app: calls
+app -> svc
+svc -> mgr
+mgr -> eng
+eng -> load
+load -> prov: constructs

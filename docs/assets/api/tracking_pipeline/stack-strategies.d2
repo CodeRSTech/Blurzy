@@ -1,0 +1,22 @@
+direction: down
+ui: "UI" {
+  handler: "TrackingHandler\nchooses strategy name"
+}
+app: "Application" {
+  direction: right
+  service: "TrackingService"
+  manager: "TrackingWorkerManager"
+}
+infra: "Infrastructure (worker thread)" {
+  direction: right
+  worker: "TrackingWorker\nmaps name -> strategy"
+  strat: "THIS PAGE\nStrategy: update_frame()" {
+    style.stroke-width: 4
+  }
+  hung: "HungarianIoUTracker\nused by Hungarian only"
+  worker -> strat: one frame at a time
+  strat -> hung: Hungarian strategy only {style.stroke-dash: 4}
+}
+ui.handler -> app.service: via adapter + facade
+app.service -> app.manager
+app.manager -> infra.worker: strategy_name

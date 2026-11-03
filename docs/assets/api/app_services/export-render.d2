@@ -1,0 +1,15 @@
+direction: down
+ready: "D or C has boxes?" {
+  shape: diamond
+}
+refuse: "RuntimeError:\nno tracking data"
+layer: "Choose layer: D if it has boxes, else C\nOpen cv2.VideoWriter (mp4v, source FPS + size)"
+loop: "For each frame: read RGB, convert to BGR,\nblur boxes if blur_enabled, write frame"
+progress: "Progress callback(frame + 1, total)\nthen next frame"
+done: "writer.release() in finally"
+ready -> refuse: no
+ready -> layer: yes
+layer -> loop -> progress -> done
+progress -> loop: more frames {
+  style.stroke-dash: 4
+}

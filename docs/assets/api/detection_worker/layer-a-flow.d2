@@ -1,0 +1,15 @@
+direction: down
+worker: "DetectionWorker\nraw DetectionResult lists\nper frame" 
+slot: "DetectionService.\non_detection_batch_ready"
+proc: "DetectionBatchProcessor\nper frame in batch"
+skip: "Layer A already has\nboxes at frame?" {shape: diamond}
+filter: "Map to boxes, keep selected\nlabels and min confidence"
+a: "Layer A\nadd filtered boxes"
+b: "Layer B\nreplace machine boxes,\nkeep manual boxes"
+worker -> slot: batch_ready
+slot -> proc
+proc -> skip
+skip -> filter: no
+skip -> proc: "yes: frame skipped" {style.stroke-dash: 4}
+filter -> a
+filter -> b

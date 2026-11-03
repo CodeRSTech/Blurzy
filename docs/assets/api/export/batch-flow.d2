@@ -1,0 +1,24 @@
+direction: down
+start: "Next session\nstop requested? end batch"
+emit: "emit session_started"
+a: "Layer A empty?" {shape: diamond}
+det: "start_detection_worker\nwait() on its thread"
+c: "Layer C empty?" {shape: diamond}
+trk: "start_tracking_worker\nwait(), sync cache\nsource B empty and A set: use A"
+ready: "ready for export?\nD or C has boxes" {shape: diamond}
+exp: "export_session\n{prefix}{name}{suffix}.mp4"
+ok: "emit session_finished"
+fail: "emit session_failed\nbatch continues"
+prog: "emit progress_updated(done, total)"
+start -> emit -> a
+a -> det: yes
+a -> c: no
+det -> c
+c -> trk: yes
+c -> ready: no
+trk -> ready
+ready -> exp: yes
+ready -> fail: no
+exp -> ok -> prog
+fail -> prog
+prog -> start: next {style.stroke-dash: 4}

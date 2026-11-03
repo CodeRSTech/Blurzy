@@ -1,0 +1,12 @@
+direction: down
+s1: "SAVE: ProjectService\ncaptures each initialized session"
+s2: "SessionDataStore.to_project_payload()\nlayers A-D, empty frames omitted"
+s3: "ProjectStore.save()\ncreate folder, asdict, JSON"
+file: "Project file\nformat_version 1.0" {shape: document}
+l1: "LOAD: ProjectStore.load()\nvalidate version and structure"
+l2: "ProjectService\nclose sessions; per video: open it,\nrestore settings, playhead, id counter"
+l3: "SessionDataStore.load_project_payload()\nrebuild layers A-D"
+l4: "ProjectLoadReport\nrestored count and skipped paths"
+s1 -> s2 -> s3 -> file
+file -> l1 -> l2 -> l3 -> l4
+l2 -> l4: "missing video or failure:\nskip and report" {style.stroke-dash: 4}

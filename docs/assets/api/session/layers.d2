@@ -1,0 +1,17 @@
+direction: down
+det: "Detection (single frame or batch)"
+a: "Layer A: raw detections"
+b: "Layer B: reviewed detections"
+trk: "Tracking result processing"
+c: "Layer C: raw tracks"
+d: "Layer D: reviewed tracks"
+user: "User edits and manual boxes"
+det -> a: "add boxes as returned"
+det -> b: "replace machine boxes\n(clones, keeps manual)"
+a -> b: "reset / re-filter (clones)" {style.stroke-dash: 4}
+b -> trk: "tracking input (A or B)" {style.stroke-dash: 4}
+trk -> c: "overwrite whole layer"
+trk -> d: "replace machine boxes\n(filtered, keeps manual)"
+c -> d: "reset / re-filter (clones)" {style.stroke-dash: 4}
+user -> b: edit
+user -> d: edit

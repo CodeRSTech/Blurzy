@@ -1,0 +1,23 @@
+direction: down
+call: "TrackingWorkerManager.start(s_id, strategy, source layer)"
+run: "Worker already running?"
+src: "Source layer is A or B?"
+seed: "B only: seed missing frames\nfrom A (cloned, filtered)"
+empty: "Source layer empty?"
+clear: "Clear layers C and D"
+create: "worker_factory.create(...)\nsnapshots input; thread starts"
+attach: "session.tracking_worker = worker"
+e1: "TrackingWorkerAlreadyRunningException" { style.stroke-dash: 4 }
+e2: "UnsupportedLayerException" { style.stroke-dash: 4 }
+e3: "EmptyLayerException" { style.stroke-dash: 4 }
+e4: "Factory error propagates:\nC/D already cleared,\nno worker attached" { style.stroke-dash: 4 }
+call -> run
+run -> e1: yes { style.stroke-dash: 4 }
+run -> src: no
+src -> e2: other { style.stroke-dash: 4 }
+src -> seed
+seed -> empty
+empty -> e3: yes { style.stroke-dash: 4 }
+empty -> clear: no
+clear -> create -> attach
+create -> e4: raises { style.stroke-dash: 4 }
